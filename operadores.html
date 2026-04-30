@@ -327,7 +327,7 @@ async function api(path, opts={}) {
 }
 
 async function init() {
-  const tok = localStorage.getItem('apm_tok');
+  const tok = localStorage.getItem('apm_tok') || (() => { try { const k = Object.keys(localStorage).find(k => k.includes('access_token')); return k ? JSON.parse(localStorage.getItem(k)) : null; } catch(e){ return null; } })();
   if (!tok) return;
   const r = await api('/auth/v1/user');
   if (!r.ok) { localStorage.removeItem('apm_tok'); return; }
