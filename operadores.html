@@ -316,7 +316,7 @@ const AKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 let user = null, admin = false, allOps = [], activeCat = null;
 
 async function api(path, opts={}) {
-  const tok = localStorage.getItem('apm_tok');
+  const tok = localStorage.getItem('apm_tok') || (() => { try { const k = Object.keys(localStorage).find(k => k.includes('access_token')); return k ? JSON.parse(localStorage.getItem(k)) : null; } catch(e){ return null; } })();
   const r = await fetch(SUPA + path, {
     ...opts,
     headers: { 'apikey': AKEY, 'Content-Type': 'application/json',
