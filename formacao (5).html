@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APM Viagens — Formação</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --coral:#E8395A; --coral-light:#FFF0F3;
+  --blue:#3B5BDB; --blue-light:#EEF2FF;
+  --bg:#F5F6FA; --surface:#fff;
+  --text:#1A1D2E; --muted:#8B92A5; --muted2:#B0B7C3;
+  --border:rgba(0,0,0,0.07); --border2:rgba(0,0,0,0.12);
+  --radius:12px; --radius-sm:8px;
+  --shadow:0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;font-size:14px;color:var(--text);background:var(--bg);min-height:100vh}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:200;box-shadow:var(--shadow)}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;color:var(--coral)}
+.back-btn{color:var(--muted);font-size:13px;text-decoration:none;padding:5px 10px;border-radius:6px;transition:background .2s}
+.back-btn:hover{background:var(--bg);color:var(--text)}
+.badge-admin{background:#fef3c7;color:#92400e;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px}
+
+/* HEADER DO CURSO */
+.course-header{background:linear-gradient(135deg,#1A1D2E 0%,#2D3250 100%);padding:28px 32px;color:#fff}
+.course-header-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;gap:20px}
+.course-thumb{width:110px;height:72px;border-radius:10px;object-fit:cover;box-shadow:0 4px 16px rgba(0,0,0,.3);flex-shrink:0}
+.course-info{flex:1}
+.course-title{font-family:'Poppins',sans-serif;font-size:19px;font-weight:700;margin-bottom:6px}
+.course-meta{display:flex;gap:14px;flex-wrap:wrap}
+.course-meta span{font-size:12px;color:rgba(255,255,255,.65)}
+
+/* LAYOUT PRINCIPAL */
+.main-layout{max-width:1000px;margin:0 auto;padding:24px;display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}
+
+/* LISTA DE MÓDULOS */
+.modules-panel{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;position:sticky;top:76px}
+.modules-panel-title{padding:14px 16px;font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;border-bottom:1px solid var(--border);color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+
+.module-group{}
+.module-header{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border)}
+.module-header:hover{background:var(--bg)}
+.module-header.active-module{background:var(--blue-light)}
+.module-icon{font-size:15px;flex-shrink:0}
+.module-name{flex:1;font-size:12px;font-weight:600;line-height:1.3}
+.module-count{font-size:10px;color:var(--muted);background:var(--bg);padding:1px 6px;border-radius:10px;flex-shrink:0}
+.chevron{color:var(--muted2);transition:transform .25s;font-size:14px;flex-shrink:0}
+.module-group.open .chevron{transform:rotate(90deg)}
+
+.lessons-list{display:none;border-bottom:1px solid var(--border)}
+.module-group.open .lessons-list{display:block}
+.lesson-row{display:flex;align-items:center;gap:8px;padding:8px 16px 8px 42px;cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(0,0,0,.03)}
+.lesson-row:last-child{border-bottom:none}
+.lesson-row:hover{background:var(--bg)}
+.lesson-row.active{background:var(--coral-light)}
+.lesson-row.active .lesson-name{color:var(--coral);font-weight:600}
+.lesson-type-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dot-video{background:var(--blue)}
+.dot-pdf{background:#f59e0b}
+.dot-form{background:#10b981}
+.dot-questionario{background:var(--coral)}
+
+/* QUESTIONÁRIO */
+.quiz-wrap{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+.quiz-header{background:linear-gradient(135deg,var(--coral),#ff6b87);padding:24px 28px;color:#fff}
+.quiz-header h2{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700;margin-bottom:4px}
+.quiz-header p{font-size:12px;opacity:.85}
+.quiz-body{padding:24px 28px;display:flex;flex-direction:column;gap:20px}
+.quiz-field{display:flex;flex-direction:column;gap:6px}
+.quiz-label{font-size:13px;font-weight:600;color:var(--text);line-height:1.4}
+.quiz-label .req{color:var(--coral)}
+.quiz-input,.quiz-textarea{padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Inter',sans-serif;color:var(--text);transition:border-color .2s;width:100%}
+.quiz-input:focus,.quiz-textarea:focus{outline:none;border-color:var(--blue)}
+.quiz-textarea{resize:vertical;min-height:80px}
+.quiz-section-title{font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--coral);padding:4px 0 6px;border-bottom:2px solid var(--coral-light);margin-top:4px}
+.quiz-footer{padding:0 28px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.quiz-note{font-size:11px;color:var(--muted);max-width:340px;line-height:1.5}
+.btn-submeter{background:var(--coral);color:#fff;border:none;padding:11px 24px;border-radius:var(--radius-sm);font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s}
+.btn-submeter:hover{background:#d42f50}
+.btn-submeter:disabled{opacity:.5;cursor:not-allowed}
+.quiz-sucesso{padding:40px 28px;text-align:center;display:none}
+.quiz-sucesso .big-check{font-size:52px;margin-bottom:12px}
+.quiz-sucesso h3{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text)}
+.quiz-sucesso p{font-size:13px;color:var(--muted);line-height:1.6;max-width:380px;margin:0 auto}
+.quiz-ja-submetido{padding:40px 28px;text-align:center}
+.badge-estado{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;margin-top:12px}
+.estado-pendente{background:#fef3c7;color:#92400e}
+.estado-aprovado{background:#d1fae5;color:#065f46}
+.estado-reprovado{background:#fee2e2;color:#991b1b}
+.lesson-name{font-size:12px;line-height:1.3;flex:1}
+.edit-aula-btn{width:22px;height:22px;border-radius:4px;background:none;border:1px solid var(--border);cursor:pointer;font-size:10px;display:none;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;flex-shrink:0}
+.edit-aula-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+body.is-admin .edit-aula-btn{display:flex}
+
+/* PAINEL DE VÍDEO */
+.video-panel{display:flex;flex-direction:column;gap:16px}
+
+.video-container{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+.video-wrap{position:relative;padding-bottom:56.25%;background:#000;border-radius:var(--radius) var(--radius) 0 0;overflow:hidden}
+.video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+.video-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#fff;background:linear-gradient(135deg,#1A1D2E,#2D3250)}
+.video-placeholder .big-icon{font-size:48px;opacity:.4}
+.video-placeholder p{font-size:13px;color:rgba(255,255,255,.5);text-align:center;max-width:220px}
+.video-info{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.video-title{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600}
+.video-module{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* NAV ENTRE AULAS */
+.lesson-nav{display:flex;gap:8px}
+.nav-btn{padding:7px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--muted);font-family:'Inter',sans-serif}
+.nav-btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
+.nav-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* MODAL EDIÇÃO */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:16px;padding:28px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-title{font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;margin-bottom:20px}
+.fg{margin-bottom:14px}
+.fl{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px}
+.fi,.fs{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Inter',sans-serif;color:var(--text);transition:border-color .2s;background:var(--surface)}
+.fi:focus,.fs:focus{outline:none;border-color:var(--blue)}
+.fhint{font-size:11px;color:var(--muted);margin-top:3px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.btn{padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .2s}
+.btn-primary{background:var(--coral);color:#fff}
+.btn-primary:hover{background:#d42f50}
+.btn-secondary{background:var(--bg);color:var(--text);border:1.5px solid var(--border)}
+.btn-secondary:hover{border-color:var(--blue);color:var(--blue)}
+
+/* NOTIF */
+.notif{position:fixed;bottom:20px;right:20px;background:var(--text);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:var(--shadow-md);z-index:1000;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none}
+.notif.show{transform:translateY(0);opacity:1}
+.notif.ok{background:#10b981}
+.notif.err{background:var(--coral)}
+
+/* LOADING */
+.spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:sp .8s linear infinite;margin:40px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.youtube-preview{width:100%;height:36px;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-top:6px;display:none}
+.youtube-preview iframe{width:100%;height:100%;border:none;pointer-events:none}
+
+@media(max-width:768px){
+  .main-layout{grid-template-columns:1fr;padding:16px}
+  .modules-panel{position:static}
+  .course-header{padding:20px 16px}
+  .course-header-inner{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="logo">APM Viagens</span>
+    <a href="index.html" class="back-btn">← Sistema</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font-size:12px;color:var(--muted)" id="uName"></span>
+    <span class="badge-admin" id="adminBadge" style="display:none">Admin</span>
+  </div>
+</div>
+
+<div class="course-header">
+  <div class="course-header-inner">
+    <img class="course-thumb" src="https://ezycourse.b-cdn.net/3064/cmf85suyx01j8ha8zcbt8htdm.png" onerror="this.style.display='none'" alt="Formação">
+    <div class="course-info">
+      <div class="course-title">🎓 Formação Consultores APM Viagens</div>
+      <div class="course-meta">
+        <span id="meta-modulos">⏳ A carregar...</span>
+        <span id="meta-aulas"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main-layout">
+  <!-- PAINEL ESQUERDO: lista de módulos -->
+  <div class="modules-panel" id="modulesPanel">
+    <div class="modules-panel-title" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Módulos</span>
+      <button id="btn-nova-aula" onclick="openNovaAula()" style="display:none;background:var(--coral);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">+ Aula</button>
+    </div>
+    <div id="modulesList"><div class="spin"></div></div>
+  </div>
+
+  <!-- PAINEL DIREITO: vídeo -->
+  <div class="video-panel">
+    <div class="video-container" id="videoContainer">
+      <div class="video-wrap" id="videoWrap">
+        <div class="video-placeholder" id="videoPlaceholder">
+          <div class="big-icon">🎬</div>
+          <p>Seleciona uma aula no menu para começar</p>
+        </div>
+      </div>
+      <div class="video-info" id="videoInfo" style="display:none">
+        <div>
+          <div class="video-title" id="videoTitle"></div>
+          <div class="video-module" id="videoModule"></div>
+        </div>
+        <div class="lesson-nav">
+          <button class="nav-btn" id="btnPrev" onclick="navLesson(-1)" disabled>← Anterior</button>
+          <button class="nav-btn" id="btnNext" onclick="navLesson(1)">Seguinte →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIÇÃO DE AULA -->
+<div class="overlay" id="editOverlay">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title" id="editModalTitulo">✏️ Editar Aula</div>
+    <input type="hidden" id="editId">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg" style="grid-column:1/-1">
+        <label class="fl">Título da aula *</label>
+        <input class="fi" id="editTitulo" placeholder="Nome da aula">
+      </div>
+      <div class="fg">
+        <label class="fl">Módulo *</label>
+        <div style="display:flex;gap:6px">
+          <select class="fs" id="editModuloSel" onchange="toggleModuloNovo()" style="flex:1">
+            <option value="">— Escolher módulo —</option>
+            <option value="__novo__">+ Novo módulo...</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Ordem na aula</label>
+        <input class="fi" id="editAulaOrdem" type="number" min="1" value="1">
+      </div>
+      <div class="fg" id="editModuloNovoWrap" style="display:none;grid-column:1/-1">
+        <label class="fl">Nome do novo módulo *</label>
+        <div style="display:flex;gap:6px">
+          <input class="fi" id="editModuloNovo" placeholder="Ex: MÓDULO EXTRA" style="flex:1">
+          <input class="fi" id="editModuloIcone" placeholder="🆕" style="width:56px;text-align:center">
+        </div>
+        <div class="fhint">Nome + emoji do módulo</div>
+      </div>
+      <div class="fg" style="grid-column:1/-1">
+        <label class="fl">Tipo</label>
+        <select class="fs" id="editTipo" onchange="toggleEditTipo()">
+          <option value="video">▶ Vídeo (YouTube)</option>
+          <option value="pdf">📄 PDF / Documento</option>
+          <option value="questionario">📋 Questionário APM (integrado)</option>
+        </select>
+      </div>
+    </div>
+    <div id="editVideoFields">
+      <div class="fg">
+        <label class="fl">Link do YouTube (não listado)</label>
+        <input class="fi" id="editYoutubeUrl" placeholder="https://youtu.be/XXXXXXXXXX ou ID do vídeo" oninput="previewYoutube()">
+        <div class="fhint">Cola o link completo ou só o ID. Vídeo deve estar como "Não Listado" no YouTube.</div>
+        <div id="ytPreviewWrap" style="margin-top:8px;display:none;border-radius:8px;overflow:hidden;aspect-ratio:16/9;max-height:150px">
+          <iframe id="ytPreviewFrame" src="" allowfullscreen style="width:100%;height:100%;border:none;pointer-events:none"></iframe>
+        </div>
+      </div>
+    </div>
+    <div id="editFormFields" style="display:none">
+      <div class="fg">
+        <label class="fl">URL do Google Form</label>
+        <input class="fi" id="editFormUrl" placeholder="https://docs.google.com/forms/d/e/.../viewform">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="editDelBtn" onclick="deleteAula()" style="margin-right:auto;background:#fee2e2;color:#dc2626;display:none">🗑 Eliminar</button>
+      <button class="btn btn-secondary" onclick="closeEdit()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEdit()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+const SUPA = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const AKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const sb = supabase.createClient(SUPA, AKEY)
+
+let isAdmin = false
+let currentPerfil = null
+let currentTok = null
+let allAulas = []
+let flatLessons = []
+let currentIdx = -1
+
+// ── AUTH ──────────────────────────────────────────────────────────
+function getSbSession() {
+  try {
+    const raw = localStorage.getItem('sb-uiaorfcgvqwxjezgisps-auth-token')
+    if (raw) return JSON.parse(raw)
+  } catch(e) {}
+  return null
+}
+
+async function init() {
+  const session = getSbSession()
+  if (session) {
+    try {
+      const r = await fetch(SUPA + '/auth/v1/token?grant_type=refresh_token', {
+        method: 'POST',
+        headers: { 'apikey': AKEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: session.refresh_token })
+      })
+      if (r.ok) {
+        const d = await r.json()
+        currentTok = d.access_token
+        // verificar se é admin
+        const pr = await sb.from('perfis').select('role,nome,email,id').eq('id', d.user.id).single()
+        if (pr.data) {
+          currentPerfil = { ...pr.data }
+          document.getElementById('uName').textContent = pr.data.nome || pr.data.email
+          if (pr.data.role === 'admin') {
+            isAdmin = true
+            document.getElementById('adminBadge').style.display = 'inline'
+            document.getElementById('btn-nova-aula').style.display = 'inline'
+            document.body.classList.add('is-admin')
+          }
+        }
+      }
+    } catch(e) {}
+  }
+  await loadAulas()
+}
+
+// ── CARREGAR AULAS ─────────────────────────────────────────────────
+async function loadAulas() {
+  const { data, error } = await sb
+    .from('formacao_aulas')
+    .select('*')
+    .order('modulo_ordem', { ascending: true })
+    .order('aula_ordem', { ascending: true })
+
+  if (error || !data || !data.length) {
+    document.getElementById('modulesList').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Sem aulas registadas.</div>'
+    return
+  }
+
+  allAulas = data
+
+  // Verificar estado do questionário (só para não-admins)
+  let quizAprovado = isAdmin // admin vê tudo sempre
+  let quizModuloOrdem = null
+
+  if (!isAdmin && currentPerfil?.id) {
+    const { data: sub } = await sb.from('questionario_submissoes')
+      .select('estado').eq('consultor_id', currentPerfil.id).maybeSingle()
+    quizAprovado = sub?.estado === 'aprovado'
+  }
+
+  // Encontrar o módulo que contém a aula de tipo 'questionario'
+  const aulaQuiz = data.find(a => a.aula_tipo === 'questionario')
+  if (aulaQuiz) quizModuloOrdem = aulaQuiz.modulo_ordem
+
+  // Agrupar por módulo
+  const modulosMap = {}
+  data.forEach(a => {
+    const key = a.modulo_ordem
+    if (!modulosMap[key]) modulosMap[key] = { ordem: a.modulo_ordem, titulo: a.modulo_titulo, icone: a.modulo_icone, aulas: [] }
+    modulosMap[key].aulas.push(a)
+  })
+  const modulos = Object.values(modulosMap).sort((a,b) => a.ordem - b.ordem)
+
+  // Para navegação: só aulas desbloqueadas
+  flatLessons = data.filter(a => {
+    if (isAdmin || quizAprovado || !quizModuloOrdem) return true
+    return a.modulo_ordem <= quizModuloOrdem
+  })
+
+  document.getElementById('meta-modulos').textContent = `📚 ${modulos.length} Módulos`
+  document.getElementById('meta-aulas').textContent = `🎬 ${data.length} Aulas`
+
+  document.getElementById('modulesList').innerHTML = modulos.map((m, mi) => {
+    // Módulo bloqueado se for DEPOIS do módulo do questionário e quiz não aprovado
+    const bloqueado = !isAdmin && !quizAprovado && quizModuloOrdem !== null && m.ordem > quizModuloOrdem
+
+    if (bloqueado) {
+      return `
+        <div class="module-group" id="mg-${m.ordem}">
+          <div class="module-header" style="opacity:.45;cursor:not-allowed" title="Disponível após aprovação do questionário">
+            <span class="module-icon">🔒</span>
+            <span class="module-name">${m.titulo}</span>
+            <span class="module-count">${m.aulas.length}</span>
+          </div>
+        </div>`
+    }
+
+    return `
+      <div class="module-group ${mi===0?'open':''}" id="mg-${m.ordem}">
+        <div class="module-header ${mi===0?'active-module':''}" onclick="toggleModule(${m.ordem}, this)">
+          <span class="module-icon">${m.icone||'📚'}</span>
+          <span class="module-name">${m.titulo}</span>
+          <span class="module-count">${m.aulas.length}</span>
+          <span class="chevron">›</span>
+        </div>
+        <div class="lessons-list">
+          ${m.aulas.map(a => `
+            <div class="lesson-row" id="lr-${a.id}" onclick="selectLesson('${a.id}')">
+              <span class="lesson-type-dot ${a.aula_tipo==='video'?'dot-video':a.aula_tipo==='questionario'?'dot-questionario':a.aula_tipo==='form'?'dot-form':'dot-pdf'}"></span>
+              <span class="lesson-name">${a.aula_titulo}</span>
+              <button class="edit-aula-btn" onclick="event.stopPropagation();openEdit('${a.id}')" title="Editar">✏</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>`
+  }).join('')
+}
+
+function toggleModule(ordem, headerEl) {
+  const group = document.getElementById('mg-' + ordem)
+  const isOpen = group.classList.contains('open')
+  // fechar todos
+  document.querySelectorAll('.module-group').forEach(g => g.classList.remove('open'))
+  document.querySelectorAll('.module-header').forEach(h => h.classList.remove('active-module'))
+  if (!isOpen) {
+    group.classList.add('open')
+    headerEl.classList.add('active-module')
+  }
+}
+
+// ── REPRODUZIR AULA ────────────────────────────────────────────────
+function selectLesson(id) {
+  const aula = allAulas.find(a => a.id === id)
+  if (!aula) return
+  // bloquear se não está na lista de aulas disponíveis
+  if (!flatLessons.find(a => a.id === id)) {
+    toast('Disponível após aprovação do questionário 🔒', '')
+    return
+  }
+
+  currentIdx = flatLessons.findIndex(a => a.id === id)
+
+  // marcar activa
+  document.querySelectorAll('.lesson-row').forEach(r => r.classList.remove('active'))
+  document.getElementById('lr-' + id)?.classList.add('active')
+
+  // abrir módulo correspondente
+  const group = document.getElementById('mg-' + aula.modulo_ordem)
+  if (group && !group.classList.contains('open')) {
+    document.querySelectorAll('.module-group').forEach(g => g.classList.remove('open'))
+    document.querySelectorAll('.module-header').forEach(h => h.classList.remove('active-module'))
+    group.classList.add('open')
+    group.querySelector('.module-header')?.classList.add('active-module')
+  }
+
+  // info
+  document.getElementById('videoTitle').textContent = aula.aula_titulo
+  document.getElementById('videoModule').textContent = aula.modulo_titulo
+  document.getElementById('videoInfo').style.display = 'flex'
+
+  // nav buttons
+  document.getElementById('btnPrev').disabled = currentIdx <= 0
+  document.getElementById('btnNext').disabled = currentIdx >= flatLessons.length - 1
+
+  // conteúdo
+  const wrap = document.getElementById('videoWrap')
+  // reset altura
+  wrap.style.paddingBottom = '56.25%'
+  wrap.style.height = ''
+
+  if (aula.aula_tipo === 'video' && aula.youtube_id) {
+    const ytId = extractYoutubeId(aula.youtube_id)
+    if (ytId) {
+      wrap.innerHTML = `<iframe
+        src="https://www.youtube-nocookie.com/embed/${ytId}?rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=0&fs=1&color=white&playsinline=1"
+        allowfullscreen allow="autoplay; encrypted-media"
+        style="position:absolute;inset:0;width:100%;height:100%;border:none"
+      ></iframe>`
+    } else { showPlaceholder('ID do YouTube inválido') }
+  } else if (aula.aula_tipo === 'form' && aula.form_url) {
+    const formUrl = aula.form_url.includes('embedded=true') ? aula.form_url : aula.form_url.replace('viewform','viewform?embedded=true')
+    wrap.style.paddingBottom = '0'
+    wrap.style.height = '700px'
+    wrap.innerHTML = `<iframe src="${formUrl}" style="position:absolute;inset:0;width:100%;height:100%;border:none" frameborder="0">A carregar...</iframe>`
+  } else if (aula.aula_tipo === 'questionario') {
+    wrap.style.paddingBottom = '0'
+    wrap.style.height = 'auto'
+    wrap.style.position = 'relative'
+    renderQuestionario(wrap)
+  } else if (aula.aula_tipo === 'pdf') {
+    showPlaceholder('📄 ' + aula.aula_titulo + '\n(Sem ficheiro associado ainda)')
+  } else {
+    showPlaceholder('Sem vídeo associado ainda.\n' + (isAdmin ? 'Clica em ✏ para adicionar.' : 'Em breve.'))
+  }
+}
+
+function showPlaceholder(msg) {
+  document.getElementById('videoWrap').innerHTML = `
+    <div class="video-placeholder">
+      <div class="big-icon">🎬</div>
+      <p>${msg.replace('\n','<br>')}</p>
+    </div>`
+}
+
+function navLesson(dir) {
+  const next = flatLessons[currentIdx + dir]
+  if (next) selectLesson(next.id)
+}
+
+// ── EXTRAIR ID YOUTUBE ─────────────────────────────────────────────
+function extractYoutubeId(input) {
+  if (!input) return null
+  input = input.trim()
+  // já é só o ID (11 chars)
+  if (/^[a-zA-Z0-9_-]{11}$/.test(input)) return input
+  // https://youtu.be/XXXXXXXXXXX
+  const m1 = input.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)
+  if (m1) return m1[1]
+  // https://www.youtube.com/watch?v=XXXXXXXXXXX
+  const m2 = input.match(/[?&]v=([a-zA-Z0-9_-]{11})/)
+  if (m2) return m2[1]
+  // https://www.youtube.com/embed/XXXXXXXXXXX
+  const m3 = input.match(/embed\/([a-zA-Z0-9_-]{11})/)
+  if (m3) return m3[1]
+  return null
+}
+
+// ── EDIÇÃO (só admin) ──────────────────────────────────────────────
+function populateModuloSel(modulosMap) {
+  const sel = document.getElementById('editModuloSel')
+  const sorted = Object.values(modulosMap).sort((a,b) => a.ordem - b.ordem)
+  sel.innerHTML = '<option value="">— Escolher módulo —</option>' +
+    sorted.map(m => `<option value="${m.ordem}" data-titulo="${m.titulo}" data-icone="${m.icone||'📚'}">${m.icone||'📚'} ${m.titulo}</option>`).join('') +
+    '<option value="__novo__">+ Novo módulo...</option>'
+}
+
+function getModulosMap() {
+  const map = {}
+  allAulas.forEach(a => {
+    if (!map[a.modulo_ordem]) map[a.modulo_ordem] = { ordem: a.modulo_ordem, titulo: a.modulo_titulo, icone: a.modulo_icone }
+  })
+  return map
+}
+
+function toggleModuloNovo() {
+  const val = document.getElementById('editModuloSel').value
+  document.getElementById('editModuloNovoWrap').style.display = val === '__novo__' ? 'block' : 'none'
+}
+
+function openNovaAula() {
+  if (!isAdmin) return
+  document.getElementById('editModalTitulo').textContent = '➕ Nova Aula'
+  document.getElementById('editId').value = ''
+  document.getElementById('editTitulo').value = ''
+  document.getElementById('editTipo').value = 'video'
+  document.getElementById('editYoutubeUrl').value = ''
+  document.getElementById('editFormUrl').value = ''
+  document.getElementById('editAulaOrdem').value = '1'
+  document.getElementById('editModuloNovo').value = ''
+  document.getElementById('editModuloIcone').value = '📚'
+  document.getElementById('editDelBtn').style.display = 'none'
+  populateModuloSel(getModulosMap())
+  document.getElementById('editModuloSel').value = ''
+  document.getElementById('editModuloNovoWrap').style.display = 'none'
+  toggleEditTipo()
+  document.getElementById('ytPreviewWrap').style.display = 'none'
+  document.getElementById('editOverlay').classList.add('open')
+}
+
+function openEdit(id) {
+  if (!isAdmin) return
+  const aula = allAulas.find(a => a.id === id)
+  if (!aula) return
+  document.getElementById('editModalTitulo').textContent = '✏️ Editar Aula'
+  document.getElementById('editId').value = id
+  document.getElementById('editTitulo').value = aula.aula_titulo
+  document.getElementById('editTipo').value = aula.aula_tipo || 'video'
+  document.getElementById('editYoutubeUrl').value = aula.youtube_id || ''
+  document.getElementById('editFormUrl').value = aula.form_url || ''
+  document.getElementById('editAulaOrdem').value = aula.aula_ordem || 1
+  document.getElementById('editDelBtn').style.display = 'inline-flex'
+  populateModuloSel(getModulosMap())
+  document.getElementById('editModuloSel').value = aula.modulo_ordem
+  document.getElementById('editModuloNovoWrap').style.display = 'none'
+  toggleEditTipo()
+  previewYoutube()
+  document.getElementById('editOverlay').classList.add('open')
+}
+
+function closeEdit() {
+  document.getElementById('editOverlay').classList.remove('open')
+  document.getElementById('ytPreviewWrap').style.display = 'none'
+}
+
+function toggleEditTipo() {
+  const tipo = document.getElementById('editTipo').value
+  document.getElementById('editVideoFields').style.display = tipo === 'video' ? 'block' : 'none'
+  document.getElementById('editFormFields').style.display = tipo === 'form' ? 'block' : 'none'
+}
+
+function previewYoutube() {
+  const val = document.getElementById('editYoutubeUrl').value
+  const ytId = extractYoutubeId(val)
+  const wrap = document.getElementById('ytPreviewWrap')
+  const frame = document.getElementById('ytPreviewFrame')
+  if (ytId) {
+    frame.src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=0`
+    wrap.style.display = 'block'
+  } else {
+    wrap.style.display = 'none'
+    frame.src = ''
+  }
+}
+
+async function saveEdit() {
+  const id = document.getElementById('editId').value
+  const titulo = document.getElementById('editTitulo').value.trim()
+  const tipo = document.getElementById('editTipo').value
+  const urlRaw = document.getElementById('editYoutubeUrl').value.trim()
+  const formUrl = document.getElementById('editFormUrl').value.trim() || null
+  const ytId = tipo === 'video' ? (extractYoutubeId(urlRaw) || urlRaw || null) : null
+  const aulaOrdem = parseInt(document.getElementById('editAulaOrdem').value) || 1
+  const moduloSelVal = document.getElementById('editModuloSel').value
+
+  if (!titulo) { toast('O título é obrigatório', 'err'); return }
+  if (!moduloSelVal) { toast('Escolhe um módulo', 'err'); return }
+  if (tipo === 'video' && urlRaw && !extractYoutubeId(urlRaw)) { toast('Link do YouTube inválido', 'err'); return }
+
+  // resolver módulo
+  let moduloOrdem, moduloTitulo, moduloIcone
+  if (moduloSelVal === '__novo__') {
+    const novoTitulo = document.getElementById('editModuloNovo').value.trim()
+    const novoIcone = document.getElementById('editModuloIcone').value.trim() || '📚'
+    if (!novoTitulo) { toast('Escreve o nome do novo módulo', 'err'); return }
+    const maxOrdem = allAulas.length ? Math.max(...allAulas.map(a => a.modulo_ordem)) : 0
+    moduloOrdem = maxOrdem + 1
+    moduloTitulo = novoTitulo.toUpperCase()
+    moduloIcone = novoIcone
+  } else {
+    moduloOrdem = parseInt(moduloSelVal)
+    const sel = document.getElementById('editModuloSel')
+    const opt = sel.options[sel.selectedIndex]
+    moduloTitulo = opt.dataset.titulo
+    moduloIcone = opt.dataset.icone
+  }
+
+  const payload = {
+    aula_titulo: titulo, aula_tipo: tipo, youtube_id: ytId, form_url: formUrl,
+    aula_ordem: aulaOrdem, modulo_ordem: moduloOrdem,
+    modulo_titulo: moduloTitulo, modulo_icone: moduloIcone,
+    updated_at: new Date().toISOString()
+  }
+
+  if (id) {
+    // editar existente
+    const { error } = await sb.from('formacao_aulas').update(payload).eq('id', id)
+    if (error) { toast('Erro: ' + error.message, 'err'); return }
+    const idx = allAulas.findIndex(a => a.id === id)
+    if (idx >= 0) allAulas[idx] = { ...allAulas[idx], ...payload }
+    toast('✓ Aula actualizada!', 'ok')
+  } else {
+    // criar nova
+    const { data, error } = await sb.from('formacao_aulas').insert(payload).select().single()
+    if (error) { toast('Erro: ' + error.message, 'err'); return }
+    allAulas.push(data)
+    toast('✓ Aula criada!', 'ok')
+  }
+
+  closeEdit()
+  await loadAulas() // recarregar lista completa
+}
+
+async function deleteAula() {
+  const id = document.getElementById('editId').value
+  if (!id) return
+  const aula = allAulas.find(a => a.id === id)
+  if (!confirm(`Eliminar a aula "${aula?.aula_titulo}"?\nEsta acção não pode ser desfeita.`)) return
+  const { error } = await sb.from('formacao_aulas').delete().eq('id', id)
+  if (error) { toast('Erro ao eliminar: ' + error.message, 'err'); return }
+  allAulas = allAulas.filter(a => a.id !== id)
+  toast('Aula eliminada', 'ok')
+  closeEdit()
+  showPlaceholder('Seleciona uma aula no menu')
+  document.getElementById('videoInfo').style.display = 'none'
+  await loadAulas()
+}
+
+
+// ── NOTIFICAÇÃO ────────────────────────────────────────────────────
+function toast(msg, type='') {
+  const el = document.getElementById('notif')
+  el.textContent = msg; el.className = 'notif ' + type
+  setTimeout(() => el.classList.add('show'), 10)
+  setTimeout(() => el.classList.remove('show'), 3000)
+}
+
+// fechar modal ao clicar fora
+document.getElementById('editOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('editOverlay')) closeEdit()
+})
+
+// ── QUESTIONÁRIO ──────────────────────────────────────────────────
+// perguntas carregadas do Supabase
+let perguntasDB = []
+
+async function carregarPerguntas() {
+  const { data } = await sb.from('questionario_perguntas')
+    .select('*').order('ordem', { ascending: true })
+  perguntasDB = data || []
+  // se a tabela está vazia, popular com as perguntas originais
+  if (perguntasDB.length === 0 && isAdmin) await seedPerguntas()
+  else if (perguntasDB.length === 0) {
+    // tentar seed mesmo sem ser admin (primeira vez)
+    await seedPerguntas()
+  }
+}
+
+async function seedPerguntas() {
+  const defaults = [
+    { ordem:1,  texto:'Quais as formações obrigatórias que tens que concluir, antes de te serem atribuídos os acessos à plataforma de agência de viagens?', obrigatoria:true },
+    { ordem:2,  texto:'Quais são os documentos (cuja assinatura e/ou validação é indispensável e obrigatória), que o cliente nos deve enviar quando reserva com a APM Viagens?', obrigatoria:true },
+    { ordem:3,  texto:'Em que situações é necessário o contrato de viagem organizada?', obrigatoria:true },
+    { ordem:4,  texto:'As políticas de pagamento e de cancelamento devem estar escritas no contrato de viagem organizada, ou são apenas discutidas com o cliente na altura da reserva?', obrigatoria:true },
+    { ordem:5,  texto:'O que significa RGPD?', obrigatoria:true },
+    { ordem:6,  texto:'O cliente, na altura da reserva, envia uma foto dos seus documentos de identificação — o que devemos fazer?', obrigatoria:false },
+    { ordem:7,  texto:'Podemos manter essas fotografias em nossa posse? E partilhá-las com outras pessoas ou empresas?', obrigatoria:true },
+    { ordem:8,  texto:'Quando temos o consentimento do cliente para tratamento dos seus dados e este nos faculta o seu e-mail e contacto telefónico, podemos enviar-lhe comunicações de marketing?', obrigatoria:true },
+    { ordem:9,  texto:'Relativamente às políticas de pagamentos, até que prazo o cliente pode fazer o pagamento da sua viagem caso esteja a efetuar pagamentos faseados?', obrigatoria:true },
+    { ordem:10, texto:'O cliente pretende reservar uma estadia num hotel e o operador tem apenas disponível uma tarifa não reembolsável — o que significa isto?', obrigatoria:true },
+    { ordem:11, texto:'Quando os clientes pretendem cancelar uma reserva já efetuada, podemos garantir que em todas as situações há devolução do montante pago?', obrigatoria:true },
+    { ordem:12, texto:'Caso a tarifa disponível seja de cancelamento gratuito, implica que o cliente pode cancelar até quando?', obrigatoria:true },
+    { ordem:13, texto:'Devemos efetuar reservas experimentais nas plataformas dos operadores, apenas para saber o valor final das mesmas?', obrigatoria:true },
+    { ordem:14, texto:'Perante uma reserva de pagamento imediato, o cliente deve fazer o pagamento em que prazo?', obrigatoria:true },
+    { ordem:15, texto:'Os clientes fazem as transferências dos valores das reservas para que IBAN? Poderá ser para o dos consultores?', obrigatoria:true },
+    { ordem:16, texto:'Quando fazemos uma reserva, quando devemos informar a APM Viagens acerca da reserva feita e através de que meio?', obrigatoria:false },
+  ]
+  const { data } = await sb.from('questionario_perguntas').insert(defaults).select()
+  if (data) perguntasDB = data
+}
+
+async function renderQuestionario(wrap) {
+  await carregarPerguntas()
+
+  // Admin vê painel de gestão + pré-visualização
+  if (isAdmin) {
+    renderQuestionarioAdmin(wrap)
+    return
+  }
+
+  // Verificar se já submeteu
+  const { data: sub } = await sb.from('questionario_submissoes')
+    .select('*').eq('consultor_id', currentPerfil?.id || '').maybeSingle()
+
+  if (sub) {
+    const estadoClass = sub.estado==='aprovado'?'estado-aprovado':sub.estado==='reprovado'?'estado-reprovado':'estado-pendente'
+    const estadoLabel = sub.estado==='aprovado'?'✓ Aprovado':sub.estado==='reprovado'?'✕ Reprovado':'⏳ Aguarda validação'
+    const estadoIcon  = sub.estado==='aprovado'?'🎉':sub.estado==='reprovado'?'😔':'⏳'
+    const msgPrincipal = sub.estado==='aprovado'
+      ? 'Parabéns! O teu questionário foi validado. Já tens acesso total ao sistema.'
+      : sub.estado==='reprovado'
+      ? 'O teu questionário foi reprovado.' + (sub.notas_admin ? ' Nota do administrador: <em>'+sub.notas_admin+'</em>' : ' Contacta o administrador.')
+      : 'O teu questionário foi submetido e está a aguardar validação. Receberás acesso assim que for aprovado.'
+    wrap.innerHTML = `
+      <div class="quiz-wrap">
+        <div class="quiz-ja-submetido">
+          <div style="font-size:52px;margin-bottom:12px">${estadoIcon}</div>
+          <h3 style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px">${sub.estado==='aprovado'?'Questionário aprovado!':sub.estado==='reprovado'?'Questionário reprovado':'Questionário submetido!'}</h3>
+          <p style="font-size:13px;color:var(--muted);line-height:1.6;max-width:400px;margin:0 auto 16px">${msgPrincipal}</p>
+          <span class="badge-estado ${estadoClass}">${estadoLabel}</span>
+          <div style="font-size:11px;color:var(--muted2);margin-top:10px">Submetido em ${new Date(sub.created_at).toLocaleDateString('pt-PT')} às ${new Date(sub.created_at).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})}</div>
+        </div>
+      </div>`
+    return
+  }
+
+  // Formulário para consultor
+  const perfil = currentPerfil || {}
+  wrap.innerHTML = `
+    <div class="quiz-wrap">
+      <div class="quiz-header">
+        <h2>📋 Questionário de Validação de Conhecimentos</h2>
+        <p>Demonstra que obtiveste as informações necessárias para receberes o acesso à plataforma de reservas</p>
+      </div>
+      <div class="quiz-body">
+        <div class="quiz-section-title">Identificação</div>
+        <div class="quiz-field">
+          <label class="quiz-label">Email <span class="req">*</span></label>
+          <input class="quiz-input" id="qq-email" value="${perfil.email||''}" placeholder="O teu email" ${perfil.email?'readonly':''}>
+        </div>
+        <div class="quiz-field">
+          <label class="quiz-label">Nome <span class="req">*</span></label>
+          <input class="quiz-input" id="qq-nome" value="${perfil.nome||''}" placeholder="O teu nome completo" ${perfil.nome?'readonly':''}>
+        </div>
+        <div class="quiz-field">
+          <label class="quiz-label">Contacto telefónico <span class="req">*</span></label>
+          <input class="quiz-input" id="qq-tel" placeholder="Ex: 912 345 678" type="tel">
+        </div>
+        <div class="quiz-section-title" style="margin-top:8px">Perguntas</div>
+        ${perguntasDB.map((p,i) => `
+          <div class="quiz-field">
+            <label class="quiz-label">${i+1} — ${p.texto}${p.obrigatoria?' <span class="req">*</span>':''}</label>
+            <textarea class="quiz-textarea" id="qq-${p.id}" placeholder="A tua resposta..."></textarea>
+          </div>`).join('')}
+      </div>
+      <div class="quiz-footer">
+        <p class="quiz-note">As respostas serão analisadas pelo administrador. Após validação, receberás acesso completo ao sistema.</p>
+        <button class="btn-submeter" id="btnSubmeter" onclick="submeterQuestionario()">✓ Submeter Questionário</button>
+      </div>
+    </div>`
+}
+
+function renderQuestionarioAdmin(wrap) {
+  wrap.innerHTML = `
+    <div class="quiz-wrap">
+      <div class="quiz-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <h2>📋 Gestão do Questionário</h2>
+          <p>Edita, elimina e adiciona perguntas — os consultores vêem sempre a versão actualizada</p>
+        </div>
+        <button onclick="abrirNovaP()" style="background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.4);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">+ Nova Pergunta</button>
+      </div>
+      <div id="admin-perguntas-lista" style="padding:16px 20px;display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <!-- Modal edição de pergunta -->
+    <div id="pOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;align-items:center;justify-content:center;padding:20px">
+      <div style="background:white;border-radius:14px;padding:26px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+        <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px" id="pModalTitulo">Nova Pergunta</div>
+        <input type="hidden" id="pId">
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Texto da pergunta *</label>
+          <textarea id="pTexto" style="width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;resize:vertical;min-height:90px" placeholder="Escreve aqui a pergunta..."></textarea>
+        </div>
+        <div style="margin-bottom:16px;display:flex;align-items:center;gap:8px">
+          <input type="checkbox" id="pObrig" checked style="width:16px;height:16px;cursor:pointer">
+          <label for="pObrig" style="font-size:13px;cursor:pointer">Pergunta obrigatória</label>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button onclick="fecharPModal()" style="padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Cancelar</button>
+          <button onclick="guardarPergunta()" style="padding:8px 16px;border-radius:8px;border:none;background:var(--coral);color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">💾 Guardar</button>
+        </div>
+      </div>
+    </div>`
+  renderListaPerguntas()
+}
+
+function renderListaPerguntas() {
+  const lista = document.getElementById('admin-perguntas-lista')
+  if (!lista) return
+  if (!perguntasDB.length) {
+    lista.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Sem perguntas ainda. Clica em "+ Nova Pergunta".</div>'
+    return
+  }
+  lista.innerHTML = perguntasDB.map((p, i) => `
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;background:white">
+      <span style="font-size:12px;font-weight:700;color:var(--muted);min-width:22px;padding-top:1px">${i+1}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;line-height:1.5">${p.texto}</div>
+        <div style="font-size:11px;margin-top:4px;color:${p.obrigatoria?'var(--coral)':'var(--muted)'}">${p.obrigatoria?'Obrigatória':'Opcional'}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button onclick="editarP('${p.id}')" style="padding:5px 10px;border-radius:6px;border:1.5px solid var(--border);background:white;font-size:12px;cursor:pointer;color:var(--blue);font-weight:600">✏ Editar</button>
+        <button onclick="eliminarP('${p.id}')" style="padding:5px 10px;border-radius:6px;border:none;background:#fee2e2;font-size:12px;cursor:pointer;color:#dc2626;font-weight:600">🗑</button>
+      </div>
+    </div>`).join('')
+}
+
+function abrirNovaP() {
+  document.getElementById('pModalTitulo').textContent = 'Nova Pergunta'
+  document.getElementById('pId').value = ''
+  document.getElementById('pTexto').value = ''
+  document.getElementById('pObrig').checked = true
+  document.getElementById('pOverlay').style.display = 'flex'
+}
+
+function editarP(id) {
+  const p = perguntasDB.find(x => x.id === id)
+  if (!p) return
+  document.getElementById('pModalTitulo').textContent = 'Editar Pergunta'
+  document.getElementById('pId').value = p.id
+  document.getElementById('pTexto').value = p.texto
+  document.getElementById('pObrig').checked = p.obrigatoria
+  document.getElementById('pOverlay').style.display = 'flex'
+}
+
+function fecharPModal() {
+  document.getElementById('pOverlay').style.display = 'none'
+}
+
+async function guardarPergunta() {
+  const id = document.getElementById('pId').value
+  const texto = document.getElementById('pTexto').value.trim()
+  const obrigatoria = document.getElementById('pObrig').checked
+  if (!texto) { toast('Escreve o texto da pergunta', 'err'); return }
+
+  if (id) {
+    const { error } = await sb.from('questionario_perguntas').update({ texto, obrigatoria }).eq('id', id)
+    if (error) { toast('Erro: ' + error.message, 'err'); return }
+    const idx = perguntasDB.findIndex(p => p.id === id)
+    if (idx >= 0) { perguntasDB[idx].texto = texto; perguntasDB[idx].obrigatoria = obrigatoria }
+  } else {
+    const maxOrdem = perguntasDB.length ? Math.max(...perguntasDB.map(p => p.ordem)) : 0
+    const { data, error } = await sb.from('questionario_perguntas').insert({ texto, obrigatoria, ordem: maxOrdem + 1 }).select().single()
+    if (error) { toast('Erro: ' + error.message, 'err'); return }
+    perguntasDB.push(data)
+  }
+
+  toast('✓ Pergunta guardada!', 'ok')
+  fecharPModal()
+  renderListaPerguntas()
+}
+
+async function eliminarP(id) {
+  if (!confirm('Eliminar esta pergunta?')) return
+  const { error } = await sb.from('questionario_perguntas').delete().eq('id', id)
+  if (error) { toast('Erro ao eliminar', 'err'); return }
+  perguntasDB = perguntasDB.filter(p => p.id !== id)
+  // reordenar
+  for (let i = 0; i < perguntasDB.length; i++) {
+    await sb.from('questionario_perguntas').update({ ordem: i + 1 }).eq('id', perguntasDB[i].id)
+    perguntasDB[i].ordem = i + 1
+  }
+  toast('Pergunta eliminada', 'ok')
+  renderListaPerguntas()
+}
+
+async function submeterQuestionario() {
+  const btn = document.getElementById('btnSubmeter')
+  const email = document.getElementById('qq-email')?.value.trim()
+  const nome  = document.getElementById('qq-nome')?.value.trim()
+  const tel   = document.getElementById('qq-tel')?.value.trim()
+
+  if (!email||!nome||!tel) { toast('Preenche os campos de identificação','err'); return }
+  for (const p of perguntasDB) {
+    if (p.obrigatoria && !document.getElementById('qq-'+p.id)?.value.trim()) {
+      toast('Responde a todas as perguntas obrigatórias (*)','err'); return
+    }
+  }
+
+  btn.disabled = true; btn.textContent = 'A submeter...'
+
+  const respostas = {}
+  perguntasDB.forEach(p => { respostas[p.id] = document.getElementById('qq-'+p.id)?.value.trim()||'' })
+
+  const { error } = await sb.from('questionario_submissoes').insert({
+    consultor_id: currentPerfil?.id,
+    consultor_nome: nome,
+    consultor_email: email,
+    contacto: tel,
+    respostas,
+    estado: 'pendente'
+  })
+
+  if (error) {
+    btn.disabled=false; btn.textContent='✓ Submeter Questionário'
+    toast('Erro: '+error.message,'err'); return
+  }
+
+  const wrap = document.getElementById('videoWrap')
+  wrap.innerHTML = `
+    <div class="quiz-wrap">
+      <div class="quiz-ja-submetido">
+        <div style="font-size:52px;margin-bottom:12px">🎉</div>
+        <h3 style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px">Questionário submetido!</h3>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;max-width:400px;margin:0 auto 16px">O teu questionário foi enviado com sucesso e está a aguardar validação pelo administrador. Receberás acesso completo ao sistema assim que for aprovado.</p>
+        <span class="badge-estado estado-pendente">⏳ Aguarda validação</span>
+      </div>
+    </div>`
+  toast('✓ Questionário submetido!','ok')
+}
+
+init()
+</script>
+</body>
+</html>
