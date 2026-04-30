@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APM Viagens — Formação</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --coral: #E8395A;
+    --blue: #3B5BDB;
+    --blue-dark: #2f4ac2;
+    --bg: #F8F9FC;
+    --card: #FFFFFF;
+    --text: #1a1f36;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --success: #10b981;
+    --amber: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .topbar {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 0 24px; height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .logo { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 18px; color: var(--coral); }
+  .back-btn {
+    color: var(--muted); font-size: 13px; text-decoration: none;
+    padding: 6px 12px; border-radius: 6px; transition: background 0.2s;
+  }
+  .back-btn:hover { background: var(--bg); color: var(--text); }
+
+  .page-header {
+    background: linear-gradient(135deg, #1a1f36 0%, #2d3561 100%);
+    padding: 32px; color: white;
+  }
+  .page-header-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 24px; }
+  .course-thumb {
+    width: 120px; height: 80px; border-radius: 10px; object-fit: cover;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3); flex-shrink: 0;
+  }
+  .course-info h1 { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .course-meta { display: flex; gap: 16px; flex-wrap: wrap; }
+  .course-meta span { font-size: 13px; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 5px; }
+  .progress-bar-wrap { margin-top: 12px; }
+  .progress-bar-bg { background: rgba(255,255,255,0.2); border-radius: 20px; height: 6px; width: 300px; max-width: 100%; }
+  .progress-bar-fill { background: var(--success); border-radius: 20px; height: 6px; width: 0%; transition: width 0.5s; }
+  .progress-label { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+
+  .btn-academy {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--coral); color: white; border: none;
+    padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; text-decoration: none; transition: background 0.2s;
+    font-family: 'Inter', sans-serif; flex-shrink: 0;
+  }
+  .btn-academy:hover { background: #d42f50; }
+
+  .content { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+
+  .chapters-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .chapter-card {
+    background: white; border-radius: 12px; border: 1.5px solid var(--border);
+    overflow: hidden; transition: border-color 0.2s;
+  }
+  .chapter-card:hover { border-color: #c7d2fe; }
+
+  .chapter-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px; cursor: pointer; user-select: none;
+    transition: background 0.15s;
+  }
+  .chapter-header:hover { background: #f9fafb; }
+
+  .chapter-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--blue), #6366f1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .chapter-title { flex: 1; }
+  .chapter-title h3 { font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .chapter-title p { font-size: 12px; color: var(--muted); }
+
+  .chapter-progress { display: flex; align-items: center; gap: 10px; }
+  .chapter-badge {
+    background: #eff3ff; color: var(--blue);
+    font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px;
+  }
+  .chevron {
+    color: var(--muted); transition: transform 0.3s; font-size: 18px;
+  }
+  .chapter-card.open .chevron { transform: rotate(90deg); }
+
+  .lessons-list {
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+  .chapter-card.open .lessons-list { display: block; }
+
+  .lesson-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 20px 12px 70px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer; transition: background 0.15s; text-decoration: none; color: inherit;
+  }
+  .lesson-item:last-child { border-bottom: none; }
+  .lesson-item:hover { background: #f0f4ff; }
+
+  .lesson-type-icon {
+    width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 12px;
+  }
+  .type-video { background: #eff3ff; color: var(--blue); }
+  .type-pdf { background: #fef3c7; color: #92400e; }
+  .type-embedded { background: #f0fdf4; color: #166534; }
+
+  .lesson-name { flex: 1; font-size: 13px; line-height: 1.4; }
+  .lesson-badge {
+    font-size: 10px; color: var(--muted); background: var(--bg);
+    padding: 2px 7px; border-radius: 10px; flex-shrink: 0;
+  }
+
+  .open-btn {
+    font-size: 11px; font-weight: 600; color: var(--blue);
+    background: #eff3ff; border: none; padding: 4px 10px;
+    border-radius: 6px; cursor: pointer; flex-shrink: 0;
+    font-family: 'Inter', sans-serif; transition: background 0.2s;
+  }
+  .open-btn:hover { background: #dbe4ff; }
+
+  .empty { text-align: center; padding: 48px; color: var(--muted); }
+
+  @media(max-width: 768px) {
+    .page-header-inner { flex-direction: column; align-items: flex-start; }
+    .content { padding: 16px; }
+    .lesson-item { padding-left: 20px; }
+    .progress-bar-bg { width: 100%; }
+    .btn-academy { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="logo">APM Viagens</span>
+    <a href="index.html" class="back-btn">← Sistema</a>
+  </div>
+</div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <img class="course-thumb" src="https://ezycourse.b-cdn.net/3064/cmf85suyx01j8ha8zcbt8htdm.png" alt="Formação" onerror="this.style.display='none'">
+    <div class="course-info" style="flex:1">
+      <h1>🎓 Formação Consultores — Agency</h1>
+      <div class="course-meta">
+        <span>📚 9 Módulos</span>
+        <span>🎬 51 Aulas</span>
+        <span>🌐 APM Academy</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+        <div class="progress-label" id="progressLabel">Clica numa aula para começar</div>
+      </div>
+    </div>
+    <a class="btn-academy" href="https://www.apmacademy.pt/dashboard/courses/16077/watch/274413/" target="_blank">
+      🚀 Abrir na Academy
+    </a>
+  </div>
+</div>
+
+<div class="content">
+  <div class="chapters-list" id="chaptersList"></div>
+</div>
+
+<script>
+const COURSE_URL = 'https://www.apmacademy.pt/dashboard/courses/16077/watch/';
+
+const chapters = [
+  {
+    id: 66071, title: 'APM VIAGENS — FORMAÇÃO INICIAL', icon: '🎯',
+    lessons: [
+      { id: 274413, title: 'Vídeo de boas vindas', type: 'video' },
+      { id: 274412, title: 'Regulamento Geral de Proteção de Dados', type: 'video' },
+    ]
+  },
+  {
+    id: 66070, title: 'GESTÃO DE CLIENTES E RESERVAS', icon: '📋',
+    lessons: [
+      { id: 274406, title: 'Plataforma de Reservas', type: 'video' },
+      { id: 274407, title: 'Processo de Reserva', type: 'video' },
+      { id: 274408, title: '1º Email — Envio de Condições Pré Contratuais', type: 'video' },
+      { id: 274409, title: '2º Email — Construção de Contrato de Viagem', type: 'video' },
+      { id: 274410, title: 'IMPORTANTE — Passo a Passo: Antes, durante e pós reserva', type: 'pdf' },
+      { id: 274411, title: 'Registo de Clientes e Reservas', type: 'video' },
+      { id: 274405, title: 'Cálculo de Comissões', type: 'video' },
+    ]
+  },
+  {
+    id: 55299, title: 'FORMAÇÃO GERAL — CONSULTORES', icon: '👥',
+    lessons: [
+      { id: 230517, title: 'Formação 14/10/2024', type: 'video' },
+    ]
+  },
+  {
+    id: 61067, title: 'QUESTIONÁRIO DE VALIDAÇÃO', icon: '✅',
+    lessons: [
+      { id: 253333, title: 'Questionário de Validação de Conhecimentos', type: 'embedded' },
+    ]
+  },
+  {
+    id: 136863, title: 'PLANO DE FORMAÇÃO APM', icon: '📅',
+    lessons: [
+      { id: 588680, title: 'SMYTravel — Cruzeiros', type: 'video' },
+      { id: 588681, title: 'SMYTravel — Escapadinhas e Pacotes', type: 'video' },
+      { id: 592453, title: 'Procedimentos Internos I', type: 'video' },
+      { id: 594642, title: 'APM Viagens — Travelgea', type: 'video' },
+    ]
+  },
+  {
+    id: 69974, title: 'OPERADORES TURÍSTICOS', icon: '🏢',
+    lessons: [
+      { id: 560890, title: 'Newblue + Icarion + Kannak — 20/02/2026', type: 'video' },
+      { id: 290180, title: 'Newblue', type: 'video' },
+      { id: 296458, title: 'Webinar Kannak', type: 'embedded' },
+      { id: 290175, title: 'EgoTravel', type: 'video' },
+      { id: 290179, title: 'Solférias', type: 'video' },
+      { id: 290176, title: 'Soltropico', type: 'video' },
+      { id: 290178, title: 'Leplan', type: 'video' },
+      { id: 290183, title: 'Quadrante', type: 'video' },
+      { id: 290181, title: 'Tempo', type: 'video' },
+      { id: 290186, title: 'Catai', type: 'video' },
+      { id: 290182, title: 'Travelplan', type: 'video' },
+      { id: 290174, title: 'CNTravel', type: 'video' },
+      { id: 290188, title: 'Soltour — Fev 2025', type: 'embedded' },
+      { id: 290177, title: 'InsureBroker', type: 'video' },
+      { id: 290184, title: 'Consolidador Aéreo', type: 'video' },
+      { id: 290185, title: 'OpenTours', type: 'video' },
+      { id: 290187, title: 'SMYTravel — Mercados de Natal', type: 'video' },
+      { id: 296452, title: 'Webinar Flexible Autos (31/10/2024)', type: 'embedded' },
+      { id: 296453, title: 'Webinar CN Travel — Nova Página Reservas e Novos Produtos', type: 'embedded' },
+      { id: 296459, title: 'Webinar Melair Cruzeiros', type: 'embedded' },
+      { id: 489166, title: 'SMYTravel — Passengy 19/11/2025', type: 'video' },
+      { id: 499131, title: '7X7', type: 'video' },
+    ]
+  },
+  {
+    id: 69973, title: 'FORMAÇÃO DESTINOS', icon: '🌍',
+    lessons: [
+      { id: 290171, title: 'Cuidados de Saúde — Consulta do Viajante', type: 'video' },
+      { id: 290168, title: 'Disney — Paris', type: 'video' },
+      { id: 290169, title: 'Cruzeiros', type: 'video' },
+      { id: 290170, title: 'Mercados de Natal', type: 'video' },
+      { id: 290172, title: 'Dubai', type: 'embedded' },
+      { id: 296449, title: 'Webinar Icárion — Especial Safaris', type: 'embedded' },
+      { id: 296454, title: 'Webinar Destino Marrocos', type: 'embedded' },
+      { id: 296455, title: 'Webinar Icárion — Luas de Mel & Luxury', type: 'embedded' },
+      { id: 296456, title: 'Webinar Icárion — Novos Destinos Icárion', type: 'embedded' },
+      { id: 296457, title: 'Webinar Icárion — Sudeste Asiático', type: 'embedded' },
+      { id: 554673, title: 'W2M — Saidia', type: 'video' },
+    ]
+  },
+  {
+    id: 55297, title: 'SEGUROS', icon: '🛡️',
+    lessons: [
+      { id: 230515, title: 'In Sure Broker', type: 'video' },
+    ]
+  },
+  {
+    id: 129462, title: 'EVENTOS APM VIAGENS', icon: '🎪',
+    lessons: [
+      { id: 556530, title: '9º Evento — Resumo', type: 'video' },
+      { id: 561023, title: 'Treino BTL 2026 — 19/02/2026', type: 'video' },
+    ]
+  },
+];
+
+const typeLabels = { video: '▶ Vídeo', pdf: '📄 PDF', embedded: '🔗 Webinar' };
+const typeClasses = { video: 'type-video', pdf: 'type-pdf', embedded: 'type-embedded' };
+const typeIcons = { video: '▶', pdf: '📄', embedded: '🔗' };
+
+function render() {
+  const list = document.getElementById('chaptersList');
+  list.innerHTML = chapters.map((ch, i) => `
+    <div class="chapter-card" id="ch${ch.id}">
+      <div class="chapter-header" onclick="toggleChapter('ch${ch.id}')">
+        <div class="chapter-icon">${ch.icon}</div>
+        <div class="chapter-title">
+          <h3>${ch.title}</h3>
+          <p>${ch.lessons.length} aula${ch.lessons.length !== 1 ? 's' : ''}</p>
+        </div>
+        <div class="chapter-progress">
+          <span class="chapter-badge">${ch.lessons.length}</span>
+          <span class="chevron">›</span>
+        </div>
+      </div>
+      <div class="lessons-list">
+        ${ch.lessons.map(l => `
+          <div class="lesson-item" onclick="openLesson(${l.id})">
+            <div class="lesson-type-icon ${typeClasses[l.type]}">${typeIcons[l.type]}</div>
+            <span class="lesson-name">${l.title}</span>
+            <span class="lesson-badge">${typeLabels[l.type]}</span>
+            <button class="open-btn" onclick="event.stopPropagation();openLesson(${l.id})">Abrir</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  // Abrir primeiro capítulo por defeito
+  document.getElementById('ch' + chapters[0].id).classList.add('open');
+}
+
+function toggleChapter(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function openLesson(lessonId) {
+  window.open(COURSE_URL + lessonId + '/', '_blank');
+}
+
+render();
+</script>
+</body>
+</html>
