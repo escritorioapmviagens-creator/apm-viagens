@@ -4,17 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>APM Viagens — Autorização de Contacto</title>
-
-<!-- Open Graph / WhatsApp link preview -->
-<meta property="og:type" content="website">
-<meta property="og:title" content="APM Viagens — Autorização de Contacto">
-<meta property="og:description" content="Clica para autorizar o contacto do/a teu/tua consultor/a APM Viagens e receberes propostas de viagem personalizadas.">
-<meta property="og:image" content="https://escritorioapmviagens-creator.github.io/apm-viagens/logo_transparent.png">
-<meta property="og:image:width" content="946">
-<meta property="og:image:height" content="592">
-<meta property="og:site_name" content="APM Viagens">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://escritorioapmviagens-creator.github.io/apm-viagens/logo_transparent.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -237,9 +226,9 @@
       <div class="card-sub">Preenche os teus dados. O sistema gera um link personalizado para partilhares com os teus clientes.</div>
 
       <div class="field">
-        <label for="g-nome">O teu nome</label>
+        <label for="g-nome">Nome</label>
         <input type="text" id="g-nome" placeholder="ex. Ana Pereira" autocomplete="name">
-        <div class="field-err" id="g-erro-nome">Por favor indica o teu nome.</div>
+        <div class="field-err" id="g-erro-nome">Por favor introduza o seu nome.</div>
       </div>
       <div class="field">
         <label for="g-tel">O teu número de WhatsApp</label>
@@ -294,14 +283,14 @@
     <div class="card" id="cliente-form">
       <div class="card-title">Autorização de contacto</div>
       <div class="card-sub" id="cli-intro">
-        O/a consultor/a <strong id="cli-consultor-nome"></strong> da APM Viagens gostaria de te contactar para te apresentar propostas de viagem personalizadas.<br><br>
-        Preenche o teu nome e envia a mensagem de autorização pelo WhatsApp.
+        O/a consultor/a <strong id="cli-consultor-nome"></strong> da APM Viagens gostaria de obter autorização para apresentar propostas de viagem personalizadas.<br><br>
+        Por favor preencha o nome e envie a mensagem de autorização pelo WhatsApp.
       </div>
 
       <div class="field">
-        <label for="cli-nome">O teu nome</label>
+        <label for="cli-nome">Nome</label>
         <input type="text" id="cli-nome" placeholder="ex. João Silva" autocomplete="name">
-        <div class="field-err" id="cli-erro-nome">Por favor indica o teu nome.</div>
+        <div class="field-err" id="cli-erro-nome">Por favor indique o seu nome.</div>
       </div>
 
       <div class="info-box">
@@ -456,8 +445,8 @@
 
     const mensagem =
       `Olá ${nConsultor}! 👋\n\n` +
-      `O meu nome é ${nome} e venho por este meio autorizar que me contactes ` +
-      `para me apresentares propostas e informações sobre viagens e serviços turísticos da APM Viagens.\n\n` +
+      `O meu nome é ${nome} e venho por este meio autorizar que me contactem ` +
+      `para receber propostas e informações sobre viagens e serviços turísticos da APM Viagens.\n\n` +
       `Estou ciente de que posso revogar esta autorização a qualquer momento.\n\n` +
       `${nome}`
 
