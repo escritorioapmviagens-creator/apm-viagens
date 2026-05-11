@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APM Viagens — Contrato de Serviço de Viagem</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<meta property="og:title" content="APM Viagens — Contrato de Serviço de Viagem">
+<meta property="og:description" content="Leia e aceite o seu contrato de serviço de viagem com a APM Viagens.">
+<meta property="og:image" content="https://escritorioapmviagens-creator.github.io/apm-viagens/logo_transparent.png">
+<style>
+:root{
+  --coral:#E8395A;--coral-light:#fdedf0;--blue:#3B5BDB;--blue-light:#eef1fb;
+  --dark:#111318;--text:#1f2937;--mid:#4b5563;--muted:#9ca3af;
+  --border:#e5e7eb;--bg:#f8f9fc;--white:#fff;
+  --radius:16px;--radius-sm:10px;
+  --font:'Plus Jakarta Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);min-height:100vh;padding:2rem 1rem;color:var(--text)}
+.wrapper{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:1.25rem}
+.logo{display:flex;align-items:center;justify-content:center;margin-bottom:.5rem}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;box-shadow:0 2px 16px rgba(0,0,0,.05)}
+.card-title{font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:.75rem;letter-spacing:-.01em}
+.badge{display:inline-flex;align-items:center;gap:6px;background:var(--coral-light);color:var(--coral);font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:1rem}
+.info-row{display:flex;gap:8px;margin-bottom:.5rem;font-size:.875rem}
+.info-label{font-weight:600;color:var(--mid);min-width:130px;flex-shrink:0}
+.info-value{color:var(--text)}
+.secao{background:var(--bg);border-radius:var(--radius-sm);padding:1rem 1.25rem;margin-bottom:1rem}
+.secao-titulo{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem}
+.contrato-texto{font-size:.85rem;line-height:1.75;color:var(--text);white-space:pre-wrap;max-height:320px;overflow-y:auto;padding-right:4px}
+.contrato-texto::-webkit-scrollbar{width:4px}
+.contrato-texto::-webkit-scrollbar-track{background:var(--bg)}
+.contrato-texto::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.check-area{display:flex;align-items:flex-start;gap:12px;padding:1rem;background:var(--coral-light);border:1.5px solid rgba(232,57,90,.2);border-radius:var(--radius-sm);margin-bottom:1.25rem;cursor:pointer}
+.check-area input{margin-top:3px;accent-color:var(--coral);width:18px;height:18px;flex-shrink:0;cursor:pointer}
+.check-area label{font-size:.875rem;color:var(--text);line-height:1.6;cursor:pointer;font-weight:500}
+.btn{padding:.8rem 1.5rem;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:.9rem;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.01em;width:100%}
+.btn-coral{background:linear-gradient(135deg,var(--coral),#d42d4e);color:#fff;box-shadow:0 4px 14px rgba(232,57,90,.3)}
+.btn-coral:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,57,90,.4)}
+.btn-coral:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-wa{display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#25D366,#1aab52);color:#fff;box-shadow:0 4px 14px rgba(37,211,102,.28);text-decoration:none;border-radius:var(--radius-sm);padding:.8rem 1.5rem;font-family:var(--font);font-size:.9rem;font-weight:700;margin-bottom:.75rem}
+.divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
+.docs-lista a{display:flex;align-items:center;gap:8px;padding:.6rem 0;font-size:.85rem;color:var(--blue);text-decoration:none;border-bottom:1px solid var(--border)}
+.docs-lista a:hover{text-decoration:underline}
+.hidden{display:none!important}
+.footer{text-align:center;font-size:.7rem;color:var(--muted);margin-top:1rem}
+.doc-item{border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:.75rem;overflow:hidden}
+.doc-header{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1rem;cursor:pointer;background:var(--bg);transition:background .15s}
+.doc-header:hover{background:#f0f2f8}
+.doc-arrow{font-size:.75rem;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.doc-arrow.open{transform:rotate(180deg)}
+.doc-texto{padding:1rem;font-size:.78rem;line-height:1.7;color:var(--text);white-space:pre-wrap;max-height:320px;overflow-y:auto;border-top:1px solid var(--border);background:var(--white)}
+.doc-texto::-webkit-scrollbar{width:4px}
+.doc-texto::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:up .35s ease both}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="logo">
+    <img src="logo_transparent.png" alt="APM Viagens" style="height:80px;width:auto;object-fit:contain">
+  </div>
+
+  <!-- ESTADO: a carregar -->
+  <div id="estado-loading" class="card" style="text-align:center;padding:2.5rem">
+    <div style="font-size:2rem;margin-bottom:1rem">⏳</div>
+    <div style="font-weight:600;color:var(--mid)">A carregar contrato...</div>
+  </div>
+
+  <!-- ESTADO: erro -->
+  <div id="estado-erro" class="card hidden" style="text-align:center;padding:2.5rem">
+    <div style="font-size:2.5rem;margin-bottom:1rem">⚠️</div>
+    <div class="card-title">Link inválido</div>
+    <p style="font-size:.85rem;color:var(--mid);margin-top:.5rem">Este link não é válido ou já expirou. Solicite um novo link ao seu consultor.</p>
+  </div>
+
+  <!-- ESTADO: já aceite -->
+  <div id="estado-aceite" class="card hidden" style="text-align:center;padding:2.5rem">
+    <div style="font-size:3rem;margin-bottom:1rem">✅</div>
+    <div class="card-title" style="font-size:1.2rem">Contrato já aceite!</div>
+    <p style="font-size:.85rem;color:var(--mid);margin-top:.5rem;line-height:1.6">Este contrato já foi aceite anteriormente. A sua reserva está registada.</p>
+  </div>
+
+  <!-- CONTRATO -->
+  <div id="estado-contrato" class="hidden">
+
+    <div class="card">
+      <div class="badge">✈ Contrato de Servico de Viagem</div>
+      <div class="card-title">Detalhes da sua viagem</div>
+
+      <div class="secao">
+        <div class="secao-titulo">Dados da viagem</div>
+        <div class="info-row"><span class="info-label">Cliente</span><span class="info-value" id="c-cliente">—</span></div>
+        <div class="info-row"><span class="info-label">Destino</span><span class="info-value" id="c-destino">—</span></div>
+        <div class="info-row"><span class="info-label">Data de partida</span><span class="info-value" id="c-partida">—</span></div>
+        <div class="info-row"><span class="info-label">Data de regresso</span><span class="info-value" id="c-regresso">—</span></div>
+        <div class="info-row"><span class="info-label">Nº de pessoas</span><span class="info-value" id="c-pessoas">—</span></div>
+        <div class="info-row"><span class="info-label">Preco total</span><span class="info-value" id="c-preco">—</span></div>
+      </div>
+
+      <div class="secao">
+        <div class="secao-titulo">Consultor responsavel</div>
+        <div class="info-row"><span class="info-label">Nome</span><span class="info-value" id="c-consultor">—</span></div>
+      </div>
+
+      <div class="secao" id="secao-condpag" style="display:none">
+        <div class="secao-titulo">Condicoes de pagamento</div>
+        <div class="contrato-texto" id="c-condpag"></div>
+      </div>
+
+      <div class="secao" id="secao-cancel" style="display:none">
+        <div class="secao-titulo">Politica de cancelamento</div>
+        <div class="contrato-texto" id="c-cancel"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Documentos legais</div>
+      <p style="font-size:.85rem;color:var(--mid);margin-bottom:1.25rem;line-height:1.6">Deve ler e aceitar cada um dos documentos abaixo antes de prosseguir.</p>
+
+      <!-- DOC 1: RGPD -->
+      <div class="doc-item" id="doc-rgpd">
+        <div class="doc-header" onclick="toggleDoc('rgpd')">
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" id="chk-rgpd" onclick="event.stopPropagation()" onchange="updateBtnAceitar()" style="accent-color:var(--coral);width:18px;height:18px;cursor:pointer;flex-shrink:0">
+            <span style="font-size:.875rem;font-weight:600">Politica de Protecao de Dados (RGPD)</span>
+          </div>
+          <span class="doc-arrow" id="arrow-rgpd">▼</span>
+        </div>
+        <div class="doc-texto hidden" id="texto-rgpd"></div>
+      </div>
+
+      <!-- DOC 2: Condições Gerais -->
+      <div class="doc-item" id="doc-cgr">
+        <div class="doc-header" onclick="toggleDoc('cgr')">
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" id="chk-cgr" onclick="event.stopPropagation()" onchange="updateBtnAceitar()" style="accent-color:var(--coral);width:18px;height:18px;cursor:pointer;flex-shrink:0">
+            <span style="font-size:.875rem;font-weight:600">Condicoes Gerais de Reserva</span>
+          </div>
+          <span class="doc-arrow" id="arrow-cgr">▼</span>
+        </div>
+        <div class="doc-texto hidden" id="texto-cgr"></div>
+      </div>
+
+      <!-- DOC 3: Ficha Normalizada -->
+      <div class="doc-item" id="doc-fin">
+        <div class="doc-header" onclick="toggleDoc('fin')">
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" id="chk-fin" onclick="event.stopPropagation()" onchange="updateBtnAceitar()" style="accent-color:var(--coral);width:18px;height:18px;cursor:pointer;flex-shrink:0">
+            <span style="font-size:.875rem;font-weight:600">Ficha de Informacao Normalizada</span>
+          </div>
+          <span class="doc-arrow" id="arrow-fin">▼</span>
+        </div>
+        <div class="doc-texto hidden" id="texto-fin"></div>
+      </div>
+
+      <p style="font-size:.75rem;color:var(--muted);margin-top:1rem;line-height:1.5">Clique na seta para expandir cada documento. Marque a checkbox para confirmar que leu e aceita.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Aceitar contrato</div>
+      <div id="err-docs" class="hidden" style="font-size:.78rem;color:var(--coral);margin-bottom:.75rem;padding:.5rem .75rem;background:var(--coral-light);border-radius:var(--radius-sm)">Por favor leia e aceite todos os documentos acima antes de prosseguir.</div>
+      <button class="btn btn-coral" id="btn-aceitar" onclick="aceitarContrato()" disabled>Li, concordo e aceito todos os termos</button>
+    </div>
+
+  </div>
+
+  <!-- SUCESSO -->
+  <div id="estado-sucesso" class="hidden">
+    <div class="card" style="text-align:center;padding:2rem">
+      <div style="font-size:3.5rem;margin-bottom:1rem">🎉</div>
+      <div class="card-title" style="font-size:1.2rem;margin-bottom:.75rem">Contrato aceite com sucesso!</div>
+      <p style="font-size:.875rem;color:var(--mid);line-height:1.7;margin-bottom:1.5rem">
+        A sua reserva para <strong id="suc-destino"></strong> foi criada e o seu consultor <strong id="suc-consultor"></strong> irá confirmar em breve.
+      </p>
+      <hr class="divider">
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:1.25rem">O WhatsApp abriu automaticamente. Se nao abriu, clique abaixo:</p>
+      <a id="suc-wa" href="#" target="_blank" class="btn-wa">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="white"><path d="M16 1C7.716 1 1 7.716 1 16c0 2.628.668 5.098 1.838 7.258L1 31l8.02-1.806A14.94 14.94 0 0016 31c8.284 0 15-6.716 15-15S24.284 1 16 1zm0 27.5a12.45 12.45 0 01-6.35-1.74l-.456-.272-4.762 1.072 1.12-4.634-.296-.476A12.46 12.46 0 013.5 16C3.5 9.096 9.096 3.5 16 3.5S28.5 9.096 28.5 16 22.904 28.5 16 28.5zm6.84-9.3c-.374-.188-2.214-1.094-2.558-1.218-.344-.126-.594-.188-.844.188s-.968 1.218-1.188 1.47c-.218.25-.438.28-.812.094-.374-.188-1.578-.582-3.006-1.856-1.11-.99-1.86-2.212-2.078-2.586-.218-.374-.024-.576.164-.762.168-.166.374-.438.562-.656.188-.218.25-.374.374-.624.126-.25.062-.468-.032-.656-.094-.188-.844-2.032-1.156-2.782-.304-.73-.614-.63-.844-.642l-.718-.012c-.25 0-.656.094-.998.468S8.5 12.032 8.5 13.876c0 1.844 1.344 3.626 1.532 3.876.188.25 2.644 4.038 6.408 5.664.896.386 1.596.616 2.14.788.898.286 1.716.246 2.362.15.72-.108 2.214-.906 2.528-1.782.312-.876.312-1.626.218-1.782-.092-.156-.342-.25-.716-.438z"/></svg>
+        Notificar consultor pelo WhatsApp
+      </a>
+    </div>
+  </div>
+
+  <div class="footer">APM Viagens · RNAVT 12286 · NIPC 518357490</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPA_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY)
+
+let dadosContrato = null
+let contratoId = null
+
+function show(id) {
+  ['estado-loading','estado-erro','estado-aceite','estado-contrato','estado-sucesso']
+    .forEach(s => document.getElementById(s)?.classList.add('hidden'))
+  document.getElementById(id)?.classList.remove('hidden')
+}
+
+function fmtDate(d) {
+  if (!d) return '—'
+  try { return new Date(d + 'T12:00:00').toLocaleDateString('pt-PT', {day:'2-digit',month:'long',year:'numeric'}) } catch(e) { return d }
+}
+
+function preencherUI(d) {
+  document.getElementById('c-cliente').textContent = d.cli || '—'
+  document.getElementById('c-destino').textContent = d.destino || '—'
+  document.getElementById('c-partida').textContent = fmtDate(d.partida)
+  document.getElementById('c-regresso').textContent = fmtDate(d.regresso)
+  document.getElementById('c-pessoas').textContent = d.pessoas || '—'
+  document.getElementById('c-preco').textContent = d.preco ? d.preco + ' €' : '—'
+  document.getElementById('c-consultor').textContent = d.consultor || '—'
+  if (d.condPag) {
+    document.getElementById('c-condpag').textContent = d.condPag
+    document.getElementById('secao-condpag').style.display = 'block'
+  }
+  if (d.cancel) {
+    document.getElementById('c-cancel').textContent = d.cancel
+    document.getElementById('secao-cancel').style.display = 'block'
+  }
+}
+
+async function init() {
+  const params = new URLSearchParams(window.location.search)
+  const id = params.get('id')
+  if (!id) { show('estado-erro'); return }
+
+  try {
+    const { data: contrato, error } = await sb
+      .from('contratos_pendentes')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error || !contrato) { show('estado-erro'); return }
+
+    contratoId = contrato.id
+    dadosContrato = contrato.dados
+
+    if (contrato.aceite) { show('estado-aceite'); return }
+
+    preencherUI(dadosContrato)
+    show('estado-contrato')
+  } catch(e) { show('estado-erro'); return }
+}
+
+
+
+// ── TEXTOS DOS DOCUMENTOS ────────────────────────────────────────────────────
+
+const DOC_RGPD = `CONSENTIMENTO DE TRATAMENTO DE DADOS PESSOAIS
+
+A presente declaração constitui título bastante para conferir autorização para o tratamento dos meus dados pessoais no âmbito de reserva de serviços por mim solicitados.
+
+APM Viagens - ANDAR NAS PRAIAS DO MUNDO, LDA, pessoa coletiva Número 518357490 com sede na Rua Vasco Santana Nº18 3º Dto 2675-629 Odivelas, detentora da marca "APM Viagens" e titular do Registo Nacional de Agências de Viagens e Turismo (RNAVT) Nº 12286, compromete-se a:
+
+a) Proteger os dados pessoais por intermédio de medidas de segurança, legalmente exigíveis, de natureza técnica e organizacional, que garantam a sua segurança, evitando assim a sua alteração, perda, tratamento ou acesso não autorizado;
+b) Utilizar ou aplicar os dados exclusivamente com as finalidades devidamente previstas;
+c) Assegurar que os dados são utilizados unicamente para a prestação do serviço, estando os mesmos obrigados ao dever de sigilo e confidencialidade;
+d) Proceder à eliminação de todos os meus dados pessoais, assim que os mesmos deixem de ser necessários para a finalidade para a qual foram recolhidos.
+
+Mais declaro, nos termos e para os efeitos do disposto no Regulamento Geral de Proteção de Dados, RGPD, ter tomado conhecimento dos seguintes direitos que me assistem relativamente aos meus dados pessoais:
+
+a) Retirar o meu consentimento relativamente ao seu tratamento;
+b) Opor-me à continuação do seu tratamento;
+c) Solicitar o acesso, retificação ou eliminação (incluindo o direito ao esquecimento);
+d) Solicitar a sua portabilidade.
+
+Declaro para os efeitos previstos no Regulamento Geral de Proteção de Dados (UE)2016/679 que autorizo a APM Viagens a efetuar o tratamento dos meus dados pessoais para a finalidade para que foram recolhidos – reserva de produtos/serviços turísticos.`
+
+const DOC_CGR = `APM VIAGENS - CONDIÇÕES GERAIS DE RESERVA
+
+1. OBJETO
+
+1.1. As presentes Condições Gerais contratuais destinam-se a estabelecer os termos e condições por que se regerá a prestação dos serviços de viagens organizadas pela agência de viagens APM Viagens - ANDAR NAS PRAIAS DO MUNDO, LDA, NIPC 518357490, RNAVT Nº 12286.
+
+1.2. Os termos constantes das Condições Particulares, caso existam, prevalecem sobre o disposto nas presentes Condições Gerais.
+
+1.3. Ao contratar com a AGÊNCIA o Cliente reconhece e aceita todos os termos e condições estabelecidos.
+
+2. INSCRIÇÕES
+
+2.1. No ato de inscrição e reserva o cliente deverá efetuar o pagamento de 100% do total do serviço a contratar.
+
+2.2. Caso resulte de programa combinado de operador turístico, deverá ser efetuado um pagamento de 25% do preço, liquidando os restantes 75% até 21 dias antes do início da viagem.
+
+2.3. A AGÊNCIA reserva-se o direito de anular as reservas cujo pagamento não tenha sido efetuado nas condições acordadas.
+
+4. TAXAS E DESPESAS
+
+4.6. Por cada alteração são cobrados 25€ a título de despesas de alterações.
+
+6. ALTERAÇÕES DE PREÇO
+
+6.1. A AGÊNCIA reserva-se ao direito de, até 20 dias antes da data da viagem, alterar o preço em função das variações no custo dos transportes, combustível, impostos ou flutuações cambiais.
+
+13. SEGURO
+
+A AGÊNCIA disponibiliza a venda de seguros que poderão ser adquiridos em função da viagem.
+
+17. DESISTÊNCIA
+
+O cliente poderá desistir da viagem a todo o momento, mediante comunicação escrita. O cliente terá direito à devolução das quantias pagas deduzidas dos gastos de gestão, cancelamento e passagens aéreas não reembolsáveis.
+
+18. RECLAMAÇÕES
+
+18.1. Qualquer desconformidade deve ser comunicada por escrito logo que ocorra.
+18.2. O direito a apresentar reclamações prescreve no prazo de 2 anos.
+
+22. LIMITES DE RESPONSABILIDADE
+
+A responsabilidade da AGÊNCIA tem como limite o montante máximo exigível às entidades prestadoras dos serviços, nos termos da Convenção de Montreal e da Convenção de Berna.
+
+23. RESPONSABILIDADE
+
+A responsabilidade da AGÊNCIA encontra-se garantida por seguro de responsabilidade civil na Tranquilidade, apólice n° 009795498, no montante de 75.000€, tendo ainda contribuído para o Fundo de Garantia de Viagens e Turismo.
+
+Resolução Alternativa de Litígios:
+Centro de Arbitragem de Conflitos de Consumo de Lisboa
+Rua dos Douradores, 116, 2º - 1100-207 Lisboa
+Tel: +351 218 807 030 | juridico@centroarbitragemlisboa.pt
+
+APM Viagens - Rua Vasco Santana Nº 18 3º Dto, 2675-629 Odivelas | NIF 518357490 | RNAVT 12286`
+
+const DOC_FIN = `FICHA INFORMATIVA NORMALIZADA
+
+Os pacotes turísticos constituem uma viagem organizada nos termos do Decreto-Lei n.º 17/2018. O cliente beneficiará de todos os direitos da UE aplicáveis às viagens organizadas, sendo a APM Viagens responsável pela sua execução.
+
+DIREITOS ESSENCIAIS (Decreto-Lei nº 17/2018 de 8 de Março):
+
+1) Os viajantes receberão todas as informações essenciais sobre a viagem organizada antes de celebrarem o respetivo contrato.
+
+2) Há sempre pelo menos um operador responsável pela correta execução de todos os serviços de viagem incluídos no contrato.
+
+3) Os viajantes dispõem de um número de telefone de emergência para poderem comunicar com o organizador.
+
+4) O organizador tem de prestar assistência se um viajante estiver em dificuldades.
+
+5) Os viajantes podem ceder a viagem organizada a outra pessoa, respeitando as condições definidas nas Condições Gerais.
+
+6) Os viajantes podem rescindir o contrato a qualquer momento antes do início da viagem, respeitando as Condições de Cancelamento definidas nas Condições Gerais.
+
+7) Em caso de alteração significativa de algum elemento essencial da viagem, os viajantes podem rescindir o contrato sem pagar taxa de rescisão e obter reembolso integral.
+
+8) Em caso de circunstâncias excecionais (ex: graves problemas de segurança no destino), os viajantes podem rescindir sem taxa de rescisão.
+
+9) O preço só pode ser aumentado em caso de aumento de custos específicos, até 20 dias antes do início da viagem. Se o aumento for superior a 8%, o viajante pode rescindir o contrato.
+
+10) Se após o início da viagem não for possível prestar elementos significativos, terão de ser propostas alternativas adequadas sem custos suplementares.
+
+11) Os viajantes têm direito a redução do preço e/ou indemnização por danos em caso de incumprimento.
+
+12) Se o organizador for declarado insolvente, os pagamentos serão reembolsados.
+
+A APM Viagens subscreveu proteção com o Fundo de Garantia de Viagens e Turismo:
+Turismo de Portugal, I.P. | Rua Ivone Silva, lote 6 | 1050-124 Lisboa
+Tel. 211 140 200 | info@turismodeportugal.pt
+
+APM VIAGENS ANDAR NAS PRAIAS DO MUNDO | NIF 518357490 | RNAVT 12286
+Rua Vasco Santana, Nº 18 3ºDto, 2675-629 Odivelas
+Actualizado em 02 de Fevereiro de 2025`
+
+// ── FUNÇÕES DOS DOCUMENTOS ───────────────────────────────────────────────────
+
+function toggleDoc(id) {
+  const texto = document.getElementById('texto-' + id)
+  const arrow = document.getElementById('arrow-' + id)
+  const isHidden = texto.classList.contains('hidden')
+
+  if (isHidden) {
+    // Populate text on first open
+    if (!texto.textContent) {
+      if (id === 'rgpd') texto.textContent = DOC_RGPD
+      if (id === 'cgr') texto.textContent = DOC_CGR
+      if (id === 'fin') texto.textContent = DOC_FIN
+    }
+    texto.classList.remove('hidden')
+    arrow.classList.add('open')
+  } else {
+    texto.classList.add('hidden')
+    arrow.classList.remove('open')
+  }
+}
+
+function updateBtnAceitar() {
+  const rgpd = document.getElementById('chk-rgpd')?.checked
+  const cgr = document.getElementById('chk-cgr')?.checked
+  const fin = document.getElementById('chk-fin')?.checked
+  const allChecked = rgpd && cgr && fin
+  document.getElementById('btn-aceitar').disabled = !allChecked
+  if (allChecked) document.getElementById('err-docs')?.classList.add('hidden')
+}
+
+function toggleAceito() {
+  // kept for compatibility - not used in new flow
+}
+
+
+
+async function aceitarContrato() {
+  const rgpd = document.getElementById('chk-rgpd')?.checked
+  const cgr = document.getElementById('chk-cgr')?.checked
+  const fin = document.getElementById('chk-fin')?.checked
+  if (!rgpd || !cgr || !fin) {
+    document.getElementById('err-docs').classList.remove('hidden')
+    return
+  }
+
+  const btn = document.getElementById('btn-aceitar')
+  btn.disabled = true
+  btn.textContent = 'A registar...'
+
+  const d = dadosContrato
+
+  try {
+    // 1. Criar ou encontrar cliente
+    let clienteId = null
+    if (d.tel) {
+      const { data: existingCli } = await sb.from('clientes').select('id').eq('telefone', d.tel).maybeSingle()
+      if (existingCli) {
+        clienteId = existingCli.id
+      }
+    }
+    if (!clienteId) {
+      const { data: nc } = await sb.from('clientes').insert({
+        nome: d.cli, telefone: d.tel || null, nif: d.nif || null
+      }).select('id').single()
+      clienteId = nc?.id
+    }
+
+    // 2. Encontrar consultor pelo email
+    let consultorId = null
+    if (d.emailConsultor) {
+      const { data: perfil } = await sb.from('perfis').select('id').eq('email', d.emailConsultor).maybeSingle()
+      consultorId = perfil?.id
+    }
+
+    // 3. Gerar código da reserva
+    const year = new Date().getFullYear()
+    const month = String(new Date().getMonth() + 1).padStart(2, '0')
+    const yearMonth = year + month
+    const { data: lastRsv } = await sb.from('reservas').select('rnavt').ilike('rnavt', yearMonth + '%').order('rnavt', {ascending: false}).limit(1)
+    let nextNum = 1
+    if (lastRsv?.length > 0) nextNum = (parseInt(lastRsv[0].rnavt.replace(yearMonth, '')) || 0) + 1
+    const rnavt = yearMonth + String(nextNum).padStart(3, '0')
+
+    // 4. Criar reserva
+    const { error } = await sb.from('reservas').insert({
+      rnavt,
+      consultor_id: consultorId,
+      cliente_id: clienteId,
+      destino: d.destino,
+      tipo_servico: d.tipoServico || 'Viagem organizada',
+      data_partida: d.partida || null,
+      data_regresso: d.regresso || null,
+      num_passageiros: parseInt(d.pessoas) || 1,
+      valor_total: parseFloat(d.preco) || 0,
+      estado: 'Pendente',
+      observacoes: 'Contrato aceite pelo cliente via link. Aguarda validacao do consultor.'
+    })
+
+    if (error) throw error
+
+    // 5. Marcar contrato como aceite no Supabase com timestamp e docs aceites
+    await sb.from('contratos_pendentes').update({
+      aceite: true,
+      aceite_em: new Date().toISOString(),
+      aceite_docs: {
+        rgpd: { aceite: true, nome: 'Politica de Protecao de Dados (RGPD)' },
+        condicoes_gerais: { aceite: true, nome: 'Condicoes Gerais de Reserva' },
+        ficha_normalizada: { aceite: true, nome: 'Ficha de Informacao Normalizada' }
+      }
+    }).eq('id', contratoId)
+
+    // 6. Mostrar sucesso e notificar consultor por WhatsApp
+    document.getElementById('suc-destino').textContent = d.destino
+    document.getElementById('suc-consultor').textContent = d.consultor || 'APM Viagens'
+
+    const msgConsultor = `Ola ${d.consultor || 'Consultor'}!\n\nO cliente ${d.cli} aceitou o contrato de servico de viagem para ${d.destino}.\n\nReserva criada: ${rnavt}\nData de partida: ${d.partida ? new Date(d.partida+'T12:00:00').toLocaleDateString('pt-PT') : 'a definir'}\nValor: ${d.preco} EUR\n\nPor favor valide a reserva no sistema APM Viagens.`
+
+    const telConsultor = (d.telConsultor || '').replace(/\D/g, '')
+    const waHref = telConsultor
+      ? `https://wa.me/${telConsultor}?text=${encodeURIComponent(msgConsultor)}`
+      : `https://wa.me/?text=${encodeURIComponent(msgConsultor)}`
+
+    document.getElementById('suc-wa').href = waHref
+    setTimeout(() => { window.open(waHref, '_blank') }, 800)
+
+    show('estado-sucesso')
+
+  } catch(e) {
+    console.error(e)
+    btn.disabled = false
+    btn.textContent = 'Li, concordo e aceito'
+    alert('Erro ao registar. Por favor tente novamente ou contacte o seu consultor.')
+  }
+}
+
+init()
+</script>
+</body>
+</html>
