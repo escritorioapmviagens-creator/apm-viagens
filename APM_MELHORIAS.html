@@ -1,0 +1,302 @@
+<!--
+=================================================================
+APM VIAGENS — MELHORIAS v2
+=================================================================
+INSTRUÇÕES:
+1. Abre o teu index.html no GitHub (Edit)
+2. Faz cada uma das 4 alterações abaixo
+3. Commit changes
+=================================================================
+-->
+
+
+<!-- ============================================================
+     ALTERAÇÃO 1 de 4 — BUG FIX (1 linha)
+     
+     Procura esta linha (está dentro da função aprovarPedido):
+         tipo: 'comprovativo_pagamento',
+     
+     Substitui por:
+         tipo: 'pagamento_cliente',
+     ============================================================ -->
+
+
+<!-- ============================================================
+     ALTERAÇÃO 2 de 4 — LINK "ESQUECI A PALAVRA-PASSE"
+     
+     Procura:
+         >Esqueci a palavra-passe</a>
+     
+     Substitui por:
+         onclick="openPasswordRecovery()">Esqueci a palavra-passe</a>
+     ============================================================ -->
+
+
+<!-- ============================================================
+     ALTERAÇÃO 3 de 4 — SIDEBAR: botão Referência
+     
+     Procura:
+         <div style="margin-top:10px"><button class="btn btn-outline btn-sm" style="width:100%;justify-content:center" onclick="doLogout()">Sair</button></div>
+     
+     Substitui por:
+         <div style="margin-top:10px;display:flex;gap:6px"><button class="btn btn-outline btn-sm" style="flex:1;justify-content:center;font-size:11px" onclick="abrirModalReferrals()">🎁 Ref.</button><button class="btn btn-outline btn-sm" style="flex:1;justify-content:center" onclick="doLogout()">Sair</button></div>
+     ============================================================ -->
+
+
+<!-- ============================================================
+     ALTERAÇÃO 4 de 4 — COLAR ANTES DE </body>
+     
+     Procura a linha:   <div class="toast" id="toast"></div>
+     Cola ANTES dela todo o bloco HTML + SCRIPT abaixo:
+     ============================================================ -->
+
+
+<!-- MODAL: Recuperar palavra-passe -->
+<div class="overlay" id="modal-pw-recovery">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-hdr">
+      <span class="modal-title">Recuperar palavra-passe</span>
+      <button class="modal-x" onclick="closeModal('modal-pw-recovery')">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem">Introduz o teu e-mail e enviaremos um link para redefinires a palavra-passe.</p>
+    <div class="fgroup" style="margin-bottom:12px">
+      <label class="flabel">E-mail</label>
+      <input class="finput" type="email" id="pw-recovery-email" placeholder="consultor@apmviagens.pt">
+    </div>
+    <div id="pw-recovery-err" style="display:none;color:#C62828;font-size:12px;padding:8px 12px;background:#FFEBEE;border-radius:6px;margin-bottom:10px;font-weight:600"></div>
+    <div id="pw-recovery-msg" style="display:none;color:#15803d;font-size:12px;padding:10px 12px;background:#E8F5E9;border-radius:6px;margin-bottom:10px;font-weight:600">
+      ✓ Link enviado! Verifica o teu e-mail (incluindo spam).
+    </div>
+    <button class="btn btn-coral" style="width:100%;justify-content:center" id="btn-pw-recovery" onclick="sendPasswordRecovery()">
+      Enviar link de recuperação
+    </button>
+  </div>
+</div>
+
+<!-- MODAL: Definir nova palavra-passe (após redirect) -->
+<div class="overlay" id="modal-pw-new">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-hdr">
+      <span class="modal-title">Nova palavra-passe</span>
+    </div>
+    <div class="fgroup" style="margin-bottom:12px">
+      <label class="flabel">Nova palavra-passe</label>
+      <input class="finput" type="password" id="pw-new-1" placeholder="Mínimo 8 caracteres">
+    </div>
+    <div class="fgroup" style="margin-bottom:14px">
+      <label class="flabel">Confirmar</label>
+      <input class="finput" type="password" id="pw-new-2" placeholder="Repetir">
+    </div>
+    <div id="pw-new-err" style="display:none;color:#C62828;font-size:12px;padding:8px 12px;background:#FFEBEE;border-radius:6px;margin-bottom:10px;font-weight:600"></div>
+    <button class="btn btn-coral" style="width:100%;justify-content:center" onclick="saveNewPassword()">
+      Guardar nova palavra-passe
+    </button>
+  </div>
+</div>
+
+<!-- MODAL: Programa de referências -->
+<div class="overlay" id="modal-referrals">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-hdr">
+      <span class="modal-title">🎁 Programa de referência</span>
+      <button class="modal-x" onclick="closeModal('modal-referrals')">✕</button>
+    </div>
+    <div style="background:linear-gradient(135deg,var(--coral),var(--coral2));border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem;color:#fff;display:flex;align-items:center;gap:14px">
+      <div style="font-size:36px">💰</div>
+      <div>
+        <div style="font-size:12px;font-weight:600;opacity:.85;margin-bottom:4px">CRÉDITO ACUMULADO</div>
+        <div style="font-size:28px;font-weight:800;font-family:'Poppins',sans-serif" id="ref-credito">€0,00</div>
+        <div style="font-size:12px;opacity:.8;margin-top:2px" id="ref-count">0 referidos ativos</div>
+      </div>
+    </div>
+    <div style="background:var(--bg);border-radius:var(--radius-sm);padding:.875rem 1rem;margin-bottom:1.25rem;font-size:13px;color:var(--muted);line-height:1.6">
+      Por cada colega que inscreveres e for aprovado, recebes <strong style="color:var(--coral)">€30 de crédito</strong> em serviços APM. Partilha o teu link!
+    </div>
+    <div style="margin-bottom:1.25rem">
+      <label class="flabel" style="margin-bottom:6px">O teu link de referência</label>
+      <div style="display:flex;gap:8px">
+        <input class="finput" id="ref-link-input" readonly style="font-size:12px;flex:1">
+        <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('ref-link-input').value).then(()=>toast('Link copiado!','ok'))">📋</button>
+        <button class="btn btn-sm" style="background:#25D366;color:#fff" onclick="partilharReferralWA()">💬</button>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem">Os teus referidos</div>
+    <div id="ref-lista"></div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// APM VIAGENS — MELHORIAS v2
+// ================================================================
+
+// ── PASSWORD RECOVERY ────────────────────────────────────────────
+async function openPasswordRecovery() {
+  document.getElementById('modal-pw-recovery').classList.add('open')
+  document.getElementById('pw-recovery-email').value = document.getElementById('l-email').value || ''
+  document.getElementById('pw-recovery-msg').style.display = 'none'
+  document.getElementById('pw-recovery-err').style.display = 'none'
+}
+
+async function sendPasswordRecovery() {
+  const email = document.getElementById('pw-recovery-email').value.trim()
+  const btn = document.getElementById('btn-pw-recovery')
+  const errEl = document.getElementById('pw-recovery-err')
+  const msgEl = document.getElementById('pw-recovery-msg')
+  errEl.style.display = 'none'
+  if (!email) { errEl.style.display = 'block'; errEl.textContent = 'Introduz o teu e-mail.'; return }
+  btn.innerHTML = '<span class="spinner"></span> A enviar...'
+  btn.disabled = true
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://escritorioapmviagens-creator.github.io/apm-viagens/consultores?reset=1'
+    })
+    if (error) throw error
+    msgEl.style.display = 'block'
+  } catch(e) {
+    errEl.style.display = 'block'
+    errEl.textContent = e.message.includes('rate') ? 'Aguarda uns minutos e tenta novamente.' : 'Erro: ' + e.message
+  } finally {
+    btn.innerHTML = 'Enviar link de recuperação'
+    btn.disabled = false
+  }
+}
+
+async function saveNewPassword() {
+  const pw1 = document.getElementById('pw-new-1').value
+  const pw2 = document.getElementById('pw-new-2').value
+  const errEl = document.getElementById('pw-new-err')
+  errEl.style.display = 'none'
+  if (pw1.length < 8) { errEl.style.display = 'block'; errEl.textContent = 'Mínimo 8 caracteres.'; return }
+  if (pw1 !== pw2) { errEl.style.display = 'block'; errEl.textContent = 'As palavras-passe não coincidem.'; return }
+  const { error } = await sb.auth.updateUser({ password: pw1 })
+  if (error) { errEl.style.display = 'block'; errEl.textContent = 'Erro: ' + error.message; return }
+  closeModal('modal-pw-new')
+  toast('Palavra-passe alterada com sucesso!', 'ok')
+  window.history.replaceState({}, document.title, window.location.pathname)
+}
+
+// Verificar redirect de reset ao arrancar
+;(async function checkPasswordReset() {
+  if (new URLSearchParams(window.location.search).get('reset') !== '1') return
+  const { data: { session } } = await sb.auth.getSession()
+  if (session) setTimeout(() => document.getElementById('modal-pw-new').classList.add('open'), 600)
+})()
+
+// ── EQUIPA COM METAS MENSAIS (substitui renderEquipa) ────────────
+async function renderEquipa() {
+  const isAdmin = currentPerfil.role === 'admin'
+  const { data: perfis } = await sb.from('perfis').select('*').eq('ativo', true)
+  if (!perfis) return
+  const now = new Date()
+  const mesAtual = now.getMonth()
+  const anoAtual = now.getFullYear()
+  const { data: reservas } = await sb.from('reservas')
+    .select('consultor_id, valor_total, data_partida')
+    .neq('estado', 'Cancelada')
+  const vol = {}
+  ;(reservas || []).forEach(r => {
+    if (!r.data_partida) return
+    const d = new Date(r.data_partida + 'T12:00:00')
+    if (d.getMonth() === mesAtual && d.getFullYear() === anoAtual)
+      vol[r.consultor_id] = (vol[r.consultor_id] || 0) + Number(r.valor_total || 0)
+  })
+  const grads = [
+    'linear-gradient(135deg,#F4717F,#F7A456)',
+    'linear-gradient(135deg,#4BADE8,#7DCAF0)',
+    'linear-gradient(135deg,#22c55e,#86efac)',
+    'linear-gradient(135deg,#F7A456,#F4717F)'
+  ]
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+  document.getElementById('team-grid').innerHTML = perfis.map((p, i) => {
+    const v = vol[p.id] || 0
+    const meta = p.meta_mensal || 10000
+    const pct = Math.min(Math.round(v / meta * 100), 100)
+    const cor = pct >= 100 ? '#22c55e' : pct >= 60 ? '#f59e0b' : '#E8395A'
+    const ini = p.nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+    return `<div class="team-card">
+      <div class="team-av" style="background:${grads[i % grads.length]};color:#fff">${ini}</div>
+      <div style="font-size:14px;font-weight:700;font-family:'Poppins',sans-serif">${p.nome}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;font-weight:600">${p.role === 'admin' ? 'Administrador' : 'Consultor/a'}</div>
+      <div style="margin-top:6px"><span class="badge ${p.ativo ? 'badge-green' : 'badge-amber'}">${p.ativo ? 'Ativo' : 'Pendente'}</span></div>
+      <div style="margin-top:14px;width:100%">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-weight:600;margin-bottom:5px">
+          <span>Meta ${meses[mesAtual]}</span>
+          <span style="color:${cor};font-weight:700">${pct}%</span>
+        </div>
+        <div style="height:6px;background:var(--bg2);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${cor};border-radius:3px;transition:width .6s"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px">
+          <span>€${v.toLocaleString('pt-PT')}</span>
+          <span>€${meta.toLocaleString('pt-PT')}</span>
+        </div>
+      </div>
+      ${isAdmin ? `<div style="margin-top:10px;width:100%;display:flex;gap:6px;align-items:center">
+        <input type="number" placeholder="Meta €" value="${meta}"
+          style="flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit"
+          id="meta-${p.id}">
+        <button class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 10px" onclick="guardarMeta('${p.id}')">💾</button>
+      </div>` : ''}
+    </div>`
+  }).join('')
+}
+
+async function guardarMeta(pid) {
+  const val = parseFloat(document.getElementById('meta-' + pid)?.value) || 10000
+  const { error } = await sb.from('perfis').update({ meta_mensal: val }).eq('id', pid)
+  if (error) { toast('Erro ao guardar meta', 'err'); return }
+  toast('Meta atualizada ✓', 'ok')
+  renderEquipa()
+}
+
+// ── REFERRALS ────────────────────────────────────────────────────
+async function abrirModalReferrals() {
+  const refCode = 'APM-' + currentPerfil.id.substring(0, 8).toUpperCase()
+  const refLink = 'https://escritorioapmviagens-creator.github.io/apm-viagens/inscricao?ref=' + refCode
+  const { data: referidos } = await sb.from('perfis')
+    .select('nome, email, ativo, created_at')
+    .eq('referido_por', refCode)
+    .order('created_at', { ascending: false })
+  const ativos = (referidos || []).filter(r => r.ativo).length
+  document.getElementById('ref-link-input').value = refLink
+  document.getElementById('ref-credito').textContent = '€' + (ativos * 30).toFixed(2)
+  document.getElementById('ref-count').textContent = ativos + ' referido' + (ativos !== 1 ? 's ativos' : ' ativo')
+  document.getElementById('ref-lista').innerHTML = (referidos || []).length
+    ? (referidos || []).map(r => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">
+          ${r.nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()}
+        </div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${r.nome}</div>
+          <div style="font-size:11px;color:var(--muted)">${r.email}</div>
+        </div>
+        <span class="badge ${r.ativo ? 'badge-green' : 'badge-amber'}">${r.ativo ? '+€30 ✓' : 'Pendente'}</span>
+      </div>`).join('')
+    : '<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:13px">Ainda sem referidos. Partilha o teu link!</div>'
+  document.getElementById('modal-referrals').classList.add('open')
+}
+
+function partilharReferralWA() {
+  const link = document.getElementById('ref-link-input').value
+  const msg = 'Olá! Junta-te à equipa APM Viagens e gere as tuas reservas de forma profissional.\n\nInscreve-te aqui: ' + link + '\n\nAPM Viagens ✈️'
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank')
+}
+
+// Guardar ref no arranque (para quando a pessoa vem de um link de referral)
+;(function() {
+  const ref = new URLSearchParams(window.location.search).get('ref')
+  if (ref) sessionStorage.setItem('apm_ref', ref)
+})()
+</script>
+
+<!--
+=================================================================
+SQL PARA O SUPABASE (executar uma vez no SQL Editor):
+
+ALTER TABLE perfis ADD COLUMN IF NOT EXISTS meta_mensal numeric DEFAULT 10000;
+ALTER TABLE perfis ADD COLUMN IF NOT EXISTS referido_por text;
+
+=================================================================
+-->
