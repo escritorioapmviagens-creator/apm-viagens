@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Crustáceo APM</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ocean:#0077B6;--ocean-deep:#023E8A;--ocean-light:#90E0EF;--ocean-pale:#CAF0F8;
+  --sand:#F8F4ED;--coral:#E8395A;--blue:#3B5BDB;
+  --surface:#fff;--text:#1A1A2E;--muted:#5A6475;--border:rgba(0,119,182,0.15);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:transparent}
+
+/* TOGGLE */
+#ct{position:fixed;bottom:24px;right:24px;width:68px;height:68px;border-radius:50%;cursor:pointer;border:none;background:none;z-index:2147483640;padding:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 8px 20px rgba(0,119,182,.4))}
+#ct:hover{transform:scale(1.1) rotate(-5deg)}
+#ct img{width:100%;height:100%;border-radius:50%;display:block}
+#ct-pulse{position:absolute;inset:-4px;border-radius:50%;background:radial-gradient(circle,rgba(0,119,182,.3) 0%,transparent 70%);animation:pulse 2.5s ease-in-out infinite;pointer-events:none}
+#ct-notif{position:absolute;top:0;right:0;width:18px;height:18px;background:var(--coral);border-radius:50%;border:2px solid #fff;display:none;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.3);opacity:0}}
+
+/* PANEL */
+#cp{position:fixed;bottom:24px;right:24px;width:430px;height:680px;border-radius:24px;background:var(--surface);border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,119,182,.25);display:flex;flex-direction:column;overflow:hidden;z-index:2147483641;transform:scale(.85) translateY(40px);opacity:0;pointer-events:none;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .25s ease}
+#cp.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
+
+/* HEADER */
+#ch{background:linear-gradient(135deg,var(--ocean-deep) 0%,var(--ocean) 60%,#0096C7 100%);flex-shrink:0}
+#chi{display:flex;align-items:center;gap:12px;padding:16px 18px 10px}
+#ca{width:44px;height:44px;border-radius:50%;border:2.5px solid rgba(255,255,255,.4);flex-shrink:0;animation:ab 4s ease-in-out infinite}
+@keyframes ab{0%,100%{transform:translateY(0) rotate(0)}33%{transform:translateY(-3px) rotate(-2deg)}66%{transform:translateY(-1px) rotate(2deg)}}
+#cn{font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:#fff;line-height:1.2}
+#cs{font-size:11px;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:5px;margin-top:2px}
+#csd{width:7px;height:7px;border-radius:50%;background:#4ADE80;animation:sg 2s ease-in-out infinite}
+@keyframes sg{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.5)}50%{box-shadow:0 0 0 4px rgba(74,222,128,0)}}
+#cc{width:32px;height:32px;border-radius:50%;margin-left:auto;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background .2s,transform .2s}
+#cc:hover{background:rgba(255,255,255,.25);transform:rotate(90deg)}
+
+/* MODES */
+#cm{display:flex;gap:4px;padding:8px 14px 12px}
+.cmode{flex:1;padding:6px 4px;border-radius:20px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;white-space:nowrap}
+.cmode.active{background:#fff;color:var(--ocean-deep)}
+.cmode:hover:not(.active){background:rgba(255,255,255,.22)}
+
+/* MESSAGES */
+#msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--sand);scrollbar-width:thin;scrollbar-color:rgba(0,119,182,.2) transparent}
+#msgs::-webkit-scrollbar{width:4px}
+#msgs::-webkit-scrollbar-thumb{background:rgba(0,119,182,.2);border-radius:2px}
+.msg{display:flex;gap:8px;animation:mi .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes mi{from{transform:translateY(12px) scale(.95);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+.msg.user{flex-direction:row-reverse}
+.mav{width:30px;height:30px;border-radius:50%;flex-shrink:0;align-self:flex-end}
+.mav.uav{background:linear-gradient(135deg,var(--blue),var(--ocean-deep));display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;color:#fff}
+.mb{max-width:80%;padding:10px 13px;border-radius:18px;font-size:13px;line-height:1.55;color:var(--text)}
+.msg.bot .mb{background:#fff;border:1px solid rgba(0,119,182,.1);border-bottom-left-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.msg.user .mb{background:linear-gradient(135deg,var(--ocean),var(--ocean-deep));color:#fff;border-bottom-right-radius:4px}
+
+/* Typing */
+#typing{display:none;gap:8px}
+#typing.v{display:flex}
+.tb{background:#fff;border:1px solid rgba(0,119,182,.1);border-radius:18px;border-bottom-left-radius:4px;padding:11px 15px;display:flex;gap:5px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.td{width:7px;height:7px;border-radius:50%;background:var(--ocean);opacity:.4;animation:ty 1.2s ease-in-out infinite}
+.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes ty{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-5px);opacity:1}}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.chip{background:var(--ocean-pale);border:1px solid rgba(0,119,182,.2);border-radius:20px;color:var(--ocean-deep);font-size:11.5px;font-weight:500;padding:4px 10px;cursor:pointer;transition:background .2s,transform .15s}
+.chip:hover{background:var(--ocean-light);transform:translateY(-1px)}
+
+/* Action card */
+.acard{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid rgba(0,119,182,.2);border-radius:12px;padding:12px;margin-top:8px}
+.acard-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--ocean-deep);margin-bottom:6px}
+.abtn{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,var(--ocean),var(--ocean-deep));color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:600;padding:7px 13px;cursor:pointer;transition:transform .15s,box-shadow .15s;font-family:'DM Sans',sans-serif;margin:3px 3px 0 0}
+.abtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,119,182,.3)}
+.abtn.sec{background:linear-gradient(135deg,#6366f1,#4f46e5)}
+.abtn.coral{background:linear-gradient(135deg,var(--coral),#c42d4a)}
+
+/* INPUT */
+#cfooter{padding:10px 12px;background:#fff;border-top:1px solid var(--border);flex-shrink:0}
+#ciw{display:flex;align-items:flex-end;gap:6px;background:var(--sand);border:1.5px solid var(--border);border-radius:20px;padding:7px 7px 7px 13px;transition:border-color .2s}
+#ciw:focus-within{border-color:var(--ocean);box-shadow:0 0 0 3px rgba(0,119,182,.08)}
+#cinput{flex:1;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);resize:none;outline:none;max-height:90px;min-height:20px;line-height:1.4}
+#cinput::placeholder{color:var(--muted)}
+#csend{width:34px;height:34px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--ocean),var(--ocean-deep));color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .2s;font-size:15px}
+#csend:hover{transform:scale(1.08)}
+#csend:disabled{opacity:.5;cursor:not-allowed;transform:none}
+#cdis{text-align:center;font-size:10px;color:var(--muted);margin-top:5px;opacity:.7}
+
+/* WELCOME */
+#cwelcome{position:absolute;inset:0;background:linear-gradient(160deg,#023E8A 0%,#0077B6 40%,#0096C7 70%,#00B4D8 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;z-index:10;transition:opacity .4s ease,transform .4s ease}
+#cwelcome.hidden{opacity:0;pointer-events:none;transform:scale(1.05)}
+#cwa{width:88px;height:88px;border-radius:50%;border:3px solid rgba(255,255,255,.4);margin-bottom:18px;animation:wf 3.5s ease-in-out infinite;box-shadow:0 12px 40px rgba(0,0,0,.2)}
+@keyframes wf{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-8px) rotate(-3deg)}70%{transform:translateY(-4px) rotate(2deg)}}
+#cwelcome h2{font-family:'Outfit',sans-serif;font-size:21px;font-weight:800;color:#fff;text-align:center;margin-bottom:8px;line-height:1.2}
+#cwelcome p{font-size:13px;color:rgba(255,255,255,.8);text-align:center;line-height:1.6;margin-bottom:20px;max-width:300px}
+.wfeats{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;max-width:320px;margin-bottom:22px}
+.wfeat{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:11px;color:#fff;font-size:11.5px;line-height:1.4;backdrop-filter:blur(4px)}
+.wfeat span{display:block;font-size:18px;margin-bottom:3px}
+.wfeat strong{display:block;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;margin-bottom:1px}
+#cstart{background:#fff;color:var(--ocean-deep);border:none;border-radius:24px;padding:12px 34px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+#cstart:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,.25)}
+
+/* MODAL */
+#cmodal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2147483645;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+#cmodal.open{display:flex}
+#cmi{background:#fff;border-radius:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.3);animation:mi .3s cubic-bezier(.34,1.56,.64,1)}
+#cmh{background:linear-gradient(135deg,var(--ocean-deep),var(--ocean));padding:18px 20px;border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between}
+#cmh h3{font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;color:#fff}
+#cmclose{background:rgba(255,255,255,.2);border:none;border-radius:50%;width:30px;height:30px;color:#fff;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+#cmb{padding:20px}
+
+/* Image grid */
+.ig{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;border-radius:10px;overflow:hidden}
+.it{aspect-ratio:3/2;overflow:hidden;cursor:pointer;position:relative;transition:transform .2s;border-radius:4px}
+.it:hover{transform:scale(1.04);z-index:1}
+.it img{width:100%;height:100%;object-fit:cover;display:block}
+.it.sel::after{content:'✓';position:absolute;inset:0;background:rgba(0,119,182,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700}
+
+@media(max-width:480px){
+  #cp{bottom:0;right:0;width:100%;height:92vh;border-radius:24px 24px 0 0}
+  #ct{bottom:20px;right:20px}
+}
+</style>
+</head>
+<body>
+
+<button id="ct" aria-label="Crustáceo APM">
+  <div id="ct-pulse"></div>
+  <img src="https://f.ezycourse.net/3064/cm711z7bm05chzt9n774xdnpi.png" alt="">
+  <div id="ct-notif">!</div>
+</button>
+
+<div id="cp">
+  <!-- Welcome -->
+  <div id="cwelcome">
+    <img src="https://f.ezycourse.net/3064/cm711z7bm05chzt9n774xdnpi.png" id="cwa" alt="">
+    <h2>Olá! Sou o Crustáceo APM 🦀</h2>
+    <p>Crio roteiros, gero páginas para clientes e ensino o sistema APM.</p>
+    <div class="wfeats">
+      <div class="wfeat"><span>🗺️</span><strong>Roteiros</strong>Crio e envio ao cliente</div>
+      <div class="wfeat"><span>🏨</span><strong>Hotéis</strong>Comparações detalhadas</div>
+      <div class="wfeat"><span>📄</span><strong>Página cliente</strong>Com foto do destino</div>
+      <div class="wfeat"><span>🎓</span><strong>Tutor APM</strong>Aprende o sistema</div>
+    </div>
+    <button id="cstart">Começar a mergulhar! 🐚</button>
+  </div>
+
+  <!-- Header -->
+  <div id="ch">
+    <div id="chi">
+      <img src="https://f.ezycourse.net/3064/cm711z7bm05chzt9n774xdnpi.png" id="ca" alt="">
+      <div>
+        <div id="cn">Crustáceo APM 🦀</div>
+        <div id="cs"><div id="csd"></div>Especialista · IA ao vivo</div>
+      </div>
+      <button id="cc">✕</button>
+    </div>
+    <div id="cm">
+      <button class="cmode active" data-mode="geral">🌊 Geral</button>
+      <button class="cmode" data-mode="roteiro">🗺️ Roteiro</button>
+      <button class="cmode" data-mode="hotel">🏨 Hotéis</button>
+      <button class="cmode" data-mode="tutor">🎓 Tutor</button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div id="msgs">
+    <div id="typing" class="msg bot">
+      <img src="https://f.ezycourse.net/3064/cm711z7bm05chzt9n774xdnpi.png" class="mav" alt="">
+      <div class="tb"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div id="cfooter">
+    <div id="ciw">
+      <textarea id="cinput" placeholder="Pergunta sobre destinos, hotéis, roteiros..." rows="1"></textarea>
+      <button id="csend">➤</button>
+    </div>
+    <div id="cdis">Claude AI · Pesquisa web em tempo real</div>
+  </div>
+</div>
+
+<!-- Modal imagens -->
+<div id="cmodal">
+  <div id="cmi">
+    <div id="cmh">
+      <h3>📸 Escolher imagem do destino</h3>
+      <button id="cmclose">✕</button>
+    </div>
+    <div id="cmb"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const PROXY    = 'https://uiaorfcgvqwxjezgisps.supabase.co/functions/v1/crustaceo-proxy';
+const UNSP     = 'lvuZ06ZCQKhkrbsWK2AGELUA_fKdZiXYYVcH1MUp6TQ';
+const PEX      = 'cbnYFhaUvlz1hVKRkRSoYqUQi1rXPdK5XYJgW6bJpAewcBVeTPm8hpHV';
+const APM_LOGO = 'https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png';
+
+let conv=[], mode='geral', loading=false, started=false, selImg=null, lastRot=null;
+
+const PROMPTS = {
+geral:`Tu és o Crustáceo APM — assistente especialista da APM Viagens (agência portuguesa).
+Personalidade: entusiasta, caloroso, profissional. Expressões portuguesas ocasionais.
+Especialidade: hotéis, destinos, operadores (Newblue/W2M, Soltour, Nortravel, Travelplan, Avoris, LePlan), roteiros, preços.
+Formato: conciso mas completo. Listas quando adequado. Estimativas de preço sempre que possível.
+REGRA: Quando criares um roteiro completo, termina SEMPRE com este bloco exacto:
+##ROT##
+destino: [nome do destino]
+titulo: [título apelativo]
+##FIMROT##`,
+
+roteiro:`Tu és o Crustáceo APM — especialista em criar roteiros de viagem para a APM Viagens.
+Ao criar um roteiro inclui SEMPRE: introdução apelativa, dia a dia detalhado (manhã/tarde/noite), gastronomia, hotel recomendado com preço estimado, dicas práticas e preço total estimado por pessoa.
+REGRA OBRIGATÓRIA: Termina SEMPRE com:
+##ROT##
+destino: [nome do destino]
+titulo: [título apelativo do roteiro]
+##FIMROT##`,
+
+hotel:`Tu és o Crustáceo APM — especialista em hotéis para a APM Viagens.
+Para cada hotel: nome, localização, categoria, regime, destaques únicos, preço estimado/noite/pessoa, operador disponível em Portugal.
+Compara sempre 2-3 opções com prós e contras.`,
+
+tutor:`Tu és o Crustáceo APM — tutor do sistema APM Viagens para consultores novos.
+O sistema (escritorioapmviagens-creator.github.io/apm-viagens) tem:
+- LOGIN: email/password, aguarda aprovação admin
+- DASHBOARD: reservas, comissões, alertas de pagamento
+- RESERVAS: criar com código APM2026001, campos cliente/destino/datas/pax/preços (Net/PVP/comissão APM/plano agência)
+- CONTRATO TURÍSTICO: carregar PDF do operador → preenchimento automático → condições pagamento/cancelamento → link para cliente assinar digitalmente
+- COMPARADOR: comparar opções de viagem
+- DOCUMENTOS: upload por reserva
+- FINANCEIRO: gráficos comissões e pagamentos
+- PESQUISA HOTELBEDS: pesquisa hotéis via API
+PROCESSOS: 1)Criar reserva 2)Gerar contrato→link cliente 3)Registar pagamentos
+Responde passo a passo, de forma clara.`
+};
+
+const panel=document.getElementById('cp'), tog=document.getElementById('ct'),
+      cclose=document.getElementById('cc'), wel=document.getElementById('cwelcome'),
+      cstart=document.getElementById('cstart'), msgs=document.getElementById('msgs'),
+      inp=document.getElementById('cinput'), send=document.getElementById('csend'),
+      typo=document.getElementById('typing'), notif=document.getElementById('ct-notif'),
+      modal=document.getElementById('cmodal'), mclose=document.getElementById('cmclose'),
+      mbody=document.getElementById('cmb');
+
+function openP(){panel.classList.add('open');tog.style.display='none';notif.style.display='none';inp.focus()}
+function closeP(){panel.classList.remove('open');tog.style.display='block'}
+
+function startChat(){
+  wel.classList.add('hidden'); started=true;
+  setTimeout(()=>{
+    addBot('Ora viva, navegante! 🦀\n\nSou o teu especialista em viagens com IA e pesquisa web ao vivo. Posso criar **roteiros completos** e gerar uma **página visual para enviar ao cliente**, recomendar hotéis, ou ensinar o sistema APM.\n\nO que exploramos hoje?',
+    ['🗺️ Roteiro 7 dias Maldivas','🏨 Hotéis all inclusive Caraíbas','🎓 Como criar uma reserva no sistema','📄 Como funciona o contrato']);
+  },300);
+}
+
+function fmt(t){
+  return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/#{1,3}\s(.+)/gm,'<div style="font-family:Outfit,sans-serif;font-weight:700;font-size:13.5px;color:#023E8A;margin:8px 0 3px">$1</div>')
+    .replace(/^[-•]\s(.+)/gm,'<div style="padding:2px 0 2px 10px;border-left:2px solid #90E0EF;margin:2px 0;font-size:12.5px">$1</div>')
+    .replace(/\n/g,'<br>')
+    .replace(/##ROT##[\s\S]*?##FIMROT##/g,'');
+}
+
+function addBot(text,chips=[],extra=null){
+  const d=document.createElement('div'); d.className='msg bot';
+  const av=document.createElement('img'); av.src='https://f.ezycourse.net/3064/cm711z7bm05chzt9n774xdnpi.png'; av.className='mav';
+  const b=document.createElement('div'); b.className='mb';
+  b.innerHTML=fmt(text);
+  if(extra) b.appendChild(extra);
+  if(chips.length){
+    const cd=document.createElement('div'); cd.className='chips';
+    chips.forEach(c=>{const btn=document.createElement('button');btn.className='chip';btn.textContent=c;btn.onclick=()=>doSend(c);cd.appendChild(btn)});
+    b.appendChild(cd);
+  }
+  d.appendChild(av); d.appendChild(b);
+  msgs.insertBefore(d,typo); scroll();
+}
+
+function addUser(text){
+  const d=document.createElement('div'); d.className='msg user';
+  const av=document.createElement('div'); av.className='mav uav'; av.textContent='C';
+  const b=document.createElement('div'); b.className='mb'; b.textContent=text;
+  d.appendChild(b); d.appendChild(av);
+  msgs.insertBefore(d,typo); scroll();
+}
+
+function scroll(){requestAnimationFrame(()=>{msgs.scrollTop=msgs.scrollHeight})}
+function showT(){typo.classList.add('v');scroll()}
+function hideT(){typo.classList.remove('v')}
+
+function detectRot(t){
+  const m=t.match(/##ROT##\s*\ndestino:\s*(.+)\ntitulo:\s*(.+)\n##FIMROT##/);
+  return m?{destino:m[1].trim(),titulo:m[2].trim()}:null;
+}
+
+function buildActionCard(destino,titulo,fullText){
+  const c=document.createElement('div'); c.className='acard';
+  c.innerHTML=`<div class="acard-title">✨ Roteiro pronto! Enviar ao cliente?</div><div style="font-size:12px;color:#5A6475;margin-bottom:8px">Gero uma página visual com foto de ${destino}, pronta a partilhar.</div>`;
+  const b1=document.createElement('button'); b1.className='abtn'; b1.innerHTML='📸 Escolher foto e gerar página';
+  b1.onclick=()=>openPicker(destino,titulo,fullText);
+  const b2=document.createElement('button'); b2.className='abtn sec'; b2.innerHTML='📋 Copiar roteiro';
+  b2.onclick=()=>{const cl=fullText.replace(/##ROT##[\s\S]*?##FIMROT##/g,'').trim();navigator.clipboard.writeText(cl).then(()=>toast('Copiado!'))};
+  c.appendChild(b1); c.appendChild(b2); return c;
+}
+
+async function fetchImgs(q){
+  const res=[], seen=new Set();
+  for(const qr of [q, q+' travel resort', q+' beach hotel']){
+    try{
+      const r=await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(qr)}&per_page=9&orientation=landscape`,{headers:{Authorization:`Client-ID ${UNSP}`}});
+      const d=await r.json();
+      (d.results||[]).forEach(p=>{if(seen.has(p.id))return;seen.add(p.id);res.push({thumb:p.urls.small,full:p.urls.regular})});
+    }catch(e){}
+    try{
+      const r=await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(qr)}&per_page=6&orientation=landscape`,{headers:{Authorization:PEX}});
+      const d=await r.json();
+      (d.photos||[]).forEach(p=>{if(seen.has('p'+p.id))return;seen.add('p'+p.id);res.push({thumb:p.src.medium,full:p.src.large})});
+    }catch(e){}
+    if(res.length>=15) break;
+  }
+  return res.slice(0,15);
+}
+
+async function openPicker(destino,titulo,roteiroText){
+  lastRot={destino,titulo,text:roteiroText}; selImg=null;
+  mbody.innerHTML=`<div style="font-size:13px;color:#5A6475;margin-bottom:12px">Escolhe a melhor imagem para <strong>${destino}</strong>:</div>
+  <div id="igrid" class="ig" style="margin-bottom:14px"><div style="grid-column:1/-1;text-align:center;padding:20px;color:#90E0EF"><div style="font-size:24px">🌊</div><div style="font-size:12px;margin-top:4px">A carregar imagens...</div></div></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button id="icancel" class="abtn" style="background:linear-gradient(135deg,#6b7280,#4b5563)">Cancelar</button>
+    <button id="iconfirm" class="abtn" disabled style="opacity:.5">✨ Gerar página</button>
+  </div>`;
+  modal.classList.add('open');
+  document.getElementById('icancel').onclick=()=>modal.classList.remove('open');
+  document.getElementById('iconfirm').onclick=()=>{if(selImg) genPage(destino,titulo,roteiroText,selImg)};
+
+  const imgs=await fetchImgs(destino);
+  const grid=document.getElementById('igrid');
+  if(!imgs.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:16px;color:#E8395A;font-size:12px">Sem imagens. Tenta outro destino.</div>';return}
+  grid.innerHTML='';
+  imgs.forEach(img=>{
+    const d=document.createElement('div'); d.className='it';
+    d.innerHTML=`<img src="${img.thumb}" loading="lazy" onerror="this.parentElement.style.display='none'">`;
+    d.onclick=()=>{
+      document.querySelectorAll('.it').forEach(t=>t.classList.remove('sel'));
+      d.classList.add('sel'); selImg=img.full;
+      const cf=document.getElementById('iconfirm'); if(cf){cf.disabled=false;cf.style.opacity='1'}
+    };
+    grid.appendChild(d);
+  });
+}
+
+function genPage(destino,titulo,roteiroText,imgUrl){
+  modal.classList.remove('open');
+  const clean=roteiroText.replace(/##ROT##[\s\S]*?##FIMROT##/g,'').trim();
+  const today=new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'});
+  const rHtml=clean
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/#{1,3}\s(.+)/gm,'<h3 style="font-family:Poppins,sans-serif;font-size:15px;font-weight:700;color:#3B5BDB;margin:16px 0 6px;padding-top:12px;border-top:1px solid #e5e7eb">$1</h3>')
+    .replace(/^[-•]\s(.+)/gm,'<li style="margin:4px 0;padding-left:4px">$1</li>')
+    .replace(/\n/g,'<br>');
+
+  const html=`<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${titulo} — APM Viagens</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#F5F6FA;color:#1A1D2E}
+.hdr{background:#fff;padding:14px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #E5E7EB;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.hdr img{height:44px;width:auto}.hdr h1{font-family:Poppins,sans-serif;font-size:14px;font-weight:700}.hdr p{font-size:11px;color:#6B7280}
+.hero{position:relative;height:300px;overflow:hidden}.hero img{width:100%;height:100%;object-fit:cover}
+.hero-ov{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.1),rgba(0,0,0,.6));display:flex;align-items:flex-end;padding:24px}
+.hero-ov h2{font-family:Poppins,sans-serif;font-size:26px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:4px}
+.hero-ov p{font-size:12px;color:rgba(255,255,255,.85)}
+.wrap{max-width:700px;margin:0 auto;padding:24px 16px}
+.sec{background:#fff;border-radius:14px;padding:22px;margin-bottom:14px;border:1px solid #E5E7EB;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.sec h2{font-family:Poppins,sans-serif;font-size:15px;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #E8395A;display:inline-block;color:#1A1D2E}
+.sec-c{font-size:13.5px;line-height:1.7;color:#374151}
+.cta{background:linear-gradient(135deg,#E8395A,#c42d4a);border-radius:14px;padding:26px;text-align:center;margin-bottom:14px}
+.cta h3{font-family:Poppins,sans-serif;font-size:17px;font-weight:700;color:#fff;margin-bottom:6px}
+.cta p{font-size:12.5px;color:rgba(255,255,255,.85);margin-bottom:16px}
+.cta a{display:inline-block;background:#fff;color:#E8395A;font-family:Poppins,sans-serif;font-weight:700;font-size:13px;padding:11px 26px;border-radius:22px;text-decoration:none}
+.foot{text-align:center;padding:18px;font-size:11px;color:#9CA3AF}</style></head>
+<body>
+<div class="hdr"><img src="${APM_LOGO}" alt="APM Viagens"><div><h1>APM Viagens</h1><p>Proposta preparada a ${today}</p></div></div>
+<div class="hero"><img src="${imgUrl}" alt="${destino}"><div class="hero-ov"><div><h2>${titulo}</h2><p>✈️ Proposta exclusiva APM Viagens · ${destino}</p></div></div></div>
+<div class="wrap">
+<div class="sec"><h2>O teu roteiro</h2><div class="sec-c">${rHtml}</div></div>
+<div class="cta"><h3>Pronto para reservar? 🌊</h3><p>Fala connosco e tratamos de tudo — partidas de Lisboa, Porto e Faro.</p>
+<a href="https://wa.me/351965436740?text=Olá!%20Quero%20saber%20mais%20sobre%20${encodeURIComponent(destino)}">💬 Falar com consultor</a></div>
+<div class="foot">APM Viagens · Odivelas · admin@apmviagens.pt · 965 436 740 · RNAVT 518357490</div>
+</div></body></html>`;
+
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const win=window.open(url,'_blank');
+  if(!win){toast('Permite popups neste site!',true);return}
+
+  addBot('✅ **Página gerada!** Abriu numa nova tab — partilha o link ou envia directamente ao cliente.\n\nQuer ajustar o conteúdo ou criar outro roteiro?',
+    ['🔄 Outro roteiro','🏨 Recomendar hotel','📋 Copiar texto']);
+}
+
+async function doSend(text){
+  if(!text||loading) return;
+  if(!started) startChat();
+  const msg=text.trim(); if(!msg) return;
+  inp.value=''; inp.style.height='auto';
+  addUser(msg); conv.push({role:'user',content:msg});
+  loading=true; send.disabled=true; showT();
+
+  try{
+    const res=await fetch(PROXY,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-5',
+        max_tokens:1500,
+        system:PROMPTS[mode],
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:conv
+      })
+    });
+    const data=await res.json();
+    let full='';
+    if(data.content) data.content.forEach(b=>{if(b.type==='text') full+=b.text});
+
+    if(full){
+      conv.push({role:'assistant',content:full});
+      hideT();
+      const rot=detectRot(full);
+      let extra=null;
+      if(rot) extra=buildActionCard(rot.destino,rot.titulo,full);
+      const chips=rot?[]:buildChips(full,msg);
+      addBot(full,chips,extra);
+    } else if(data.error){
+      hideT(); addBot('Tive um problema: '+(data.error.message||'Erro desconhecido')+'. Tenta novamente!');
+    }
+  }catch(e){
+    hideT(); addBot('As ondas estão agitadas! 🌊 Problema de ligação. Tenta novamente.');
+  } finally{loading=false; send.disabled=false}
+}
+
+function buildChips(r,q){
+  const chips=[], rl=r.toLowerCase();
+  if(rl.includes('roteiro')&&!q.toLowerCase().includes('roteiro')) chips.push('🗺️ Criar roteiro completo');
+  if(rl.includes('hotel')||rl.includes('resort')) chips.push('🏨 Ver mais hotéis');
+  if(rl.includes('preço')||rl.includes('€')) chips.push('💰 Estimar custo total');
+  return chips.slice(0,3);
+}
+
+function toast(msg,err=false){
+  const t=document.createElement('div');
+  t.style.cssText=`position:fixed;bottom:110px;right:24px;background:${err?'#dc2626':'#15803d'};color:#fff;padding:9px 15px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999999`;
+  t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
+}
+
+// Events
+tog.addEventListener('click',openP);
+cclose.addEventListener('click',closeP);
+cstart.addEventListener('click',startChat);
+mclose.addEventListener('click',()=>modal.classList.remove('open'));
+modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('open')});
+
+document.querySelectorAll('.cmode').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.cmode').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); mode=btn.dataset.mode;
+    if(!started){wel.classList.add('hidden');started=true}
+    const intros={
+      roteiro:'🗺️ **Modo Roteiro** activado! Diz-me destino e número de dias — crio o roteiro completo e depois geramos a página para o cliente.',
+      hotel:'🏨 **Modo Hotéis** activado! Pergunta por destino, tipo de viagem ou orçamento e comparo as melhores opções.',
+      tutor:'🎓 **Modo Tutor APM** activado! Pergunta como criar reservas, contratos, registar pagamentos — qualquer coisa do sistema.',
+      geral:'🌊 **Modo Geral** activado! Pergunta o que quiseres sobre viagens ou o sistema APM.'
+    };
+    if(intros[mode]) addBot(intros[mode]);
+  });
+});
+
+inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend(inp.value)}});
+inp.addEventListener('input',()=>{inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,90)+'px'});
+send.addEventListener('click',()=>doSend(inp.value));
+
+setTimeout(()=>{if(!panel.classList.contains('open')){notif.style.display='flex'}},4000);
+window.crustaceoAPM={open:openP,close:closeP};
+})();
+</script>
+</body>
+</html>
