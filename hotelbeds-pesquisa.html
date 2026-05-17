@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APM Viagens — Pesquisa Hotelbeds</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --coral: #E8395A;
+    --blue: #3B5BDB;
+    --bg: #F5F6FA;
+    --surface: #fff;
+    --border: #E5E7EB;
+    --text: #1A1D2E;
+    --muted: #6B7280;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(0,0,0,.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0 }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: .875rem 1.5rem;
+    display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 10;
+    box-shadow: var(--shadow);
+  }
+  .header img { height: 44px; width: auto }
+  .header-title { font-family: 'Poppins',sans-serif; font-size: 16px; font-weight: 700 }
+  .header-sub { font-size: 11px; color: var(--muted) }
+  .header-badge {
+    margin-left: auto;
+    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    color: #fff; font-size: 11px; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px;
+  }
+
+  .main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem }
+
+  .alert {
+    background: #FFF8E1; border: 1px solid #FAC775;
+    border-radius: var(--radius-sm); padding: 12px 16px;
+    font-size: 13px; color: #7B5B00; margin-bottom: 1.25rem;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius); border: 1px solid var(--border);
+    padding: 1.25rem; margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-family: 'Poppins',sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--muted); text-transform: uppercase; letter-spacing: .06em;
+    margin-bottom: 1rem;
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px }
+  .grid5 { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px; align-items: flex-end }
+
+  .fgroup { display: flex; flex-direction: column; gap: 4px }
+  .flabel { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em }
+  .finput {
+    padding: 9px 12px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 13px;
+    font-family: 'Inter',sans-serif; outline: none;
+    transition: border-color .15s; color: var(--text);
+  }
+  .finput:focus { border-color: var(--blue) }
+  select.finput { cursor: pointer }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 9px 18px; border-radius: var(--radius-sm); border: none;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: 'Inter',sans-serif; transition: all .15s; white-space: nowrap;
+  }
+  .btn-coral { background: var(--coral); color: #fff }
+  .btn-coral:hover { opacity: .9 }
+  .btn-blue { background: var(--blue); color: #fff }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border) }
+  .btn:disabled { opacity: .5; cursor: not-allowed }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 1.25rem }
+  .tab {
+    padding: 8px 18px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--muted); transition: all .15s;
+  }
+  .tab.active { background: var(--blue); color: #fff; border-color: var(--blue) }
+
+  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem }
+
+  .hotel-card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); overflow: hidden;
+    box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s;
+    display: flex; flex-direction: column;
+  }
+  .hotel-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.12) }
+
+  .hotel-thumb {
+    width: 100%; height: 150px; background: linear-gradient(135deg,#E8395A22,#3B5BDB22);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; position: relative; overflow: hidden;
+  }
+  .hotel-thumb img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0 }
+
+  .hotel-body { padding: .875rem; flex: 1 }
+  .hotel-name { font-family: 'Poppins',sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 4px; line-height: 1.3 }
+  .hotel-loc { font-size: 11px; color: var(--muted); margin-bottom: 6px }
+  .hotel-stars { color: #f59e0b; font-size: 13px; margin-bottom: 6px }
+
+  .badge {
+    display: inline-block; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 20px; padding: 2px 8px; font-size: 10px;
+    color: var(--muted); font-weight: 600; margin: 1px;
+  }
+
+  .hotel-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .75rem .875rem; border-top: 1px solid var(--border); background: #fafafa;
+  }
+  .hotel-price { font-family: 'Poppins',sans-serif; font-size: 20px; font-weight: 800; color: var(--coral) }
+  .hotel-price-sub { font-size: 10px; color: var(--muted) }
+
+  .status { text-align: center; padding: 3rem 1rem; color: var(--muted) }
+  .status-icon { font-size: 48px; margin-bottom: 1rem }
+
+  .spinner-wrap { display: flex; justify-content: center; padding: 3rem }
+  .spinner {
+    width: 36px; height: 36px; border: 3px solid var(--border);
+    border-top-color: var(--coral); border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg) } }
+
+  .toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    background: var(--text); color: #fff;
+    padding: .75rem 1.25rem; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500;
+    transform: translateY(100px); opacity: 0;
+    transition: all .3s; z-index: 100;
+  }
+  .toast.show { transform: translateY(0); opacity: 1 }
+  .toast.ok { background: #15803d }
+  .toast.err { background: #dc2626 }
+
+  /* Activities */
+  .act-card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 1rem;
+    box-shadow: var(--shadow); transition: transform .15s;
+  }
+  .act-card:hover { transform: translateY(-2px) }
+  .act-name { font-family: 'Poppins',sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 6px }
+  .act-desc { font-size: 12px; color: var(--muted); margin-bottom: 8px; line-height: 1.5 }
+
+  /* Modal detail */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5);
+    z-index: 50; display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+  }
+  .modal {
+    background: var(--surface); border-radius: var(--radius);
+    max-width: 600px; width: 100%; max-height: 80vh;
+    overflow-y: auto; padding: 1.5rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+  }
+  .modal-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem }
+  .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted) }
+
+  @media (max-width: 768px) {
+    .grid5 { grid-template-columns: 1fr 1fr }
+    .grid2 { grid-template-columns: 1fr }
+    .results-grid { grid-template-columns: 1fr }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM Viagens">
+  <div>
+    <div class="header-title">Pesquisa Hotelbeds</div>
+    <div class="header-sub">Hotéis · Actividades · Transfers</div>
+  </div>
+  <span class="header-badge">✦ Hotelbeds API</span>
+</div>
+
+<div class="main">
+
+  <div class="alert">
+    ⚠️ <div>
+      <strong>Configuração necessária:</strong> Para que a pesquisa funcione a partir do browser, o domínio
+      <code>escritorioapmviagens-creator.github.io</code> tem de ser adicionado à allowlist no portal Hotelbeds
+      (<strong>developer.hotelbeds.com → My account → API keys → Edit</strong>).
+      Sem isso recebes erro 403.
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="setTab('hoteis')" id="tab-hoteis">🏨 Hotéis</div>
+    <div class="tab" onclick="setTab('actividades')" id="tab-actividades">🎭 Actividades</div>
+    <div class="tab" onclick="setTab('transfers')" id="tab-transfers">🚌 Transfers</div>
+  </div>
+
+  <!-- ══ HOTÉIS ══════════════════════════════════════════════ -->
+  <div id="section-hoteis">
+    <div class="card">
+      <div class="card-title">🏨 Pesquisar Hotéis</div>
+      <div class="grid5" style="margin-bottom:10px">
+        <div class="fgroup">
+          <label class="flabel">Destino (código IATA/Hotelbeds)</label>
+          <input class="finput" id="h-dest" placeholder="ex: PMI (Maiorca), LIS, MAD, CDG" value="PMI">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Check-in</label>
+          <input class="finput" type="date" id="h-in">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Check-out</label>
+          <input class="finput" type="date" id="h-out">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Adultos</label>
+          <input class="finput" type="number" id="h-adults" value="2" min="1" max="9">
+        </div>
+        <button class="btn btn-coral" onclick="pesquisarHoteis()" id="btn-h">🔍 Pesquisar</button>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="fgroup">
+          <label class="flabel">Crianças</label>
+          <input class="finput" type="number" id="h-children" value="0" min="0" max="4" style="width:80px">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Quartos</label>
+          <input class="finput" type="number" id="h-rooms" value="1" min="1" max="5" style="width:80px">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Filtrar categoria</label>
+          <select class="finput" id="h-stars" style="width:140px">
+            <option value="">Todos</option>
+            <option value="1">★ 1 estrela</option>
+            <option value="2">★★ 2 estrelas</option>
+            <option value="3">★★★ 3 estrelas</option>
+            <option value="4">★★★★ 4 estrelas</option>
+            <option value="5">★★★★★ 5 estrelas</option>
+          </select>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Ordenar por</label>
+          <select class="finput" id="h-sort" style="width:140px">
+            <option value="price">Preço</option>
+            <option value="category">Categoria</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div id="hotels-results">
+      <div class="status">
+        <div class="status-icon">🏨</div>
+        <div>Pesquisa hotéis por destino e datas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ACTIVIDADES ════════════════════════════════════════ -->
+  <div id="section-actividades" style="display:none">
+    <div class="card">
+      <div class="card-title">🎭 Pesquisar Actividades</div>
+      <div class="grid5">
+        <div class="fgroup">
+          <label class="flabel">Destino (código)</label>
+          <input class="finput" id="a-dest" placeholder="ex: PMI, BCN, LIS" value="PMI">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Data início</label>
+          <input class="finput" type="date" id="a-from">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Data fim</label>
+          <input class="finput" type="date" id="a-to">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Adultos</label>
+          <input class="finput" type="number" id="a-adults" value="2" min="1">
+        </div>
+        <button class="btn btn-coral" onclick="pesquisarActividades()" id="btn-a">🔍 Pesquisar</button>
+      </div>
+    </div>
+    <div id="activities-results">
+      <div class="status">
+        <div class="status-icon">🎭</div>
+        <div>Pesquisa actividades e excursões no destino</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TRANSFERS ══════════════════════════════════════════ -->
+  <div id="section-transfers" style="display:none">
+    <div class="card">
+      <div class="card-title">🚌 Pesquisar Transfers</div>
+      <div class="grid5">
+        <div class="fgroup">
+          <label class="flabel">Aeroporto origem (IATA)</label>
+          <input class="finput" id="t-from" placeholder="ex: PMI" value="PMI">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Destino hotel (código)</label>
+          <input class="finput" id="t-to" placeholder="ex: PMI" value="PMI">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Data chegada</label>
+          <input class="finput" type="date" id="t-date">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Passageiros</label>
+          <input class="finput" type="number" id="t-pax" value="2" min="1">
+        </div>
+        <button class="btn btn-coral" onclick="pesquisarTransfers()" id="btn-t">🔍 Pesquisar</button>
+      </div>
+    </div>
+    <div id="transfers-results">
+      <div class="status">
+        <div class="status-icon">🚌</div>
+        <div>Pesquisa transfers aeroporto ↔ hotel</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal detalhe hotel -->
+<div id="hotel-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div id="modal-hotel-name" style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:700"></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Credenciais Hotelbeds ─────────────────────────────────────
+const HB_KEY    = '2a7907ff9a3b72ce04f3e407e236ead7'
+const HB_BASE   = 'https://api.test.hotelbeds.com'
+
+// SHA256 para assinatura
+async function sha256hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str))
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('')
+}
+
+async function getHeaders() {
+  const ts  = Math.floor(Date.now() / 1000).toString()
+  const sig = await sha256hex(HB_KEY + 'SAGewXFZpa' + ts)
+  return {
+    'Api-key': HB_KEY,
+    'X-Signature': sig,
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Accept-Language': 'PT'
+  }
+}
+
+// ── Utilitários ───────────────────────────────────────────────
+function toast(msg, type='') {
+  const el = document.getElementById('toast')
+  el.textContent = msg
+  el.className = 'toast show' + (type ? ' ' + type : '')
+  setTimeout(() => el.className = 'toast', 3500)
+}
+
+function setTab(tab) {
+  ['hoteis','actividades','transfers'].forEach(t => {
+    document.getElementById('section-' + t).style.display = t === tab ? 'block' : 'none'
+    document.getElementById('tab-' + t).className = 'tab' + (t === tab ? ' active' : '')
+  })
+}
+
+function stars(n) {
+  return n ? '★'.repeat(Math.min(parseInt(n),5)) : ''
+}
+
+function fmtPrice(v) {
+  return parseFloat(v||0).toLocaleString('pt-PT',{minimumFractionDigits:2})
+}
+
+// ── Datas por defeito ─────────────────────────────────────────
+;(function(){
+  const d30 = new Date(); d30.setDate(d30.getDate()+30)
+  const d37 = new Date(); d37.setDate(d37.getDate()+37)
+  const fmt = d => d.toISOString().split('T')[0]
+  document.getElementById('h-in').value  = fmt(d30)
+  document.getElementById('h-out').value = fmt(d37)
+  document.getElementById('a-from').value = fmt(d30)
+  document.getElementById('a-to').value   = fmt(d37)
+  document.getElementById('t-date').value = fmt(d30)
+})()
+
+// ── HOTÉIS ───────────────────────────────────────────────────
+async function pesquisarHoteis() {
+  const dest    = document.getElementById('h-dest').value.trim().toUpperCase()
+  const checkIn = document.getElementById('h-in').value
+  const checkOut= document.getElementById('h-out').value
+  const adults  = parseInt(document.getElementById('h-adults').value) || 2
+  const children= parseInt(document.getElementById('h-children').value) || 0
+  const rooms   = parseInt(document.getElementById('h-rooms').value) || 1
+  const starsF  = document.getElementById('h-stars').value
+  const sortBy  = document.getElementById('h-sort').value
+
+  if (!dest || !checkIn || !checkOut) { toast('Preenche todos os campos','err'); return }
+
+  const btn = document.getElementById('btn-h')
+  btn.disabled = true; btn.textContent = '⏳ A pesquisar...'
+  document.getElementById('hotels-results').innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>'
+
+  try {
+    const headers = await getHeaders()
+    const body = {
+      stay: { checkIn, checkOut },
+      occupancies: [{ rooms, adults, children: children > 0 ? children : undefined }],
+      destination: { code: dest },
+      filter: { maxHotels: 50, ...(starsF ? { minCategory: parseInt(starsF)*10, maxCategory: parseInt(starsF)*10 } : {}) }
+    }
+
+    const res = await fetch(`${HB_BASE}/hotel-api/1.0/hotels`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body)
+    })
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error?.message || `HTTP ${res.status}: ${res.statusText}`)
+    }
+
+    const data = await res.json()
+    const hotels = data.hotels?.hotels || []
+    const nights = Math.round((new Date(checkOut) - new Date(checkIn)) / 864e5)
+
+    if (!hotels.length) {
+      document.getElementById('hotels-results').innerHTML = `
+        <div class="status"><div class="status-icon">😕</div>
+        <div>Sem hotéis disponíveis para <strong>${dest}</strong> nessas datas.<br>Tenta outro destino ou datas diferentes.</div></div>`
+      return
+    }
+
+    // Sort
+    const sorted = [...hotels].sort((a,b) => {
+      if (sortBy === 'price') return (a.minRate||999) - (b.minRate||999)
+      return (b.categoryCode||0) - (a.categoryCode||0)
+    })
+
+    const cards = sorted.map(h => {
+      const price = parseFloat(h.minRate||0)
+      const priceNight = nights > 0 ? (price/nights).toFixed(2) : price
+      const starStr = stars(h.categoryCode ? h.categoryCode.replace(/[^\d]/g,'') : 0)
+      const room = h.rooms?.[0]?.rates?.[0]
+
+      return `
+        <div class="hotel-card">
+          <div class="hotel-thumb">🏨</div>
+          <div class="hotel-body">
+            <div class="hotel-name">${h.name || 'Hotel'}</div>
+            <div class="hotel-loc">📍 ${h.destinationCode || dest} · ${h.zoneCode || ''}</div>
+            ${starStr ? `<div class="hotel-stars">${starStr}</div>` : ''}
+            ${h.categoryCode ? `<span class="badge">${h.categoryCode}</span>` : ''}
+            ${room?.boardCode ? `<span class="badge">${room.boardCode}</span>` : ''}
+            ${room?.rooms ? `<span class="badge">${room.rooms} quarto${room.rooms>1?'s':''}</span>` : ''}
+          </div>
+          <div class="hotel-footer">
+            <div>
+              <div class="hotel-price">€${fmtPrice(price)}</div>
+              <div class="hotel-price-sub">${nights} noit${nights!==1?'es':'e'} · €${fmtPrice(priceNight)}/noite</div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-outline" style="padding:6px 10px;font-size:11px" onclick="verDetalhes('${h.code}','${h.name?.replace(/'/g,"\\'")||''}')">
+                ℹ️ Ver
+              </button>
+              <button class="btn btn-coral" style="padding:6px 10px;font-size:11px" onclick="copiarHotel('${h.name?.replace(/'/g,"\\'")||''}','${price}','${nights}','${checkIn}','${checkOut}')">
+                📋 Usar
+              </button>
+            </div>
+          </div>
+        </div>`
+    }).join('')
+
+    document.getElementById('hotels-results').innerHTML = `
+      <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;font-weight:600">
+        ${hotels.length} hotéis encontrados em <strong>${dest}</strong> · ${nights} noite${nights!==1?'s':''}
+      </div>
+      <div class="results-grid">${cards}</div>`
+
+  } catch(e) {
+    document.getElementById('hotels-results').innerHTML = `
+      <div class="status"><div class="status-icon">⚠️</div>
+      <div style="color:var(--coral);font-weight:600">Erro: ${e.message}</div>
+      <div style="font-size:12px;margin-top:8px">Verifica se o domínio está na allowlist do Hotelbeds</div></div>`
+  } finally {
+    btn.disabled = false; btn.textContent = '🔍 Pesquisar'
+  }
+}
+
+// ── VER DETALHES HOTEL ────────────────────────────────────────
+async function verDetalhes(code, name) {
+  document.getElementById('hotel-modal').style.display = 'flex'
+  document.getElementById('modal-hotel-name').textContent = name
+  document.getElementById('modal-content').innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>'
+
+  try {
+    const headers = await getHeaders()
+    const res = await fetch(
+      `${HB_BASE}/hotel-content-api/1.0/hotels/${code}/details?language=PT&useSecondaryLanguage=true`,
+      { headers }
+    )
+    const data = await res.json()
+    const h = data.hotel
+
+    if (!h) throw new Error('Sem dados')
+
+    const imgs = (h.images||[]).filter(i=>i.path).slice(0,3)
+    const facils = (h.facilities||[]).slice(0,8)
+    const desc = h.description?.content || ''
+
+    document.getElementById('modal-content').innerHTML = `
+      ${imgs.length ? `<div style="display:grid;grid-template-columns:repeat(${imgs.length},1fr);gap:4px;margin-bottom:1rem;border-radius:8px;overflow:hidden">
+        ${imgs.map(i=>`<img src="https://photos.hotelbeds.com/giata/${i.path}" style="width:100%;height:120px;object-fit:cover" onerror="this.style.display='none'">`).join('')}
+      </div>` : ''}
+      ${h.address?.content ? `<div style="font-size:12px;color:var(--muted);margin-bottom:8px">📍 ${h.address.content}, ${h.city?.content||''}, ${h.country?.code||''}</div>` : ''}
+      ${h.email ? `<div style="font-size:12px;color:var(--muted);margin-bottom:8px">📧 ${h.email}</div>` : ''}
+      ${h.web ? `<div style="font-size:12px;margin-bottom:8px"><a href="${h.web}" target="_blank" style="color:var(--blue)">${h.web}</a></div>` : ''}
+      ${desc ? `<div style="font-size:13px;line-height:1.6;margin-bottom:1rem;color:var(--text)">${desc.substring(0,400)}...</div>` : ''}
+      ${facils.length ? `<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Facilidades</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${facils.map(f=>`<span class="badge">${f.description?.content||f.facilityCode}</span>`).join('')}
+        </div>` : ''}
+    `
+  } catch(e) {
+    document.getElementById('modal-content').innerHTML = `<div style="color:var(--coral)">${e.message}</div>`
+  }
+}
+
+function closeModal() {
+  document.getElementById('hotel-modal').style.display = 'none'
+}
+
+// ── ACTIVIDADES ───────────────────────────────────────────────
+async function pesquisarActividades() {
+  const dest   = document.getElementById('a-dest').value.trim().toUpperCase()
+  const from   = document.getElementById('a-from').value
+  const to     = document.getElementById('a-to').value
+  const adults = document.getElementById('a-adults').value
+
+  if (!dest || !from || !to) { toast('Preenche todos os campos','err'); return }
+
+  const btn = document.getElementById('btn-a')
+  btn.disabled = true; btn.textContent = '⏳ A pesquisar...'
+  document.getElementById('activities-results').innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>'
+
+  try {
+    const headers = await getHeaders()
+    const body = {
+      filters: { destination: dest },
+      language: 'PT',
+      from: 1, to: 30,
+      paxes: [{ age: 30, type: 'ADULT', count: parseInt(adults) }],
+      date: { from, to }
+    }
+
+    const res = await fetch(`${HB_BASE}/activity-api/1.0/activities/availability`, {
+      method: 'POST', headers, body: JSON.stringify(body)
+    })
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    const acts = data.activities || []
+
+    if (!acts.length) {
+      document.getElementById('activities-results').innerHTML = `
+        <div class="status"><div class="status-icon">😕</div><div>Sem actividades encontradas em ${dest}</div></div>`
+      return
+    }
+
+    const cards = acts.map(a => {
+      const price = a.minRate?.amount ? parseFloat(a.minRate.amount) : null
+      return `
+        <div class="act-card">
+          <div class="act-name">${a.name || 'Actividade'}</div>
+          <div class="act-desc">${(a.description||'').substring(0,120)}${a.description?.length>120?'...':''}</div>
+          ${a.modalities?.[0]?.duration?.value ? `<span class="badge">⏱ ${a.modalities[0].duration.value} ${a.modalities[0].duration.metric||''}</span>` : ''}
+          ${a.type ? `<span class="badge">${a.type}</span>` : ''}
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+            ${price ? `<div class="hotel-price" style="font-size:16px">€${fmtPrice(price)}</div>` : '<div style="color:var(--muted);font-size:13px">Consultar preço</div>'}
+            <button class="btn btn-coral" style="padding:6px 12px;font-size:12px" onclick="copiarActividade('${a.name?.replace(/'/g,"\\'")||''}','${price||0}')">📋 Usar</button>
+          </div>
+        </div>`
+    }).join('')
+
+    document.getElementById('activities-results').innerHTML = `
+      <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;font-weight:600">${acts.length} actividades em ${dest}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">${cards}</div>`
+
+  } catch(e) {
+    document.getElementById('activities-results').innerHTML = `
+      <div class="status"><div class="status-icon">⚠️</div><div style="color:var(--coral)">${e.message}</div></div>`
+  } finally {
+    btn.disabled = false; btn.textContent = '🔍 Pesquisar'
+  }
+}
+
+// ── TRANSFERS ─────────────────────────────────────────────────
+async function pesquisarTransfers() {
+  const from = document.getElementById('t-from').value.trim().toUpperCase()
+  const to   = document.getElementById('t-to').value.trim().toUpperCase()
+  const date = document.getElementById('t-date').value
+  const pax  = document.getElementById('t-pax').value
+
+  if (!from || !to || !date) { toast('Preenche todos os campos','err'); return }
+
+  const btn = document.getElementById('btn-t')
+  btn.disabled = true; btn.textContent = '⏳ A pesquisar...'
+  document.getElementById('transfers-results').innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>'
+
+  try {
+    const headers = await getHeaders()
+    const url = `${HB_BASE}/transfer-api/1.0/types/AIRPORT/from/${from}/to/HOTEL/${to}?language=PT&adults=${pax}&children=0&infants=0&transferDate=${date}T12:00:00`
+
+    const res = await fetch(url, { headers })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    const transfers = data.transfers || []
+
+    if (!transfers.length) {
+      document.getElementById('transfers-results').innerHTML = `
+        <div class="status"><div class="status-icon">😕</div><div>Sem transfers para ${from} → ${to}</div></div>`
+      return
+    }
+
+    const cards = transfers.map(t => `
+      <div class="act-card">
+        <div class="act-name">${t.name || 'Transfer'} — ${t.vehicle?.description||''}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">
+          ${t.category?.description ? `<span class="badge">${t.category.description}</span>` : ''}
+          ${t.vehicle?.code ? `<span class="badge">🚗 ${t.vehicle.code}</span>` : ''}
+          ${t.maxPaxCapacity ? `<span class="badge">👥 Max ${t.maxPaxCapacity} pax</span>` : ''}
+          ${t.transferType ? `<span class="badge">${t.transferType}</span>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="hotel-price" style="font-size:18px">€${fmtPrice(t.netPrice||t.price?.amount)}</div>
+          <button class="btn btn-coral" style="padding:6px 12px;font-size:12px" onclick="copiarTransfer('${from}','${to}','${t.name?.replace(/'/g,"\\'")||''}','${t.netPrice||t.price?.amount||0}')">📋 Usar</button>
+        </div>
+      </div>`).join('')
+
+    document.getElementById('transfers-results').innerHTML = `
+      <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;font-weight:600">${transfers.length} opções de transfer ${from} → ${to}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">${cards}</div>`
+
+  } catch(e) {
+    document.getElementById('transfers-results').innerHTML = `
+      <div class="status"><div class="status-icon">⚠️</div><div style="color:var(--coral)">${e.message}</div></div>`
+  } finally {
+    btn.disabled = false; btn.textContent = '🔍 Pesquisar'
+  }
+}
+
+// ── Copiar para clipboard ─────────────────────────────────────
+function copiarHotel(nome, preco, noites, checkIn, checkOut) {
+  const txt = `Hotel: ${nome}\nCheck-in: ${checkIn}\nCheck-out: ${checkOut}\nNoites: ${noites}\nPreço total: €${fmtPrice(preco)}\nPreço/noite: €${fmtPrice(preco/noites)}`
+  navigator.clipboard.writeText(txt).then(() => toast('Copiado para clipboard!','ok'))
+}
+
+function copiarActividade(nome, preco) {
+  const txt = `Actividade: ${nome}\nPreço: €${fmtPrice(preco)}`
+  navigator.clipboard.writeText(txt).then(() => toast('Copiado!','ok'))
+}
+
+function copiarTransfer(from, to, nome, preco) {
+  const txt = `Transfer: ${from} → ${to}\nTipo: ${nome}\nPreço: €${fmtPrice(preco)}`
+  navigator.clipboard.writeText(txt).then(() => toast('Copiado!','ok'))
+}
+</script>
+</body>
+</html>
