@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O teu orçamento de viagem · APM Viagens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+:root {
+  --coral: #E8395A;
+  --coral-light: #fff0f3;
+  --blue: #3B5BDB;
+  --blue-light: #eef2ff;
+  --text: #1a1a2e;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --bg: #f8f9ff;
+  --surface: #ffffff;
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --shadow: 0 4px 20px rgba(0,0,0,.07);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.12);
+  --radius: 20px;
+}
+html { scroll-behavior: smooth }
+body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh }
+
+/* ── HERO ── */
+.hero {
+  position: relative; height: 65vh; overflow: hidden;
+  background: transparent;
+  border-radius: 20px;
+  margin: 108px 20px 0;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center; background-repeat: no-repeat;
+  transition: opacity .4s;
+}
+.hero-bg video {
+  width: 100%; height: 100%; object-fit: cover;
+  position: absolute; inset: 0; display: block;
+}
+.hero-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 28px 40px; z-index: 10;
+}
+
+
+.hero-content {
+  position: relative; z-index: 1; padding: 40px 24px 32px;
+  color: #fff;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.15); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.2); border-radius: 50px;
+  padding: 5px 14px; font-size: .75rem; font-weight: 600;
+  margin-bottom: 12px; letter-spacing: .04em;
+}
+.hero-dest {
+  font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 800; line-height: 1.1;
+  margin-bottom: 8px;
+}
+.hero-sub { font-size: 1rem; opacity: .85; margin-bottom: 20px; font-weight: 400 }
+.hero-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px }
+.pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 50px; padding: 5px 12px; font-size: .8rem;
+  font-weight: 500; color: var(--muted);
+}
+.hero-price-bar {
+  background: rgba(255,255,255,.12); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.2); border-radius: 14px;
+  padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+.price-main { font-size: 2rem; font-weight: 800; color: #fff }
+.price-label { font-size: .75rem; opacity: .7; margin-bottom: 2px }
+.price-sinal { font-size: .9rem; font-weight: 600; color: #fcd34d }
+.accept-btn {
+  background: var(--coral); color: #fff; border: none; border-radius: 50px;
+  padding: 13px 28px; font-family: var(--font); font-size: .95rem; font-weight: 700;
+  cursor: pointer; transition: all .2s; white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(232,57,90,.5);
+}
+.accept-btn:hover { background: #d42e4f; transform: translateY(-1px) }
+
+/* ── NAV ── */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 12px 40px; display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,.97); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+.logo-wrap { display: flex; align-items: center; gap: 10px }
+.logo-wrap img { height: 64px; width: auto }
+.logo-text { font-size: .85rem; font-weight: 700; color: var(--text) }
+.topbar-timer {
+  font-size: .75rem; font-weight: 600;
+  background: rgba(232,57,90,.2); border: 1px solid rgba(232,57,90,.4);
+  border-radius: 50px; padding: 4px 12px; color: #fff;
+  transition: all .3s;
+}
+.topbar.scrolled .topbar-timer { background: var(--coral-light); color: var(--coral); border-color: var(--coral) }
+
+/* ── SECTIONS ── */
+.section { padding: 28px 20px; max-width: 680px; margin: 0 auto }
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px; margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: .7rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--muted); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title::before {
+  content: ''; display: block; width: 3px; height: 14px;
+  background: var(--coral); border-radius: 2px;
+}
+
+/* ── ITINERARY ── */
+.day-item { display: flex; gap: 14px; margin-bottom: 16px }
+.day-num {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--coral);
+  color: #fff; font-size: .8rem; font-weight: 800; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;
+}
+.day-title { font-size: .95rem; font-weight: 700; margin-bottom: 4px }
+.day-desc { font-size: .875rem; color: var(--muted); line-height: 1.65 }
+
+/* ── INCLUDES ── */
+.incl-list { display: flex; flex-direction: column; gap: 0 }
+.incl-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border); font-size: .9rem;
+}
+.incl-item:last-child { border-bottom: none }
+.incl-icon { font-size: 1.1rem; width: 28px; text-align: center; flex-shrink: 0 }
+
+/* ── PRICES ── */
+.price-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid var(--border); font-size: .9rem;
+}
+.price-row:last-of-type { border-bottom: none }
+.price-row.total {
+  padding-top: 14px; margin-top: 4px; border-top: 2px solid var(--border);
+  font-size: 1.1rem; font-weight: 800;
+}
+.price-row.total .val { color: var(--coral) }
+
+/* ── PAYMENT ── */
+.payment-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;
+}
+.payment-box {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 14px; text-align: center;
+}
+.payment-box .amt { font-size: 1.4rem; font-weight: 800; color: var(--coral) }
+.payment-box .lbl { font-size: .75rem; color: var(--muted); margin-top: 4px }
+.payment-box .date { font-size: .8rem; font-weight: 600; color: var(--text); margin-top: 2px }
+
+/* ── CANCEL ── */
+.cancel-box {
+  background: #fff8f0; border: 1.5px solid #fde68a;
+  border-radius: 12px; padding: 16px;
+}
+.cancel-box p { font-size: .875rem; color: #92400e; line-height: 1.7; white-space: pre-wrap }
+
+/* ── CONSULTANT ── */
+.consultant-card {
+  background: linear-gradient(135deg, var(--coral-light), var(--blue-light));
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 24px; display: flex; align-items: center; gap: 16px;
+  margin-bottom: 16px;
+}
+.consul-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--coral); color: #fff; font-size: 1.3rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.consul-name { font-size: 1rem; font-weight: 700; margin-bottom: 2px }
+.consul-role { font-size: .8rem; color: var(--muted) }
+.wa-btn {
+  margin-top: 10px; display: inline-flex; align-items: center; gap: 8px;
+  background: #25d366; color: #fff; border: none; border-radius: 50px;
+  padding: 9px 18px; font-family: var(--font); font-size: .85rem; font-weight: 600;
+  cursor: pointer; text-decoration: none; transition: all .2s;
+}
+.wa-btn:hover { background: #1fb855; transform: translateY(-1px) }
+
+/* ── ACCEPT SECTION ── */
+.accept-section {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 24px; margin-bottom: 16px;
+  box-shadow: var(--shadow-lg);
+}
+.accept-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 6px }
+.accept-sub { font-size: .875rem; color: var(--muted); margin-bottom: 20px; line-height: 1.6 }
+.sig-wrap {
+  border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden;
+  margin-bottom: 12px; position: relative;
+}
+.sig-label {
+  position: absolute; top: 8px; left: 12px; font-size: .7rem; color: var(--muted);
+  font-weight: 600; text-transform: uppercase; letter-spacing: .05em; pointer-events: none;
+}
+canvas#sig-canvas {
+  display: block; width: 100%; height: 120px; cursor: crosshair; touch-action: none;
+  background: transparent;
+}
+.sig-clear {
+  position: absolute; top: 8px; right: 8px; background: none; border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 8px; font-size: .72rem; cursor: pointer; color: var(--muted);
+  font-family: var(--font);
+}
+.accept-cta {
+  width: 100%; padding: 16px; background: var(--coral); color: #fff; border: none;
+  border-radius: 12px; font-family: var(--font); font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: all .2s; box-shadow: 0 4px 16px rgba(232,57,90,.35);
+}
+.accept-cta:hover { background: #d42e4f; transform: translateY(-1px) }
+.accept-cta:disabled { opacity: .5; transform: none; cursor: not-allowed }
+
+/* ── SUCCESS ── */
+.success-screen {
+  display: none; text-align: center; padding: 40px 24px;
+}
+.success-icon { font-size: 4rem; margin-bottom: 16px }
+.success-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px }
+.success-sub { font-size: .95rem; color: var(--muted); line-height: 1.7 }
+
+/* ── VIDEO / GALLERY ── */
+.video-wrap {
+  border-radius: 14px; overflow: hidden;
+  aspect-ratio: 16/9; box-shadow: var(--shadow);
+}
+.video-wrap iframe, .video-wrap video { width: 100%; height: 100%; border: none; display: block }
+.hotel-img {
+  border-radius: 14px; overflow: hidden; aspect-ratio: 4/3;
+  box-shadow: var(--shadow); min-width: 0;
+}
+.hotel-img img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform .3s;
+}
+.hotel-img:hover img { transform: scale(1.03) }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(40px);
+  background: var(--text); color: #fff; border-radius: 50px; padding: 10px 20px;
+  font-size: .85rem; font-weight: 500; opacity: 0; transition: all .3s; z-index: 9999;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0) }
+.toast.ok { background: #065f46 }
+.toast.err { background: #991b1b }
+
+/* ── STICKY FOOTER ── */
+.sticky-footer {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 99;
+  background: rgba(255,255,255,.95); backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border); padding: 12px 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.footer-price { font-size: 1.1rem; font-weight: 800; color: var(--coral) }
+.footer-label { font-size: .72rem; color: var(--muted) }
+.footer-btn {
+  background: var(--coral); color: #fff; border: none; border-radius: 50px;
+  padding: 11px 24px; font-family: var(--font); font-size: .9rem; font-weight: 700;
+  cursor: pointer; transition: all .2s; box-shadow: 0 4px 16px rgba(232,57,90,.35);
+  white-space: nowrap;
+}
+.footer-btn:hover { background: #d42e4f }
+
+@media (min-width: 680px) {
+  .sticky-footer { display: none }
+}
+@media (max-width: 680px) {
+  .topbar { padding: 10px 16px }
+  .logo-wrap img { height: 44px }
+  .hero { margin: 68px 10px 0; height: 45vw; min-height: 220px; border-radius: 14px }
+  .hero-overlay { padding: 16px 18px }
+  #hero-dest-overlay { font-size: clamp(1.4rem,6vw,2.2rem) }
+  #hero-sub-overlay { font-size: .8rem }
+  #section-gallery { padding: 16px 10px 0 }
+  #hotel-gallery { grid-template-columns: 1fr 1fr; gap: 8px }
+  .hotel-img { aspect-ratio: 4/3 }
+  .section { padding: 16px 12px }
+  .card { padding: 16px }
+  .hero-overlay { padding: 14px 16px }
+}
+
+/* ── EXPIRED ── */
+.expired-banner {
+  background: #fee2e2; border: 1.5px solid #fca5a5; border-radius: 12px;
+  padding: 16px; text-align: center; margin-bottom: 16px;
+  font-size: .9rem; color: #991b1b; font-weight: 600;
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar" id="topbar">
+  <div class="logo-wrap">
+    <img src="data:image/png;base64,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" alt="APM Viagens">
+    <span class="logo-text">APM Viagens</span>
+  </div>
+  
+</div>
+
+<!-- HERO -->
+<div class="hero" id="hero">
+  <div class="hero-bg" id="hero-bg"></div>
+
+  <div class="hero-overlay" id="hero-overlay" style="display:none">
+    <div id="hero-dest-overlay" style="font-size:clamp(2rem,6vw,3.5rem);font-weight:800;color:#fff;line-height:1.1;text-shadow:0 2px 8px rgba(0,0,0,.8),0 0 40px rgba(0,0,0,.6)">—</div>
+    <div id="hero-sub-overlay" style="font-size:1rem;color:#fff;margin-top:6px;font-weight:400;text-shadow:0 1px 6px rgba(0,0,0,.8)"></div>
+  </div>
+</div>
+
+
+
+<!-- CONTENT -->
+<div id="main-content" style="padding-bottom:100px">
+
+  <!-- HOTEL GALLERY -->
+  <div id="section-gallery" style="display:none;padding:24px 20px 0">
+    <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px">🏨 Galeria do hotel</div>
+    <div id="hotel-gallery" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px"></div>
+  </div>
+
+  <!-- TÍTULO E DESCRIÇÃO -->
+  <div style="max-width:800px;margin:0 auto;padding:28px 20px 0">
+    <div class="hero-tag" style="background:var(--coral-light);border-color:var(--coral-mid);color:var(--coral);margin-bottom:14px">✈ Proposta personalizada</div>
+    <div id="hero-dest" style="font-size:clamp(1.8rem,5vw,3rem);font-weight:800;line-height:1.1;color:var(--text);margin-bottom:8px">—</div>
+    <div id="hero-sub" style="font-size:1rem;color:var(--muted);margin-bottom:16px"></div>
+    <div id="hero-pills" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px"></div>
+    <div id="hero-price-bar" style="display:none;background:var(--coral-light);border:1.5px solid var(--coral-mid);border-radius:14px;padding:14px 20px;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px">
+      <div>
+        <div style="font-size:.75rem;color:var(--coral);font-weight:600;margin-bottom:2px">Preço total</div>
+        <div style="font-size:2rem;font-weight:800;color:var(--coral)" id="hero-price">—</div>
+        <div style="font-size:.9rem;font-weight:600;color:var(--coral)" id="hero-sinal" style="display:none"></div>
+      </div>
+      <button class="accept-btn" onclick="scrollToAccept()">Aceitar proposta ↓</button>
+    </div>
+  </div>
+
+  <!-- VIDEO / 360 -->
+  <div id="section-video" style="display:none;padding:24px 20px 0">
+    <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px">🎬 Vídeo do destino</div>
+    <div id="video-embed"></div>
+  </div>
+
+  <!-- ITINERARY -->
+  <div class="section" id="section-days" style="display:none">
+    <div class="card">
+      <div class="card-title">Programa dia a dia</div>
+      <div id="days-list"></div>
+    </div>
+  </div>
+
+  <!-- INCLUDES -->
+  <div class="section" id="section-incls" style="display:none">
+    <div class="card">
+      <div class="card-title">O que está incluído</div>
+      <div class="incl-list" id="incls-list"></div>
+    </div>
+  </div>
+
+  <!-- PRICES -->
+  <div class="section" id="section-prices" style="display:none">
+    <div class="card">
+      <div class="card-title">Preços</div>
+      <div id="prices-list"></div>
+    </div>
+  </div>
+
+  <!-- PAYMENT -->
+  <div class="section" id="section-payment" style="display:none">
+    <div class="card">
+      <div class="card-title">Condições de pagamento</div>
+      <div class="payment-grid" id="payment-grid"></div>
+      <div id="metodo-pag-info"></div>
+    </div>
+  </div>
+
+  <!-- CANCELLATION -->
+  <div class="section" id="section-cancel" style="display:none">
+    <div class="card">
+      <div class="card-title">⚠️ Condições de cancelamento</div>
+      <div class="cancel-box"><p id="cancel-text"></p></div>
+    </div>
+  </div>
+
+  <!-- CONSULTANT -->
+  <div class="section" id="section-consul">
+    <div class="consultant-card">
+      <div class="consul-avatar" id="consul-avatar">A</div>
+      <div>
+        <div class="consul-name" id="consul-name">—</div>
+        <div class="consul-role">Consultor/a APM Viagens</div>
+        <div id="consul-stats" style="display:none"></div>
+        <a class="wa-btn" id="consul-wa" href="#" target="_blank">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Falar com o consultor
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCEPT -->
+  <div class="section" id="section-accept">
+    <div class="accept-section" id="accept-box">
+      <div class="accept-title">✅ Aceitar orçamento</div>
+      <div class="accept-sub" id="accept-sub-text">Ao aceitar este orçamento confirmas o teu interesse. O consultor entrará em contacto para confirmar todos os detalhes.</div>
+
+      <!-- DOCUMENTOS PARA CONSULTA -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Consulte os seguintes documentos:</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <a href="rgpd.html" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--blue);text-decoration:none">
+            📄 Política de Proteção de Dados (RGPD)
+          </a>
+          <a href="cgr.html" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--blue);text-decoration:none">
+            📄 Condições Gerais de Reserva
+          </a>
+          <a href="fin.html" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--blue);text-decoration:none">
+            📄 Ficha de Informação Normalizada (FIN)
+          </a>
+        </div>
+      </div>
+      <button class="accept-cta" id="accept-cta" onclick="aceitarProposta()">✅ Aceitar este orçamento</button>
+    </div>
+    <div class="success-screen" id="success-screen">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">Orçamento aceite!</div>
+      <div class="success-sub" id="success-msg">Obrigado! O teu consultor foi notificado e entrará em contacto em breve para confirmar os próximos passos.</div>
+      <br>
+      <a class="wa-btn" id="success-wa" href="#" target="_blank" style="display:inline-flex;margin-top:8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Falar com o consultor
+      </a>
+    </div>
+  </div>
+
+</div><!-- /main-content -->
+
+<!-- STICKY FOOTER -->
+<div class="sticky-footer" id="sticky-footer" style="display:none">
+  <div>
+    <div class="footer-label">Preço total</div>
+    <div class="footer-price" id="footer-price">—</div>
+  </div>
+  <button class="footer-btn" onclick="scrollToAccept()">Aceitar proposta ✍️</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPA_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const { createClient } = supabase
+const sb = createClient(SUPA_URL, SUPA_KEY)
+
+let D = null // proposta data
+let sigDrawing = false
+let sigHasMark = false
+
+// ── LOAD DATA ──
+window.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search)
+  const id = params.get('proposta')
+  if(!id) { showError('Link inválido.'); return }
+
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+  if(isUUID) {
+    const { data, error } = await sb.from('propostas_viagem').select('dados, created_at').eq('id', id).single()
+    if(error || !data) { showError('Proposta não encontrada.'); return }
+    D = data.dados
+    D._created = data.created_at
+  } else {
+    try { D = JSON.parse(decodeURIComponent(escape(atob(id)))) } catch(e) { showError('Link inválido.'); return }
+  }
+
+  renderProposta()
+  initSig()
+})
+
+// ── RENDER ──
+function renderProposta() {
+  const fmt = s => { if(!s) return '—'; try{ return new Date(s+'T12:00:00').toLocaleDateString('pt-PT', {day:'numeric',month:'long',year:'numeric'})}catch(e){return s} }
+  const fmtShort = s => { if(!s) return '—'; try{ return new Date(s+'T12:00:00').toLocaleDateString('pt-PT')}catch(e){return s} }
+
+
+
+  // Hero
+  document.getElementById('hero-dest').textContent = D.dest || '—'
+  if(D.sub) document.getElementById('hero-sub').textContent = D.sub
+
+  // Hero destination overlay
+  const destOverlay = document.getElementById('hero-dest-overlay')
+  const subOverlay = document.getElementById('hero-sub-overlay')
+  const heroOverlay = document.getElementById('hero-overlay')
+  if(destOverlay) destOverlay.textContent = D.dest || '—'
+  if(subOverlay && D.sub) subOverlay.textContent = D.sub
+  if(heroOverlay) heroOverlay.style.display = 'block'
+
+  if(D.foto) {
+    const img = document.getElementById('hero-img')
+    if(img) { img.src = D.foto; img.style.display = 'block' }
+  } else if(D.videoUrl && (/\.(mp4|webm)(\?|$)/i.test(D.videoUrl) || D.videoUrl.includes('pexels') || D.videoUrl.includes('pixabay'))) {
+    document.querySelector('.hero-bg').innerHTML += `<video autoplay muted loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><source src="${D.videoUrl}" type="video/mp4"></video>`
+  }
+
+  // Pills
+  const pills = []
+  if(D.part && D.reg) pills.push('📅 ' + fmtShort(D.part) + ' – ' + fmtShort(D.reg))
+  else if(D.part) pills.push('📅 ' + fmtShort(D.part))
+  if(D.pax) pills.push('👥 ' + D.pax)
+  if(D.noites) pills.push('🌙 ' + D.noites)
+  // Multiple flights
+  if(D.voos && D.voos.length) {
+    D.voos.forEach(v => { if(v) pills.push('✈️ ' + v) })
+  } else if(D.voo) {
+    pills.push('✈️ ' + D.voo)
+  }
+  document.getElementById('hero-pills').innerHTML = pills.map(p => `<span class="pill">${p}</span>`).join('')
+
+  // Price bar
+  const total = D.prices?.reduce((s,p) => s + (parseFloat(p.val)||0), 0) || 0
+  if(total > 0) {
+    document.getElementById('hero-price-bar').style.display = 'flex'
+    const priceEl = document.getElementById('hero-price')
+    priceEl.textContent = '€' + total.toLocaleString('pt-PT', {minimumFractionDigits:2})
+    document.getElementById('footer-price').textContent = '€' + total.toLocaleString('pt-PT', {minimumFractionDigits:2})
+    document.getElementById('sticky-footer').style.display = 'flex'
+    if(D.sval) {
+      const sinalEl = document.getElementById('hero-sinal')
+      sinalEl.textContent = '💳 Sinal: €' + D.sval
+      sinalEl.style.display = 'block'
+    }
+  }
+
+  // Hotel gallery
+  const hotelFotos = D.hotel_fotos || []
+  if(hotelFotos.filter(f=>f).length) {
+    const gallery = document.getElementById('hotel-gallery')
+    gallery.innerHTML = hotelFotos.filter(f=>f).map(url => `
+      <div class="hotel-img">
+        <img src="${url}" alt="Hotel" loading="lazy">
+      </div>`).join('')
+    document.getElementById('section-gallery').style.display = 'block'
+  }
+
+  // Video / 360 — só mostrar se não for MP4 usado no hero
+  const isHeroVideo = D.videoUrl && (/\.(mp4|webm)(\?|$)/i.test(D.videoUrl) || D.videoUrl.includes('pexels') || D.videoUrl.includes('pixabay'))
+  if((D.videoUrl && !isHeroVideo) || D.tour360) {
+    const url = D.videoUrl || D.tour360
+    let embedHtml = ''
+
+    const ytM = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/)
+    const vimeoM = url.match(/vimeo\.com\/(\d+)/)
+    const isMp4 = /\.(mp4|webm|ogg)(\?|$)/i.test(url) || url.includes('pexels.com/video') || url.includes('pixabay.com')
+
+    if(ytM) {
+      embedHtml = `<div class="video-wrap"><iframe src="https://www.youtube.com/embed/${ytM[1]}?autoplay=0" allow="accelerometer; encrypted-media; gyroscope" allowfullscreen></iframe></div>`
+    } else if(vimeoM) {
+      embedHtml = `<div class="video-wrap"><iframe src="https://player.vimeo.com/video/${vimeoM[1]}" allow="autoplay; fullscreen" allowfullscreen></iframe></div>`
+    } else if(isMp4) {
+      embedHtml = `<div class="video-wrap"><video controls autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover"><source src="${url}" type="video/mp4">O teu browser não suporta este vídeo.</video></div>`
+    } else if(url.includes('matterport') || url.includes('kuula') || url.includes('360')) {
+      embedHtml = `<div class="video-wrap"><iframe src="${url}" allowfullscreen allow="xr-spatial-tracking"></iframe></div>`
+    } else {
+      // Fallback — tentar iframe
+      embedHtml = `<div class="video-wrap"><iframe src="${url}" allowfullscreen></iframe></div>`
+    }
+
+    document.getElementById('video-embed').innerHTML = embedHtml
+    document.getElementById('section-video').style.display = 'block'
+  }
+
+  // Days
+  if(D.days?.length) {
+    document.getElementById('days-list').innerHTML = D.days.filter(d => d.titulo || d.desc).map((d,i) => `
+      <div class="day-item">
+        <div class="day-num">${i+1}</div>
+        <div>
+          <div class="day-title">${d.titulo || 'Dia ' + (i+1)}</div>
+          <div class="day-desc">${d.desc || ''}</div>
+        </div>
+      </div>`).join('')
+    document.getElementById('section-days').style.display = 'block'
+  }
+
+  // Includes
+  const emojis = ['✈️','🏨','🚤','🛡️','⭐','🚗','☕','🍽️','🎭','🏊']
+  if(D.incls?.filter(i=>i).length) {
+    document.getElementById('incls-list').innerHTML = D.incls.filter(i=>i).map((inc,i) => `
+      <div class="incl-item">
+        <span class="incl-icon">${emojis[i % emojis.length]}</span>
+        <span>${inc}</span>
+      </div>`).join('')
+    document.getElementById('section-incls').style.display = 'block'
+  }
+
+  // Prices
+  if(D.prices?.length) {
+    const rows = D.prices.filter(p => p.lbl).map(p => `
+      <div class="price-row">
+        <span style="color:var(--muted)">${p.lbl}</span>
+        <span style="font-weight:600">€${parseFloat(p.val||0).toLocaleString('pt-PT')}</span>
+      </div>`).join('')
+    document.getElementById('prices-list').innerHTML = rows + `
+      <div class="price-row total">
+        <span>Total</span>
+        <span class="val">€${total.toLocaleString('pt-PT', {minimumFractionDigits:2})}</span>
+      </div>`
+    document.getElementById('section-prices').style.display = 'block'
+  }
+
+  // Payment conditions
+  if(D.condpag?.length || D.sval) {
+    let html = ''
+    if(D.sval) {
+      html += `<div class="payment-box"><div class="amt">€${D.sval}</div><div class="lbl">Sinal ${D.spct ? '('+D.spct+'%)' : ''}</div><div class="date">A pagar agora</div></div>`
+    }
+    if(D.condpag?.length) {
+      html += D.condpag.map(c => `<div class="payment-box"><div class="amt" style="font-size:1rem">${c.desc || c}</div><div class="lbl">${c.data || ''}</div></div>`).join('')
+    }
+    if(D.drest) {
+      const restante = total - (parseFloat(D.sval)||0)
+      html += `<div class="payment-box"><div class="amt">€${restante.toLocaleString('pt-PT')}</div><div class="lbl">Restante</div><div class="date">Até ${D.drest}</div></div>`
+    }
+    if(html) {
+      // Add APM logo to first payment box
+    const logoSrc = document.querySelector('.logo-wrap img')?.src || ''
+    if(logoSrc) html = `<div style="display:flex;align-items:center;justify-content:center;padding:14px;background:var(--bg);border-radius:12px;border:1px solid var(--border)"><img src="${logoSrc}" style="height:64px;width:auto"></div>` + html
+    document.getElementById('payment-grid').innerHTML = html
+
+      // Payment method info
+      if(D.metodo_pag?.tipo === 'entidade') {
+        document.getElementById('metodo-pag-info').innerHTML = `
+          <div style="background:#f0f4ff;border:1px solid #c7d7fd;border-radius:10px;padding:14px;font-size:.85rem">
+            <div style="font-weight:700;color:var(--blue);margin-bottom:8px">🏧 Dados para pagamento Multibanco</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <div><div style="font-size:.7rem;color:var(--muted);margin-bottom:2px">Entidade</div><strong>${D.metodo_pag.entidade || '12378'}</strong></div>
+              <div><div style="font-size:.7rem;color:var(--muted);margin-bottom:2px">Referência</div><strong style="color:var(--blue)">${D.metodo_pag.ref || '—'}</strong></div>
+              <div><div style="font-size:.7rem;color:var(--muted);margin-bottom:2px">Montante</div><strong>€${D.metodo_pag.valor || '—'}</strong></div>
+            </div>
+          </div>`
+      } else if(D.metodo_pag?.tipo === 'transferencia') {
+        document.getElementById('metodo-pag-info').innerHTML = `
+          <div style="background:#f0f4ff;border:1px solid #c7d7fd;border-radius:10px;padding:14px;font-size:.85rem;line-height:1.8">
+            <div style="font-weight:700;color:var(--blue);margin-bottom:6px">🏦 Transferência bancária</div>
+            <strong>APM Viagens</strong><br>
+            IBAN: PT50 0018 0003 6396 3219 0202 7<br>
+            BIC/SWIFT: TOTAPTPL
+          </div>`
+      }
+      document.getElementById('section-payment').style.display = 'block'
+    }
+  }
+
+  // Cancellation
+  if(D.cancel) {
+    document.getElementById('cancel-text').textContent = D.cancel
+    document.getElementById('section-cancel').style.display = 'block'
+  }
+
+  // Consultant card
+  const cname = D.cnome || 'APM Viagens'
+  document.getElementById('consul-name').textContent = cname
+  const avatarEl = document.getElementById('consul-avatar')
+
+  if(D.consul_foto) {
+    avatarEl.innerHTML = `<img src="${D.consul_foto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+    avatarEl.style.background = 'transparent'
+  } else {
+    avatarEl.textContent = cname[0]?.toUpperCase() || 'A'
+  }
+
+  // Agency stats below name
+  if(D.consul_stats) {
+    const statsEl = document.getElementById('consul-stats')
+    if(statsEl) {
+      statsEl.innerHTML = `
+        <div style="display:flex;gap:12px;margin-top:6px">
+          ${D.consul_stats.nRsv ? `<span style="font-size:.75rem;color:var(--muted)">✈️ <strong>${D.consul_stats.nRsv}</strong> reservas na agência</span>` : ''}
+          ${D.consul_stats.avgAval ? `<span style="font-size:.75rem;color:var(--muted)">⭐ <strong>${D.consul_stats.avgAval}</strong> avaliação média</span>` : ''}
+        </div>`
+      statsEl.style.display = 'block'
+    }
+  }
+  const waMsg = encodeURIComponent('Olá ' + cname + '! Tenho uma questão sobre a proposta para ' + (D.dest || 'a minha viagem') + '.')
+  const waUrl = 'https://wa.me/' + (D.ctel || '').replace(/\D/g,'') + '?text=' + waMsg
+  document.getElementById('consul-wa').href = waUrl
+  document.getElementById('success-wa').href = waUrl
+
+  // Accept CTA text
+  if(D.sval) {
+    document.getElementById('accept-cta').textContent = '✍️ Aceitar e pagar sinal de €' + D.sval
+    document.getElementById('accept-sub-text').textContent = 'Ao aceitar, confirmas que leste e concordas com todas as condições. O sinal de €' + D.sval + ' deverá ser pago nos dados indicados acima.'
+  }
+}
+
+
+
+function scrollToAccept() {
+  document.getElementById('section-accept').scrollIntoView({behavior:'smooth', block:'center'})
+}
+
+// ── SIGNATURE ──
+function initSig() {
+  const canvas = document.getElementById('sig-canvas')
+  const ctx = canvas.getContext('2d')
+  ctx.strokeStyle = '#1a1a2e'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'
+
+  const getPos = e => {
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    const src = e.touches ? e.touches[0] : e
+    return { x: (src.clientX - rect.left) * scaleX, y: (src.clientY - rect.top) * scaleY }
+  }
+
+  canvas.addEventListener('mousedown', e => { sigDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y) })
+  canvas.addEventListener('mousemove', e => { if(!sigDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); sigHasMark = true })
+  canvas.addEventListener('mouseup', () => sigDrawing = false)
+  canvas.addEventListener('mouseleave', () => sigDrawing = false)
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); sigDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y) })
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); if(!sigDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); sigHasMark = true })
+  canvas.addEventListener('touchend', () => sigDrawing = false)
+}
+
+function clearSig() {
+  const canvas = document.getElementById('sig-canvas')
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+  sigHasMark = false
+}
+
+// ── ACCEPT ──
+async function aceitarProposta() {
+  if(!sigHasMark) { /* no signature required for quote */ }
+  const btn = document.getElementById('accept-cta')
+  btn.disabled = true; btn.textContent = 'A processar...'
+
+  const sigData = null // no signature required for quote
+
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const pid = params.get('proposta')
+    const isUUID = /^[0-9a-f]{8}-/.test(pid)
+
+    if(isUUID) {
+      // Mark quote as accepted
+      await sb.from('propostas_viagem').update({
+        aceite: true,
+        aceite_at: new Date().toISOString(),
+        assinatura: sigData
+      }).eq('id', pid)
+
+      // Create reserva in pipeline as "CSTEnviado" (next step after quote accepted)
+      const consultor_id = D.consultor_id || null
+      const ano = new Date().getFullYear()
+      // Get next sequential number
+      const { data: lastRes } = await sb.from('reservas')
+        .select('rnavt').like('rnavt', 'APM' + ano + '%')
+        .order('rnavt', { ascending: false }).limit(1)
+      const lastNum = lastRes?.[0]?.rnavt ? parseInt(lastRes[0].rnavt.replace('APM'+ano,'')) : 0
+      const rnavt = 'APM' + ano + String(lastNum + 1).padStart(3, '0')
+
+      const { data: novaRes } = await sb.from('reservas').insert({
+        rnavt,
+        destino: D.dest || '',
+        data_partida: D.part || null,
+        data_regresso: D.reg || null,
+        num_pax: D.pax || null,
+        noites: D.noites ? parseInt(D.noites) : null,
+        valor_total: D.prices?.[0]?.val ? parseFloat(D.prices[0].val.replace(/[^0-9.]/g,'')) : null,
+        consultor_id,
+        estado: 'Pendente',
+        pipeline_stage: 'CSTEnviado',
+        pipeline_updated: new Date().toISOString(),
+        proposta_id: pid,
+        notas_pipeline: 'Orçamento aceite pelo cliente via link'
+      }).select('id').single()
+
+      // If there's a client name, try to find or create client record
+      if(D.cli_nome && novaRes?.id) {
+        const { data: cliExists } = await sb.from('clientes')
+          .select('id').ilike('nome', D.cli_nome.trim()).limit(1)
+        if(cliExists?.[0]) {
+          await sb.from('reservas').update({ cliente_id: cliExists[0].id }).eq('id', novaRes.id)
+        }
+      }
+    }
+
+    // Notify consultant via WhatsApp
+    const cname = D.cnome || 'APM Viagens'
+    const msg = '✅ *Orçamento aceite!*\n\n' +
+      'O/A cliente ' + (D.cli_nome || '') + ' aceitou o orçamento para *' + (D.dest||'') + '*.\n\n' +
+      'Foi criada automaticamente uma entrada na Gestão de Orçamentos.' +
+      (D.sval ? '\n\n💳 Aguarda pagamento do sinal de €' + D.sval : '')
+    const waUrl = 'https://wa.me/' + (D.ctel||'').replace(/\D/g,'') + '?text=' + encodeURIComponent(msg)
+
+    document.getElementById('accept-box').style.display = 'none'
+    document.getElementById('success-screen').style.display = 'block'
+    document.getElementById('sticky-footer').style.display = 'none'
+    window.open(waUrl, '_blank')
+    toast('✅ Orçamento aceite com sucesso!', 'ok')
+  } catch(e) {
+    console.error('Erro ao registar aceitação:', e)
+    btn.disabled = false; btn.textContent = '✅ Aceitar este orçamento'
+    toast('Erro ao registar aceitação. Tenta novamente.', 'err')
+  }
+}
+
+function showError(msg) {
+  document.body.innerHTML = `<div style="padding:40px;text-align:center;font-family:sans-serif;color:#6b7280"><div style="font-size:3rem;margin-bottom:16px">⚠️</div><div style="font-size:1.1rem;font-weight:600">${msg}</div></div>`
+}
+
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast')
+  el.textContent = msg; el.className = 'toast '+type+' show'
+  setTimeout(() => el.classList.remove('show'), 3500)
+}
+</script>
+</body>
+</html>
