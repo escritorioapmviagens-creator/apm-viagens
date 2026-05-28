@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recomendar um amigo · APM Viagens</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --coral:#E8395A;--coral-light:#fff0f3;
+  --blue:#3B5BDB;--blue-light:#eef2ff;
+  --text:#1a1a2e;--muted:#6b7280;--border:#e5e7eb;
+  --bg:#faf9f7;--gold:#c9a84c;--gold-light:#fdf8ec;
+  --font:'Inter',sans-serif;--heading:'Poppins',sans-serif;
+  --radius:14px;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+nav{background:#fff;border-bottom:1.5px solid var(--border);padding:0 20px;display:flex;align-items:center;height:58px}
+nav img{height:38px}
+
+/* HERO — branco, coral accent */
+.hero{background:#fff;border-bottom:1px solid var(--border);padding:28px 20px 24px;text-align:center}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:var(--coral-light);color:var(--coral);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:4px 12px;border-radius:50px;margin-bottom:12px;font-family:var(--heading)}
+.hero h1{font-family:var(--heading);font-size:clamp(1.3rem,4vw,1.7rem);font-weight:700;color:var(--text);line-height:1.3;margin-bottom:8px}
+.hero h1 span{color:var(--coral)}
+.hero p{font-size:.875rem;color:var(--muted);max-width:380px;margin:0 auto;line-height:1.7}
+.msg-personalizada{display:none;background:var(--blue-light);border:1px solid #c7d7fd;border-radius:10px;padding:12px 16px;margin:0 20px 0;font-size:.875rem;color:var(--blue);margin-top:16px;max-width:500px;margin-left:auto;margin-right:auto}
+
+/* CONTENT */
+.content{max-width:500px;margin:0 auto;padding:16px 16px 60px}
+
+/* DISCOUNT BOX */
+.disc-box{background:var(--gold-light);border:1px solid #e9d5a0;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.disc-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#92400e;margin-bottom:10px;font-family:var(--heading)}
+.disc-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f5dfa0;font-size:.82rem;color:#78350f}
+.disc-row:last-of-type{border-bottom:none}
+.disc-row strong{color:var(--gold);font-size:.9rem}
+.disc-note{font-size:.68rem;color:#92400e;margin-top:8px;line-height:1.6}
+
+/* CARD */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:6px;font-family:var(--heading)}
+.card-label::before{content:'';width:3px;height:12px;background:var(--coral);border-radius:2px;display:block}
+
+/* INPUTS */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:5px;font-family:var(--heading)}
+.finput{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:var(--font);font-size:.875rem;color:var(--text);outline:none;transition:border-color .2s,background .15s}
+.finput:focus{border-color:var(--coral);background:#fff}
+
+/* BUTTON */
+.btn-main{width:100%;padding:13px;background:var(--coral);color:#fff;border:none;border-radius:10px;font-family:var(--heading);font-size:.9rem;font-weight:600;cursor:pointer;letter-spacing:.01em;box-shadow:0 4px 14px rgba(232,57,90,.25);transition:all .2s}
+.btn-main:hover{background:#d42e4f;transform:translateY(-1px)}
+.btn-main:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-add{width:100%;padding:10px;background:transparent;border:1.5px dashed var(--border);border-radius:10px;font-family:var(--font);font-size:.8rem;color:var(--muted);cursor:pointer;margin-bottom:12px;transition:all .2s}
+.btn-add:hover{border-color:var(--blue);color:var(--blue)}
+
+/* SUCCESS */
+.suc{text-align:center;padding:36px 12px}
+.suc-icon{font-size:3rem;margin-bottom:16px}
+.suc h2{font-family:var(--heading);font-size:1.4rem;font-weight:700;margin-bottom:8px}
+.suc p{color:var(--muted);font-size:.875rem;line-height:1.7;max-width:340px;margin:0 auto 14px}
+
+/* ERROR */
+.err-msg{color:var(--coral);font-size:.8rem;margin-bottom:10px;display:none}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--text);color:#fff;border-radius:50px;padding:11px 22px;font-size:.85rem;opacity:0;transition:all .3s;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:#065f46}
+.toast.err{background:#991b1b}
+
+footer{text-align:center;padding:20px;font-size:.72rem;color:var(--muted)}
+footer a{color:var(--muted);text-decoration:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <img src="data:image/png;base64,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" alt="APM Viagens">
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">🌟 Programa de Referências</div>
+  <h1>Saudades da <span>última viagem?</span></h1>
+  <p>Indique alguém que também adore viajar e ganhe descontos exclusivos na próxima.</p>
+</div>
+<div class="msg-personalizada" id="msg-personalizada"></div>
+
+<div class="content">
+
+  <div class="disc-box">
+    <div class="disc-title">🎁 O seu desconto por cada reserva bem-sucedida</div>
+    <div class="disc-row"><span>Reserva entre €2.500 e €5.999</span><strong>€50</strong></div>
+    <div class="disc-row"><span>Reserva entre €6.000 e €6.999</span><strong>€100</strong></div>
+    <div class="disc-row"><span>Reserva igual ou superior a €7.000</span><strong>€200</strong></div>
+    <div class="disc-note">* Utilizável na próxima viagem: €50 em reservas ≥€2.000 · €100 em ≥€2.750 · €200 em ≥€4.500 · máx. €400 por reserva</div>
+  </div>
+
+  <div class="card" id="form-card">
+    <div class="card-label">Quem gostaria de indicar?</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;line-height:1.6">Alguém que possa querer viajar e beneficiar do nosso serviço personalizado.</p>
+
+    <div class="field"><label>Nome *</label><input class="finput" id="ind-nome" placeholder="Nome completo"></div>
+    <div class="field"><label>Telemóvel / WhatsApp *</label><input class="finput" id="ind-tel" placeholder="912 345 678" type="tel"></div>
+    <div class="field"><label>Email (opcional)</label><input class="finput" id="ind-email" placeholder="email@exemplo.com" type="email"></div>
+    <div class="field" style="margin-bottom:16px"><label>Notas (destino, ocasião...)</label><input class="finput" id="ind-notas" placeholder="ex: quer viajar para o Algarve em família"></div>
+
+    <div class="err-msg" id="form-err"></div>
+    <button class="btn-main" id="btn-enviar" onclick="enviarReferencia()">Enviar referência ✈️</button>
+    <div style="font-size:.72rem;color:var(--muted);margin-top:10px;text-align:center">🔒 Dados tratados ao abrigo da nossa <a href="rgpd.html" style="color:var(--blue)">Política de Privacidade</a></div>
+  </div>
+
+  <div class="suc" id="success-card" style="display:none">
+    <div class="suc-icon">🎉</div>
+    <h2>Referência enviada!</h2>
+    <p>Obrigado pela sua confiança. O consultor APM entrará em contacto com <strong id="success-nome"></strong> em breve.</p>
+    <p style="font-size:.8rem">Assim que <strong id="success-nome2"></strong> confirmar uma reserva, o seu desconto é atribuído automaticamente.</p>
+    <button class="btn-add" style="max-width:280px;margin:16px auto 0;display:block" onclick="novaReferencia()">＋ Indicar mais alguém</button>
+  </div>
+
+</div>
+
+<footer>© 2026 APM Viagens · <a href="rgpd.html">Privacidade</a></footer>
+<div class="toast" id="toast"></div>
+
+<script>
+
+const sb = supabase.createClient('https://uiaorfcgvqwxjezgisps.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU')
+const params = new URLSearchParams(window.location.search)
+const consultorId = params.get('c') || null
+const clienteId = params.get('cli') || null
+const clienteNome = params.get('nome') ? decodeURIComponent(params.get('nome')) : null
+
+window.addEventListener('DOMContentLoaded', async () => {
+  if(clienteNome) {
+    document.getElementById('msg-personalizada').style.display = 'block'
+    document.getElementById('msg-personalizada').innerHTML = `Olá <strong>${clienteNome}</strong>! O seu consultor APM partilhou este link consigo. Agradecemos a sua confiança e esperamos que ainda recorde com saudade a última viagem. 😊`
+  }
+})
+
+async function enviarReferencia() {
+  const nome = document.getElementById('ind-nome').value.trim()
+  const tel = document.getElementById('ind-tel').value.trim()
+  const email = document.getElementById('ind-email').value.trim()
+  const notas = document.getElementById('ind-notas').value.trim()
+  const errEl = document.getElementById('form-err')
+  errEl.style.display = 'none'
+
+  if(!nome) { errEl.textContent = 'Indique o nome da pessoa.'; errEl.style.display = 'block'; return }
+  if(!tel) { errEl.textContent = 'Indique o telemóvel.'; errEl.style.display = 'block'; return }
+
+  const btn = document.getElementById('btn-enviar')
+  btn.disabled = true; btn.textContent = 'A enviar...'
+
+  const { error } = await sb.from('referencias').insert({
+    recomendador_id: clienteId || null,
+    recomendador_nome: clienteNome || null,
+    consultor_id: consultorId || null,
+    indicado_nome: nome,
+    indicado_tel: tel,
+    indicado_email: email || null,
+    notas: notas || null,
+    estado: 'pendente',
+    origem: 'recomendar'
+  })
+
+  btn.disabled = false; btn.textContent = 'Enviar referência ✈️'
+
+  if(error) { errEl.textContent = 'Erro ao enviar. Tente novamente.'; errEl.style.display = 'block'; return }
+
+  document.getElementById('form-card').style.display = 'none'
+  document.getElementById('success-card').style.display = 'block'
+  document.getElementById('success-nome').textContent = nome
+  document.getElementById('success-nome2').textContent = nome
+}
+
+function novaReferencia() {
+  document.getElementById('form-card').style.display = 'block'
+  document.getElementById('success-card').style.display = 'none'
+  document.getElementById('ind-nome').value = ''
+  document.getElementById('ind-tel').value = ''
+  document.getElementById('ind-email').value = ''
+  document.getElementById('ind-notas').value = ''
+}
+
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast')
+  el.textContent = msg; el.className = 'toast '+type+' show'
+  setTimeout(() => el.classList.remove('show'), 3500)
+}
+
+</script>
+</body>
+</html>
