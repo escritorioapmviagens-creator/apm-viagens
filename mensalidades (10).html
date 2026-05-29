@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Controlo de Mensalidades · APM Viagens</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --coral:#E8395A;--coral-light:#fff0f3;
+  --blue:#3B5BDB;--blue-light:#eef2ff;
+  --green:#065f46;--green-light:#d1fae5;
+  --amber:#92400e;--amber-light:#fef3c7;
+  --red:#991b1b;--red-light:#fee2e2;
+  --text:#1a1a2e;--muted:#6b7280;--border:#e5e7eb;
+  --bg:#f8fafc;--white:#fff;
+  --font:'Inter',sans-serif;--heading:'Poppins',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;-webkit-font-smoothing:antialiased}
+nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+nav img{height:36px;border-radius:50%}
+.nav-title{font-family:var(--heading);font-size:.9rem;font-weight:600}
+.nav-back{font-size:.82rem;color:var(--muted);text-decoration:none;cursor:pointer;transition:color .2s}
+.nav-back:hover{color:var(--blue)}
+.main{max-width:1200px;margin:0 auto;padding:24px 20px}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px}
+.stat{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.stat-lbl{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px}
+.stat-val{font-family:var(--heading);font-size:1.5rem;font-weight:700}
+.stat-sub{font-size:.68rem;color:var(--muted);margin-top:2px}
+.c-blue .stat-val{color:var(--blue)}
+.c-green .stat-val{color:var(--green)}
+.c-red .stat-val{color:var(--coral)}
+.c-amber .stat-val{color:#d97706}
+.c-purple .stat-val{color:#7c3aed}
+.c-teal .stat-val{color:#0e7490}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:20px;width:fit-content}
+.tab{padding:7px 18px;border-radius:8px;font-size:.82rem;font-weight:500;cursor:pointer;transition:all .18s;border:none;background:transparent;font-family:var(--font);color:var(--muted)}
+.tab.on{background:var(--white);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search{background:var(--white);border:1.5px solid var(--border);border-radius:9px;padding:8px 13px;font-family:var(--font);font-size:.83rem;color:var(--text);outline:none;width:240px;transition:border-color .2s}
+.search:focus{border-color:var(--blue)}
+.filter-sel{background:var(--white);border:1.5px solid var(--border);border-radius:9px;padding:8px 12px;font-family:var(--font);font-size:.83rem;color:var(--text);outline:none;cursor:pointer;transition:border-color .2s}
+.filter-sel:focus{border-color:var(--blue)}
+.btn{border:none;border-radius:9px;padding:8px 16px;font-family:var(--heading);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+.btn-coral{background:var(--coral);color:#fff;box-shadow:0 3px 8px rgba(232,57,90,.2)}
+.btn-coral:hover{background:#d42e4f;transform:translateY(-1px)}
+.btn-coral:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-outline{background:var(--white);color:var(--muted);border:1.5px solid var(--border)}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue)}
+.ml-auto{margin-left:auto}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--bg);display:flex;align-items:center;justify-content:center;gap:12px}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--blue);background:var(--blue-light)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone-icon{font-size:1.8rem}
+.upload-zone-text{font-size:.85rem;color:var(--muted);text-align:left}
+.upload-zone-text strong{color:var(--blue);display:block;margin-bottom:2px}
+
+/* TABLE */
+.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.table-head{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.table-title{font-family:var(--heading);font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;border-radius:50px;font-size:.65rem;font-weight:700;padding:0 6px}
+.bg{background:var(--green-light);color:var(--green)}
+.br{background:var(--red-light);color:var(--red)}
+.ba{background:var(--amber-light);color:var(--amber)}
+.bb{background:var(--blue-light);color:var(--blue)}
+
+table{width:100%;border-collapse:collapse}
+th{padding:9px 14px;text-align:left;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 14px;font-size:.83rem;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbff}
+
+/* PILLS */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:50px;font-size:.68rem;font-weight:600;white-space:nowrap}
+.pill-green{background:var(--green-light);color:var(--green)}
+.pill-red{background:var(--red-light);color:var(--red)}
+.pill-amber{background:var(--amber-light);color:var(--amber)}
+.pill-blue{background:var(--blue-light);color:var(--blue)}
+.pill-gray{background:#f3f4f6;color:#6b7280}
+.pill-purple{background:#f5f3ff;color:#7c3aed}
+
+/* STATUS SELECT */
+.status-sel{border:1.5px solid var(--border);border-radius:7px;padding:4px 8px;font-family:var(--font);font-size:.75rem;cursor:pointer;outline:none;background:var(--bg);color:var(--text);transition:border-color .2s}
+.status-sel:focus{border-color:var(--blue)}
+
+/* PERIOD BAR */
+.period-bar{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.period-pill{background:var(--blue-light);color:var(--blue);font-size:.8rem;font-weight:600;padding:4px 12px;border-radius:50px;border:1px solid #c7d7fd}
+.total-pill{background:var(--green-light);color:var(--green);font-size:.8rem;font-weight:700;padding:4px 12px;border-radius:50px}
+
+/* ACCORDION */
+.acc-header{padding:13px 18px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .15s;user-select:none}
+.acc-header:hover{background:var(--bg)}
+.acc-body{display:none}
+.acc-body.open{display:block}
+
+/* EMPTY / LOADING */
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:.85rem}
+.loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.84rem;padding:18px}
+.spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--text);color:#fff;border-radius:50px;padding:10px 22px;font-size:.83rem;opacity:0;transition:all .3s;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:var(--green)}
+.toast.err{background:#991b1b}
+
+@media(max-width:900px){.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}.main{padding:12px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div style="display:flex;align-items:center;gap:12px">
+    <img src="data:image/png;base64,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" alt="APM">
+    <div class="nav-title">Controlo de Mensalidades</div>
+  </div>
+  <a class="nav-back" href="index.html">← Voltar ao painel</a>
+</nav>
+
+<div class="main">
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat c-blue"><div class="stat-lbl">Total inscritos</div><div class="stat-val" id="s-total">—</div><div class="stat-sub">no sistema</div></div>
+    <div class="stat c-green"><div class="stat-lbl">Activos</div><div class="stat-val" id="s-ativos">—</div><div class="stat-sub">a pagar</div></div>
+    <div class="stat c-red"><div class="stat-lbl">Inativos</div><div class="stat-val" id="s-inativos">—</div><div class="stat-sub">suspensos</div></div>
+    <div class="stat c-teal"><div class="stat-lbl">Mensais</div><div class="stat-val" id="s-mensais">—</div><div class="stat-sub">subscrição mensal</div></div>
+    <div class="stat c-purple"><div class="stat-lbl">Anuais</div><div class="stat-val" id="s-anuais">—</div><div class="stat-sub">subscrição anual</div></div>
+    <div class="stat c-amber"><div class="stat-lbl">Pagaram</div><div class="stat-val" id="s-pagaram">—</div><div class="stat-sub" id="s-pagaram-sub">este período</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab on" onclick="setTab('consultores',this)">👥 Consultores</button>
+    <button class="tab" onclick="setTab('pagamentos',this)">💳 Carregar Pagamentos</button>
+    <button class="tab" onclick="setTab('historico',this)">📅 Histórico</button>
+  </div>
+
+  <!-- ═══ TAB: CONSULTORES ═══ -->
+  <div id="tab-consultores">
+    <div class="toolbar">
+      <input class="search" id="search-cons" placeholder="Pesquisar nome ou email..." oninput="renderConsultores()">
+      <select class="filter-sel" id="filter-estado" onchange="renderConsultores()">
+        <option value="">Todos os estados</option>
+        <option value="ativo">Activos</option>
+        <option value="inativo">Inativos</option>
+      </select>
+      <select class="filter-sel" id="filter-plano" onchange="renderConsultores()">
+        <option value="">Todos os planos</option>
+        <option value="AGENCY 80-20">AGENCY 80-20</option>
+        <option value="AGENCY">AGENCY</option>
+        <option value="MUNDO">MUNDO</option>
+        <option value="OCEANO">OCEANO</option>
+        <option value="Formação">Formação</option>
+        <option value="Outro">Outro</option>
+      </select>
+      <select class="filter-sel" id="filter-billing" onchange="renderConsultores()">
+        <option value="">Mensal e Anual</option>
+        <option value="mensal">Mensal</option>
+        <option value="anual">Anual</option>
+      </select>
+      <div class="ml-auto" style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="document.getElementById('import-cons').click()">⬆️ Importar CSV</button>
+        <input type="file" id="import-cons" accept=".csv,.xlsx" style="display:none" onchange="importarConsultores(this.files[0])">
+        <button class="btn btn-outline" id="btn-del-sel" onclick="eliminarSelecionados()" style="display:none;color:var(--red);border-color:#fca5a5">🗑 Eliminar seleccionados (<span id="n-sel">0</span>)</button>
+        <button class="btn btn-outline" onclick="eliminarTodos()" style="color:var(--red);border-color:#fca5a5">🗑 Eliminar todos</button>
+        <button class="btn btn-coral" onclick="guardarEstados()">💾 Guardar alterações</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div id="tabela-consultores"><div class="loading"><div class="spin"></div>A carregar...</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: PAGAMENTOS ═══ -->
+  <div id="tab-pagamentos" style="display:none">
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
+      <div style="font-family:var(--heading);font-size:.92rem;font-weight:600;margin-bottom:4px">Carregar ficheiro de pagamentos</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:14px">CSV ou Excel exportado do Stripe. O sistema cruza por email com os consultores activos.</div>
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" accept=".csv,.xlsx,.xls,.pdf" onchange="handlePayFile(this.files[0])">
+        <div class="upload-zone-icon">📊</div>
+        <div class="upload-zone-text">
+          <strong>Clique para carregar ou arraste aqui</strong>
+          Aceita CSV · XLSX · XLS · PDF
+        </div>
+      </div>
+    </div>
+
+    <div id="pay-results" style="display:none">
+      <div class="period-bar">
+        <div style="font-family:var(--heading);font-size:.85rem;font-weight:600">Período:</div>
+        <div class="period-pill" id="pay-period">—</div>
+        <div class="total-pill" id="pay-total">—</div>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn btn-outline" onclick="exportarRelatorio()">⬇️ Exportar</button>
+          <button class="btn btn-coral" id="btn-guardar-pag" onclick="guardarPagamentos()">💾 Guardar no sistema</button>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom:14px">
+        <div class="table-head"><div class="table-title">✅ Pagamentos identificados <span class="badge bg" id="b-pagaram">0</span></div>
+          <input class="search" placeholder="Pesquisar..." oninput="filtrarTbody('tb-pagaram',this.value)" style="width:180px">
+        </div>
+        <div id="tb-pagaram"></div>
+      </div>
+
+      <div class="table-wrap" id="card-nao-id" style="margin-bottom:14px;display:none">
+        <div class="table-head"><div class="table-title">⚠️ Email não encontrado <span class="badge ba" id="b-nao-id">0</span></div></div>
+        <div style="padding:8px 14px;background:var(--amber-light);font-size:.76rem;color:var(--amber);border-bottom:1px solid #fcd34d">
+          Email presente no ficheiro mas não corresponde a nenhum consultor activo. Associe manualmente ou corrija o email no perfil.
+        </div>
+        <div id="tb-nao-id"></div>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom:14px">
+        <div class="table-head"><div class="table-title">❌ Sem pagamento registado <span class="badge br" id="b-nao-pag">0</span></div></div>
+        <div id="tb-nao-pag"></div>
+      </div>
+
+      <div class="table-wrap" id="card-outros" style="display:none">
+        <div class="table-head"><div class="table-title">📋 Outros registos (falhou/reembolsado) <span class="badge bb" id="b-outros">0</span></div></div>
+        <div id="tb-outros"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: HISTÓRICO ═══ -->
+  <div id="tab-historico" style="display:none">
+    <div class="toolbar">
+      <select class="filter-sel" id="filter-hist" onchange="loadHistorico()">
+        <option value="">Todos</option>
+        <option value="pago">Pagos</option>
+        <option value="nao_pago">Não pagos</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <div id="tabela-historico"><div class="loading"><div class="spin"></div>A carregar...</div></div>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPA_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const { createClient } = supabase
+const sb = createClient(SUPA_URL, SUPA_KEY)
+
+let allConsultores = []       // from DB
+let estadoChanges = {}        // pending state changes
+let payIdentificados = []
+let payNaoId = []
+let payNaoPagaram = []
+let payOutros = []
+let payPeriodo = ''
+
+// ── INIT ──────────────────────────────────────────────────────
+async function init() {
+  const { data: { session } } = await sb.auth.getSession()
+  if(!session) { window.location.href = 'index.html'; return }
+  await loadConsultores()
+}
+
+// ── LOAD CONSULTORES ──────────────────────────────────────────
+async function loadConsultores() {
+  const { data, error } = await sb.from('mensalidades_consultores')
+    .select('*').order('nome')
+  if(error) { document.getElementById('tabela-consultores').innerHTML = '<div class="empty">Erro ao carregar: ' + error.message + '<br><small>Corra o SQL de criação da tabela.</small></div>'; return }
+  allConsultores = data || []
+  updateStats()
+  renderConsultores()
+}
+
+function updateStats() {
+  const ativos = allConsultores.filter(c => c.estado === 'ativo')
+  const inativos = allConsultores.filter(c => c.estado !== 'ativo')
+  const mensais = ativos.filter(c => c.billing === 'mensal')
+  const anuais = ativos.filter(c => c.billing === 'anual')
+  document.getElementById('s-total').textContent = allConsultores.length
+  document.getElementById('s-ativos').textContent = ativos.length
+  document.getElementById('s-inativos').textContent = inativos.length
+  document.getElementById('s-mensais').textContent = mensais.length
+  document.getElementById('s-anuais').textContent = anuais.length
+}
+
+function renderConsultores() {
+  const q = document.getElementById('search-cons').value.toLowerCase()
+  const fe = document.getElementById('filter-estado').value
+  const fp = document.getElementById('filter-plano').value
+  const fb = document.getElementById('filter-billing').value
+
+  let rows = allConsultores.filter(c => {
+    if(q && !c.nome?.toLowerCase().includes(q) && !c.email?.toLowerCase().includes(q)) return false
+    if(fe && (estadoChanges[c.id] || c.estado) !== fe) return false
+    if(fp && c.plano !== fp) return false
+    if(fb && c.billing !== fb) return false
+    return true
+  })
+
+  if(!rows.length) {
+    document.getElementById('tabela-consultores').innerHTML = '<div class="empty">Sem resultados.</div>'
+    return
+  }
+
+  document.getElementById('tabela-consultores').innerHTML =
+    '<table><thead><tr>'
+    + '<th style="width:32px"><input type="checkbox" id="chk-all" onchange="toggleAll(this.checked)" style="accent-color:var(--blue)"></th>'
+    + '<th>Nome</th><th>Email</th><th>Plano</th><th>Período</th><th>Inscrito em</th><th>Estado</th><th></th>'
+    + '</tr></thead><tbody>'
+    + rows.map(c => {
+        const estado = estadoChanges[c.id] || c.estado || 'ativo'
+        const billing = c.billing || 'mensal'
+        const plano = c.plano || '—'
+        const planoPill = plano === 'AGENCY 80-20' ? 'pill-purple'
+          : plano === 'AGENCY' ? 'pill-blue'
+          : plano === 'MUNDO' ? 'pill-green'
+          : plano === 'OCEANO' ? 'pill-amber'
+          : plano === 'Formação' ? 'pill-gray'
+          : 'pill-gray'
+        const billingPill = billing === 'anual' ? 'pill-amber' : 'pill-blue'
+        return '<tr id="row-' + c.id + '">'
+          + '<td><input type="checkbox" class="chk-row" data-id="'+c.id+'" onchange="updateSelCount()" style="accent-color:var(--blue)"></td>'
+          + '<td style="font-weight:600">' + (c.nome||'—') + '</td>'
+          + '<td style="color:var(--muted);font-size:.78rem">' + (c.email||'—') + '</td>'
+          + '<td><span class="pill ' + planoPill + '">' + plano + '</span></td>'
+          + '<td><span class="pill ' + billingPill + '">' + (billing === 'anual' ? '📅 Anual' : '🔄 Mensal') + '</span></td>'
+          + '<td style="color:var(--muted);font-size:.78rem">' + (c.joined ? new Date(c.joined).toLocaleDateString('pt-PT') : '—') + '</td>'
+          + '<td><select class="status-sel" onchange="marcarEstado(\''+c.id+'\',this.value)" style="border-color:' + (estado==='ativo'?'var(--green)':'var(--coral)') + '">'
+          + '<option value="ativo"' + (estado==='ativo'?' selected':'') + '>✓ Ativo</option>'
+          + '<option value="inativo"' + (estado!=='ativo'?' selected':'') + '>✗ Inativo</option>'
+          + '</select></td>'
+          + '<td><button onclick="eliminarConsultor(\''+c.id+'\')" style="background:var(--red-light);border:1px solid #fca5a5;color:var(--red);border-radius:6px;padding:4px 8px;font-size:.72rem;cursor:pointer">🗑</button></td>'
+          + '</tr>'
+      }).join('')
+    + '</tbody></table>'
+}
+
+function marcarEstado(id, val) {
+  estadoChanges[id] = val
+  // Update row styling
+  const sel = document.querySelector('#row-' + id + ' select')
+  if(sel) sel.style.borderColor = val === 'ativo' ? 'var(--green)' : 'var(--coral)'
+}
+
+async function guardarEstados() {
+  if(!Object.keys(estadoChanges).length) { toast('Sem alterações para guardar', 'ok'); return }
+  const updates = Object.entries(estadoChanges).map(([id, estado]) =>
+    sb.from('mensalidades_consultores').update({ estado }).eq('id', id)
+  )
+  await Promise.all(updates)
+  estadoChanges = {}
+  toast('✅ Estados guardados!', 'ok')
+  await loadConsultores()
+}
+
+function toggleAll(checked) {
+  document.querySelectorAll('.chk-row').forEach(c => c.checked = checked)
+  updateSelCount()
+}
+
+function updateSelCount() {
+  const sel = document.querySelectorAll('.chk-row:checked').length
+  const btn = document.getElementById('btn-del-sel')
+  const n = document.getElementById('n-sel')
+  if(btn) { btn.style.display = sel > 0 ? 'flex' : 'none' }
+  if(n) n.textContent = sel
+}
+
+async function eliminarSelecionados() {
+  const ids = [...document.querySelectorAll('.chk-row:checked')].map(c => c.dataset.id)
+  if(!ids.length) return
+  if(!window.confirm('Eliminar ' + ids.length + ' registo(s) seleccionado(s)?')) return
+  const { error } = await sb.from('mensalidades_consultores').delete().in('id', ids)
+  if(error) { toast('Erro: ' + error.message, 'err'); return }
+  toast('✅ ' + ids.length + ' eliminado(s)', 'ok')
+  await loadConsultores()
+}
+
+async function eliminarTodos() {
+  if(!window.confirm('Eliminar TODOS os ' + allConsultores.length + ' consultores? Esta acção não pode ser desfeita.')) return
+  const { error } = await sb.from('mensalidades_consultores').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  if(error) { toast('Erro: ' + error.message, 'err'); return }
+  toast('✅ Todos os registos eliminados', 'ok')
+  await loadConsultores()
+}
+
+async function eliminarConsultor(id) {
+  const c = allConsultores.find(x => x.id === id)
+  const nome = c?.nome || 'este consultor'
+  return new Promise(resolve => {
+    // Use inline confirm in the row
+    const row = document.getElementById('row-' + id)
+    if(!row) return
+    const lastTd = row.lastElementChild
+    const origHTML = lastTd.innerHTML
+    lastTd.innerHTML = '<div style="display:flex;gap:4px;align-items:center">'
+      + '<span style="font-size:.72rem;color:var(--red)">Confirmar?</span>'
+      + '<button onclick="confirmarEliminar(\''+id+'\')" style="background:var(--red);color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer">Sim</button>'
+      + '<button onclick="cancelarEliminar(\''+id+'\',\''+origHTML.replace(/'/g,"&#39;")+'\')" style="background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer">Não</button>'
+      + '</div>'
+  })
+}
+
+async function confirmarEliminar(id) {
+  const { error } = await sb.from('mensalidades_consultores').delete().eq('id', id)
+  if(error) { toast('Erro: ' + error.message, 'err'); return }
+  toast('Eliminado', 'ok')
+  await loadConsultores()
+}
+
+function cancelarEliminar(id, origHTML) {
+  const row = document.getElementById('row-' + id)
+  if(row) row.lastElementChild.innerHTML = origHTML
+}
+
+// ── IMPORT CONSULTORES CSV ────────────────────────────────────
+// ── UNIVERSAL FILE DETECTOR ──────────────────────────────────
+async function detectAndProcess(file) {
+  if(!file) return
+  const ext = file.name.split('.').pop().toLowerCase()
+  if(!['csv','xlsx','xls','pdf'].includes(ext)) { toast('Formato não suportado. Use CSV, Excel ou PDF.', 'err'); return }
+
+  toast('A analisar ficheiro...', 'ok')
+
+  if(ext === 'pdf') {
+    await parsePDFFile(file)
+    return
+  }
+
+  const buf = await file.arrayBuffer()
+  const wb = XLSX.read(buf, { type:'array', raw:false, codepage:65001 })
+  const ws = wb.Sheets[wb.SheetNames[0]]
+  const rows = XLSX.utils.sheet_to_json(ws, { defval:'' })
+  if(!rows.length) { toast('Ficheiro vazio ou sem dados', 'err'); return }
+
+  const cols = Object.keys(rows[0]).map(c => c.toLowerCase())
+
+  // Detect type — consultores first (more specific)
+  const isConsultores = cols.some(c => c.includes('first name') || c.includes('signup method') || c.includes('joined (utc)') || c.includes('signup'))
+  const isPayments = !isConsultores && cols.some(c => c.includes('customer email') || c.includes('captured') || (c.includes('status') && cols.some(d => d.includes('amount'))))
+
+  if(isConsultores) {
+    toast('Ficheiro de consultores detectado!', 'ok')
+    setTab('consultores', document.querySelector('.tab'))
+    processImportRows(rows)
+  } else if(isPayments) {
+    toast('Ficheiro de pagamentos detectado!', 'ok')
+    setTab('pagamentos', document.querySelectorAll('.tab')[1])
+    processPayments(rows)
+  } else {
+    toast('Não foi possível detectar o tipo. Colunas: ' + Object.keys(rows[0]).slice(0,5).join(', '), 'err')
+  }
+}
+
+async function parsePDFFile(file) {
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+    const buf = await file.arrayBuffer()
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise
+    let fullText = ''
+    for(let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i)
+      const content = await page.getTextContent()
+      // Preserve layout by joining with spaces, newlines between items with y-gap
+      let lastY = null
+      for(const item of content.items) {
+        if(lastY !== null && Math.abs(item.transform[5] - lastY) > 5) fullText += '\n'
+        fullText += item.str + ' '
+        lastY = item.transform[5]
+      }
+      fullText += '\n'
+    }
+
+    // Try to detect format from text
+    const rows = parsePDFText(fullText)
+    if(!rows.length) { toast('Não foi possível extrair dados do PDF', 'err'); return }
+
+    // Detect if it's payments (has dates + amounts + document numbers)
+    const hasPayments = rows.some(r => r.valor && r.data && r.documento)
+    const hasStudents = fullText.toLowerCase().includes('signup') || fullText.toLowerCase().includes('joined')
+
+    if(hasPayments) {
+      toast('PDF de pagamentos detectado — ' + rows.length + ' registos', 'ok')
+      setTab('pagamentos', document.querySelectorAll('.tab')[1])
+      processPaymentsPDF(rows)
+    } else if(hasStudents) {
+      toast('PDF de consultores detectado', 'ok')
+      // Would need different parsing — for now inform user
+      toast('Para consultores use o CSV do EZYCourse', 'err')
+    } else {
+      toast('PDF lido mas formato não reconhecido. Verifique se é o extrato correcto.', 'err')
+    }
+  } catch(e) {
+    console.error(e)
+    toast('Erro ao ler PDF: ' + e.message, 'err')
+  }
+}
+
+function parsePDFText(text) {
+  const months = {jan:1,fev:2,mar:3,abr:4,mai:5,jun:6,jul:7,ago:8,set:9,out:10,nov:11,dez:12}
+  const rows = []
+  // Robust pattern: DD Mon YY FR DOC/NNN Nome Valor[€]
+  const pattern = /(\d{2})\s+(\w{3})\s+(\d{2})\s+(FR\s+\S+)\s+(.+?)\s+(\d+[.,]\d{2})€?(?:\s|$)/gi
+  let m
+  while((m = pattern.exec(text)) !== null) {
+    const [, day, mon, yr, doc, nome, valorStr] = m
+    const monthNum = months[mon.toLowerCase()]
+    if(!monthNum) continue
+    const nomeTrim = nome.trim()
+    if(!nomeTrim || nomeTrim.toLowerCase() === 'total' || nomeTrim.toLowerCase().includes('sumário')) continue
+    const valor = parseFloat(valorStr.replace(',','.'))
+    if(isNaN(valor) || valor === 0) continue
+    const date = `20${yr}-${String(monthNum).padStart(2,'0')}-${String(parseInt(day)).padStart(2,'0')}`
+    rows.push({ data: date, documento: doc.trim(), nome: nomeTrim, valor })
+  }
+  return rows
+}
+
+function processPaymentsPDF(rows) {
+  // Convert PDF rows to payment format and match by name (not email)
+  const ativos = allConsultores.filter(c => c.estado === 'ativo')
+
+  function normName(n) {
+    return n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,'').trim()
+  }
+
+  function matchByName(nome) {
+    const nn = normName(nome)
+    // Exact
+    let c = ativos.find(c => normName(c.nome) === nn)
+    if(c) return c
+    // Words match
+    const words = nn.split(' ').filter(w => w.length > 2)
+    c = ativos.find(c => { const cn = normName(c.nome); return words.every(w => cn.includes(w)) })
+    if(c) return c
+    // First + last
+    const parts = nn.split(' ')
+    if(parts.length >= 2) c = ativos.find(c => { const cn = normName(c.nome); return cn.includes(parts[0]) && cn.includes(parts[parts.length-1]) })
+    return c || null
+  }
+
+  // Deduplicate by nome — keep most recent
+  const byNome = {}
+  rows.forEach(r => {
+    if(!byNome[r.nome] || r.data > byNome[r.nome].data) byNome[r.nome] = r
+  })
+  const deduped = Object.values(byNome)
+
+  payIdentificados = deduped.map(r => ({ ...r, email: '', amount: r.valor, date: r.data, document: r.documento, description: r.documento, billing: r.valor >= 200 ? 'anual' : 'mensal', plano: r.valor >= 400 ? 'AGENCY' : r.valor >= 280 ? 'MUNDO' : r.valor > 40 ? 'AGENCY 80-20' : 'MUNDO', consultor: matchByName(r.nome) })).filter(r => r.consultor)
+  payNaoId = deduped.filter(r => !matchByName(r.nome)).map(r => ({ 
+    ...r, email: r.nome + ' (PDF)', amount: r.valor, date: r.data, 
+    document: r.documento, description: r.documento 
+  }))
+  const pagaramIds = new Set(payIdentificados.map(r => r.consultor.id))
+  payNaoPagaram = ativos.filter(c => !pagaramIds.has(c.id))
+  payOutros = []
+
+  // Period — use most recent month in the file
+  const dates = deduped.map(r => r.data).filter(Boolean).sort().reverse()
+  if(dates.length) {
+    const d = new Date(dates[0]+'T12:00:00')
+    payPeriodo = d.toLocaleDateString('pt-PT', {month:'long', year:'numeric'})
+  }
+
+  const total = payIdentificados.reduce((s,r) => s + r.amount, 0)
+  document.getElementById('pay-period').textContent = payPeriodo || '—'
+  document.getElementById('pay-total').textContent = '€' + total.toLocaleString('pt-PT',{minimumFractionDigits:2})
+  document.getElementById('s-pagaram').textContent = payIdentificados.length
+  document.getElementById('b-pagaram').textContent = payIdentificados.length
+  document.getElementById('b-nao-id').textContent = payNaoId.length
+  document.getElementById('b-nao-pag').textContent = payNaoPagaram.length
+  document.getElementById('b-outros').textContent = 0
+
+  renderPayTables()
+  document.getElementById('pay-results').style.display = 'block'
+  toast('✅ PDF processado: ' + deduped.length + ' registos, ' + payIdentificados.length + ' identificados', 'ok')
+}
+
+async function importarConsultores(file) {
+  if(!file) return
+  detectAndProcess(file)
+}
+
+async function handlePayFile(file) {
+  if(!file) return
+  const ext = file.name.split('.').pop().toLowerCase()
+  if(ext === 'pdf') {
+    zone.innerHTML = '<div class="loading"><div class="spin"></div>A processar PDF...</div>'
+    await parsePDFFile(file)
+    resetUploadOk()
+    return
+  }
+  zone.innerHTML = '<div class="loading"><div class="spin"></div>A processar ficheiro...</div>'
+  try {
+    const buf = await file.arrayBuffer()
+    const wb = XLSX.read(buf, { type:'array', raw:false, codepage:65001 })
+    const ws = wb.Sheets[wb.SheetNames[0]]
+    const rows = XLSX.utils.sheet_to_json(ws, { defval:'' })
+    const cols = Object.keys(rows[0]||{}).map(c => c.toLowerCase())
+    const isConsultores = cols.some(c => c.includes('first name') || c.includes('signup method') || c.includes('joined (utc)') || c.includes('signup'))
+    if(isConsultores) {
+      resetUpload()
+      toast('Parece um ficheiro de consultores — use o botão "Importar CSV" no separador Consultores', 'err')
+      return
+    }
+    processPayments(rows)
+  } catch(e) { toast('Erro: ' + e.message, 'err'); resetUpload() }
+}
+
+async function processImportRows(rows) {
+  const getCol = (row, ...names) => {
+    for(const n of names) if(row[n] !== undefined && row[n] !== '') return String(row[n]).trim()
+    return ''
+  }
+
+  function getPlan(signup) {
+    const s = signup.toLowerCase()
+    if(s.includes('agency 80-20') || s.includes('agengy 80-20')) return 'AGENCY 80-20'
+    if(s.includes('agency') && (s.includes('membership') || s.includes('subscription'))) return 'AGENCY'
+    if(s.includes('mundo') && (s.includes('membership') || s.includes('subscription'))) return 'MUNDO'
+    if(s.includes('oceano')) return 'OCEANO'
+    if(s.includes('membership') || s.includes('subscription')) return 'Subscrição'
+    if(s.includes('course') || s.includes('formação') || s.includes('formacao')) return 'Formação'
+    if(s.includes('dashboard')) return 'Manual'
+    return 'Outro'
+  }
+
+  // Billing from signup method — anual if explicitly stated, else mensal
+  function getBilling(signup) {
+    const s = signup.toLowerCase()
+    if(s.includes('anual') || s.includes('annual')) return 'anual'
+    return 'mensal'
+  }
+
+  // Determine billing from valor (APM rules):
+  // >200€ = anual, else mensal
+  // AGENCY mensal = ~45-50€, MUNDO mensal = ~35€
+  // AGENCY anual = ~450-500€, MUNDO anual = ~350€
+  function getBillingFromValor(valor) {
+    if(!valor) return null
+    const v = parseFloat(String(valor).replace(',','.'))
+    if(isNaN(v)) return null
+    return v >= 200 ? 'anual' : 'mensal'
+  }
+
+  const registos = rows.map(r => {
+    const firstName = getCol(r, 'First Name', 'Nome', 'first_name', 'name')
+    const lastName = getCol(r, 'Last Name', 'Apelido', 'last_name')
+    const nome = (firstName + ' ' + lastName).trim() || getCol(r, 'Full Name', 'nome')
+    const email = getCol(r, 'Email', 'email', 'Email Address').toLowerCase().trim()
+    const phone = getCol(r, 'Phone Number', 'phone', 'Telefone').replace(/[\t\s]/g,'')
+    const signup = getCol(r, 'Signup Method', 'signup_method', 'Método')
+    const joined = getCol(r, 'Joined (UTC)', 'joined', 'Data', 'Joined')
+    const plano = getPlan(signup)
+    const billing = getBilling(signup)
+    const suspended = getCol(r, 'Suspended', 'suspended').toLowerCase() === 'yes'
+    const deleted = getCol(r, 'Deleted', 'deleted').toLowerCase() === 'yes'
+    const estado = (suspended || deleted) ? 'inativo' : 'ativo'
+    if(!email || !nome.trim()) return null
+    return { nome: nome.trim(), email, phone: phone||null, plano, billing,
+             signup_method: signup||null,
+             joined: joined ? joined.substring(0,10) : null, estado }
+  }).filter(Boolean)
+
+  console.log('Registos a importar:', registos.length, registos.slice(0,3))
+
+  if(!registos.length) { toast('Nenhum registo válido. Verifica o formato do ficheiro.', 'err'); return }
+
+  // Insert in batches of 50 to avoid timeout
+  let total = 0
+  for(let i = 0; i < registos.length; i += 50) {
+    const batch = registos.slice(i, i+50)
+    const { error } = await sb.from('mensalidades_consultores')
+      .upsert(batch, { onConflict: 'email' })
+    if(error) {
+      console.error('Erro no batch', i, error)
+      toast('Erro ao importar: ' + error.message, 'err')
+      return
+    }
+    total += batch.length
+  }
+
+  toast('✅ ' + total + ' consultores importados!', 'ok')
+  await loadConsultores()
+}
+
+// ── PAYMENT FILE ─────────────────────────────────────────────
+const zone = document.getElementById('upload-zone')
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag') })
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'))
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); handlePayFile(e.dataTransfer.files[0]) })
+
+function processPayments(rows) {
+  const getCol = (row, ...names) => { for(const n of names) if(row[n]!==undefined&&row[n]!=='') return String(row[n]).trim(); return '' }
+  const parseAmt = s => parseFloat(String(s).replace(/[^0-9,.-]/g,'').replace(',','.')) || 0
+  const parseDate = s => {
+    if(!s) return ''
+    const str = String(s).trim()
+    // Handle Excel serial numbers
+    if(/^\d{5}$/.test(str)) {
+      const d = new Date((parseInt(str) - 25569) * 86400000)
+      return d.toISOString().substring(0,10)
+    }
+    // Handle "2026-05-29 14:20:37" or "2026-05-29T14:20:37"
+    const m = str.match(/(\d{4}-\d{2}-\d{2})/)
+    return m ? m[1] : ''
+  }
+
+  const allRows = rows.map(r => ({
+    email: getCol(r,'Customer Email','Email','email').toLowerCase(),
+    amount: parseAmt(getCol(r,'Amount','Converted Amount','amount','valor')),
+    status: getCol(r,'Status','status','Estado').toLowerCase(),
+    description: getCol(r,'Description','description','Descrição'),
+    date: parseDate(getCol(r,'Created date (UTC)','Created Date','date','data')),
+    document: getCol(r,'Invoice ID','id','Documento')
+  }))
+
+  const paid = allRows.filter(r => r.status === 'paid' || r.status === 'pago')
+  const others = allRows.filter(r => r.status !== 'paid' && r.status !== 'pago')
+
+  // Deduplicate by email — keep most recent
+  const byEmail = {}
+  paid.forEach(r => { if(!r.email) return; if(!byEmail[r.email]||r.date>byEmail[r.email].date) byEmail[r.email]=r })
+  const deduped = Object.values(byEmail)
+
+  // Billing type from amount
+  // APM billing rules: >200€ = anual, else mensal
+  function getPlanFromAmt(v) {
+    if(v >= 400) return 'AGENCY'
+    if(v >= 280) return 'MUNDO'
+    if(v > 40) return 'AGENCY 80-20'
+    return 'MUNDO'
+  }
+  const withBilling = deduped.map(r => ({ ...r, billing: r.amount >= 200 ? 'anual' : 'mensal', plano: getPlanFromAmt(r.amount) }))
+
+  // Period
+  const dates = deduped.map(r=>r.date).filter(Boolean).sort()
+  if(dates.length) {
+    const d = new Date(dates[0]+'T12:00:00')
+    payPeriodo = d.toLocaleDateString('pt-PT',{month:'long',year:'numeric'})
+  }
+
+  // Match to active consultores
+  const ativos = allConsultores.filter(c => c.estado === 'ativo')
+  const ativoEmails = new Set(ativos.map(c => c.email?.toLowerCase()))
+
+  payIdentificados = withBilling.filter(r => ativoEmails.has(r.email)).map(r => ({
+    ...r, consultor: ativos.find(c => c.email?.toLowerCase() === r.email)
+  }))
+  payNaoId = withBilling.filter(r => !ativoEmails.has(r.email))
+  const pagaramEmails = new Set(payIdentificados.map(r => r.email))
+  payNaoPagaram = ativos.filter(c => !pagaramEmails.has(c.email?.toLowerCase()))
+  payOutros = others
+
+  const total = payIdentificados.reduce((s,r)=>s+r.amount,0)
+  document.getElementById('pay-period').textContent = payPeriodo
+  document.getElementById('pay-total').textContent = '€' + total.toLocaleString('pt-PT',{minimumFractionDigits:2})
+  document.getElementById('s-pagaram').textContent = payIdentificados.length
+  document.getElementById('s-pagaram-sub').textContent = payPeriodo || 'este período'
+  document.getElementById('b-pagaram').textContent = payIdentificados.length
+  document.getElementById('b-nao-id').textContent = payNaoId.length
+  document.getElementById('b-nao-pag').textContent = payNaoPagaram.length
+  document.getElementById('b-outros').textContent = payOutros.length
+
+  renderPayTables()
+  resetUploadOk()
+  document.getElementById('pay-results').style.display = 'block'
+}
+
+function planLabel(desc) {
+  if(!desc) return '—'
+  return desc.replace(/PLANO DE SUBSCRIÇÃO - /i,'').replace(/ subscription$/i,'').replace(/plano de subscrição - /i,'').trim()
+}
+
+function renderPayTables() {
+  // Pagaram
+  document.getElementById('tb-pagaram').innerHTML = payIdentificados.length
+    ? '<table><thead><tr><th>Consultor</th><th>Email</th><th>Plano</th><th>Período</th><th>Data</th><th>Valor</th></tr></thead><tbody>'
+      + payIdentificados.map(r =>
+          '<tr><td style="font-weight:600">' + (r.consultor?.nome||'—') + '</td>'
+          + '<td style="color:var(--muted);font-size:.76rem">' + r.email + '</td>'
+          + '<td style="font-size:.76rem">' + planLabel(r.description) + '</td>'
+          + '<td><span class="pill ' + (r.billing==='anual'?'pill-amber':'pill-blue') + '">' + (r.billing==='anual'?'📅 Anual':'🔄 Mensal') + '</span></td>'
+          + '<td style="color:var(--muted)">' + (r.date?new Date(r.date+'T12:00:00').toLocaleDateString('pt-PT'):'—') + '</td>'
+          + '<td style="font-weight:700;color:var(--green)">€' + r.amount.toLocaleString('pt-PT',{minimumFractionDigits:2}) + '</td>'
+          + '</tr>'
+        ).join('') + '</tbody></table>'
+    : '<div class="empty">Nenhum pagamento identificado</div>'
+
+  // Não id
+  if(payNaoId.length) {
+    document.getElementById('card-nao-id').style.display = 'block'
+    document.getElementById('tb-nao-id').innerHTML =
+      '<table><thead><tr><th>Email no ficheiro</th><th>Plano</th><th>Data</th><th>Valor</th><th>Associar</th></tr></thead><tbody>'
+      + payNaoId.map((r,i) =>
+          '<tr><td style="color:var(--coral);font-weight:600">' + r.email + '</td>'
+          + '<td style="font-size:.76rem">' + planLabel(r.description) + '</td>'
+          + '<td style="color:var(--muted)">' + (r.date?new Date(r.date+'T12:00:00').toLocaleDateString('pt-PT'):'—') + '</td>'
+          + '<td style="font-weight:700;color:#d97706">€' + r.amount.toLocaleString('pt-PT',{minimumFractionDigits:2}) + '</td>'
+          + '<td><select class="status-sel" onchange="associarConsultor('+i+',this.value)">'
+          + '<option value="">— Selecionar</option>'
+          + allConsultores.filter(c=>c.estado==='ativo').map(c=>'<option value="'+c.id+'">'+c.nome+'</option>').join('')
+          + '</select></td></tr>'
+        ).join('') + '</tbody></table>'
+  } else {
+    document.getElementById('card-nao-id').style.display = 'none'
+  }
+
+  // Não pagaram
+  document.getElementById('tb-nao-pag').innerHTML = payNaoPagaram.length
+    ? '<table><thead><tr><th>Consultor</th><th>Email</th><th>Plano</th><th>Período</th><th>Estado</th></tr></thead><tbody>'
+      + payNaoPagaram.map(c =>
+          '<tr><td style="font-weight:600">' + c.nome + '</td>'
+          + '<td style="color:var(--muted);font-size:.76rem">' + (c.email||'—') + '</td>'
+          + '<td style="font-size:.76rem">' + (c.plano||'—') + '</td>'
+          + '<td><span class="pill ' + (c.billing==='anual'?'pill-amber':'pill-blue') + '">' + (c.billing==='anual'?'📅 Anual':'🔄 Mensal') + '</span></td>'
+          + '<td><span class="pill pill-red">❌ Não pago</span></td>'
+          + '</tr>'
+        ).join('') + '</tbody></table>'
+    : '<div class="empty" style="padding:20px">🎉 Todos os consultores activos pagaram!</div>'
+
+  // Outros
+  if(payOutros.length) {
+    document.getElementById('card-outros').style.display = 'block'
+    document.getElementById('tb-outros').innerHTML =
+      '<table><thead><tr><th>Email</th><th>Plano</th><th>Data</th><th>Valor</th><th>Estado</th></tr></thead><tbody>'
+      + payOutros.map(r => {
+          const st = r.status
+          const pill = st.includes('refund')?'pill-blue':st.includes('fail')||st.includes('requires')?'pill-amber':'pill-gray'
+          const lbl = st.includes('refund')?'↩ Reembolsado':st.includes('fail')?'✗ Falhou':st.includes('requires')?'⏳ Pendente':r.status
+          return '<tr><td style="color:var(--muted);font-size:.76rem">' + (r.email||'—') + '</td>'
+            + '<td style="font-size:.76rem">' + planLabel(r.description) + '</td>'
+            + '<td style="color:var(--muted)">' + (r.date?new Date(r.date+'T12:00:00').toLocaleDateString('pt-PT'):'—') + '</td>'
+            + '<td>€' + r.amount.toLocaleString('pt-PT',{minimumFractionDigits:2}) + '</td>'
+            + '<td><span class="pill '+pill+'">'+lbl+'</span></td></tr>'
+        }).join('') + '</tbody></table>'
+  }
+}
+
+function associarConsultor(idx, consultorId) {
+  if(!consultorId) return
+  const c = allConsultores.find(c => c.id === consultorId)
+  if(!c) return
+  const r = payNaoId.splice(idx,1)[0]
+  r.consultor = c
+  payIdentificados.push(r)
+  const pagaramEmails = new Set(payIdentificados.map(r=>r.email))
+  payNaoPagaram = allConsultores.filter(c=>c.estado==='ativo'&&!pagaramEmails.has(c.email?.toLowerCase()))
+  document.getElementById('b-pagaram').textContent = payIdentificados.length
+  document.getElementById('b-nao-id').textContent = payNaoId.length
+  document.getElementById('b-nao-pag').textContent = payNaoPagaram.length
+  renderPayTables()
+  toast('Associado a ' + c.nome, 'ok')
+}
+
+function filtrarTbody(id, q) {
+  document.querySelectorAll('#'+id+' tbody tr').forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none'
+  })
+}
+
+async function guardarPagamentos() {
+  const btn = document.getElementById('btn-guardar-pag')
+  btn.disabled = true; btn.textContent = 'A guardar...'
+
+  const registos = [
+    ...payIdentificados.map(r => ({
+      consultor_id: r.consultor.id,
+      consultor_nome: r.consultor.nome,
+      periodo: payPeriodo,
+      data_pagamento: r.date||new Date().toISOString().substring(0,10),
+      valor: r.amount,
+      billing: r.billing,
+      documento: r.document||null,
+      descricao: r.description||null,
+      email_ficheiro: r.email,
+      estado: 'pago'
+    })),
+    ...payNaoPagaram.map(c => ({
+      consultor_id: c.id,
+      consultor_nome: c.nome,
+      periodo: payPeriodo,
+      data_pagamento: null,
+      valor: 0,
+      billing: c.billing||'mensal',
+      documento: null,
+      descricao: null,
+      email_ficheiro: null,
+      estado: 'nao_pago'
+    }))
+  ]
+
+  const { error } = await sb.from('mensalidades').upsert(registos, { onConflict:'consultor_id,periodo' })
+  btn.disabled = false; btn.textContent = '💾 Guardar no sistema'
+  if(error) { toast('Erro: ' + error.message, 'err'); return }
+  toast('✅ ' + payIdentificados.length + ' pagamentos guardados!', 'ok')
+  await loadHistorico()
+}
+
+function exportarRelatorio() {
+  const linhas = [
+    ['Consultor','Email','Plano','Período','Data','Valor','Estado'],
+    ...payIdentificados.map(r=>[r.consultor?.nome||'',r.email,planLabel(r.description),r.billing,r.date,r.amount,'Pago']),
+    ...payNaoId.map(r=>['',r.email,planLabel(r.description),r.billing,r.date,r.amount,'Não identificado']),
+    ...payNaoPagaram.map(c=>[c.nome,c.email||'',c.plano,c.billing,'',0,'Não pago'])
+  ]
+  const csv = linhas.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n')
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}))
+  a.download = 'pagamentos-' + payPeriodo.replace(/ /g,'-') + '.csv'
+  a.click()
+}
+
+// ── HISTÓRICO ────────────────────────────────────────────────
+async function loadHistorico() {
+  const el = document.getElementById('tabela-historico')
+  const f = document.getElementById('filter-hist')?.value || ''
+  let q = sb.from('mensalidades').select('*').order('data_pagamento',{ascending:false,nullsFirst:false})
+  if(f) q = q.eq('estado',f)
+  const { data } = await q
+  if(!data?.length) { el.innerHTML = '<div class="empty">Sem registos. Carregue um ficheiro de pagamentos.</div>'; return }
+
+  const byPeriodo = {}
+  data.forEach(r => { if(!byPeriodo[r.periodo]) byPeriodo[r.periodo]=[]; byPeriodo[r.periodo].push(r) })
+
+  el.innerHTML = Object.entries(byPeriodo).map(([periodo,rows]) => {
+    const pagos = rows.filter(r=>r.estado==='pago')
+    const nPagos = rows.filter(r=>r.estado!=='pago')
+    const total = pagos.reduce((s,r)=>s+(r.valor||0),0)
+    const id = 'acc'+periodo.replace(/[^a-z0-9]/gi,'')
+    return '<div style="border-bottom:1px solid var(--border)">'
+      + '<div class="acc-header" onclick="document.getElementById(\''+id+'\').classList.toggle(\'open\')">'
+      + '<div style="font-weight:600;font-size:.88rem;flex:1">'+periodo+'</div>'
+      + '<span class="badge bg" style="margin-right:4px">'+pagos.length+' pagos</span>'
+      + '<span class="badge br" style="margin-right:8px">'+nPagos.length+' em falta</span>'
+      + '<div style="font-weight:700;color:var(--green);font-size:.86rem;margin-right:8px">€'+total.toLocaleString('pt-PT',{minimumFractionDigits:2})+'</div>'
+      + '<span style="color:var(--muted);font-size:.72rem">▾</span></div>'
+      + '<div class="acc-body" id="'+id+'">'
+      + '<table><thead><tr><th>Consultor</th><th>Período</th><th>Data</th><th>Valor</th><th>Estado</th></tr></thead><tbody>'
+      + rows.map(r=>'<tr>'
+          +'<td style="font-weight:600">'+r.consultor_nome+'</td>'
+          +'<td><span class="pill '+(r.billing==='anual'?'pill-amber':'pill-blue')+'">'+(r.billing==='anual'?'📅 Anual':'🔄 Mensal')+'</span></td>'
+          +'<td style="color:var(--muted)">'+(r.data_pagamento?new Date(r.data_pagamento+'T12:00:00').toLocaleDateString('pt-PT'):'—')+'</td>'
+          +'<td style="font-weight:700;color:'+(r.estado==='pago'?'var(--green)':'var(--coral)')+'">€'+(r.valor||0).toLocaleString('pt-PT',{minimumFractionDigits:2})+'</td>'
+          +'<td><span class="pill '+(r.estado==='pago'?'pill-green':'pill-red')+'">'+(r.estado==='pago'?'✅ Pago':'❌ Não pago')+'</span></td>'
+          +'</tr>').join('')
+      +'</tbody></table></div></div>'
+  }).join('')
+}
+
+// ── TABS ──────────────────────────────────────────────────────
+function setTab(id, btn) {
+  ['consultores','pagamentos','historico'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===id ? 'block' : 'none'
+  })
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'))
+  btn.classList.add('on')
+  if(id === 'historico') loadHistorico()
+}
+
+function resetUpload() {
+  document.getElementById('upload-zone').innerHTML = '<input type="file" accept=".csv,.xlsx,.xls,.pdf" onchange="handlePayFile(this.files[0])"><div class="upload-zone-icon">📊</div><div class="upload-zone-text"><strong>Clique para carregar ou arraste aqui</strong>Aceita CSV · XLSX · XLS · PDF</div>'
+}
+function resetUploadOk() {
+  document.getElementById('upload-zone').innerHTML = '<input type="file" accept=".csv,.xlsx,.xls,.pdf" onchange="handlePayFile(this.files[0])"><div class="upload-zone-icon">✅</div><div class="upload-zone-text"><strong>Ficheiro processado!</strong>Carregue outro para actualizar</div>'
+}
+
+function toast(msg, t='ok') {
+  const el = document.getElementById('toast')
+  el.textContent = msg; el.className = 'toast '+t+' show'
+  setTimeout(() => el.className='toast', 3500)
+}
+
+init()
+</script>
+</body>
+</html>
