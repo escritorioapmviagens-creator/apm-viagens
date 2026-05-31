@@ -526,8 +526,14 @@ function renderProposta() {
   if(heroOverlay) heroOverlay.style.display = 'block'
 
   if(D.foto) {
-    const img = document.getElementById('hero-img')
-    img.src = D.foto; img.style.display = 'block'
+    const heroBg = document.getElementById('hero-bg')
+    if(heroBg) {
+      const img = document.createElement('img')
+      img.src = D.foto
+      img.referrerPolicy = 'no-referrer'
+      img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover'
+      heroBg.appendChild(img)
+    }
   } else if(D.videoUrl && (/\.(mp4|webm)(\?|$)/i.test(D.videoUrl) || D.videoUrl.includes('pexels') || D.videoUrl.includes('pixabay'))) {
     document.querySelector('.hero-bg').innerHTML += `<video autoplay muted loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><source src="${D.videoUrl}" type="video/mp4"></video>`
   }
