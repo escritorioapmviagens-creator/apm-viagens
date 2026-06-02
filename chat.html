@@ -35,30 +35,38 @@ fbq('init','596463839593251');fbq('track','PageView');
 html,body{height:100%;background:var(--bg)}
 body{font-family:var(--font);color:var(--text);background:var(--bg)}
 
-/* ─── HEADER (BRANCO) ─── */
-.header{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 40px;display:flex;align-items:center;justify-content:space-between;background:#FFFFFF;border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+/* HEADER */
+.header{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 40px;display:flex;align-items:center;justify-content:space-between;background:#FFFFFF;border-bottom:1px solid var(--border);}
 .logo{height:32px}
 .logo img{height:100%;width:auto}
 .user-info{display:flex;align-items:center;gap:12px;background:#f5f5f5;border-radius:40px;padding:6px 16px 6px 12px;cursor:pointer;transition:background 0.2s}
 .user-info:hover{background:#eeeeee}
 .user-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;background:var(--coral);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600}
 .user-name{font-size:13px;font-weight:600;color:var(--text)}
-.user-badge{font-size:11px;color:var(--coral)}
+.user-badge{font-size:11px;color:var(--coral);background:rgba(232,57,90,0.1);padding:2px 8px;border-radius:20px;margin-left:6px;display:inline-block}
 
-/* ─── HERO SECTION (MAIS CLEAN) ─── */
-.hero{min-height:500px;position:relative;display:flex;align-items:flex-end;padding:120px 40px 60px 40px;margin-bottom:20px}
-.hero-bg{position:absolute;inset:0;z-index:0}
-.hero-bg img{width:100%;height:100%;object-fit:cover}
-.hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,0.6) 0%,rgba(0,0,0,0.2) 50%,rgba(0,0,0,0) 100%)}
-.hero-content{position:relative;z-index:2;max-width:600px}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);border-radius:30px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--coral);margin-bottom:16px;box-shadow:var(--shadow)}
-.hero-title{font-size:3.5rem;font-weight:700;line-height:1.1;margin-bottom:16px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.2)}
+/* HERO CARROSSEL */
+.hero{min-height:550px;position:relative;display:flex;align-items:center;padding:120px 40px 60px 40px;margin-bottom:20px;overflow:hidden}
+.hero-carousel{position:absolute;inset:0;z-index:0}
+.hero-slide{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease-in-out}
+.hero-slide.active{opacity:1}
+.hero-slide img{width:100%;height:100%;object-fit:cover}
+.hero-slide::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,0.5) 0%,rgba(0,0,0,0.25) 50%,rgba(0,0,0,0.1) 100%)}
+.hero-content{position:relative;z-index:2;max-width:550px;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);padding:32px 36px;border-radius:28px;border:1px solid rgba(255,255,255,0.15)}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(232,57,90,0.9);border-radius:30px;padding:6px 14px;font-size:12px;font-weight:600;color:#fff;margin-bottom:16px;letter-spacing:0.3px}
+.hero-title{font-size:3rem;font-weight:700;line-height:1.2;margin-bottom:16px;color:#fff;text-shadow:none}
 .hero-title em{color:var(--coral);font-style:normal}
-.hero-desc{font-size:16px;color:rgba(255,255,255,0.9);margin-bottom:24px;max-width:500px}
-.hero-btn{background:var(--coral);color:#fff;border:none;padding:14px 32px;border-radius:40px;font-size:16px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;box-shadow:0 4px 14px rgba(232,57,90,0.3)}
-.hero-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(232,57,90,0.4)}
+.hero-desc{font-size:15px;color:rgba(255,255,255,0.9);margin-bottom:24px;line-height:1.5}
+.hero-btn{background:var(--coral);color:#fff;border:none;padding:14px 32px;border-radius:40px;font-size:16px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;box-shadow:0 4px 14px rgba(0,0,0,0.2)}
+.hero-btn:hover{transform:translateY(-2px);background:#d42e4e;box-shadow:0 8px 28px rgba(0,0,0,0.3)}
 
-/* ─── ROWS (NETFLIX STYLE) ─── */
+/* Indicadores do carrossel */
+.carousel-dots{position:absolute;bottom:20px;left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:3}
+.dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.3s}
+.dot.active{background:var(--coral);width:24px;border-radius:10px}
+.dot:hover{background:rgba(255,255,255,0.9)}
+
+/* ROWS */
 .rows-container{padding:0 40px 80px 40px;background:var(--bg)}
 .row{margin-bottom:50px}
 .row-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px}
@@ -66,7 +74,7 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
 .row-link{color:var(--coral);font-size:13px;font-weight:500;cursor:pointer;transition:opacity 0.2s}
 .row-link:hover{opacity:0.7}
 
-/* CARROSSEL HORIZONTAL */
+/* CARROSSEL CARDS */
 .carousel{position:relative}
 .carousel-track{display:flex;gap:16px;overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;padding:8px 0 20px}
 .carousel-track::-webkit-scrollbar{display:none}
@@ -75,7 +83,7 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
 .carousel-btn.prev{left:-18px}
 .carousel-btn.next{right:-18px}
 
-/* CARD DESTINO (ESTILO AIRBNB) */
+/* CARD */
 .dest-card{flex:0 0 280px;height:380px;border-radius:16px;overflow:hidden;position:relative;cursor:pointer;transition:all 0.3s;background:var(--card-bg);box-shadow:var(--shadow)}
 .dest-card:hover{transform:translateY(-8px);box-shadow:var(--shadow-hover)}
 .dest-card img{width:100%;height:100%;object-fit:cover;transition:transform 0.5s}
@@ -87,7 +95,7 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
 .card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
 .card-tag{font-size:10px;padding:3px 10px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);border-radius:20px;color:#fff}
 
-/* ─── MODAL (BRANCO E CLEAN) ─── */
+/* MODAL */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all 0.3s}
 .modal.active{opacity:1;visibility:visible}
 .modal-content{background:#FFFFFF;border-radius:24px;max-width:520px;width:90%;overflow:hidden;transform:scale(0.95);transition:transform 0.3s;box-shadow:0 24px 48px rgba(0,0,0,0.2)}
@@ -107,16 +115,18 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
 .modal-btn.secondary{background:#f5f5f5;color:var(--text)}
 .modal-btn.secondary:hover{background:#eeeeee}
 
-/* ─── CHAT SCREEN (BRANCO) ─── */
+/* CHAT */
 .chat-screen{position:fixed;inset:0;z-index:300;background:#FFFFFF;display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.4s cubic-bezier(0.2,0.9,0.4,1.1)}
 .chat-screen.active{transform:translateX(0)}
-.chat-header{background:#FFFFFF;padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);box-shadow:0 1px 0 rgba(0,0,0,0.02)}
+.chat-header{background:#FFFFFF;padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
 .back-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
 .back-btn:hover{background:#f5f5f5}
 .chat-header-info{flex:1}
 .chat-header-name{font-weight:700;color:var(--text)}
 .chat-header-role{font-size:11px;color:var(--text-muted)}
-.online-status{font-size:12px;color:#22c55e;background:#f0fdf4;padding:4px 12px;border-radius:20px}
+.online-status{font-size:12px;color:#22c55e;background:#f0fdf4;padding:4px 12px;border-radius:20px;display:flex;align-items:center;gap:4px}
+.online-status::before{content:'';width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 .chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;background:#fafafa}
 .message{display:flex;gap:8px;max-width:85%;animation:fadeIn 0.3s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -138,7 +148,8 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
 /* RESPONSIVE */
 @media (max-width:768px){
   .header{padding:12px 20px}
-  .hero{padding:100px 20px 40px 20px;min-height:400px}
+  .hero{padding:100px 20px 40px 20px;min-height:450px}
+  .hero-content{padding:24px 20px}
   .hero-title{font-size:2rem}
   .rows-container{padding:0 20px 60px 20px}
   .dest-card{flex:0 0 220px;height:320px}
@@ -151,7 +162,6 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div class="logo">
     <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM Viagens">
@@ -165,20 +175,17 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
   </div>
 </div>
 
-<!-- HERO -->
 <div class="hero" id="heroSection">
-  <div class="hero-bg" id="heroBg">
-    <img src="" alt="">
-  </div>
+  <div class="hero-carousel" id="heroCarousel"></div>
   <div class="hero-content">
     <div class="hero-badge">✈️ Atendimento Personalizado</div>
     <h1 class="hero-title">Encontre a sua <em>próxima aventura</em></h1>
     <p class="hero-desc">Explore destinos incríveis com orçamento personalizado e acompanhamento exclusivo.</p>
     <button class="hero-btn" onclick="scrollToRows()">Explorar Destinos →</button>
   </div>
+  <div class="carousel-dots" id="carouselDots"></div>
 </div>
 
-<!-- ROWS -->
 <div class="rows-container" id="rowsContainer">
   <div class="row">
     <div class="row-header">
@@ -229,7 +236,6 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
   </div>
 </div>
 
-<!-- MODAL -->
 <div class="modal" id="destinoModal">
   <div class="modal-content">
     <div class="modal-img" id="modalImg">
@@ -248,7 +254,6 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
   </div>
 </div>
 
-<!-- CHAT -->
 <div class="chat-screen" id="chatScreen">
   <div class="chat-header">
     <button class="back-btn" onclick="closeChat()">←</button>
@@ -256,7 +261,7 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
       <div class="chat-header-name" id="chatHeaderName">APM Viagens</div>
       <div class="chat-header-role">Consultor de Viagens</div>
     </div>
-    <div class="online-status">🟢 Online agora</div>
+    <div class="online-status">Online agora</div>
   </div>
   <div class="chat-messages" id="chatMessages"></div>
   <div class="chat-input-area">
@@ -272,6 +277,21 @@ const PEXELS_KEY='cbnYFhaUvlz1hVKRkRSoYqUQi1rXPdK5XYJgW6bJpAewcBVeTPm8hpHV'
 const {createClient}=supabase
 const sb=createClient(SUPA_URL,SUPA_KEY)
 
+// DESTINOS DO CARROSSEL HERO (10 imagens)
+const HERO_SLIDES = [
+  { nome: 'Phi Phi, Tailândia', query: 'phi phi thailand maya bay beach turquoise water', pais: 'Tailândia' },
+  { nome: 'Ilha Saona, Rep. Dominicana', query: 'saona island dominican republic beach starfish', pais: 'República Dominicana' },
+  { nome: 'Cozumel, México', query: 'cozumel mexico turquoise water beach', pais: 'México' },
+  { nome: 'Santorini, Grécia', query: 'santorini greece sunset blue domes', pais: 'Grécia' },
+  { nome: 'Roma, Itália', query: 'rome colosseum italy landmark', pais: 'Itália' },
+  { nome: 'Disneyland Paris, França', query: 'disneyland paris castle sleeping beauty', pais: 'França' },
+  { nome: 'Paris, França', query: 'paris eiffel tower spring', pais: 'França' },
+  { nome: 'Bali, Indonésia', query: 'bali indonesia rice terrace temple', pais: 'Indonésia' },
+  { nome: 'Algarve, Portugal', query: 'algarve portugal benagil cave beach', pais: 'Portugal' },
+  { nome: 'Maldivas', query: 'maldives overwater bungalow turquoise', pais: 'Maldivas' }
+]
+
+// DESTINOS PARA OS CARDS
 const DESTINOS=[
   {nome:'Algarve',pais:'Portugal',cats:['populares','praia','europa'],tags:['Praias','Família','Sol'],bg:'algarve cliffs golden beach',luxo:false},
   {nome:'Madeira',pais:'Portugal',cats:['populares','europa'],tags:['Natureza','Montanha','Único'],bg:'madeira island levada',luxo:false},
@@ -279,25 +299,31 @@ const DESTINOS=[
   {nome:'Rep.Dominicana',pais:'Caraíbas',cats:['populares','praia'],tags:['Resorts','Praia','Casal'],bg:'punta cana beach',luxo:false},
   {nome:'Santorini',pais:'Grécia',cats:['europa','luxo','praia'],tags:['Pôr-do-sol','Romântico'],bg:'santorini sunset',luxo:true},
   {nome:'Paris',pais:'França',cats:['europa','luxo'],tags:['Romântico','Cultura'],bg:'paris eiffel tower',luxo:false},
-  {nome:'Bali',pais:'Indonésia',cats:['luxo','praia'],tags:['Templos','Spa'],bg:'bali rice terrace',luxo:true},
+  {nome:'Disneyland Paris',pais:'França',cats:['europa'],tags:['Magia','Família','Diversão'],bg:'disneyland paris castle',luxo:false},
+  {nome:'Bali',pais:'Indonésia',cats:['luxo','praia'],tags:['Templos','Spa','Cultura'],bg:'bali rice terrace',luxo:true},
+  {nome:'Roma',pais:'Itália',cats:['europa'],tags:['História','Cultura','Gastronomia'],bg:'rome colosseum',luxo:false},
+  {nome:'Cozumel',pais:'México',cats:['praia'],tags:['Mergulho','Praia','Cristalino'],bg:'cozumel mexico beach',luxo:false},
+  {nome:'Ilha Saona',pais:'Rep.Dominicana',cats:['praia'],tags:['Estrelas do mar','Paraíso'],bg:'saona beach',luxo:false},
   {nome:'Cabo Verde',pais:'África',cats:['praia'],tags:['Mar cristalino','Tranquilidade'],bg:'cape verde beach',luxo:false},
   {nome:'Maiorca',pais:'Espanha',cats:['europa','praia'],tags:['Mediterrâneo','Cultura'],bg:'mallorca beach',luxo:false},
   {nome:'Tunísia',pais:'África',cats:['praia'],tags:['Tudo Incluído','Económico'],bg:'tunisia resort',luxo:false},
   {nome:'Seychelles',pais:'Oceano Índico',cats:['luxo','praia'],tags:['Exclusivo','Natureza'],bg:'seychelles beach',luxo:true},
-  {nome:'Marrocos',pais:'África',cats:['populares'],tags:['Cultura','Medina'],bg:'marrakech market',luxo:false}
+  {nome:'Marrocos',pais:'África',cats:['populares'],tags:['Cultura','Medina','Cores'],bg:'marrakech market',luxo:false}
 ]
 
 let consultor=null, dadosColeta={}, currentStep=0, waitingResponse=false, selectedDestino=null
+let heroInterval = null
+let currentSlide = 0
 
 const CHAT_FLOW=[
   {field:'tipo_viagem',msg:'Que tipo de viagem está a planear?',qrs:['👨‍👩‍👧‍👦 Família','💑 Casal','🧳 A solo','💍 Lua-de-mel','👫 Amigos']},
   {field:'duracao',msg:'Quantas noites pretende?',qrs:['3-4 noites','7 noites','10 noites','14 noites']},
-  {field:'data',msg:'Tem alguma data em mente?',qrs:['Próximas semanas','Próximo mês','2-3 meses','4-6 meses']},
+  {field:'data',msg:'📅 Qual a data prevista para a partida?',placeholder:'Ex: 15/07/2025, "julho 2025", ou "ainda não sei"', useDatePicker: true},
   {field:'adultos',msg:'Quantos adultos viajam? (12+ anos)',qrs:['1','2','3','4','5+']},
   {field:'criancas',msg:'Viajam crianças com menos de 12 anos?',qrs:['Não','1','2','3','4+']},
   {field:'orcamento',msg:'Orçamento aproximado por pessoa?',qrs:['Até €500','€500-800','€800-1200','€1200-2000','€2000+']},
-  {field:'nome',msg:'Para personalizar, qual é o seu nome?'},
-  {field:'whatsapp',msg:'Número de WhatsApp para receber a proposta?'}
+  {field:'nome',msg:'Para personalizar, qual é o seu nome?',placeholder:'Escreva o seu nome'},
+  {field:'whatsapp',msg:'📱 Número de WhatsApp para receber a proposta?',placeholder:'+351 912 345 678'}
 ]
 
 async function init(){
@@ -313,14 +339,14 @@ async function init(){
     try{fbq('init',consultor.meta_pixel_id);fbq('track','PageView')}catch(e){}
   }
   updateUserUI()
-  loadHeroImage()
+  await initHeroCarousel()
   renderAllRows()
 }
 
 function updateUserUI(){
   if(consultor?.nome){
-    document.getElementById('userName').textContent = consultor.nome
-    document.getElementById('chatHeaderName').textContent = consultor.nome
+    document.getElementById('userName').innerHTML = consultor.nome
+    document.getElementById('chatHeaderName').innerHTML = consultor.nome
     if(consultor.foto_perfil){
       document.getElementById('userAvatar').innerHTML = `<img src="${consultor.foto_perfil}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`
     }else{
@@ -330,12 +356,70 @@ function updateUserUI(){
   }
 }
 
-async function loadHeroImage(){
-  try{
-    const res=await fetch(`https://api.pexels.com/v1/search?query=beautiful beach sunset travel&per_page=1&orientation=landscape`,{headers:{Authorization:PEXELS_KEY}})
-    const data=await res.json()
-    if(data.photos?.length) document.querySelector('#heroBg img').src = data.photos[0].src.large2x
-  }catch(e){}
+async function initHeroCarousel(){
+  const container = document.getElementById('heroCarousel')
+  const dotsContainer = document.getElementById('carouselDots')
+  container.innerHTML = ''
+  dotsContainer.innerHTML = ''
+  
+  // Carregar cada slide
+  for(let i = 0; i < HERO_SLIDES.length; i++){
+    const slide = HERO_SLIDES[i]
+    const slideDiv = document.createElement('div')
+    slideDiv.className = 'hero-slide'
+    if(i === 0) slideDiv.classList.add('active')
+    slideDiv.innerHTML = `<img src="" alt="${slide.nome}">`
+    container.appendChild(slideDiv)
+    
+    // Carregar imagem
+    try{
+      const res=await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(slide.query)}&per_page=3&orientation=landscape`,{headers:{Authorization:PEXELS_KEY}})
+      const data=await res.json()
+      if(data.photos?.length){
+        slideDiv.querySelector('img').src = data.photos[0].src.large2x || data.photos[0].src.large
+      } else {
+        slideDiv.querySelector('img').src = 'https://placehold.co/1600x900/eee/ccc?text=' + encodeURIComponent(slide.nome)
+      }
+    }catch(e){
+      slideDiv.querySelector('img').src = 'https://placehold.co/1600x900/eee/ccc?text=' + encodeURIComponent(slide.nome)
+    }
+    
+    // Criar dot
+    const dot = document.createElement('div')
+    dot.className = 'dot'
+    if(i === 0) dot.classList.add('active')
+    dot.onclick = () => goToSlide(i)
+    dotsContainer.appendChild(dot)
+  }
+  
+  // Iniciar autoplay
+  startHeroAutoplay()
+}
+
+function startHeroAutoplay(){
+  if(heroInterval) clearInterval(heroInterval)
+  heroInterval = setInterval(() => {
+    nextSlide()
+  }, 5000)
+}
+
+function nextSlide(){
+  let next = currentSlide + 1
+  if(next >= HERO_SLIDES.length) next = 0
+  goToSlide(next)
+}
+
+function goToSlide(index){
+  const slides = document.querySelectorAll('.hero-slide')
+  const dots = document.querySelectorAll('.dot')
+  slides[currentSlide].classList.remove('active')
+  dots[currentSlide].classList.remove('active')
+  currentSlide = index
+  slides[currentSlide].classList.add('active')
+  dots[currentSlide].classList.add('active')
+  
+  // Reiniciar timer
+  startHeroAutoplay()
 }
 
 async function loadCardImage(query){
@@ -419,10 +503,10 @@ async function nextQuestion(){
     return
   }
   const step = CHAT_FLOW[currentStep]
-  await addBotMessage(step.msg, step.qrs || null)
+  await addBotMessage(step.msg, step.qrs || null, step.useDatePicker || false, step.placeholder || '')
 }
 
-async function addBotMessage(text, quickReplies=null){
+async function addBotMessage(text, quickReplies=null, useDatePicker=false, placeholder=''){
   const container = document.getElementById('chatMessages')
   const msgDiv = document.createElement('div')
   msgDiv.className = 'message bot'
@@ -431,7 +515,33 @@ async function addBotMessage(text, quickReplies=null){
     <div class="message-bubble">${text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>
   `
   container.appendChild(msgDiv)
-  if(quickReplies){
+
+  if(useDatePicker){
+    const dateDiv = document.createElement('div')
+    dateDiv.className = 'quick-replies'
+    dateDiv.style.paddingLeft = '40px'
+    dateDiv.style.display = 'flex'
+    dateDiv.style.flexWrap = 'wrap'
+    dateDiv.style.gap = '10px'
+    dateDiv.innerHTML = `
+      <input type="date" id="datePicker" style="flex:1; padding:12px 16px; border-radius:30px; border:1px solid var(--border); font-family:var(--font); font-size:14px; background:#fff">
+      <button id="submitDateBtn" style="padding:12px 20px; background:var(--coral); color:#fff; border:none; border-radius:30px; font-weight:600; cursor:pointer">Confirmar →</button>
+      <button id="noDateBtn" style="padding:12px 20px; background:#f5f5f5; border:1px solid var(--border); border-radius:30px; cursor:pointer">Ainda não sei 📅</button>
+    `
+    container.appendChild(dateDiv)
+    
+    document.getElementById('submitDateBtn').onclick = () => {
+      const val = document.getElementById('datePicker').value
+      if(val){
+        const dataFormatada = new Date(val).toLocaleDateString('pt-PT')
+        handleQuickReply(dataFormatada)
+      } else {
+        handleQuickReply('Data não especificada')
+      }
+    }
+    document.getElementById('noDateBtn').onclick = () => handleQuickReply('Ainda não sei / flexível')
+    
+  } else if(quickReplies && quickReplies.length){
     const qrDiv = document.createElement('div')
     qrDiv.className = 'quick-replies'
     quickReplies.forEach(qr => {
@@ -442,7 +552,24 @@ async function addBotMessage(text, quickReplies=null){
       qrDiv.appendChild(btn)
     })
     container.appendChild(qrDiv)
+  } else if(placeholder){
+    const inputDiv = document.createElement('div')
+    inputDiv.className = 'quick-replies'
+    inputDiv.style.paddingLeft = '40px'
+    inputDiv.style.display = 'flex'
+    inputDiv.style.gap = '8px'
+    inputDiv.innerHTML = `
+      <input type="text" id="textInput" placeholder="${placeholder}" style="flex:1; padding:12px 16px; border-radius:30px; border:1px solid var(--border); font-family:var(--font); font-size:14px; background:#fff">
+      <button id="submitTextBtn" style="padding:12px 20px; background:var(--coral); color:#fff; border:none; border-radius:30px; font-weight:600; cursor:pointer">Enviar →</button>
+    `
+    container.appendChild(inputDiv)
+    document.getElementById('submitTextBtn').onclick = () => {
+      const val = document.getElementById('textInput').value.trim()
+      if(val) handleQuickReply(val)
+    }
+    setTimeout(() => document.getElementById('textInput')?.focus(), 100)
   }
+  
   container.scrollTop = container.scrollHeight
 }
 
