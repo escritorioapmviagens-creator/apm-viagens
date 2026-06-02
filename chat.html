@@ -301,7 +301,7 @@ function iniciarChat() {
 // ── CHAT ENGINE ───────────────────────────────────────────────
 async function primeiraMsg() {
   const nome = consultor?.nome?.split(' ')[0] || 'eu'
-  await botMsg(`Olá! 👋 Que bom ter-te aqui! Sou ${nome === 'APM Viagens' ? 'o assistente da APM Viagens' : nome} e vou ajudar-te a encontrar a viagem dos teus sonhos. 🌍\n\nPrimeiro diz-me: **tens já algum destino em mente?**`, [
+  await botMsg(`Olá! 👋 Que bom ter-te aqui! Sou ${nome === 'APM Viagens' ? ' da APM Viagens' : nome} e vou ajudar a encontrar a melhor oferta. 🌍\n\nPrimeiro: ** já  existe algum destino em mente?**`, [
     { label: '✈️ Sim, já sei para onde quero ir', val: 'tem_destino' },
     { label: '🌍 Não, preciso de inspiração', val: 'precisa_inspiracao' },
     { label: '🏖️ Quero praia e sol', val: 'praia' },
