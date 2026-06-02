@@ -59,12 +59,23 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
 .hero-desc{font-size:15px;color:rgba(255,255,255,0.9);margin-bottom:24px;line-height:1.5}
 .hero-btn{background:var(--coral);color:#fff;border:none;padding:14px 32px;border-radius:40px;font-size:16px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;box-shadow:0 4px 14px rgba(0,0,0,0.2)}
 .hero-btn:hover{transform:translateY(-2px);background:#d42e4e;box-shadow:0 8px 28px rgba(0,0,0,0.3)}
-
-/* Indicadores do carrossel */
 .carousel-dots{position:absolute;bottom:20px;left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:3}
 .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.3s}
 .dot.active{background:var(--coral);width:24px;border-radius:10px}
 .dot:hover{background:rgba(255,255,255,0.9)}
+
+/* SEÇÃO COMO FUNCIONA */
+.como-funciona{background:linear-gradient(135deg, #f8f6f2 0%, #ffffff 100%);border-radius:32px;margin:20px 40px 40px 40px;padding:40px;text-align:center;box-shadow:var(--shadow)}
+.como-funciona-badge{display:inline-block;background:rgba(232,57,90,0.1);color:var(--coral);padding:6px 16px;border-radius:30px;font-size:12px;font-weight:600;margin-bottom:16px}
+.como-funciona-title{font-size:1.8rem;font-weight:700;color:var(--text);margin-bottom:32px}
+.como-funciona-title em{color:var(--coral);font-style:normal}
+.passos{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:20px;margin-bottom:32px}
+.passo{display:flex;flex-direction:column;align-items:center;gap:8px;background:#fff;padding:20px 28px;border-radius:24px;box-shadow:var(--shadow);min-width:140px}
+.passo-icon{font-size:32px}
+.passo-text{font-size:14px;color:var(--text);font-weight:500}
+.passo-arrow{font-size:24px;color:var(--coral);font-weight:600}
+.como-funciona-btn{background:var(--coral);color:#fff;border:none;padding:14px 36px;border-radius:40px;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 14px rgba(232,57,90,0.3)}
+.como-funciona-btn:hover{transform:translateY(-2px);background:#d42e4e}
 
 /* ROWS */
 .rows-container{padding:0 40px 80px 40px;background:var(--bg)}
@@ -151,6 +162,10 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
   .hero{padding:100px 20px 40px 20px;min-height:450px}
   .hero-content{padding:24px 20px}
   .hero-title{font-size:2rem}
+  .como-funciona{margin:20px;padding:24px}
+  .passos{flex-direction:column}
+  .passo-arrow{transform:rotate(90deg)}
+  .como-funciona-title{font-size:1.4rem}
   .rows-container{padding:0 20px 60px 20px}
   .dest-card{flex:0 0 220px;height:320px}
   .card-name{font-size:1.2rem}
@@ -181,13 +196,38 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
     <div class="hero-badge">✈️ Atendimento Personalizado</div>
     <h1 class="hero-title">Encontre a sua <em>próxima aventura</em></h1>
     <p class="hero-desc">Explore destinos incríveis com orçamento personalizado e acompanhamento exclusivo.</p>
-    <button class="hero-btn" onclick="scrollToRows()">Explorar Destinos →</button>
+    <button class="hero-btn" onclick="scrollToComoFunciona()">Explorar Destinos →</button>
   </div>
   <div class="carousel-dots" id="carouselDots"></div>
 </div>
 
+<!-- SEÇÃO COMO FUNCIONA - INSTRUÇÃO CLARA -->
+<div class="como-funciona" id="comoFunciona">
+  <div class="como-funciona-content">
+    <span class="como-funciona-badge">📱 3 passos simples</span>
+    <h2 class="como-funciona-title">Escolha o seu destino <em>em segundos</em></h2>
+    <div class="passos">
+      <div class="passo">
+        <div class="passo-icon">1️⃣</div>
+        <div class="passo-text">Explore os destinos abaixo</div>
+      </div>
+      <div class="passo-arrow">→</div>
+      <div class="passo">
+        <div class="passo-icon">2️⃣</div>
+        <div class="passo-text">Clique no destino que ama</div>
+      </div>
+      <div class="passo-arrow">→</div>
+      <div class="passo">
+        <div class="passo-icon">3️⃣</div>
+        <div class="passo-text">Receba proposta no WhatsApp</div>
+      </div>
+    </div>
+    <button class="como-funciona-btn" onclick="scrollToFirstRow()">👆 Começar agora →</button>
+  </div>
+</div>
+
 <div class="rows-container" id="rowsContainer">
-  <div class="row">
+  <div class="row" id="firstRow">
     <div class="row-header">
       <h2 class="row-title">🌟 Destinos em Destaque</h2>
       <span class="row-link" onclick="scrollCarousel('populares', 200)">Ver todos →</span>
@@ -277,21 +317,27 @@ const PEXELS_KEY='cbnYFhaUvlz1hVKRkRSoYqUQi1rXPdK5XYJgW6bJpAewcBVeTPm8hpHV'
 const {createClient}=supabase
 const sb=createClient(SUPA_URL,SUPA_KEY)
 
-// DESTINOS DO CARROSSEL HERO (10 imagens)
+// DESTINOS DO CARROSSEL HERO
 const HERO_SLIDES = [
-  { nome: 'Phi Phi, Tailândia', query: 'phi phi thailand maya bay beach turquoise water', pais: 'Tailândia' },
-  { nome: 'Ilha Saona, Rep. Dominicana', query: 'saona island dominican republic beach starfish', pais: 'República Dominicana' },
-  { nome: 'Cozumel, México', query: 'cozumel mexico turquoise water beach', pais: 'México' },
-  { nome: 'Santorini, Grécia', query: 'santorini greece sunset blue domes', pais: 'Grécia' },
-  { nome: 'Roma, Itália', query: 'rome colosseum italy landmark', pais: 'Itália' },
-  { nome: 'Disneyland Paris, França', query: 'disneyland paris castle sleeping beauty', pais: 'França' },
-  { nome: 'Paris, França', query: 'paris eiffel tower spring', pais: 'França' },
-  { nome: 'Bali, Indonésia', query: 'bali indonesia rice terrace temple', pais: 'Indonésia' },
-  { nome: 'Algarve, Portugal', query: 'algarve portugal benagil cave beach', pais: 'Portugal' },
-  { nome: 'Maldivas', query: 'maldives overwater bungalow turquoise', pais: 'Maldivas' }
+  { nome: 'Phi Phi, Tailândia', query: 'phi phi thailand wide aerial view beach limestone cliffs', pais: 'Tailândia' },
+  { nome: 'Ilha Saona, Rep. Dominicana', query: 'saona island wide panoramic beach palm trees coast', pais: 'República Dominicana' },
+  { nome: 'Cozumel, México', query: 'cozumel wide aerial view turquoise water coastline', pais: 'México' },
+  { nome: 'Santorini, Grécia', query: 'santorini wide panoramic view caldera white houses', pais: 'Grécia' },
+  { nome: 'Roma, Itália', query: 'rome wide panoramic view colosseum cityscape', pais: 'Itália' },
+  { nome: 'Disneyland Paris, França', query: 'disneyland paris wide angle castle park aerial', pais: 'França' },
+  { nome: 'Paris, França', query: 'paris wide panoramic eiffel tower seine river', pais: 'França' },
+  { nome: 'Bali, Indonésia', query: 'bali wide aerial view rice terraces jungle coast', pais: 'Indonésia' },
+  { nome: 'Algarve, Portugal', query: 'algarve wide aerial view cliffs golden beach', pais: 'Portugal' },
+  { nome: 'Maldivas', query: 'maldives wide aerial view island turquoise water', pais: 'Maldivas' }
 ]
 
-// DESTINOS PARA OS CARDS
+const FALLBACK_IMAGES = {
+  'Ilha Saona, Rep. Dominicana': 'https://images.pexels.com/photos/948649/pexels-photo-948649.jpeg?auto=compress&cs=tinysrgb&w=1600',
+  'Cozumel, México': 'https://images.pexels.com/photos/1316196/pexels-photo-1316196.jpeg?auto=compress&cs=tinysrgb&w=1600',
+  'Disneyland Paris, França': 'https://images.pexels.com/photos/1479829/pexels-photo-1479829.jpeg?auto=compress&cs=tinysrgb&w=1600',
+  'Maldivas': 'https://images.pexels.com/photos/1287468/pexels-photo-1287468.jpeg?auto=compress&cs=tinysrgb&w=1600'
+}
+
 const DESTINOS=[
   {nome:'Algarve',pais:'Portugal',cats:['populares','praia','europa'],tags:['Praias','Família','Sol'],bg:'algarve cliffs golden beach',luxo:false},
   {nome:'Madeira',pais:'Portugal',cats:['populares','europa'],tags:['Natureza','Montanha','Único'],bg:'madeira island levada',luxo:false},
@@ -362,7 +408,6 @@ async function initHeroCarousel(){
   container.innerHTML = ''
   dotsContainer.innerHTML = ''
   
-  // Carregar cada slide
   for(let i = 0; i < HERO_SLIDES.length; i++){
     const slide = HERO_SLIDES[i]
     const slideDiv = document.createElement('div')
@@ -371,20 +416,24 @@ async function initHeroCarousel(){
     slideDiv.innerHTML = `<img src="" alt="${slide.nome}">`
     container.appendChild(slideDiv)
     
-    // Carregar imagem
     try{
-      const res=await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(slide.query)}&per_page=3&orientation=landscape`,{headers:{Authorization:PEXELS_KEY}})
+      const res=await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(slide.query)}&per_page=5&orientation=landscape`,{headers:{Authorization:PEXELS_KEY}})
       const data=await res.json()
       if(data.photos?.length){
-        slideDiv.querySelector('img').src = data.photos[0].src.large2x || data.photos[0].src.large
+        let bestPhoto = data.photos[0]
+        for(const photo of data.photos){
+          if(photo.width > bestPhoto.width) bestPhoto = photo
+        }
+        slideDiv.querySelector('img').src = bestPhoto.src.large2x || bestPhoto.src.large
       } else {
-        slideDiv.querySelector('img').src = 'https://placehold.co/1600x900/eee/ccc?text=' + encodeURIComponent(slide.nome)
+        const fallback = FALLBACK_IMAGES[slide.nome] || `https://placehold.co/1600x900/1a1a2e/white?text=${encodeURIComponent(slide.nome)}`
+        slideDiv.querySelector('img').src = fallback
       }
     }catch(e){
-      slideDiv.querySelector('img').src = 'https://placehold.co/1600x900/eee/ccc?text=' + encodeURIComponent(slide.nome)
+      const fallback = FALLBACK_IMAGES[slide.nome] || `https://placehold.co/1600x900/1a1a2e/white?text=${encodeURIComponent(slide.nome)}`
+      slideDiv.querySelector('img').src = fallback
     }
     
-    // Criar dot
     const dot = document.createElement('div')
     dot.className = 'dot'
     if(i === 0) dot.classList.add('active')
@@ -392,21 +441,16 @@ async function initHeroCarousel(){
     dotsContainer.appendChild(dot)
   }
   
-  // Iniciar autoplay
   startHeroAutoplay()
 }
 
 function startHeroAutoplay(){
   if(heroInterval) clearInterval(heroInterval)
   heroInterval = setInterval(() => {
-    nextSlide()
+    let next = currentSlide + 1
+    if(next >= HERO_SLIDES.length) next = 0
+    goToSlide(next)
   }, 5000)
-}
-
-function nextSlide(){
-  let next = currentSlide + 1
-  if(next >= HERO_SLIDES.length) next = 0
-  goToSlide(next)
 }
 
 function goToSlide(index){
@@ -417,9 +461,15 @@ function goToSlide(index){
   currentSlide = index
   slides[currentSlide].classList.add('active')
   dots[currentSlide].classList.add('active')
-  
-  // Reiniciar timer
   startHeroAutoplay()
+}
+
+function scrollToComoFunciona(){
+  document.getElementById('comoFunciona').scrollIntoView({behavior:'smooth'})
+}
+
+function scrollToFirstRow(){
+  document.getElementById('firstRow').scrollIntoView({behavior:'smooth'})
 }
 
 async function loadCardImage(query){
@@ -463,10 +513,6 @@ async function renderRow(rowId, destinos){
 function scrollCarousel(rowId, delta){
   const track = document.getElementById(`track-${rowId}`)
   if(track) track.scrollLeft += delta
-}
-
-function scrollToRows(){
-  document.getElementById('rowsContainer').scrollIntoView({behavior:'smooth'})
 }
 
 function openModal(dest){
@@ -643,7 +689,8 @@ window.closeModal = closeModal
 window.sendMessage = sendMessage
 window.closeChat = closeChat
 window.handleQuickReply = handleQuickReply
-window.scrollToRows = scrollToRows
+window.scrollToFirstRow = scrollToFirstRow
+window.scrollToComoFunciona = scrollToComoFunciona
 
 init()
 </script>
