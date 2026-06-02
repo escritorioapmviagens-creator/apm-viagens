@@ -102,9 +102,9 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
 .card-gradient{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,0.8) 0%,rgba(0,0,0,0.3) 50%,rgba(0,0,0,0) 100%)}
 .card-content{position:absolute;bottom:0;left:0;right:0;padding:20px}
 .card-country{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--coral);margin-bottom:4px}
-.card-name{font-size:1.4rem;font-weight:700;color:#fff;margin-bottom:6px}
+.card-name{font-size:1.4rem;font-weight:700;color:#fff;margin-bottom:6px;text-shadow:0 1px 4px rgba(0,0,0,0.5)}
 .card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
-.card-tag{font-size:10px;padding:3px 10px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);border-radius:20px;color:#fff}
+.card-tag{font-size:10px;padding:3px 10px;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);border-radius:20px;color:#fff}
 
 /* MODAL */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all 0.3s}
@@ -201,26 +201,16 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
   <div class="carousel-dots" id="carouselDots"></div>
 </div>
 
-<!-- SEÇÃO COMO FUNCIONA - INSTRUÇÃO CLARA -->
 <div class="como-funciona" id="comoFunciona">
   <div class="como-funciona-content">
     <span class="como-funciona-badge">📱 3 passos simples</span>
     <h2 class="como-funciona-title">Escolha o seu destino <em>em segundos</em></h2>
     <div class="passos">
-      <div class="passo">
-        <div class="passo-icon">1️⃣</div>
-        <div class="passo-text">Explore os destinos abaixo</div>
-      </div>
+      <div class="passo"><div class="passo-icon">1️⃣</div><div class="passo-text">Explore os destinos abaixo</div></div>
       <div class="passo-arrow">→</div>
-      <div class="passo">
-        <div class="passo-icon">2️⃣</div>
-        <div class="passo-text">Clique no destino que ama</div>
-      </div>
+      <div class="passo"><div class="passo-icon">2️⃣</div><div class="passo-text">Clique no destino que ama</div></div>
       <div class="passo-arrow">→</div>
-      <div class="passo">
-        <div class="passo-icon">3️⃣</div>
-        <div class="passo-text">Receba proposta no WhatsApp</div>
-      </div>
+      <div class="passo"><div class="passo-icon">3️⃣</div><div class="passo-text">Receba proposta no WhatsApp</div></div>
     </div>
     <button class="como-funciona-btn" onclick="scrollToFirstRow()">👆 Começar agora →</button>
   </div>
@@ -228,86 +218,39 @@ body{font-family:var(--font);color:var(--text);background:var(--bg)}
 
 <div class="rows-container" id="rowsContainer">
   <div class="row" id="firstRow">
-    <div class="row-header">
-      <h2 class="row-title">🌟 Destinos em Destaque</h2>
-      <span class="row-link" onclick="scrollCarousel('populares', 200)">Ver todos →</span>
-    </div>
-    <div class="carousel">
-      <button class="carousel-btn prev" onclick="scrollCarousel('populares', -300)">‹</button>
-      <div class="carousel-track" id="track-populares"></div>
-      <button class="carousel-btn next" onclick="scrollCarousel('populares', 300)">›</button>
-    </div>
+    <div class="row-header"><h2 class="row-title">🌟 Destinos em Destaque</h2><span class="row-link" onclick="scrollCarousel('populares', 200)">Ver todos →</span></div>
+    <div class="carousel"><button class="carousel-btn prev" onclick="scrollCarousel('populares', -300)">‹</button><div class="carousel-track" id="track-populares"></div><button class="carousel-btn next" onclick="scrollCarousel('populares', 300)">›</button></div>
   </div>
-
   <div class="row">
-    <div class="row-header">
-      <h2 class="row-title">🏝️ Praia & Sol</h2>
-      <span class="row-link" onclick="scrollCarousel('praia', 200)">Ver todos →</span>
-    </div>
-    <div class="carousel">
-      <button class="carousel-btn prev" onclick="scrollCarousel('praia', -300)">‹</button>
-      <div class="carousel-track" id="track-praia"></div>
-      <button class="carousel-btn next" onclick="scrollCarousel('praia', 300)">›</button>
-    </div>
+    <div class="row-header"><h2 class="row-title">🏝️ Praia & Sol</h2><span class="row-link" onclick="scrollCarousel('praia', 200)">Ver todos →</span></div>
+    <div class="carousel"><button class="carousel-btn prev" onclick="scrollCarousel('praia', -300)">‹</button><div class="carousel-track" id="track-praia"></div><button class="carousel-btn next" onclick="scrollCarousel('praia', 300)">›</button></div>
   </div>
-
   <div class="row">
-    <div class="row-header">
-      <h2 class="row-title">✨ Luxo & Exclusividade</h2>
-      <span class="row-link" onclick="scrollCarousel('luxo', 200)">Ver todos →</span>
-    </div>
-    <div class="carousel">
-      <button class="carousel-btn prev" onclick="scrollCarousel('luxo', -300)">‹</button>
-      <div class="carousel-track" id="track-luxo"></div>
-      <button class="carousel-btn next" onclick="scrollCarousel('luxo', 300)">›</button>
-    </div>
+    <div class="row-header"><h2 class="row-title">✨ Luxo & Exclusividade</h2><span class="row-link" onclick="scrollCarousel('luxo', 200)">Ver todos →</span></div>
+    <div class="carousel"><button class="carousel-btn prev" onclick="scrollCarousel('luxo', -300)">‹</button><div class="carousel-track" id="track-luxo"></div><button class="carousel-btn next" onclick="scrollCarousel('luxo', 300)">›</button></div>
   </div>
-
   <div class="row">
-    <div class="row-header">
-      <h2 class="row-title">🇪🇺 Europa Encantadora</h2>
-      <span class="row-link" onclick="scrollCarousel('europa', 200)">Ver todos →</span>
-    </div>
-    <div class="carousel">
-      <button class="carousel-btn prev" onclick="scrollCarousel('europa', -300)">‹</button>
-      <div class="carousel-track" id="track-europa"></div>
-      <button class="carousel-btn next" onclick="scrollCarousel('europa', 300)">›</button>
-    </div>
+    <div class="row-header"><h2 class="row-title">🇪🇺 Europa Encantadora</h2><span class="row-link" onclick="scrollCarousel('europa', 200)">Ver todos →</span></div>
+    <div class="carousel"><button class="carousel-btn prev" onclick="scrollCarousel('europa', -300)">‹</button><div class="carousel-track" id="track-europa"></div><button class="carousel-btn next" onclick="scrollCarousel('europa', 300)">›</button></div>
   </div>
 </div>
 
 <div class="modal" id="destinoModal">
   <div class="modal-content">
-    <div class="modal-img" id="modalImg">
-      <img src="" alt="">
-      <div class="modal-country" id="modalCountry"></div>
-    </div>
+    <div class="modal-img" id="modalImg"><img src="" alt=""><div class="modal-country" id="modalCountry"></div></div>
     <div class="modal-body">
       <h2 class="modal-title" id="modalTitle"></h2>
       <div class="modal-tags" id="modalTags"></div>
       <p class="modal-desc">🌍 Um destino incrível que combina cultura, paisagens deslumbrantes e experiências únicas. Perfeito para criar memórias inesquecíveis.</p>
-      <div class="modal-actions">
-        <button class="modal-btn secondary" onclick="closeModal()">Ver outros</button>
-        <button class="modal-btn primary" id="modalSelectBtn">Quero este destino ✨</button>
-      </div>
+      <div class="modal-actions"><button class="modal-btn secondary" onclick="closeModal()">Ver outros</button><button class="modal-btn primary" id="modalSelectBtn">Quero este destino ✨</button></div>
     </div>
   </div>
 </div>
 
 <div class="chat-screen" id="chatScreen">
-  <div class="chat-header">
-    <button class="back-btn" onclick="closeChat()">←</button>
-    <div class="chat-header-info">
-      <div class="chat-header-name" id="chatHeaderName">APM Viagens</div>
-      <div class="chat-header-role">Consultor de Viagens</div>
-    </div>
-    <div class="online-status">Online agora</div>
-  </div>
+  <div class="chat-header"><button class="back-btn" onclick="closeChat()">←</button><div class="chat-header-info"><div class="chat-header-name" id="chatHeaderName">APM Viagens</div><div class="chat-header-role">Consultor de Viagens</div></div><div class="online-status">Online agora</div></div>
   <div class="chat-messages" id="chatMessages"></div>
-  <div class="chat-input-area">
-    <input type="text" class="chat-input" id="chatInput" placeholder="Escreva aqui..." onkeypress="if(event.key==='Enter') sendMessage()">
-    <button class="send-btn" onclick="sendMessage()">📤</button>
-  </div>
+  <div class="chat-input-area"><input type="text" class="chat-input" id="chatInput" placeholder="Escreva aqui..." onkeypress="if(event.key==='Enter') sendMessage()"><button class="send-btn" onclick="sendMessage()">📤</button></div>
 </div>
 
 <script>
@@ -317,49 +260,42 @@ const PEXELS_KEY='cbnYFhaUvlz1hVKRkRSoYqUQi1rXPdK5XYJgW6bJpAewcBVeTPm8hpHV'
 const {createClient}=supabase
 const sb=createClient(SUPA_URL,SUPA_KEY)
 
-// DESTINOS DO CARROSSEL HERO
+// HERO SLIDES
 const HERO_SLIDES = [
-  { nome: 'Phi Phi, Tailândia', query: 'phi phi thailand wide aerial view beach limestone cliffs', pais: 'Tailândia' },
-  { nome: 'Ilha Saona, Rep. Dominicana', query: 'saona island wide panoramic beach palm trees coast', pais: 'República Dominicana' },
-  { nome: 'Cozumel, México', query: 'cozumel wide aerial view turquoise water coastline', pais: 'México' },
-  { nome: 'Santorini, Grécia', query: 'santorini wide panoramic view caldera white houses', pais: 'Grécia' },
-  { nome: 'Roma, Itália', query: 'rome wide panoramic view colosseum cityscape', pais: 'Itália' },
-  { nome: 'Disneyland Paris, França', query: 'disneyland paris wide angle castle park aerial', pais: 'França' },
-  { nome: 'Paris, França', query: 'paris wide panoramic eiffel tower seine river', pais: 'França' },
-  { nome: 'Bali, Indonésia', query: 'bali wide aerial view rice terraces jungle coast', pais: 'Indonésia' },
-  { nome: 'Algarve, Portugal', query: 'algarve wide aerial view cliffs golden beach', pais: 'Portugal' },
-  { nome: 'Maldivas', query: 'maldives wide aerial view island turquoise water', pais: 'Maldivas' }
+  { nome: 'Phi Phi, Tailândia', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&h=900&fit=crop', pais: 'Tailândia' },
+  { nome: 'Ilha Saona, Rep. Dominicana', img: 'https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=1600&h=900&fit=crop', pais: 'República Dominicana' },
+  { nome: 'Cozumel, México', img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1600&h=900&fit=crop', pais: 'México' },
+  { nome: 'Santorini, Grécia', img: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1600&h=900&fit=crop', pais: 'Grécia' },
+  { nome: 'Roma, Itália', img: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=1600&h=900&fit=crop', pais: 'Itália' },
+  { nome: 'Disneyland Paris, França', img: 'https://images.unsplash.com/photo-1567346495660-baf9ca9d661a?w=1600&h=900&fit=crop', pais: 'França' },
+  { nome: 'Paris, França', img: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1600&h=900&fit=crop', pais: 'França' },
+  { nome: 'Bali, Indonésia', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1600&h=900&fit=crop', pais: 'Indonésia' },
+  { nome: 'Algarve, Portugal', img: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1600&h=900&fit=crop', pais: 'Portugal' },
+  { nome: 'Maldivas', img: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=1600&h=900&fit=crop', pais: 'Maldivas' }
 ]
 
-const FALLBACK_IMAGES = {
-  'Ilha Saona, Rep. Dominicana': 'https://images.pexels.com/photos/948649/pexels-photo-948649.jpeg?auto=compress&cs=tinysrgb&w=1600',
-  'Cozumel, México': 'https://images.pexels.com/photos/1316196/pexels-photo-1316196.jpeg?auto=compress&cs=tinysrgb&w=1600',
-  'Disneyland Paris, França': 'https://images.pexels.com/photos/1479829/pexels-photo-1479829.jpeg?auto=compress&cs=tinysrgb&w=1600',
-  'Maldivas': 'https://images.pexels.com/photos/1287468/pexels-photo-1287468.jpeg?auto=compress&cs=tinysrgb&w=1600'
-}
-
+// DESTINOS - Com query corrigida para Santorini (água azul-turquesa)
 const DESTINOS=[
-  {nome:'Algarve',pais:'Portugal',cats:['populares','praia','europa'],tags:['Praias','Família','Sol'],bg:'algarve cliffs golden beach',luxo:false},
-  {nome:'Madeira',pais:'Portugal',cats:['populares','europa'],tags:['Natureza','Montanha','Único'],bg:'madeira island levada',luxo:false},
-  {nome:'Maldivas',pais:'Oceano Índico',cats:['populares','luxo','praia'],tags:['Bungalow','Romance','Luxo'],bg:'maldives overwater villa',luxo:true},
-  {nome:'Rep.Dominicana',pais:'Caraíbas',cats:['populares','praia'],tags:['Resorts','Praia','Casal'],bg:'punta cana beach',luxo:false},
-  {nome:'Santorini',pais:'Grécia',cats:['europa','luxo','praia'],tags:['Pôr-do-sol','Romântico'],bg:'santorini sunset',luxo:true},
+  {nome:'Algarve',pais:'Portugal',cats:['populares','praia','europa'],tags:['Praias','Família','Sol'],bg:'algarve cliffs golden beach turquoise water',luxo:false},
+  {nome:'Madeira',pais:'Portugal',cats:['populares','europa'],tags:['Natureza','Montanha','Único'],bg:'madeira island levada forest',luxo:false},
+  {nome:'Maldivas',pais:'Oceano Índico',cats:['populares','luxo','praia'],tags:['Bungalow','Romance','Luxo'],bg:'maldives turquoise water overwater bungalow',luxo:true},
+  {nome:'Rep.Dominicana',pais:'Caraíbas',cats:['populares','praia'],tags:['Resorts','Praia','Casal'],bg:'dominican republic punta cana turquoise water white sand beach palm',luxo:false},
+  {nome:'Santorini',pais:'Grécia',cats:['europa','luxo','praia'],tags:['Pôr-do-sol','Romântico'],bg:'santorini greece turquoise water black sand beach perissa crystal clear',luxo:true},
   {nome:'Paris',pais:'França',cats:['europa','luxo'],tags:['Romântico','Cultura'],bg:'paris eiffel tower',luxo:false},
-  {nome:'Disneyland Paris',pais:'França',cats:['europa'],tags:['Magia','Família','Diversão'],bg:'disneyland paris castle',luxo:false},
-  {nome:'Bali',pais:'Indonésia',cats:['luxo','praia'],tags:['Templos','Spa','Cultura'],bg:'bali rice terrace',luxo:true},
+  {nome:'Disneyland Paris',pais:'França',cats:['europa','populares'],tags:['Magia','Família','Diversão'],bg:'disneyland paris castle',luxo:false},
+  {nome:'Bali',pais:'Indonésia',cats:['luxo','praia'],tags:['Templos','Spa','Cultura'],bg:'bali indonesia turquoise water beach palm trees',luxo:true},
   {nome:'Roma',pais:'Itália',cats:['europa'],tags:['História','Cultura','Gastronomia'],bg:'rome colosseum',luxo:false},
-  {nome:'Cozumel',pais:'México',cats:['praia'],tags:['Mergulho','Praia','Cristalino'],bg:'cozumel mexico beach',luxo:false},
-  {nome:'Ilha Saona',pais:'Rep.Dominicana',cats:['praia'],tags:['Estrelas do mar','Paraíso'],bg:'saona beach',luxo:false},
-  {nome:'Cabo Verde',pais:'África',cats:['praia'],tags:['Mar cristalino','Tranquilidade'],bg:'cape verde beach',luxo:false},
-  {nome:'Maiorca',pais:'Espanha',cats:['europa','praia'],tags:['Mediterrâneo','Cultura'],bg:'mallorca beach',luxo:false},
-  {nome:'Tunísia',pais:'África',cats:['praia'],tags:['Tudo Incluído','Económico'],bg:'tunisia resort',luxo:false},
-  {nome:'Seychelles',pais:'Oceano Índico',cats:['luxo','praia'],tags:['Exclusivo','Natureza'],bg:'seychelles beach',luxo:true},
-  {nome:'Marrocos',pais:'África',cats:['populares'],tags:['Cultura','Medina','Cores'],bg:'marrakech market',luxo:false}
+  {nome:'Cozumel',pais:'México',cats:['praia'],tags:['Mergulho','Praia','Cristalino'],bg:'cozumel mexico turquoise water beach',luxo:false},
+  {nome:'Ilha Saona',pais:'Rep.Dominicana',cats:['praia'],tags:['Estrelas do mar','Paraíso'],bg:'saona island turquoise water starfish beach',luxo:false},
+  {nome:'Cabo Verde',pais:'África',cats:['praia'],tags:['Mar cristalino','Tranquilidade'],bg:'cabo verde sal island beach turquoise water',luxo:false},
+  {nome:'Maiorca',pais:'Espanha',cats:['europa','praia'],tags:['Mediterrâneo','Cultura'],bg:'mallorca beach turquoise water',luxo:false},
+  {nome:'Tunísia',pais:'África',cats:['praia'],tags:['Tudo Incluído','Económico'],bg:'tunisia beach turquoise water',luxo:false},
+  {nome:'Seychelles',pais:'Oceano Índico',cats:['luxo','praia'],tags:['Exclusivo','Natureza'],bg:'seychelles beach turquoise water granite',luxo:true},
+  {nome:'Marrocos',pais:'África',cats:['populares'],tags:['Cultura','Medina','Cores'],bg:'marrakech morocco souk',luxo:false}
 ]
 
 let consultor=null, dadosColeta={}, currentStep=0, waitingResponse=false, selectedDestino=null
-let heroInterval = null
-let currentSlide = 0
+let heroInterval = null, currentSlide = 0
 
 const CHAT_FLOW=[
   {field:'tipo_viagem',msg:'Que tipo de viagem está a planear?',qrs:['👨‍👩‍👧‍👦 Família','💑 Casal','🧳 A solo','💍 Lua-de-mel','👫 Amigos']},
@@ -405,34 +341,15 @@ function updateUserUI(){
 async function initHeroCarousel(){
   const container = document.getElementById('heroCarousel')
   const dotsContainer = document.getElementById('carouselDots')
-  container.innerHTML = ''
-  dotsContainer.innerHTML = ''
+  container.innerHTML = ''; dotsContainer.innerHTML = ''
   
   for(let i = 0; i < HERO_SLIDES.length; i++){
     const slide = HERO_SLIDES[i]
     const slideDiv = document.createElement('div')
     slideDiv.className = 'hero-slide'
     if(i === 0) slideDiv.classList.add('active')
-    slideDiv.innerHTML = `<img src="" alt="${slide.nome}">`
+    slideDiv.innerHTML = `<img src="${slide.img}" alt="${slide.nome}">`
     container.appendChild(slideDiv)
-    
-    try{
-      const res=await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(slide.query)}&per_page=5&orientation=landscape`,{headers:{Authorization:PEXELS_KEY}})
-      const data=await res.json()
-      if(data.photos?.length){
-        let bestPhoto = data.photos[0]
-        for(const photo of data.photos){
-          if(photo.width > bestPhoto.width) bestPhoto = photo
-        }
-        slideDiv.querySelector('img').src = bestPhoto.src.large2x || bestPhoto.src.large
-      } else {
-        const fallback = FALLBACK_IMAGES[slide.nome] || `https://placehold.co/1600x900/1a1a2e/white?text=${encodeURIComponent(slide.nome)}`
-        slideDiv.querySelector('img').src = fallback
-      }
-    }catch(e){
-      const fallback = FALLBACK_IMAGES[slide.nome] || `https://placehold.co/1600x900/1a1a2e/white?text=${encodeURIComponent(slide.nome)}`
-      slideDiv.querySelector('img').src = fallback
-    }
     
     const dot = document.createElement('div')
     dot.className = 'dot'
@@ -446,11 +363,7 @@ async function initHeroCarousel(){
 
 function startHeroAutoplay(){
   if(heroInterval) clearInterval(heroInterval)
-  heroInterval = setInterval(() => {
-    let next = currentSlide + 1
-    if(next >= HERO_SLIDES.length) next = 0
-    goToSlide(next)
-  }, 5000)
+  heroInterval = setInterval(() => { let next = currentSlide + 1; if(next >= HERO_SLIDES.length) next = 0; goToSlide(next) }, 5000)
 }
 
 function goToSlide(index){
@@ -464,19 +377,15 @@ function goToSlide(index){
   startHeroAutoplay()
 }
 
-function scrollToComoFunciona(){
-  document.getElementById('comoFunciona').scrollIntoView({behavior:'smooth'})
-}
-
-function scrollToFirstRow(){
-  document.getElementById('firstRow').scrollIntoView({behavior:'smooth'})
-}
-
 async function loadCardImage(query){
   try{
-    const res=await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=portrait`,{headers:{Authorization:PEXELS_KEY}})
+    const res=await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=3&orientation=portrait`,{headers:{Authorization:PEXELS_KEY}})
     const data=await res.json()
-    if(data.photos?.length) return data.photos[0].src.medium
+    if(data.photos?.length){
+      let best = data.photos[0]
+      for(const p of data.photos) if(p.width > best.width) best = p
+      return best.src.medium || best.src.large
+    }
   }catch(e){}
   return 'https://placehold.co/400x600/eee/ccc?text=Carregando...'
 }
@@ -513,6 +422,14 @@ async function renderRow(rowId, destinos){
 function scrollCarousel(rowId, delta){
   const track = document.getElementById(`track-${rowId}`)
   if(track) track.scrollLeft += delta
+}
+
+function scrollToComoFunciona(){
+  document.getElementById('comoFunciona').scrollIntoView({behavior:'smooth'})
+}
+
+function scrollToFirstRow(){
+  document.getElementById('firstRow').scrollIntoView({behavior:'smooth'})
 }
 
 function openModal(dest){
