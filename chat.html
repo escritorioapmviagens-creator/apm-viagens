@@ -186,6 +186,15 @@ body{font-family:var(--font);color:var(--text)}
 .qr:hover{border-color:var(--coral);color:var(--coral)}
 .qr.sel{background:var(--coral);border-color:var(--coral);color:#fff}
 .qr:disabled{opacity:.4;cursor:not-allowed}
+
+/* DATE PICKER */
+.date-picker-wrap{padding-left:36px;margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.date-input{padding:11px 16px;border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;color:var(--text);background:#fff;outline:none;width:100%;max-width:240px;transition:border-color .2s;cursor:pointer}
+.date-input:focus{border-color:var(--coral)}
+.date-confirm{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;background:var(--coral);color:#fff;border:none;border-radius:24px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;margin-top:2px}
+.date-confirm:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(232,57,90,.3)}
+.date-no{display:inline-flex;align-items:center;padding:10px 20px;background:#fff;color:var(--muted);border:1.5px solid var(--border);border-radius:24px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);transition:all .15s}
+.date-no:hover{border-color:var(--coral);color:var(--coral)}
 .cp-inp-row{padding:10px 14px max(14px,env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center;flex-shrink:0;background:#fff;border-top:1px solid var(--border)}
 .cp-inp{flex:1;background:#f5f5f5;border:none;border-radius:22px;padding:11px 16px;font-family:var(--font);font-size:14px;outline:none}
 .cp-inp:focus{background:#efefef}
@@ -648,14 +657,14 @@ document.getElementById('m-select').onclick=async()=>{
 // FLUXO
 const FLUXO=[
   {campo:'tipo_viagem',msg:()=>`${dados.destino} — excelente escolha! ✨\n\nQue tipo de viagem está a planear?`,qrs:['👨‍👩‍👧‍👦 Família','💑 Casal','🧳 A solo','💍 Lua-de-mel','👫 Grupo de amigos','🎒 Viagem escolar','👴 Sénior']},
-  {campo:'ferias_anteriores',msg:()=>`Nas últimas férias, onde foi?`,qrs:['É a primeira vez com a APM','Prefiro não partilhar','Portugal / Ilhas','Espanha / Canárias','Cabo Verde / África','Caraíbas','Europa','Ásia'],proxima:(v)=>v==='É a primeira vez com a APM'||v==='Prefiro não partilhar'?etapa+2:etapa+1},
-  {campo:'ferias_gostou',msg:()=>`Que bem! E o que correu melhor nessa viagem?`,qrs:['O hotel / resort ⭐','A praia e o sol 🏖️','As excursões 🗺️','A gastronomia 🍽️','A experiência toda! 🙌']},
   {campo:'duracao',msg:()=>`Quantas noites de estadia prefere?`,qrs:['3 a 4 noites','7 noites','14 noites','Personalizado ✍️']},
-  {campo:'data_partida',msg:()=>`Já há data de partida definida?`,qrs:['Ainda não tenho data','Próximas semanas','Próximo mês','Daqui a 2-3 meses','Daqui a 4-6 meses','Daqui a 6+ meses']},
+  {campo:'data_partida',msg:()=>`Já há data de partida definida?`,tipo:'data'},
   {campo:'adultos',msg:()=>`Quantos adultos viajam?\n_(a partir dos 12 anos conta como adulto)_`,qrs:['1','2','3','4','5','6 ou mais']},
   {campo:'criancas',msg:()=>`E viajam crianças com menos de 12 anos?`,qrs:['Não, só adultos','1 criança','2 crianças','3 crianças','4 ou mais'],proxima:(v)=>v==='Não, só adultos'?etapa+2:etapa+1},
   {campo:'idades_criancas',msg:()=>`Que idades têm as crianças? _(a partir dos 12 anos conta como adulto)_`,placeholder:'ex: 3, 7, 11'},
   {campo:'excursoes',msg:()=>`Gosta de fazer excursões no destino, ou prefere explorar à sua maneira?`,qrs:['Adoro excursões 🗺️','Prefiro explorar livremente','Um mix dos dois']},
+  {campo:'ferias_anteriores',msg:()=>`Só mais uma questão que nos ajuda muito a personalizar a proposta — nas últimas férias, onde foi?`,qrs:['É a primeira vez com a APM','Prefiro não partilhar','Portugal / Ilhas','Espanha / Canárias','Cabo Verde / África','Caraíbas','Europa','Ásia'],proxima:(v)=>v==='É a primeira vez com a APM'||v==='Prefiro não partilhar'?etapa+2:etapa+1},
+  {campo:'ferias_gostou',msg:()=>`Que bem! E o que correu melhor nessa viagem?`,qrs:['O hotel / resort ⭐','A praia e o sol 🏖️','As excursões 🗺️','A gastronomia 🍽️','A experiência toda! 🙌']},
   {campo:'orcamento',msg:()=>`Qual o orçamento aproximado por pessoa? (voo + alojamento)`,qrs:['Até €500 p/p','€500–€800 p/p','€800–€1.200 p/p','€1.200–€2.000 p/p','Mais de €2.000 p/p','Prefiro não indicar']},
   {campo:'notas',msg:()=>`Há algum detalhe especial?\n• Data especial a celebrar\n• Necessidades específicas\n• Voo directo obrigatório`,qrs:['Não, está tudo! ✓']},
   {campo:'nome',msg:()=>`Para personalizar a proposta — qual é o nome? 😊`},
@@ -670,7 +679,51 @@ async function avancar(ov){
   const qrs=typeof s.qrs==='function'?s.qrs():s.qrs
   document.getElementById('prog-bar').style.width=Math.round(etapa/FLUXO.length*90)+'%'
   await delay(280);const ty=addTyping();await delay(600+Math.random()*300);removeTyping(ty)
-  addBot(msg,qrs,s.placeholder)
+  if(s.tipo==='data'){
+    addBot(msg)
+    renderDatePicker()
+  }else{
+    addBot(msg,qrs,s.placeholder)
+  }
+}
+
+function renderDatePicker(){
+  const msgs=document.getElementById('cp-msgs')
+  const wrap=document.createElement('div');wrap.className='date-picker-wrap'
+
+  // Data mínima = amanhã
+  const min=new Date();min.setDate(min.getDate()+1)
+  const minStr=min.toISOString().split('T')[0]
+
+  wrap.innerHTML=`
+    <input type="date" class="date-input" id="dp-input" min="${minStr}">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="date-confirm" onclick="confirmarData()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Confirmar data
+      </button>
+      <button class="date-no" onclick="semData()">Ainda não tenho data</button>
+    </div>`
+  msgs.appendChild(wrap)
+  scrl()
+  setTimeout(()=>document.getElementById('dp-input')?.focus(),100)
+}
+
+function confirmarData(){
+  const inp=document.getElementById('dp-input')
+  const val=inp?.value
+  if(!val){inp?.classList.add('date-input-err');setTimeout(()=>inp?.classList.remove('date-input-err'),600);return}
+  // Formatar data em pt-PT
+  const d=new Date(val+'T12:00:00')
+  const fmt=d.toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'})
+  // Desactivar picker
+  document.querySelectorAll('.date-picker-wrap button,.date-picker-wrap input').forEach(el=>el.disabled=true)
+  responder(fmt)
+}
+
+function semData(){
+  document.querySelectorAll('.date-picker-wrap button,.date-picker-wrap input').forEach(el=>el.disabled=true)
+  responder('Ainda não tenho data')
 }
 
 async function responder(val){
