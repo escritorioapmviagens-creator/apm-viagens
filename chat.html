@@ -838,17 +838,16 @@ async function concluir(){
   document.getElementById('cp-inp').placeholder='Pedido enviado ✓'
   const nc=dados.criancas==='Não, só adultos'?0:parseInt((dados.criancas||'0').replace(/\D/g,''))||0
 
-  // Campos base (sempre existem na tabela)
+  // Campos base (mapeados para as colunas reais da tabela)
   const payloadBase={
     consultor_id:consultor?.id||null,
     nome_cliente:dados.nome||null,
     tel_cliente:dados.whatsapp||null,
     destino:dados.destino_chat||dados.destino||null,
-    tipo_viagem:(dados.tipo_grupo||'').replace(/^[^\s]+\s/,'')||null,
-    num_adultos:parseInt(dados.adultos)||1,
-    num_criancas:nc,
-    idades_criancas:dados.idades_criancas||null,
-    observacoes:[
+    estado:'novo',
+    canal_origem:'chatbot',
+    orcamento:dados.orcamento&&dados.orcamento!=='Prefiro não indicar'?dados.orcamento:null,
+    notas:[
       dados.hotel_anterior?'Hotel anterior: '+dados.hotel_anterior:'',
       dados.hotel_referencia?'Hotel preferido: '+dados.hotel_referencia:'',
       dados.actividades?'Actividades: '+dados.actividades:'',
@@ -858,19 +857,19 @@ async function concluir(){
       dados.data_partida&&dados.data_partida!=='Ainda não tenho data'?'Partida: '+dados.data_partida:'',
       dados.notas&&dados.notas!=='Não, está tudo! ✓'?'Notas: '+dados.notas:''
     ].filter(Boolean).join(' · ')||null,
-    orcamento:dados.orcamento&&dados.orcamento!=='Prefiro não indicar'?dados.orcamento:null,
-    canal_origem:'chatbot',
-    estado:'novo'
   }
 
-  // Campos extra (só se o SQL já foi executado)
+  // Campos extra (adicionados via ALTER TABLE)
   const payloadExtra={
     ...payloadBase,
+    nome_cliente:dados.nome||null,
+    tel_cliente:dados.whatsapp||null,
     visitou_destino:dados.visitou_destino?dados.visitou_destino.startsWith('Sim'):null,
     vezes_visitou:dados.vezes_visitou||null,
     hotel_anterior:dados.hotel_anterior||null,
     hotel_referencia:dados.hotel_referencia||null,
     actividades:[dados.actividades,dados.actividades_detalhe].filter(Boolean).join(' — ')||null,
+    idades_criancas:dados.idades_criancas||null,
     tipo_pedido:'personalizado',
   }
 
