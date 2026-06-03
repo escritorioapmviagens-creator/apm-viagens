@@ -426,8 +426,8 @@ async function init(){
     const isUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cParam)
     try{
       const{data}=await(isUUID
-        ?sb.from('perfis').select('id,nome,foto_perfil,meta_pixel_id').eq('id',cParam).single()
-        :sb.from('perfis').select('id,nome,foto_perfil,meta_pixel_id').ilike('nome','%'+cParam+'%').limit(1).single())
+        ?sb.from('perfis').select('id,nome,foto_perfil,meta_pixel_id,redes_sociais').eq('id',cParam).single()
+        :sb.from('perfis').select('id,nome,foto_perfil,meta_pixel_id,redes_sociais').ilike('nome','%'+cParam+'%').limit(1).single())
       consultor=data
     }catch(e){}
   }
@@ -884,40 +884,43 @@ async function concluir(){
   const ty=addTyping();await delay(1200);removeTyping(ty)
   const destFinal=dados.destino_chat||dados.destino||'o destino escolhido'
   addBot('✅ Pedido recebido! Vou preparar uma proposta personalizada para **'+destFinal+'** e enviar para o WhatsApp em breve. Aqui está o voucher do pedido! 🎉')
-  await delay(500);gerarVoucher()
+  await delay(500);gerarConfirmacao()
 }
 
-async function gerarVoucher(){
-  const nc=dados.criancas==='Não, só adultos'?0:parseInt((dados.criancas||'0').replace(/\D/g,''))||0
-  const ref='APM'+Date.now().toString().slice(-6).toUpperCase()
-  const destFv=dados.destino_chat||dados.destino||'–'
-  const dest=DESTINOS.find(d=>d.n===destFv||d.n===dados.destino)
-  const url=dest?await getPexels(dest.q):null
-  const wa=dados.whatsapp?dados.whatsapp.replace(/[\s\-()]/g,''):null
-  const waHref=wa?'https://wa.me/'+(wa.startsWith('+')?wa.replace('+',''):wa):'#'
-  const nomePax=(dados.nome||'Passageiro').toUpperCase()
+async function gerarConfirmacao(){
   const nc2=consultor?.nome?.split(' ')[0]||'a nossa equipa'
+  const redes=consultor?.redes_sociais||{}
+  const redesAtivas=Object.entries(redes).filter(([,v])=>v.ativo&&v.url)
+
+  const ICONS={
+    instagram:{icon:'📸',label:'Instagram',color:'#E1306C'},
+    facebook:{icon:'👥',label:'Facebook',color:'#1877F2'},
+    tiktok:{icon:'🎵',label:'TikTok',color:'#000'},
+    youtube:{icon:'▶️',label:'YouTube',color:'#FF0000'},
+    linkedin:{icon:'💼',label:'LinkedIn',color:'#0077B5'},
+  }
+
+  const redesHTML=redesAtivas.length?`
+    <div style="margin-top:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;text-align:center">Siga-nos nas redes sociais</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
+        ${redesAtivas.map(([r,v])=>{
+          const info=ICONS[r]||{icon:'🔗',label:r,color:'#666'}
+          return `<a href="${v.url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:#fff;border:1.5px solid var(--border);border-radius:24px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='${info.color}';this.style.color='${info.color}'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">${info.icon} ${info.label}</a>`
+        }).join('')}
+      </div>
+    </div>`:''
+
   const msgs=document.getElementById('cp-msgs')
-  const wrap=document.createElement('div');wrap.className='msg bot';wrap.style.maxWidth='100%'
+  const wrap=document.createElement('div');wrap.className='msg bot'
   wrap.innerHTML=`${getAv()}<div style="flex:1;min-width:0">
-  <div class="voucher">
-    <div class="v-img">${url?`<img src="${url}" alt="${destFv}">`:''}
-      <div class="v-img-cnt"><img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" class="v-logo" alt="APM"><div class="v-dest">${destFv}</div></div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:16px;padding:18px 20px">
+      <div style="font-size:22px;text-align:center;margin-bottom:8px">✅</div>
+      <div style="font-size:15px;font-weight:700;color:#15803d;text-align:center;margin-bottom:6px">Pedido recebido!</div>
+      <div style="font-size:13px;color:#166534;text-align:center;line-height:1.65">${nc2} vai analisar o pedido e entrar em contacto com uma proposta personalizada em breve.</div>
+      ${redesHTML}
     </div>
-    <div class="v-body">
-      <div class="v-row"><div class="v-lbl">Tipo de viagem</div><div class="v-val">${(dados.tipo_grupo||'–').replace(/^[^\s]+\s/,'')}</div></div>
-      <div class="v-row"><div class="v-lbl">Duração</div><div class="v-val">${dados.duracao||'A definir'}</div></div>
-      <div class="v-row"><div class="v-lbl">Partida</div><div class="v-val">${dados.data_partida==='Ainda não tenho data'?'Flexível':dados.data_partida||'Flexível'}</div></div>
-      <div class="v-row"><div class="v-lbl">Passageiros</div><div class="v-val">${dados.adultos||'1'} adulto(s)${nc>0?' · '+nc+' criança(s)':''}</div></div>
-      <div class="v-row"><div class="v-lbl">Orçamento p/p</div><div class="v-val">${dados.orcamento||'–'}</div></div>
-    </div>
-    <div class="v-sep"></div>
-    <div class="v-foot">
-      <div class="v-pax">${nomePax}</div>
-      <div><div class="v-ref-lbl">Referência</div><div class="v-ref-val">${ref}</div></div>
-    </div>
-    ${wa?`<div style="padding:10px 12px 8px;background:#fff"><a href="${waHref}" target="_blank" class="v-wa"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>Abrir WhatsApp</a><div class="v-note">Voucher de referência — proposta real enviada em breve por ${nc2}.</div></div>`:''}
-  </div></div>`
+  </div>`
   msgs.appendChild(wrap);scrl()
 }
 
