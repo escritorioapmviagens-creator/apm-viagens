@@ -659,19 +659,19 @@ const FLUXO=[
   // 1 — Nome
   {
     campo:'nome',
-    msg:()=>`Olá! 👋 Obrigado por visitar a nossa página!\n\nO meu nome é ${consultor?.nome?.split(' ')[0]||'da equipa APM Viagens'} e estou aqui para ajudar a preparar a sua viagem para **${dados.destino}**.\n\nDiga-me o seu nome, por favor.`
+    msg:()=>`Olá! 👋 Bem-vindo/a!\n\nSou ${consultor?.nome?.split(' ')[0]||'a equipa APM Viagens'} e estou aqui para preparar uma proposta à medida para **${dados.destino}**.\n\nPode dizer-me o seu nome?`
   },
-  // 2 — Já visitou **${dados.destino}** ?
+  // 2 — Já visitou o destino?
   {
     campo:'visitou_destino',
-    msg:()=>`${dados.nome?.split(' ')[0]}, Obrigado! 😊\n\nJá visitou ${dados.destino_chat||dados.destino} anteriormente?`,
+    msg:()=>`${dados.nome?.split(' ')[0]}, muito prazer! 😊\n\nJá visitou ${dados.destino_chat||dados.destino} anteriormente?`,
     qrs:['Sim, já conheço 👍','Não, é a primeira vez 🌟'],
     proxima:(v)=>v.startsWith('Sim')?etapa+1:etapa+3
   },
   // 3a — (Sim) Quantas vezes
   {
     campo:'vezes_visitou',
-    msg:()=>`Quantas vezes já visitou ${dados.destino_chat||dados.destino}?`,
+    msg:()=>`Que bom! Quantas vezes já visitou ${dados.destino_chat||dados.destino}?`,
     qrs:['1 vez','2 vezes','3 ou mais vezes']
   },
   // 3b — (Sim) Hotel anterior
@@ -899,7 +899,7 @@ async function mostrarRedesSociais(){
   const redes=consultor?.redes_sociais||{}
   const redesAtivas=Object.entries(redes).filter(([,v])=>v.ativo&&v.url)
 
-  if(!redesAtivas.length) return // consultor sem redes — termina aqui
+  console.log('🔍 Redes do consultor:', redes, '| Activas:', redesAtivas.length)
 
   const ICONS={
     instagram:{icon:'📸',label:'Instagram'},
@@ -909,16 +909,19 @@ async function mostrarRedesSociais(){
     linkedin:{icon:'💼',label:'LinkedIn'},
   }
 
-  const ty=addTyping();await delay(800);removeTyping(ty)
+  const ty=addTyping();await delay(900);removeTyping(ty)
 
-  // Pergunta qual rede prefere seguir
+  if(!redesAtivas.length){
+    addBot('Obrigado pela confiança na APM Viagens! Até breve! 👋✈️')
+    return
+  }
+
   const msgs=document.getElementById('cp-msgs')
   const d=document.createElement('div');d.className='msg bot'
   const qrsHTML=redesAtivas.map(([r,v])=>{
     const info=ICONS[r]||{icon:'🔗',label:r}
     return `<button class="qr" onclick="abrirRede('${v.url}',this)">${info.icon} ${info.label}</button>`
   }).join('')
-
   d.innerHTML=`${getAv()}<div><div class="bub">Gostava de nos seguir nas redes sociais para não perder nenhuma promoção ou destino especial? 😊</div><div class="qrs">${qrsHTML}</div></div>`
   msgs.appendChild(d);scrl()
 }
