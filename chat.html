@@ -815,15 +815,47 @@ async function concluir(){
   document.getElementById('cp-inp').disabled=true;document.getElementById('cp-sbtn').disabled=true
   document.getElementById('cp-inp').placeholder='Pedido enviado ✓'
   const nc=dados.criancas==='Não, só adultos'?0:parseInt((dados.criancas||'0').replace(/\D/g,''))||0
-  try{
-    await sb.from('pedidos_orcamento').insert({
-      consultor_id:consultor?.id||null,nome_cliente:dados.nome||null,tel_cliente:dados.whatsapp||null,
-      destino:dados.destino_chat||dados.destino||null,tipo_viagem:(dados.tipo_grupo||'').replace(/^[^\s]+\s/,''),
-      num_adultos:parseInt(dados.adultos)||1,num_criancas:nc,idades_criancas:dados.idades_criancas||null,
-      observacoes:[dados.ferias_anteriores?'Anterior: '+dados.ferias_anteriores:'',dados.ferias_gostou?'Gostou: '+dados.ferias_gostou:'',dados.excursoes?'Excursões: '+dados.excursoes:'',dados.duracao?'Duração: '+dados.duracao:'',dados.data_partida&&dados.data_partida!=='Ainda não tenho data'?'Partida: '+dados.data_partida:'',dados.notas&&dados.notas!=='Não, está tudo! ✓'?'Notas: '+dados.notas:''].filter(Boolean).join(' · ')||null,
-      orcamento:dados.orcamento!=='Prefiro não indicar'?dados.orcamento:null,canal_origem:'chatbot',estado:'novo'
-    })
-  }catch(e){console.warn(e)}
+
+  const payload={
+    consultor_id:consultor?.id||null,
+    nome_cliente:dados.nome||null,
+    tel_cliente:dados.whatsapp||null,
+    destino:dados.destino_chat||dados.destino||null,
+    tipo_viagem:(dados.tipo_grupo||'').replace(/^[^\s]+\s/,'')||null,
+    num_adultos:parseInt(dados.adultos)||1,
+    num_criancas:nc,
+    idades_criancas:dados.idades_criancas||null,
+    observacoes:[
+      dados.ferias_anteriores?'Anterior: '+dados.ferias_anteriores:'',
+      dados.excursoes?'Excursões: '+dados.excursoes:'',
+      dados.duracao?'Duração: '+dados.duracao:'',
+      dados.data_partida&&dados.data_partida!=='Ainda não tenho data'?'Partida: '+dados.data_partida:'',
+      dados.notas&&dados.notas!=='Não, está tudo! ✓'?'Notas: '+dados.notas:''
+    ].filter(Boolean).join(' · ')||null,
+    orcamento:dados.orcamento&&dados.orcamento!=='Prefiro não indicar'?dados.orcamento:null,
+    canal_origem:'chatbot',
+    estado:'novo'
+  }
+
+  console.log('📤 A enviar para Supabase:', payload)
+
+  const{data,error}=await sb.from('pedidos_orcamento').insert(payload).select()
+  if(error){
+    console.error('❌ Erro Supabase:', error)
+    // Tentar sem campos opcionais que possam não existir
+    const payloadMin={
+      nome_cliente:payload.nome_cliente,
+      tel_cliente:payload.tel_cliente,
+      destino:payload.destino,
+      canal_origem:'chatbot',
+      estado:'novo'
+    }
+    const{error:err2}=await sb.from('pedidos_orcamento').insert(payloadMin)
+    if(err2)console.error('❌ Erro mínimo:', err2)
+    else console.log('✅ Inserido com payload mínimo')
+  }else{
+    console.log('✅ Inserido com sucesso:', data)
+  }
   try{fbq('track','Lead');fbq('trackCustom','PedidoOrcamento',{destino:dados.destino_chat||dados.destino})}catch(e){}
   const ty=addTyping();await delay(1200);removeTyping(ty)
   const destFinal=dados.destino_chat||dados.destino||'o destino escolhido'
