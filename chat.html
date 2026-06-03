@@ -891,44 +891,50 @@ async function concluir(){
   const ty=addTyping();await delay(1200);removeTyping(ty)
   const destFinal=dados.destino_chat||dados.destino||'o destino escolhido'
   addBot('Pedido recebido com sucesso para **'+destFinal+'**! ✅\n\n'+(consultor?.nome?.split(' ')[0]||'A nossa equipa')+' vai analisar e entrar em contacto em breve.')
-  await delay(500);gerarConfirmacao()
+  await delay(600)
+  mostrarRedesSociais()
+}
 }
 
-async function gerarConfirmacao(){
-  const nc2=consultor?.nome?.split(' ')[0]||'a nossa equipa'
+async function mostrarRedesSociais(){
   const redes=consultor?.redes_sociais||{}
   const redesAtivas=Object.entries(redes).filter(([,v])=>v.ativo&&v.url)
 
+  if(!redesAtivas.length) return // consultor sem redes — termina aqui
+
   const ICONS={
-    instagram:{icon:'📸',label:'Instagram',color:'#E1306C'},
-    facebook:{icon:'👥',label:'Facebook',color:'#1877F2'},
-    tiktok:{icon:'🎵',label:'TikTok',color:'#000'},
-    youtube:{icon:'▶️',label:'YouTube',color:'#FF0000'},
-    linkedin:{icon:'💼',label:'LinkedIn',color:'#0077B5'},
+    instagram:{icon:'📸',label:'Instagram'},
+    facebook:{icon:'👥',label:'Facebook'},
+    tiktok:{icon:'🎵',label:'TikTok'},
+    youtube:{icon:'▶️',label:'YouTube'},
+    linkedin:{icon:'💼',label:'LinkedIn'},
   }
 
-  const redesHTML=redesAtivas.length?`
-    <div style="margin-top:16px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;text-align:center">Siga-nos nas redes sociais</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
-        ${redesAtivas.map(([r,v])=>{
-          const info=ICONS[r]||{icon:'🔗',label:r,color:'#666'}
-          return `<a href="${v.url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:#fff;border:1.5px solid var(--border);border-radius:24px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='${info.color}';this.style.color='${info.color}'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">${info.icon} ${info.label}</a>`
-        }).join('')}
-      </div>
-    </div>`:''
+  const ty=addTyping();await delay(800);removeTyping(ty)
 
+  // Pergunta qual rede prefere seguir
   const msgs=document.getElementById('cp-msgs')
-  const wrap=document.createElement('div');wrap.className='msg bot'
-  wrap.innerHTML=`${getAv()}<div style="flex:1;min-width:0">
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:16px;padding:18px 20px">
-      <div style="font-size:22px;text-align:center;margin-bottom:8px">✅</div>
-      <div style="font-size:15px;font-weight:700;color:#15803d;text-align:center;margin-bottom:6px">Pedido recebido!</div>
-      <div style="font-size:13px;color:#166534;text-align:center;line-height:1.65">${nc2} vai analisar o pedido e entrar em contacto com uma proposta personalizada em breve.</div>
-      ${redesHTML}
-    </div>
-  </div>`
-  msgs.appendChild(wrap);scrl()
+  const d=document.createElement('div');d.className='msg bot'
+  const qrsHTML=redesAtivas.map(([r,v])=>{
+    const info=ICONS[r]||{icon:'🔗',label:r}
+    return `<button class="qr" onclick="abrirRede('${v.url}',this)">${info.icon} ${info.label}</button>`
+  }).join('')
+
+  d.innerHTML=`${getAv()}<div><div class="bub">Gostava de nos seguir nas redes sociais para não perder nenhuma promoção ou destino especial? 😊</div><div class="qrs">${qrsHTML}</div></div>`
+  msgs.appendChild(d);scrl()
+}
+
+function abrirRede(url, btn){
+  // Desactivar todos os botões
+  btn.closest('.qrs')?.querySelectorAll('.qr').forEach(b=>b.disabled=true)
+  btn.classList.add('sel')
+  // Abrir a rede social
+  window.open(url,'_blank')
+  // Mensagem de agradecimento
+  setTimeout(async()=>{
+    const ty=addTyping();await delay(700);removeTyping(ty)
+    addBot('Obrigado! Até breve! 👋✈️')
+  },400)
 }
 
 function closeChat(){document.getElementById('chat-panel').classList.remove('on');destSel=null;dados={};etapa=0;aguarda=false}
