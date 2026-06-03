@@ -40,22 +40,49 @@ body{font-family:var(--font);color:var(--text)}
 .user-badge{font-size:11px;color:var(--coral);background:rgba(232,57,90,.1);padding:2px 8px;border-radius:20px}
 
 /* HERO */
-.hero{min-height:560px;position:relative;display:flex;align-items:center;padding:120px 40px 60px;overflow:hidden;margin-bottom:20px}
+.hero{min-height:100vh;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:0}
 .hero-carousel{position:absolute;inset:0}
-.hero-slide{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease}
+.hero-slide{position:absolute;inset:0;opacity:0;transition:opacity 2s ease}
 .hero-slide.active{opacity:1}
-.hero-slide img{width:100%;height:100%;object-fit:cover}
-.hero-slide::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.2) 55%,rgba(0,0,0,.05) 100%)}
-.hero-content{position:relative;z-index:2;max-width:540px;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);padding:32px 36px;border-radius:24px;border:1px solid rgba(255,255,255,.12)}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(232,57,90,.9);border-radius:30px;padding:5px 14px;font-size:12px;font-weight:600;color:#fff;margin-bottom:14px}
-.hero-title{font-size:2.8rem;font-weight:700;line-height:1.15;margin-bottom:12px;color:#fff}
-.hero-title em{color:var(--coral);font-style:normal}
-.hero-desc{font-size:15px;color:rgba(255,255,255,.85);margin-bottom:22px;line-height:1.6}
-.hero-btn{background:var(--coral);color:#fff;border:none;padding:14px 30px;border-radius:40px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 4px 16px rgba(232,57,90,.35)}
-.hero-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(232,57,90,.45)}
-.carousel-dots{position:absolute;bottom:20px;right:40px;z-index:3;display:flex;gap:8px}
-.cdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer;transition:all .3s}
-.cdot.active{background:#fff;width:22px;border-radius:6px}
+.hero-slide img{width:100%;height:100%;object-fit:cover;transform:scale(1.08);transition:transform 8s ease;will-change:transform}
+.hero-slide.active img{transform:scale(1)}
+.hero-slide::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.4) 50%,rgba(0,0,0,.75) 100%)}
+
+/* Partículas de luz */
+.hero-particles{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.particle{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:0;animation:float var(--dur,8s) var(--delay,0s) infinite ease-in-out}
+@keyframes float{0%,100%{opacity:0;transform:translateY(0) translateX(0)}20%{opacity:.6}50%{opacity:.3;transform:translateY(-60px) translateX(20px)}80%{opacity:.5}90%{opacity:0;transform:translateY(-120px) translateX(-10px)}}
+
+.hero-content{position:relative;z-index:2;text-align:center;padding:0 24px;max-width:720px;animation:heroIn 1.2s cubic-bezier(.16,1,.3,1) both}
+@keyframes heroIn{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
+
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.25);border-radius:30px;padding:6px 16px;font-size:11px;font-weight:600;color:rgba(255,255,255,.9);margin-bottom:20px;letter-spacing:.06em;text-transform:uppercase}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;animation:pl 2s infinite}
+
+.hero-title{font-size:clamp(2.8rem,7vw,5.5rem);font-weight:800;line-height:1.05;margin-bottom:18px;color:#fff;letter-spacing:-.02em;text-shadow:0 2px 40px rgba(0,0,0,.3)}
+.hero-title em{font-style:italic;font-weight:700;background:linear-gradient(135deg,#ff6b8a,var(--coral));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-desc{font-size:clamp(15px,2vw,18px);color:rgba(255,255,255,.8);margin-bottom:32px;line-height:1.7;max-width:480px;margin-left:auto;margin-right:auto;font-weight:300}
+
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.hero-btn{background:var(--coral);color:#fff;border:none;padding:16px 36px;border-radius:40px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:9px;transition:all .25s;box-shadow:0 8px 32px rgba(232,57,90,.45);font-family:var(--font)}
+.hero-btn:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(232,57,90,.55);background:#d42e4e}
+.hero-btn-sec{background:rgba(255,255,255,.12);backdrop-filter:blur(12px);color:#fff;border:1.5px solid rgba(255,255,255,.3);padding:15px 28px;border-radius:40px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font);transition:all .2s}
+.hero-btn-sec:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5)}
+
+/* Slide label */
+.hero-slide-label{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);z-index:3;font-size:11px;color:rgba(255,255,255,.5);letter-spacing:.15em;text-transform:uppercase;font-weight:500;transition:opacity .5s;white-space:nowrap}
+
+/* Dots redesenhados */
+.carousel-dots{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:6px;align-items:center}
+.cdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer;transition:all .4s cubic-bezier(.34,1.5,.64,1);border:none;padding:0}
+.cdot.active{background:#fff;width:28px;border-radius:4px}
+.cdot:hover{background:rgba(255,255,255,.65)}
+
+/* Scroll indicator */
+.hero-scroll{position:absolute;bottom:32px;right:48px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:6px;color:rgba(255,255,255,.4);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:color .2s}
+.hero-scroll:hover{color:rgba(255,255,255,.8)}
+.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,rgba(255,255,255,.5),transparent);animation:scrollAnim 2s infinite}
+@keyframes scrollAnim{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
 
 /* COMO FUNCIONA */
 .como-funciona{background:linear-gradient(135deg,#f8f6f2 0%,#ffffff 100%);border-radius:32px;margin:20px 40px 40px;padding:40px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.05)}
@@ -190,13 +217,13 @@ body{font-family:var(--font);color:var(--text)}
 
 @media(max-width:768px){
   .header{padding:12px 18px}
-  .hero{padding:100px 18px 48px;min-height:480px}
-  .hero-title{font-size:2rem}
-  .como{margin:0 18px 32px;padding:24px}
+  .hero-title{font-size:2.6rem;letter-spacing:-.01em}
+  .hero-scroll{display:none}
+  .como-funciona{margin:0 18px 32px;padding:24px}
   .rows{padding:0 18px 60px}
   .dcard{flex:0 0 210px;height:300px}
   .cbtn.prev{left:-8px}.cbtn.next{right:-8px}
-  .carousel-dots{right:18px}
+  .carousel-dots{right:auto}
 }
 </style>
 </head>
@@ -213,15 +240,26 @@ body{font-family:var(--font);color:var(--text)}
   </div>
 </div>
 
-<div class="hero">
+<div class="hero" id="hero">
   <div class="hero-carousel" id="hslides"></div>
+  <div class="hero-particles" id="hero-particles"></div>
   <div class="hero-content">
-    <div class="hero-badge">✈️ Atendimento Personalizado</div>
-    <h1 class="hero-title">Encontre a sua <em>próxima aventura</em></h1>
-    <p class="hero-desc" id="hero-desc">Explore destinos incríveis e receba uma proposta personalizada.</p>
-    <button class="hero-btn" onclick="document.getElementById('first-row').scrollIntoView({behavior:'smooth'})">Explorar Destinos →</button>
+    <div class="hero-badge" id="hero-badge-el">✈️ Atendimento Personalizado</div>
+    <h1 class="hero-title">A próxima aventura<br>começa <em>aqui</em></h1>
+    <p class="hero-desc" id="hero-desc">Explore destinos que ficam para sempre na memória. Proposta personalizada, ao melhor preço.</p>
+    <div class="hero-actions">
+      <button class="hero-btn" onclick="document.getElementById('first-row').scrollIntoView({behavior:'smooth'})">
+        Escolher destino
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+      </button>
+      <button class="hero-btn-sec" onclick="document.getElementById('comoFunciona').scrollIntoView({behavior:'smooth'})">Como funciona</button>
+    </div>
   </div>
+  <div class="hero-slide-label" id="hero-slide-label"></div>
   <div class="carousel-dots" id="cdots"></div>
+  <div class="hero-scroll" onclick="document.getElementById('comoFunciona').scrollIntoView({behavior:'smooth'})">
+    <div class="scroll-line"></div>
+  </div>
 </div>
 
 <div class="como-funciona" id="comoFunciona">
@@ -410,15 +448,29 @@ function updateUserUI(){
 async function buildHero(){
   const slides=document.getElementById('hslides'),dots=document.getElementById('cdots')
   slides.innerHTML='';dots.innerHTML=''
-  // Criar slides placeholder primeiro
+
+  // Criar partículas de luz
+  const particles=document.getElementById('hero-particles')
+  if(particles){
+    particles.innerHTML=''
+    for(let i=0;i<20;i++){
+      const p=document.createElement('div');p.className='particle'
+      p.style.cssText=`left:${Math.random()*100}%;top:${40+Math.random()*60}%;--dur:${6+Math.random()*8}s;--delay:${Math.random()*6}s`
+      particles.appendChild(p)
+    }
+  }
+
+  // Slides
   HERO_QUERIES.forEach((h,i)=>{
     const s=document.createElement('div');s.className='hero-slide'+(i===0?' active':'')
-    s.innerHTML=`<img src="" alt="${h.label}" style="opacity:0;transition:opacity .5s">`
+    s.innerHTML=`<img src="" alt="${h.label}" style="opacity:0;transition:opacity .8s">`
     slides.appendChild(s)
     const d=document.createElement('div');d.className='cdot'+(i===0?' active':'')
     d.onclick=()=>goHero(i);dots.appendChild(d)
   })
-  heroTimer=setInterval(()=>goHero((heroIdx+1)%HERO_QUERIES.length),5000)
+  if(HERO_QUERIES[0])document.getElementById('hero-slide-label').textContent=HERO_QUERIES[0].label
+  heroTimer=setInterval(()=>goHero((heroIdx+1)%HERO_QUERIES.length),6000)
+
   // Carregar imagens async
   HERO_QUERIES.forEach(async(h,i)=>{
     const url=await getHeroImg(h.q)
@@ -451,7 +503,9 @@ function goHero(i){
   heroIdx=i
   document.querySelectorAll('.hero-slide')[heroIdx].classList.add('active')
   document.querySelectorAll('.cdot')[heroIdx].classList.add('active')
-  heroTimer=setInterval(()=>goHero((heroIdx+1)%HERO_QUERIES.length),5000)
+  const lbl=document.getElementById('hero-slide-label')
+  if(lbl){lbl.style.opacity='0';setTimeout(()=>{lbl.textContent=HERO_QUERIES[i]?.label||'';lbl.style.opacity='1'},400)}
+  heroTimer=setInterval(()=>goHero((heroIdx+1)%HERO_QUERIES.length),6000)
 }
 
 // Pexels com Unsplash como fallback
