@@ -173,6 +173,9 @@ body{font-family:var(--font);color:var(--text)}
 @keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .msg.bot{align-self:flex-start;max-width:88%}
 .msg.user{align-self:flex-end;flex-direction:row-reverse;max-width:78%}
+.msg.user:hover .edit-btn{opacity:1}
+.edit-btn{opacity:0;background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted);padding:2px 6px;border-radius:6px;transition:all .15s;align-self:flex-end;margin-bottom:4px;flex-shrink:0}
+.edit-btn:hover{background:var(--warm);color:var(--coral)}
 .av{width:28px;height:28px;border-radius:50%;background:var(--coral);display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:600;flex-shrink:0;overflow:hidden}
 .bub{padding:11px 15px;border-radius:20px;font-size:14px;line-height:1.7}
 .msg.bot .bub{background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
@@ -812,16 +815,15 @@ function semData(){
 
 async function responder(val){
   if(aguarda)return;aguarda=true;setSend(false)
-  const s=FLUXO[etapa];dados[s.campo]=val;addUser(val)
+  const s=FLUXO[etapa];dados[s.campo]=val
+  const etapaAtual=etapa
+  addUser(val,etapaAtual)
 
   let prox=etapa+1
   if(s.proxima) prox=s.proxima(val)
-
-  // Actividades sem detalhe → saltar actividades_detalhe
-  if(s.campo==='actividades' && !val.includes('ideias')){
+  if(s.campo==='actividades'&&!val.includes('ideias')){
     prox=FLUXO.findIndex(f=>f.campo==='tipo_grupo')
   }
-
   etapa=prox;aguarda=false;setSend(true);await avancar()
 }
 
@@ -943,7 +945,38 @@ function closeChat(){document.getElementById('chat-panel').classList.remove('on'
 function getAv(){if(consultor?.foto_perfil)return `<div class="av"><img src="${consultor.foto_perfil}" style="width:100%;height:100%;object-fit:cover"></div>`;const ini=(consultor?.nome||'APM').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();return `<div class="av">${ini}</div>`}
 function addBot(txt,qrs,ph){const d=document.createElement('div');d.className='msg bot';const html=txt.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/_(.+?)_/g,'<em>$1</em>').replace(/\n/g,'<br>');const qh=qrs?.length?`<div class="qrs">${qrs.map(q=>`<button class="qr" onclick="selQR(this,'${q.replace(/'/g,'&#39;')}')">${q}</button>`).join('')}</div>`:''
 d.innerHTML=`${getAv()}<div><div class="bub">${html}</div>${qh}</div>`;document.getElementById('cp-msgs').appendChild(d);document.getElementById('cp-inp').placeholder=ph||'Escreva aqui...';scrl()}
-function addUser(txt){const d=document.createElement('div');d.className='msg user';d.innerHTML=`<div class="bub">${txt}</div>`;document.getElementById('cp-msgs').appendChild(d);scrl()}
+function addUser(txt,etapaNum){
+  const d=document.createElement('div');d.className='msg user'
+  const editBtn=etapaNum!=null&&!aguarda
+    ?`<button class="edit-btn" onclick="editarResposta(${etapaNum},this)" title="Editar resposta">✏️</button>`
+    :''
+  d.innerHTML=`${editBtn}<div class="bub">${txt}</div>`
+  document.getElementById('cp-msgs').appendChild(d);scrl()
+}
+
+function editarResposta(etapaEditar, btn){
+  if(aguarda)return
+
+  // Encontrar o índice no FLUXO — etapaEditar é o índice da pergunta
+  const campo=FLUXO[etapaEditar]?.campo
+  if(!campo)return
+
+  // Remover todas as mensagens a partir desta resposta
+  const msgs=document.getElementById('cp-msgs')
+  const allMsgs=Array.from(msgs.children)
+  const btnMsg=btn.closest('.msg')
+  const idx=allMsgs.indexOf(btnMsg)
+  if(idx>=0) allMsgs.slice(idx).forEach(m=>m.remove())
+
+  // Limpar dados a partir deste ponto
+  const camposARemover=FLUXO.slice(etapaEditar).map(s=>s.campo)
+  camposARemover.forEach(c=>{delete dados[c]})
+
+  // Voltar para esta etapa
+  etapa=etapaEditar
+  aguarda=false;setSend(true)
+  avancar()
+}
 function addTyping(){const id='ty'+Date.now(),d=document.createElement('div');d.className='msg bot typing';d.id=id;d.innerHTML=`${getAv()}<div class="bub"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;document.getElementById('cp-msgs').appendChild(d);scrl();return id}
 function removeTyping(id){document.getElementById(id)?.remove()}
 function selQR(btn,val){btn.closest('.qrs')?.querySelectorAll('.qr').forEach(b=>b.disabled=true);btn.classList.add('sel');responder(val)}
