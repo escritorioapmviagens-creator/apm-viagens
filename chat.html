@@ -659,19 +659,19 @@ const FLUXO=[
   // 1 — Nome
   {
     campo:'nome',
-    msg:()=>`Olá! 👋 Obrigado por visitar a nossa página!\n\nO meu nome é ${consultor?.nome?.split(' ')[0]||'da equipa APM Viagens'} e estou aqui para ajudar a preparar a sua viagem para **${dados.destino}**.\n\nPode dizer-me o seu nome?`
+    msg:()=>`Olá! 👋 Obrigado por visitar a nossa página!\n\nO meu nome é ${consultor?.nome?.split(' ')[0]||'da equipa APM Viagens'} e estou aqui para ajudar a preparar a sua viagem para **${dados.destino}**.\n\nDiga-me o seu nome, por favor.`
   },
   // 2 — Já visitou **${dados.destino}** ?
   {
     campo:'visitou_destino',
-    msg:()=>`${dados.nome?.split(' ')[0]}, muito prazer! 😊\n\nJá visitou ${dados.destino_chat||dados.destino} anteriormente?`,
+    msg:()=>`${dados.nome?.split(' ')[0]}, Obrigado! 😊\n\nJá visitou ${dados.destino_chat||dados.destino} anteriormente?`,
     qrs:['Sim, já conheço 👍','Não, é a primeira vez 🌟'],
     proxima:(v)=>v.startsWith('Sim')?etapa+1:etapa+3
   },
   // 3a — (Sim) Quantas vezes
   {
     campo:'vezes_visitou',
-    msg:()=>`Que bom! Quantas vezes já visitou ${dados.destino_chat||dados.destino}?`,
+    msg:()=>`Quantas vezes já visitou ${dados.destino_chat||dados.destino}?`,
     qrs:['1 vez','2 vezes','3 ou mais vezes']
   },
   // 3b — (Sim) Hotel anterior
