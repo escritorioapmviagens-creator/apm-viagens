@@ -659,12 +659,12 @@ const FLUXO=[
   // 1 — Nome
   {
     campo:'nome',
-    msg:()=>`Olá! 👋 Bem-vindo/a!\n\nSou ${consultor?.nome?.split(' ')[0]||'a equipa APM Viagens'} e estou aqui para preparar uma proposta à medida para **${dados.destino}**.\n\nPara começar — qual é o nome?`
+    msg:()=>`Olá! 👋 Bem-vindo/a!\n\nSou ${consultor?.nome?.split(' ')[0]||'a equipa APM Viagens'} e estou aqui para preparar uma proposta à medida para **${dados.destino}**.\n\nPode dizer-me o seu nome?`
   },
   // 2 — Já visitou o destino?
   {
     campo:'visitou_destino',
-    msg:()=>`Olá, ${dados.nome?.split(' ')[0]}! 😊\n\nJá visitou ${dados.destino_chat||dados.destino} anteriormente?`,
+    msg:()=>`${dados.nome?.split(' ')[0]}, muito prazer! 😊\n\nJá visitou ${dados.destino_chat||dados.destino} anteriormente?`,
     qrs:['Sim, já conheço 👍','Não, é a primeira vez 🌟'],
     proxima:(v)=>v.startsWith('Sim')?etapa+1:etapa+3
   },
@@ -678,12 +678,12 @@ const FLUXO=[
   {
     campo:'hotel_anterior',
     msg:()=>`E onde ficou hospedado? Gostou — voltaria a um hotel semelhante ou prefere experimentar algo diferente?`,
-    placeholder:'ex: Fiquei no Riu Touareg, adorei. Quero algo semelhante.'
+    placeholder:'ex: Riu Touareg, adorei. Prefiro algo semelhante.'
   },
   // 3c — (Não) Referência de hotel
   {
     campo:'hotel_referencia',
-    msg:()=>`${dados.destino_chat||dados.destino} vai surpreender! 🌟\n\nTem alguma referência de hotel ou tipo de alojamento que aprecie? Tudo incluído, boutique, resort de praia...`,
+    msg:()=>`${dados.destino_chat||dados.destino} vai surpreender! 🌟\n\nTem alguma referência de hotel ou tipo de alojamento? Tudo incluído, boutique, resort de praia...`,
     placeholder:'ex: Prefiro tudo incluído, 4 estrelas, junto à praia'
   },
   // 4 — Actividades
@@ -701,7 +701,7 @@ const FLUXO=[
   // 5 — Constituição
   {
     campo:'tipo_grupo',
-    msg:()=>`Perfeito! Agora o grupo — como viajam?`,
+    msg:()=>`Perfeito! Como é constituído o grupo?`,
     qrs:['👨‍👩‍👧‍👦 Família','💑 Casal','🧳 A solo','💍 Lua-de-mel','👫 Grupo de amigos','🎒 Viagem escolar','👴 Sénior']
   },
   // 6 — Adultos
@@ -720,19 +720,19 @@ const FLUXO=[
   // 8 — Idades crianças
   {
     campo:'idades_criancas',
-    msg:()=>`Que idades têm as crianças? _(as idades ajudam a encontrar os melhores descontos)_`,
+    msg:()=>`Pode indicar as idades das crianças? _(ajuda a encontrar os melhores descontos)_`,
     placeholder:'ex: 3, 7, 11'
   },
   // 9 — Duração
   {
     campo:'duracao',
-    msg:()=>`Quantas noites de férias são ideais?`,
+    msg:()=>`Quantas noites de férias tem em mente?`,
     qrs:['3 a 4 noites','7 noites','14 noites','Personalizado ✍️']
   },
   // 10 — Data
   {
     campo:'data_partida',
-    msg:()=>`E a data de partida?`,
+    msg:()=>`Já tem data de partida definida?`,
     tipo:'data'
   },
   // 11 — Orçamento
@@ -744,13 +744,13 @@ const FLUXO=[
   // 12 — Notas
   {
     campo:'notas',
-    msg:()=>`Há algum detalhe especial?\n• Data especial a celebrar 🎂\n• Necessidades alimentares ou de mobilidade\n• Voo directo obrigatório\n• Outro pedido`,
+    msg:()=>`Há algum detalhe especial que queira partilhar?\n• Data especial a celebrar 🎂\n• Necessidades alimentares ou de mobilidade\n• Prefere voo directo?\n• Outro pedido`,
     qrs:['Não, está tudo! ✓']
   },
   // 13 — WhatsApp
   {
     campo:'whatsapp',
-    msg:()=>`Quase pronto, ${dados.nome?.split(' ')[0]}! 🎉\n\nPara receber a proposta no **WhatsApp** — qual é o número?`,
+    msg:()=>`Está quase, ${dados.nome?.split(' ')[0]}! 🎉\n\nPara receber a proposta no **WhatsApp**, pode indicar o número de telemóvel?`,
     placeholder:'+351 912 345 678'
   }
 ]
