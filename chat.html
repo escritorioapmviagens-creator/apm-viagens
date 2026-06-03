@@ -710,12 +710,12 @@ const FLUXO=[
     msg:()=>`Quando está em férias, gosta de fazer excursões e visitas organizadas, ou prefere explorar de forma mais independente?`,
     qrs:['Adoro excursões organizadas 🗺️','Prefiro explorar livremente','Um mix dos dois','Depende do destino']
   },
-  // 10 — Férias anteriores
+  // 10 — Férias anteriores (destino + hotel + opinião)
   {
     campo:'ferias_anteriores',
-    msg:()=>`Para personalizar ainda melhor a proposta — nas últimas férias, onde foi?`,
-    qrs:['É a primeira vez com a APM','Prefiro não partilhar','Portugal / Ilhas','Espanha / Canárias','Cabo Verde / África','Caraíbas','Europa','Ásia'],
-    proxima:(v)=>v==='É a primeira vez com a APM'||v==='Prefiro não partilhar'?etapa+2:etapa+1
+    msg:()=>`Para personalizar ainda melhor a proposta — nas últimas férias, onde foi e em que hotel esteve? Ficou satisfeito/a?`,
+    placeholder:'ex: Fui a Djerba, hotel Vincci Helios, adorei a praia...',
+    proxima:()=>etapa+2
   },
   // 11 — O que gostou mais
   {
