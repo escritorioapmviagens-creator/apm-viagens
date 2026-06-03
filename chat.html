@@ -656,89 +656,101 @@ document.getElementById('m-select').onclick=async()=>{
 
 // FLUXO
 const FLUXO=[
-  // 1 — Nome (saudação + apresentação)
+  // 1 — Nome
   {
     campo:'nome',
-    msg:()=>`Olá! 👋 Bem-vindo/a!\n\nSou ${consultor?.nome?.split(' ')[0]||'a equipa APM Viagens'} e estou aqui para encontrar a viagem perfeita.\n\nPara começar — qual é o nome?`
+    msg:()=>`Olá! 👋 Bem-vindo/a!\n\nSou ${consultor?.nome?.split(' ')[0]||'a equipa APM Viagens'} e estou aqui para preparar uma proposta à medida para **${dados.destino}**.\n\nPara começar — qual é o nome?`
   },
-  // 2 — Destino (já sabe o nome)
+  // 2 — Já visitou o destino?
   {
-    campo:'destino_chat',
-    msg:()=>`Olá, ${dados.nome?.split(' ')[0]}! Que bom ter aqui! 😊\n\nO destino já está escolhido — **${dados.destino}**. Mas se houver outro destino em mente, diga à vontade.`,
-    qrs:()=>[dados.destino,'Tenho outro destino em mente ✍️']
+    campo:'visitou_destino',
+    msg:()=>`Olá, ${dados.nome?.split(' ')[0]}! 😊\n\nJá visitou ${dados.destino_chat||dados.destino} anteriormente?`,
+    qrs:['Sim, já conheço 👍','Não, é a primeira vez 🌟'],
+    proxima:(v)=>v.startsWith('Sim')?etapa+1:etapa+3
   },
-  // 3 — Constituição do grupo
+  // 3a — (Sim) Quantas vezes
+  {
+    campo:'vezes_visitou',
+    msg:()=>`Que bom! Quantas vezes já visitou ${dados.destino_chat||dados.destino}?`,
+    qrs:['1 vez','2 vezes','3 ou mais vezes']
+  },
+  // 3b — (Sim) Hotel anterior
+  {
+    campo:'hotel_anterior',
+    msg:()=>`E onde ficou hospedado? Gostou — voltaria a um hotel semelhante ou prefere experimentar algo diferente?`,
+    placeholder:'ex: Fiquei no Riu Touareg, adorei. Quero algo semelhante.'
+  },
+  // 3c — (Não) Referência de hotel
+  {
+    campo:'hotel_referencia',
+    msg:()=>`${dados.destino_chat||dados.destino} vai surpreender! 🌟\n\nTem alguma referência de hotel ou tipo de alojamento que aprecie? Tudo incluído, boutique, resort de praia...`,
+    placeholder:'ex: Prefiro tudo incluído, 4 estrelas, junto à praia'
+  },
+  // 4 — Actividades
+  {
+    campo:'actividades',
+    msg:()=>`Tem em mente alguma actividade, excursão ou ponto de interesse que queira incluir na viagem?`,
+    qrs:['Não, férias relaxadas 🏖️','Sim, tenho ideias ✍️','Gostava de sugestões 💡']
+  },
+  // 4b — Detalhe actividades (só se escolheu "tenho ideias")
+  {
+    campo:'actividades_detalhe',
+    msg:()=>`Ótimo! Que actividades ou excursões tem em mente?`,
+    placeholder:'ex: Passeio de camelo, snorkeling, visita à medina...'
+  },
+  // 5 — Constituição
   {
     campo:'tipo_grupo',
-    msg:()=>`Perfeito! Agora diga — como é o grupo que vai viajar?`,
+    msg:()=>`Perfeito! Agora o grupo — como viajam?`,
     qrs:['👨‍👩‍👧‍👦 Família','💑 Casal','🧳 A solo','💍 Lua-de-mel','👫 Grupo de amigos','🎒 Viagem escolar','👴 Sénior']
   },
-  // 4 — Adultos
+  // 6 — Adultos
   {
     campo:'adultos',
     msg:()=>`Quantos adultos viajam? _(a partir dos 12 anos conta como adulto)_`,
     qrs:['1','2','3','4','5','6 ou mais']
   },
-  // 5 — Crianças
+  // 7 — Crianças
   {
     campo:'criancas',
-    msg:()=>`E viajam crianças com menos de 12 anos?`,
+    msg:()=>`Viajam crianças com menos de 12 anos?`,
     qrs:['Não, só adultos','1 criança','2 crianças','3 crianças','4 ou mais'],
     proxima:(v)=>v==='Não, só adultos'?etapa+2:etapa+1
   },
-  // 6 — Idades crianças
+  // 8 — Idades crianças
   {
     campo:'idades_criancas',
-    msg:()=>`Que idades têm as crianças?\n_(A partir dos 12 anos conta como adulto — as idades ajudam a encontrar os melhores descontos)_`,
+    msg:()=>`Que idades têm as crianças? _(as idades ajudam a encontrar os melhores descontos)_`,
     placeholder:'ex: 3, 7, 11'
   },
-  // 7 — Duração
+  // 9 — Duração
   {
     campo:'duracao',
-    msg:()=>`Ótimo! Quantas noites de férias são ideais?`,
+    msg:()=>`Quantas noites de férias são ideais?`,
     qrs:['3 a 4 noites','7 noites','14 noites','Personalizado ✍️']
   },
-  // 8 — Data de partida
+  // 10 — Data
   {
     campo:'data_partida',
-    msg:()=>`E a data de partida — já há algo em mente?`,
+    msg:()=>`E a data de partida?`,
     tipo:'data'
   },
-  // 9 — Excursões
-  {
-    campo:'excursoes',
-    msg:()=>`Quando está em férias, gosta de fazer excursões e visitas organizadas, ou prefere explorar de forma mais independente?`,
-    qrs:['Adoro excursões organizadas 🗺️','Prefiro explorar livremente','Um mix dos dois','Depende do destino']
-  },
-  // 10 — Férias anteriores (destino + hotel + opinião)
-  {
-    campo:'ferias_anteriores',
-    msg:()=>`Para personalizar ainda melhor a proposta — nas últimas férias, onde foi e em que hotel esteve? Ficou satisfeito/a?`,
-    placeholder:'ex: Fui a Djerba, hotel Vincci Helios, adorei a praia...',
-    proxima:()=>etapa+2
-  },
-  // 11 — O que gostou mais
-  {
-    campo:'ferias_gostou',
-    msg:()=>`Que bem! E o que correu melhor nessa viagem?`,
-    qrs:['O hotel / resort ⭐','A praia e o sol 🏖️','As excursões 🗺️','A gastronomia 🍽️','A experiência toda! 🙌']
-  },
-  // 12 — Orçamento
+  // 11 — Orçamento
   {
     campo:'orcamento',
-    msg:()=>`Já estamos a chegar ao fim! 💪\n\nQual o orçamento aproximado por pessoa? (voo + alojamento)`,
+    msg:()=>`Para afinar a proposta — qual o orçamento aproximado por pessoa? (voo + alojamento)`,
     qrs:['Até €500 p/p','€500–€800 p/p','€800–€1.200 p/p','€1.200–€2.000 p/p','Mais de €2.000 p/p','Prefiro não indicar']
   },
-  // 13 — Notas finais
+  // 12 — Notas
   {
     campo:'notas',
-    msg:()=>`Há algum detalhe especial a partilhar?\n• Data especial a celebrar\n• Necessidades alimentares ou de mobilidade\n• Voo directo obrigatório\n• Qualquer outro pedido`,
+    msg:()=>`Há algum detalhe especial?\n• Data especial a celebrar 🎂\n• Necessidades alimentares ou de mobilidade\n• Voo directo obrigatório\n• Outro pedido`,
     qrs:['Não, está tudo! ✓']
   },
-  // 14 — WhatsApp
+  // 13 — WhatsApp
   {
     campo:'whatsapp',
-    msg:()=>`Quase pronto, ${dados.nome?.split(' ')[0]}! 🎉\n\nPara receber a proposta directamente no **WhatsApp**, qual é o número?`,
+    msg:()=>`Quase pronto, ${dados.nome?.split(' ')[0]}! 🎉\n\nPara receber a proposta no **WhatsApp** — qual é o número?`,
     placeholder:'+351 912 345 678'
   }
 ]
@@ -801,7 +813,15 @@ function semData(){
 async function responder(val){
   if(aguarda)return;aguarda=true;setSend(false)
   const s=FLUXO[etapa];dados[s.campo]=val;addUser(val)
-  let prox=etapa+1;if(s.proxima)prox=s.proxima(val)
+
+  let prox=etapa+1
+  if(s.proxima) prox=s.proxima(val)
+
+  // Actividades sem detalhe → saltar actividades_detalhe
+  if(s.campo==='actividades' && !val.includes('ideias')){
+    prox=FLUXO.findIndex(f=>f.campo==='tipo_grupo')
+  }
+
   etapa=prox;aguarda=false;setSend(true);await avancar()
 }
 
@@ -825,15 +845,19 @@ async function concluir(){
     num_adultos:parseInt(dados.adultos)||1,
     num_criancas:nc,
     idades_criancas:dados.idades_criancas||null,
+    visitou_destino:dados.visitou_destino?dados.visitou_destino.startsWith('Sim'):null,
+    vezes_visitou:dados.vezes_visitou||null,
+    hotel_anterior:dados.hotel_anterior||null,
+    hotel_referencia:dados.hotel_referencia||null,
+    actividades:[dados.actividades,dados.actividades_detalhe].filter(Boolean).join(' — ')||null,
     observacoes:[
-      dados.ferias_anteriores?'Anterior: '+dados.ferias_anteriores:'',
-      dados.excursoes?'Excursões: '+dados.excursoes:'',
       dados.duracao?'Duração: '+dados.duracao:'',
       dados.data_partida&&dados.data_partida!=='Ainda não tenho data'?'Partida: '+dados.data_partida:'',
       dados.notas&&dados.notas!=='Não, está tudo! ✓'?'Notas: '+dados.notas:''
     ].filter(Boolean).join(' · ')||null,
     orcamento:dados.orcamento&&dados.orcamento!=='Prefiro não indicar'?dados.orcamento:null,
     canal_origem:'chatbot',
+    tipo_pedido:'personalizado',
     estado:'novo'
   }
 
