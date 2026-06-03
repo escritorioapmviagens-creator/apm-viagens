@@ -111,7 +111,17 @@ body{font-family:var(--font);color:var(--text)}
 .modal-title{font-size:1.6rem;font-weight:700;margin-bottom:8px}
 .modal-tags{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
 .modal-tag{padding:4px 12px;background:rgba(232,57,90,.08);border-radius:20px;font-size:12px;color:var(--coral);font-weight:500}
-.modal-desc{color:var(--muted);line-height:1.65;font-size:14px;margin-bottom:20px}
+.modal-desc{color:var(--muted);line-height:1.65;font-size:14px;margin-bottom:14px}
+.modal-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.modal-info-item{background:var(--sand);border-radius:10px;padding:9px 12px}
+.modal-info-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:3px}
+.modal-info-val{font-size:12px;font-weight:600;color:var(--text);line-height:1.35}
+.modal-meses{margin-bottom:18px}
+.modal-meses-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:8px}
+.modal-meses-grid{display:flex;flex-wrap:wrap;gap:4px}
+.modal-mes{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.modal-mes.ex{background:#dcfce7;color:#15803d}
+.modal-mes.bom{background:#dbeafe;color:#1d4ed8}
 .modal-btns{display:flex;gap:10px}
 .mbtn{flex:1;padding:13px;border:none;border-radius:40px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .2s}
 .mbtn.sec{background:#f5f5f5;color:var(--text)}.mbtn.sec:hover{background:#eee}
@@ -255,6 +265,28 @@ body{font-family:var(--font);color:var(--text)}
       <div class="modal-title" id="m-title"></div>
       <div class="modal-tags" id="m-tags"></div>
       <p class="modal-desc" id="m-desc"></p>
+      <div class="modal-meses" id="m-meses" style="display:none">
+        <div class="modal-meses-label">🌤 Melhores meses para visitar</div>
+        <div class="modal-meses-grid" id="m-meses-grid"></div>
+      </div>
+      <div class="modal-info" id="m-info" style="display:none">
+        <div class="modal-info-item" id="m-voo" style="display:none">
+          <div class="modal-info-label">✈️ Tempo de voo</div>
+          <div class="modal-info-val" id="m-voo-val"></div>
+        </div>
+        <div class="modal-info-item" id="m-doc" style="display:none">
+          <div class="modal-info-label">🛂 Documentação</div>
+          <div class="modal-info-val" id="m-doc-val"></div>
+        </div>
+        <div class="modal-info-item" id="m-moeda" style="display:none">
+          <div class="modal-info-label">💶 Moeda</div>
+          <div class="modal-info-val" id="m-moeda-val"></div>
+        </div>
+        <div class="modal-info-item" id="m-clima" style="display:none">
+          <div class="modal-info-label">🌡 Clima</div>
+          <div class="modal-info-val" id="m-clima-val"></div>
+        </div>
+      </div>
       <div class="modal-btns">
         <button class="mbtn sec" onclick="closeModal()">Ver outros</button>
         <button class="mbtn pri" id="m-select">Quero este destino ✨</button>
@@ -480,12 +512,65 @@ async function renderRow(id,list){
 
 function scrollT(id,d){const t=document.getElementById('t-'+id);if(t)t.scrollLeft+=d}
 
+// ── GUIA DE DESTINOS (info extra para modal) ─────────────────
+const GUIA={
+  'Algarve':         {voo:'+/- 1h',doc:'Cartão de Cidadão',moeda:'Euro',clima:'Mediterrânico · Verões quentes e secos',meses:{excelente:['Maio','Junho','Julho','Agosto','Setembro'],bom:['Março','Abril','Outubro']}},
+  'Cabo Verde':      {voo:'Lisboa→Sal 4h',doc:'Passaporte válido 3 meses + EASE',moeda:'Escudo Cabo-Verdiano',clima:'Tropical seco · Sol todo o ano',meses:{excelente:['Janeiro','Fevereiro','Março','Abril','Dezembro'],bom:['Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro']}},
+  'Maldivas':        {voo:'+/- 14h',doc:'Passaporte 6 meses · Visto grátis à chegada',moeda:'Rupia das Maldivas',clima:'Tropical · Seca Nov-Abr',meses:{excelente:['Dezembro','Janeiro','Fevereiro','Março','Abril'],bom:['Novembro','Maio']}},
+  'Rep. Dominicana': {voo:'+/- 7h',doc:'Passaporte 6 meses + formulário eletrónico',moeda:'Peso Dominicano',clima:'Tropical · Quente todo o ano',meses:{excelente:['Janeiro','Fevereiro','Março','Abril','Dezembro'],bom:['Maio','Outubro','Novembro']}},
+  'Santorini':       {voo:'+/- 4h',doc:'Cartão de Cidadão',moeda:'Euro',clima:'Mediterrânico · Verões secos e quentes',meses:{excelente:['Maio','Junho','Julho','Agosto','Setembro'],bom:['Março','Abril','Outubro']}},
+  'Paris':           {voo:'+/- 2h25',doc:'Cartão de Cidadão',moeda:'Euro',clima:'Oceânico · Primavera e Verão ideais',meses:{excelente:['Maio','Junho','Julho','Agosto','Setembro'],bom:['Março','Abril','Outubro','Dezembro']}},
+  'Bali':            {voo:'+/- 25h',doc:'Passaporte 6 meses · Visto 35 EUR',moeda:'Rupia Indonésia',clima:'Tropical · Seca Mai-Out',meses:{excelente:['Maio','Junho','Julho','Agosto','Setembro','Outubro'],bom:['Novembro','Março','Abril']}},
+  'Canárias':        {voo:'+/- 3h',doc:'Cartão de Cidadão',moeda:'Euro',clima:'Subtropical · Sol todo o ano',meses:{excelente:['Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro'],bom:['Janeiro','Fevereiro','Março','Novembro','Dezembro']}},
+  'Tunísia–Djerba':  {voo:'+/- 3h40',doc:'Passaporte válido',moeda:'Dinar Tunisiano',clima:'Mediterrânico · Verões quentes',meses:{excelente:['Abril','Maio','Junho','Setembro','Outubro'],bom:['Março','Julho','Agosto','Novembro']}},
+  'Maiorca':         {voo:'+/- 1h30',doc:'Cartão de Cidadão',moeda:'Euro',clima:'Mediterrânico · Verões quentes',meses:{excelente:['Maio','Junho','Julho','Agosto','Setembro'],bom:['Março','Abril','Outubro']}},
+  'Seychelles':      {voo:'+/- 10h',doc:'Passaporte 6 meses · Visto grátis à chegada',moeda:'Rupia das Seicheles',clima:'Tropical · Seca Jun-Set',meses:{excelente:['Junho','Julho','Agosto','Setembro'],bom:['Janeiro','Fevereiro','Março','Outubro']}},
+  'Grécia':          {voo:'+/- 4h',doc:'Cartão de Cidadão',moeda:'Euro',clima:'Mediterrânico · Verões secos',meses:{excelente:['Maio','Junho','Julho','Agosto','Setembro'],bom:['Março','Abril','Outubro']}},
+  'Marrocos':        {voo:'+/- 1h30',doc:'Passaporte válido 3 meses',moeda:'Dirham Marroquino',clima:'Mediterrânico/Desértico · Primavera e Outono ideais',meses:{excelente:['Março','Abril','Maio','Setembro','Outubro'],bom:['Fevereiro','Novembro','Dezembro']}},
+  'Bayahibe':        {voo:'+/- 7h',doc:'Passaporte 6 meses + formulário eletrónico',moeda:'Peso Dominicano',clima:'Tropical · Quente todo o ano',meses:{excelente:['Janeiro','Fevereiro','Março','Abril','Dezembro'],bom:['Maio','Outubro','Novembro']}},
+  'Itália':          {voo:'+/- 3h',doc:'Cartão de Cidadão',moeda:'Euro',clima:'Mediterrânico · Verões quentes e secos',meses:{excelente:['Abril','Maio','Junho','Setembro','Outubro'],bom:['Março','Julho','Agosto']}},
+  'Madeira':         {voo:'+/- 1h30',doc:'Cartão de Cidadão',moeda:'Euro',clima:'Subtropical · Ameno todo o ano',meses:{excelente:['Maio','Junho','Julho','Agosto','Setembro'],bom:['Março','Abril','Outubro']}},
+}
+
 async function openModal(dest){
   destSel=dest
   document.getElementById('m-title').textContent=dest.n
   document.getElementById('m-country').textContent='📍 '+dest.p
   document.getElementById('m-tags').innerHTML=dest.tags.map(t=>`<span class="modal-tag">${t}</span>`).join('')
   document.getElementById('m-desc').textContent=DESCS[dest.n]||dest.n+' — um destino extraordinário que surpreende a cada visita.'
+
+  // Info do guia
+  const g=GUIA[dest.n]
+  const infoWrap=document.getElementById('m-info')
+  const mesesWrap=document.getElementById('m-meses')
+
+  if(g){
+    // Meses
+    const todos=[...( g.meses.excelente||[]).map(m=>({m,cls:'ex'})),...(g.meses.bom||[]).map(m=>({m,cls:'bom'}))]
+    if(todos.length){
+      document.getElementById('m-meses-grid').innerHTML=todos.map(({m,cls})=>`<span class="modal-mes ${cls}">${m}</span>`).join('')
+      mesesWrap.style.display='block'
+    }else{mesesWrap.style.display='none'}
+
+    // Campos de info
+    const campos=[
+      {id:'m-voo',valId:'m-voo-val',val:g.voo},
+      {id:'m-doc',valId:'m-doc-val',val:g.doc},
+      {id:'m-moeda',valId:'m-moeda-val',val:g.moeda},
+      {id:'m-clima',valId:'m-clima-val',val:g.clima},
+    ]
+    let algumCampo=false
+    campos.forEach(({id,valId,val})=>{
+      const el=document.getElementById(id)
+      if(val){document.getElementById(valId).textContent=val;el.style.display='block';algumCampo=true}
+      else{el.style.display='none'}
+    })
+    infoWrap.style.display=algumCampo?'grid':'none'
+  }else{
+    mesesWrap.style.display='none'
+    infoWrap.style.display='none'
+  }
+
   const url=await getPexels(dest.q)||''
   if(url)document.getElementById('m-img').src=url
   document.getElementById('modal').classList.add('on')
