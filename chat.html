@@ -656,19 +656,91 @@ document.getElementById('m-select').onclick=async()=>{
 
 // FLUXO
 const FLUXO=[
-  {campo:'tipo_viagem',msg:()=>`${dados.destino} — excelente escolha! ✨\n\nQue tipo de viagem está a planear?`,qrs:['👨‍👩‍👧‍👦 Família','💑 Casal','🧳 A solo','💍 Lua-de-mel','👫 Grupo de amigos','🎒 Viagem escolar','👴 Sénior']},
-  {campo:'duracao',msg:()=>`Quantas noites de estadia prefere?`,qrs:['3 a 4 noites','7 noites','14 noites','Personalizado ✍️']},
-  {campo:'data_partida',msg:()=>`Já há data de partida definida?`,tipo:'data'},
-  {campo:'adultos',msg:()=>`Quantos adultos viajam?\n_(a partir dos 12 anos conta como adulto)_`,qrs:['1','2','3','4','5','6 ou mais']},
-  {campo:'criancas',msg:()=>`E viajam crianças com menos de 12 anos?`,qrs:['Não, só adultos','1 criança','2 crianças','3 crianças','4 ou mais'],proxima:(v)=>v==='Não, só adultos'?etapa+2:etapa+1},
-  {campo:'idades_criancas',msg:()=>`Que idades têm as crianças? _(a partir dos 12 anos conta como adulto)_`,placeholder:'ex: 3, 7, 11'},
-  {campo:'excursoes',msg:()=>`Gosta de fazer excursões no destino, ou prefere explorar à sua maneira?`,qrs:['Adoro excursões 🗺️','Prefiro explorar livremente','Um mix dos dois']},
-  {campo:'ferias_anteriores',msg:()=>`Só mais uma questão que nos ajuda muito a personalizar a proposta — nas últimas férias, onde foi?`,qrs:['É a primeira vez com a APM','Prefiro não partilhar','Portugal / Ilhas','Espanha / Canárias','Cabo Verde / África','Caraíbas','Europa','Ásia'],proxima:(v)=>v==='É a primeira vez com a APM'||v==='Prefiro não partilhar'?etapa+2:etapa+1},
-  {campo:'ferias_gostou',msg:()=>`Que bem! E o que correu melhor nessa viagem?`,qrs:['O hotel / resort ⭐','A praia e o sol 🏖️','As excursões 🗺️','A gastronomia 🍽️','A experiência toda! 🙌']},
-  {campo:'orcamento',msg:()=>`Qual o orçamento aproximado por pessoa? (voo + alojamento)`,qrs:['Até €500 p/p','€500–€800 p/p','€800–€1.200 p/p','€1.200–€2.000 p/p','Mais de €2.000 p/p','Prefiro não indicar']},
-  {campo:'notas',msg:()=>`Há algum detalhe especial?\n• Data especial a celebrar\n• Necessidades específicas\n• Voo directo obrigatório`,qrs:['Não, está tudo! ✓']},
-  {campo:'nome',msg:()=>`Para personalizar a proposta — qual é o nome? 😊`},
-  {campo:'whatsapp',msg:()=>`Para receber a proposta no **WhatsApp** — qual é o número?`,placeholder:'+351 912 345 678'}
+  // 1 — Nome (saudação + apresentação)
+  {
+    campo:'nome',
+    msg:()=>`Olá! 👋 Bem-vindo/a!\n\nSou ${consultor?.nome?.split(' ')[0]||'a equipa APM Viagens'} e estou aqui para encontrar a viagem perfeita.\n\nPara começar — qual é o nome?`
+  },
+  // 2 — Destino (já sabe o nome)
+  {
+    campo:'destino_chat',
+    msg:()=>`Olá, ${dados.nome?.split(' ')[0]}! Que bom ter aqui! 😊\n\nO destino já está escolhido — **${dados.destino}**. Mas se houver outro destino em mente, diga à vontade.`,
+    qrs:()=>[dados.destino,'Tenho outro destino em mente ✍️']
+  },
+  // 3 — Constituição do grupo
+  {
+    campo:'tipo_grupo',
+    msg:()=>`Perfeito! Agora diga — como é o grupo que vai viajar?`,
+    qrs:['👨‍👩‍👧‍👦 Família','💑 Casal','🧳 A solo','💍 Lua-de-mel','👫 Grupo de amigos','🎒 Viagem escolar','👴 Sénior']
+  },
+  // 4 — Adultos
+  {
+    campo:'adultos',
+    msg:()=>`Quantos adultos viajam? _(a partir dos 12 anos conta como adulto)_`,
+    qrs:['1','2','3','4','5','6 ou mais']
+  },
+  // 5 — Crianças
+  {
+    campo:'criancas',
+    msg:()=>`E viajam crianças com menos de 12 anos?`,
+    qrs:['Não, só adultos','1 criança','2 crianças','3 crianças','4 ou mais'],
+    proxima:(v)=>v==='Não, só adultos'?etapa+2:etapa+1
+  },
+  // 6 — Idades crianças
+  {
+    campo:'idades_criancas',
+    msg:()=>`Que idades têm as crianças?\n_(A partir dos 12 anos conta como adulto — as idades ajudam a encontrar os melhores descontos)_`,
+    placeholder:'ex: 3, 7, 11'
+  },
+  // 7 — Duração
+  {
+    campo:'duracao',
+    msg:()=>`Ótimo! Quantas noites de férias são ideais?`,
+    qrs:['3 a 4 noites','7 noites','14 noites','Personalizado ✍️']
+  },
+  // 8 — Data de partida
+  {
+    campo:'data_partida',
+    msg:()=>`E a data de partida — já há algo em mente?`,
+    tipo:'data'
+  },
+  // 9 — Excursões
+  {
+    campo:'excursoes',
+    msg:()=>`Quando está em férias, gosta de fazer excursões e visitas organizadas, ou prefere explorar de forma mais independente?`,
+    qrs:['Adoro excursões organizadas 🗺️','Prefiro explorar livremente','Um mix dos dois','Depende do destino']
+  },
+  // 10 — Férias anteriores
+  {
+    campo:'ferias_anteriores',
+    msg:()=>`Para personalizar ainda melhor a proposta — nas últimas férias, onde foi?`,
+    qrs:['É a primeira vez com a APM','Prefiro não partilhar','Portugal / Ilhas','Espanha / Canárias','Cabo Verde / África','Caraíbas','Europa','Ásia'],
+    proxima:(v)=>v==='É a primeira vez com a APM'||v==='Prefiro não partilhar'?etapa+2:etapa+1
+  },
+  // 11 — O que gostou mais
+  {
+    campo:'ferias_gostou',
+    msg:()=>`Que bem! E o que correu melhor nessa viagem?`,
+    qrs:['O hotel / resort ⭐','A praia e o sol 🏖️','As excursões 🗺️','A gastronomia 🍽️','A experiência toda! 🙌']
+  },
+  // 12 — Orçamento
+  {
+    campo:'orcamento',
+    msg:()=>`Já estamos a chegar ao fim! 💪\n\nQual o orçamento aproximado por pessoa? (voo + alojamento)`,
+    qrs:['Até €500 p/p','€500–€800 p/p','€800–€1.200 p/p','€1.200–€2.000 p/p','Mais de €2.000 p/p','Prefiro não indicar']
+  },
+  // 13 — Notas finais
+  {
+    campo:'notas',
+    msg:()=>`Há algum detalhe especial a partilhar?\n• Data especial a celebrar\n• Necessidades alimentares ou de mobilidade\n• Voo directo obrigatório\n• Qualquer outro pedido`,
+    qrs:['Não, está tudo! ✓']
+  },
+  // 14 — WhatsApp
+  {
+    campo:'whatsapp',
+    msg:()=>`Quase pronto, ${dados.nome?.split(' ')[0]}! 🎉\n\nPara receber a proposta directamente no **WhatsApp**, qual é o número?`,
+    placeholder:'+351 912 345 678'
+  }
 ]
 
 async function avancar(ov){
@@ -746,22 +818,24 @@ async function concluir(){
   try{
     await sb.from('pedidos_orcamento').insert({
       consultor_id:consultor?.id||null,nome_cliente:dados.nome||null,tel_cliente:dados.whatsapp||null,
-      destino:dados.destino||null,tipo_viagem:(dados.tipo_viagem||'').replace(/^[^\s]+\s/,''),
+      destino:dados.destino_chat||dados.destino||null,tipo_viagem:(dados.tipo_grupo||'').replace(/^[^\s]+\s/,''),
       num_adultos:parseInt(dados.adultos)||1,num_criancas:nc,idades_criancas:dados.idades_criancas||null,
       observacoes:[dados.ferias_anteriores?'Anterior: '+dados.ferias_anteriores:'',dados.ferias_gostou?'Gostou: '+dados.ferias_gostou:'',dados.excursoes?'Excursões: '+dados.excursoes:'',dados.duracao?'Duração: '+dados.duracao:'',dados.data_partida&&dados.data_partida!=='Ainda não tenho data'?'Partida: '+dados.data_partida:'',dados.notas&&dados.notas!=='Não, está tudo! ✓'?'Notas: '+dados.notas:''].filter(Boolean).join(' · ')||null,
       orcamento:dados.orcamento!=='Prefiro não indicar'?dados.orcamento:null,canal_origem:'chatbot',estado:'novo'
     })
   }catch(e){console.warn(e)}
-  try{fbq('track','Lead');fbq('trackCustom','PedidoOrcamento',{destino:dados.destino})}catch(e){}
+  try{fbq('track','Lead');fbq('trackCustom','PedidoOrcamento',{destino:dados.destino_chat||dados.destino})}catch(e){}
   const ty=addTyping();await delay(1200);removeTyping(ty)
-  addBot('✅ Pedido recebido! Vou preparar uma proposta personalizada para **'+dados.destino+'** e enviar para o WhatsApp em breve. Aqui está o voucher do pedido! 🎉')
+  const destFinal=dados.destino_chat||dados.destino||'o destino escolhido'
+  addBot('✅ Pedido recebido! Vou preparar uma proposta personalizada para **'+destFinal+'** e enviar para o WhatsApp em breve. Aqui está o voucher do pedido! 🎉')
   await delay(500);gerarVoucher()
 }
 
 async function gerarVoucher(){
   const nc=dados.criancas==='Não, só adultos'?0:parseInt((dados.criancas||'0').replace(/\D/g,''))||0
   const ref='APM'+Date.now().toString().slice(-6).toUpperCase()
-  const dest=DESTINOS.find(d=>d.n===dados.destino)
+  const destFv=dados.destino_chat||dados.destino||'–'
+  const dest=DESTINOS.find(d=>d.n===destFv||d.n===dados.destino)
   const url=dest?await getPexels(dest.q):null
   const wa=dados.whatsapp?dados.whatsapp.replace(/[\s\-()]/g,''):null
   const waHref=wa?'https://wa.me/'+(wa.startsWith('+')?wa.replace('+',''):wa):'#'
@@ -771,11 +845,11 @@ async function gerarVoucher(){
   const wrap=document.createElement('div');wrap.className='msg bot';wrap.style.maxWidth='100%'
   wrap.innerHTML=`${getAv()}<div style="flex:1;min-width:0">
   <div class="voucher">
-    <div class="v-img">${url?`<img src="${url}" alt="${dados.destino}">`:''}
-      <div class="v-img-cnt"><img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" class="v-logo" alt="APM"><div class="v-dest">${dados.destino||'–'}</div></div>
+    <div class="v-img">${url?`<img src="${url}" alt="${destFv}">`:''}
+      <div class="v-img-cnt"><img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" class="v-logo" alt="APM"><div class="v-dest">${destFv}</div></div>
     </div>
     <div class="v-body">
-      <div class="v-row"><div class="v-lbl">Tipo de viagem</div><div class="v-val">${(dados.tipo_viagem||'–').replace(/^[^\s]+\s/,'')}</div></div>
+      <div class="v-row"><div class="v-lbl">Tipo de viagem</div><div class="v-val">${(dados.tipo_grupo||'–').replace(/^[^\s]+\s/,'')}</div></div>
       <div class="v-row"><div class="v-lbl">Duração</div><div class="v-val">${dados.duracao||'A definir'}</div></div>
       <div class="v-row"><div class="v-lbl">Partida</div><div class="v-val">${dados.data_partida==='Ainda não tenho data'?'Flexível':dados.data_partida||'Flexível'}</div></div>
       <div class="v-row"><div class="v-lbl">Passageiros</div><div class="v-val">${dados.adultos||'1'} adulto(s)${nc>0?' · '+nc+' criança(s)':''}</div></div>
