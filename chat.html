@@ -659,9 +659,9 @@ const FLUXO=[
   // 1 — Nome
   {
     campo:'nome',
-    msg:()=>`Olá! 👋 Bem-vindo/a!\n\nSou ${consultor?.nome?.split(' ')[0]||'a equipa APM Viagens'} e estou aqui para preparar uma proposta à medida para **${dados.destino}**.\n\nPode dizer-me o seu nome?`
+    msg:()=>`Olá! 👋 Obrigado por visitar a nossa página!\n\nO meu nome é ${consultor?.nome?.split(' ')[0]||'da equipa APM Viagens'} e estou aqui para ajudar a preparar a sua viagem para **${dados.destino}**.\n\nPode dizer-me o seu nome?`
   },
-  // 2 — Já visitou o destino?
+  // 2 — Já visitou **${dados.destino}** ?
   {
     campo:'visitou_destino',
     msg:()=>`${dados.nome?.split(' ')[0]}, muito prazer! 😊\n\nJá visitou ${dados.destino_chat||dados.destino} anteriormente?`,
