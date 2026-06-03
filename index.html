@@ -1125,6 +1125,40 @@ textarea.finput{resize:vertical;min-height:72px}
             <input class="finput" id="perfil-pixel" placeholder="ex: 596463839593251" style="font-family:monospace">
             <div style="font-size:10px;color:var(--muted);margin-top:4px">O teu Pixel Meta pessoal. Dispara em paralelo com o pixel APM na tua página de atendimento.</div>
           </div>
+
+          <!-- REDES SOCIAIS -->
+          <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px">📱 Redes Sociais</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Insere os links das tuas redes e selecciona as que queres mostrar no final da página de atendimento.</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="checkbox" id="rs-instagram-on" style="accent-color:var(--coral);width:15px;height:15px;flex-shrink:0">
+                <span style="font-size:13px;width:90px">📸 Instagram</span>
+                <input class="finput" id="rs-instagram" placeholder="https://instagram.com/..." style="flex:1;font-size:12px;padding:7px 10px">
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="checkbox" id="rs-facebook-on" style="accent-color:var(--coral);width:15px;height:15px;flex-shrink:0">
+                <span style="font-size:13px;width:90px">👥 Facebook</span>
+                <input class="finput" id="rs-facebook" placeholder="https://facebook.com/..." style="flex:1;font-size:12px;padding:7px 10px">
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="checkbox" id="rs-tiktok-on" style="accent-color:var(--coral);width:15px;height:15px;flex-shrink:0">
+                <span style="font-size:13px;width:90px">🎵 TikTok</span>
+                <input class="finput" id="rs-tiktok" placeholder="https://tiktok.com/@..." style="flex:1;font-size:12px;padding:7px 10px">
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="checkbox" id="rs-youtube-on" style="accent-color:var(--coral);width:15px;height:15px;flex-shrink:0">
+                <span style="font-size:13px;width:90px">▶️ YouTube</span>
+                <input class="finput" id="rs-youtube" placeholder="https://youtube.com/@..." style="flex:1;font-size:12px;padding:7px 10px">
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="checkbox" id="rs-linkedin-on" style="accent-color:var(--coral);width:15px;height:15px;flex-shrink:0">
+                <span style="font-size:13px;width:90px">💼 LinkedIn</span>
+                <input class="finput" id="rs-linkedin" placeholder="https://linkedin.com/in/..." style="flex:1;font-size:12px;padding:7px 10px">
+              </div>
+            </div>
+          </div>
+
           <button class="btn btn-coral" style="width:100%;justify-content:center" onclick="guardarPerfil()">💾 Guardar</button>
         </div>
       </div>
@@ -10194,6 +10228,16 @@ function abrirModalPerfil() {
   document.getElementById('perfil-tel').value = currentPerfil.telefone || ''
   const pixelEl = document.getElementById('perfil-pixel')
   if(pixelEl) pixelEl.value = currentPerfil.meta_pixel_id || ''
+
+  // Redes sociais
+  const rs = currentPerfil.redes_sociais || {}
+  ;['instagram','facebook','tiktok','youtube','linkedin'].forEach(r => {
+    const inp = document.getElementById('rs-'+r)
+    const chk = document.getElementById('rs-'+r+'-on')
+    if(inp) inp.value = rs[r]?.url || ''
+    if(chk) chk.checked = rs[r]?.ativo || false
+  })
+
   document.getElementById('perfil-foto-initials').textContent =
     (currentPerfil.nome||'?').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase()
   if(currentPerfil.foto_perfil) {
@@ -10240,11 +10284,24 @@ async function guardarPerfil() {
   const tel = document.getElementById('perfil-tel').value.trim()
   const pixel = document.getElementById('perfil-pixel')?.value.trim()||null
   if(!nome) { toast('Preenche o nome', 'err'); return }
-  const { error } = await sb.from('perfis').update({ nome, telefone: tel, meta_pixel_id: pixel }).eq('id', currentPerfil.id)
+
+  // Redes sociais
+  const redes = {}
+  ;['instagram','facebook','tiktok','youtube','linkedin'].forEach(r => {
+    const url = document.getElementById('rs-'+r)?.value.trim()||''
+    const ativo = document.getElementById('rs-'+r+'-on')?.checked||false
+    if(url) redes[r] = {url, ativo}
+  })
+
+  const { error } = await sb.from('perfis').update({
+    nome, telefone: tel, meta_pixel_id: pixel,
+    redes_sociais: Object.keys(redes).length ? redes : null
+  }).eq('id', currentPerfil.id)
   if(error) { toast('Erro ao guardar', 'err'); return }
   currentPerfil.nome = nome
   currentPerfil.telefone = tel
   currentPerfil.meta_pixel_id = pixel
+  currentPerfil.redes_sociais = redes
   document.getElementById('sb-name').textContent = nome
   closeModal('modal-perfil')
   toast('Perfil atualizado!', 'ok')
