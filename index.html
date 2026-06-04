@@ -8240,8 +8240,6 @@ async function vrFiltrar(filtro) {
   let q = sb.from('reservas')
     .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,recibo_verde_emitido,recibo_verde_validado,recibo_verde_valor,recibo_nome,data_partida,perfis(nome)')
     .eq('estado','Confirmada')
-    .not('comissao_consultor','is',null)
-    .gt('comissao_consultor',0)
     .order('created_at',{ascending:false})
 
   if(filtro==='pendente') q = q.eq('recibo_verde_validado', false)
