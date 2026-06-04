@@ -1202,7 +1202,7 @@ async function gerarContrato() {
   const { data: res, error } = await sb.from('propostas_viagem').insert({ consultor_id: currentUser.id, dados }).select('id').single();
   if(error) { toast('Erro: '+error.message,'err'); return; }
   
-  const link = window.location.origin + window.location.pathname.replace('cst.html','') + 'visualizar-cst.html?id=' + res.id;
+  const link = window.location.origin + window.location.pathname.replace('cst.html', '') + 'visualizar-cst.html?id=' + res.id;
   document.getElementById('contrato-link').value = link;
   document.getElementById('link-area').style.display = 'block';
   
