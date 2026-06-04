@@ -8095,18 +8095,26 @@ async function renderComissoes() {
   const ano = new Date().getFullYear()
 
   const { data: rsvs } = await sb.from('reservas')
-    .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,recibo_verde_emitido,recibo_verde_validado,recibo_verde_valor,data_partida,estado')
+    .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,preco_net,valor_total,recibo_verde_emitido,recibo_verde_validado,recibo_verde_valor,data_partida,estado')
     .eq('consultor_id', uid)
     .eq('estado', 'Confirmada')
-    .not('comissao_consultor', 'is', null)
-    .gt('comissao_consultor', 0)
     .gte('created_at', ano+'-01-01')
     .order('created_at', { ascending: false })
 
+  const calcComissao = r => {
+    if(r.comissao_consultor) return parseFloat(r.comissao_consultor)
+    const pvp = parseFloat(r.valor_total)||0
+    const net = parseFloat(r.preco_net)||0
+    const margem = pvp > net ? pvp - net : 0
+    if(!margem) return 0
+    const apm = Math.max(margem * 0.2, pvp * 0.01)
+    return Math.round((margem - apm) * 100) / 100
+  }
+
   const lista = rsvs || []
-  const totalBruto = lista.reduce((s,r) => s+(parseFloat(r.comissao_consultor)||0), 0)
-  const totalValidado = lista.filter(r=>r.recibo_verde_validado).reduce((s,r) => s+(parseFloat(r.recibo_verde_valor||r.comissao_consultor)||0), 0)
-  const totalPendente = lista.filter(r=>!r.recibo_verde_validado).reduce((s,r) => s+(parseFloat(r.comissao_consultor)||0), 0)
+  const totalBruto = lista.reduce((s,r) => s+calcComissao(r), 0)
+  const totalValidado = lista.filter(r=>r.recibo_verde_validado).reduce((s,r) => s+(parseFloat(r.recibo_verde_valor)||calcComissao(r)), 0)
+  const totalPendente = lista.filter(r=>!r.recibo_verde_validado).reduce((s,r) => s+calcComissao(r), 0)
 
   document.getElementById('com-total-bruto').textContent = '€'+totalBruto.toLocaleString('pt-PT',{minimumFractionDigits:2})
   document.getElementById('com-total-validado').textContent = '€'+totalValidado.toLocaleString('pt-PT',{minimumFractionDigits:2})
@@ -8168,11 +8176,14 @@ async function renderComissoes() {
           ? '<span style="font-size:12px;color:var(--muted)">Em verificação</span>'
           : prazoExpirado
             ? '<div style="font-size:11px;color:#b91c1c;font-weight:600;line-height:1.4;max-width:160px">Prazo expirado.<br>Contacte o suporte APM Viagens.</div>'
-            : `<button class="btn btn-outline btn-sm" style="font-size:12px;padding:5px 10px" onclick="comAbrirUpload('${r.id}','${r.rnavt||''}',${r.comissao_consultor})">📎 Carregar</button>`
+            : `<button class="btn btn-outline btn-sm" style="font-size:12px;padding:5px 10px" onclick="comAbrirUpload('${r.id}','${r.rnavt||''}',${comissaoVal})">📎 Carregar</button>`
 
+      const comissaoVal = calcComissao(r)
       const comissaoDisplay = r.recibo_verde_validado
-        ? `<span style="color:#15803d;font-weight:800">€${parseFloat(r.recibo_verde_valor||r.comissao_consultor).toLocaleString('pt-PT',{minimumFractionDigits:2})}</span>`
-        : `<span style="color:var(--muted)">€${parseFloat(r.comissao_consultor).toLocaleString('pt-PT',{minimumFractionDigits:2})}</span>`
+        ? `<span style="color:#15803d;font-weight:800">€${parseFloat(r.recibo_verde_valor||comissaoVal).toLocaleString('pt-PT',{minimumFractionDigits:2})}</span>`
+        : comissaoVal > 0
+          ? `<span style="color:var(--muted)">€${comissaoVal.toLocaleString('pt-PT',{minimumFractionDigits:2})}${!r.comissao_consultor?' <small style="font-size:10px">(calc.)</small>':''}</span>`
+          : '<span style="color:var(--muted)">—</span>'
 
       return `<tr style="border-bottom:1px solid var(--border);${prazoExpirado&&!r.recibo_verde_emitido?'background:#fff5f5':''}">
         <td style="padding:10px 8px;font-weight:700">${r.rnavt||r.id.slice(0,8)}</td>
@@ -8238,7 +8249,7 @@ async function vrFiltrar(filtro) {
   })
 
   let q = sb.from('reservas')
-    .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,recibo_verde_emitido,recibo_verde_validado,recibo_verde_valor,recibo_nome,data_partida,perfis(nome)')
+    .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,preco_net,valor_total,recibo_verde_emitido,recibo_verde_validado,recibo_verde_valor,recibo_nome,data_partida,perfis(nome)')
     .eq('estado','Confirmada')
     .order('created_at',{ascending:false})
 
@@ -8284,7 +8295,16 @@ async function vrFiltrar(filtro) {
         : r.recibo_verde_emitido
           ? `<button class="btn btn-outline btn-sm" style="font-size:12px" onclick="vrAbrirModal('${r.id}')">🔍 Analisar</button>`
           : `<span style="font-size:12px;color:var(--muted)">Aguarda recibo</span>`
-      const comissao = r.comissao_consultor ? '€'+parseFloat(r.comissao_consultor).toLocaleString('pt-PT',{minimumFractionDigits:2}) : '—'
+      // Calcular comissão: usar campo guardado ou calcular de net/pvp (80% da margem)
+      const pvp = parseFloat(r.valor_total)||0
+      const net = parseFloat(r.preco_net)||0
+      const margem = pvp > net ? pvp - net : 0
+      const comissaoAPM = margem > 0 ? Math.max(margem * 0.2, pvp * 0.01) : 0
+      const comissaoCalc = margem > 0 ? Math.round((margem - comissaoAPM) * 100) / 100 : 0
+      const comissaoFinal = parseFloat(r.comissao_consultor) || comissaoCalc
+      const comissao = comissaoFinal > 0
+        ? '€'+comissaoFinal.toLocaleString('pt-PT',{minimumFractionDigits:2}) + (r.comissao_consultor ? '' : ' <span style="font-size:10px;color:var(--muted)">(calc.)</span>')
+        : '—'
       return `<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:10px 8px;font-weight:700">${r.rnavt||r.id.slice(0,8)}</td>
         <td style="padding:10px 8px">${r.perfis?.nome||'—'}</td>
