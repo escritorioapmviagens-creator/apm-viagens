@@ -8607,6 +8607,18 @@ function renderPropostas() {
   if (ctel  && !ctel.value  && currentPerfil && currentPerfil.telefone) ctel.value = currentPerfil.telefone.replace(/\D/g,'');
   var logoEl = document.getElementById('pr-pv-logo');
   if (logoEl) logoEl.src = 'https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png';
+  // Preencher foto e nome do consultor no preview
+  var fotoEl = document.getElementById('pr-pv-foto')
+  if(fotoEl && currentPerfil) {
+    var ini = (currentPerfil.nome||'AP').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase()
+    if(currentPerfil.foto_perfil) {
+      fotoEl.innerHTML = `<img src="${currentPerfil.foto_perfil}" style="width:100%;height:100%;object-fit:cover">`
+    } else {
+      fotoEl.textContent = ini
+    }
+  }
+  var cnome2 = document.getElementById('pr-pv-cnome2')
+  if(cnome2 && currentPerfil?.nome) cnome2.textContent = currentPerfil.nome
   setTimeout(prRszSig, 200);
   // Inicializar passageiros
   prInitPassageiros()
