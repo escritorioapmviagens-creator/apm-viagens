@@ -440,6 +440,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-item" onclick="navTo('clientes',this)"><span class="nav-icon">👥</span> Clientes</div>
       <div class="nav-item" id="nav-avaliacoes" style="display:none" onclick="navTo('avaliacoes',this)"><span class="nav-icon">⭐</span> Avaliações</div>
 
+      <div class="nav-item" onclick="navTo('minha-equipa',this)"><span class="nav-icon">👥</span> A Minha Equipa</div>
       <div class="nav-section" data-s="recrutamento">Recrutamento</div>
       <div class="nav-item" id="nav-recrutamento" onclick="navTo('recrutamento',this)"><span class="nav-icon">🎯</span> Pipeline <span class="nav-badge" id="recrutamento-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="verCodigoAfiliado()"><span class="nav-icon">🔗</span> Link de Afiliado</div>
@@ -985,7 +986,30 @@ textarea.finput{resize:vertical;min-height:72px}
       </div>
 
       <!-- EQUIPA -->
-      <div class="page" id="page-equipa"><div class="team-grid" id="team-grid"></div></div>
+      <div class="page" id="page-equipa">
+        <!-- Admin: toggle programa bónus -->
+        <div id="bonus-admin-panel" style="display:none;margin-bottom:16px">
+          <div class="card" style="border:2px solid var(--blue)">
+            <div class="card-title" style="color:var(--blue)">⭐ Programa Bónus Líder</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Consultores com ≥ 5 recrutados activos recebem <strong>0,25% do valor net</strong> total das reservas da sua equipa no final de cada ano.</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div>
+                <div style="font-size:13px;font-weight:600" id="bonus-estado-label">Estado: a carregar...</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px">Elegíveis este ano: <strong id="bonus-elegiveis">—</strong> consultores</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-coral" onclick="toggleBonus(true)" id="btn-bonus-on">✅ Activar</button>
+                <button class="btn btn-outline" onclick="toggleBonus(false)" id="btn-bonus-off">⏸ Desactivar</button>
+              </div>
+            </div>
+            <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+              <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Acumulado por consultor (ano corrente)</div>
+              <div id="bonus-acumulado-lista" style="font-size:13px;color:var(--muted)">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="team-grid" id="team-grid"></div>
+      </div>
 
 
       <!-- CLIENTES -->
@@ -1307,6 +1331,67 @@ textarea.finput{resize:vertical;min-height:72px}
         </div>
       </div>
       <!-- FIM DEVOLUÇÕES -->
+
+      <!-- A MINHA EQUIPA -->
+      <div class="page" id="page-minha-equipa">
+        <div style="max-width:900px;margin:0 auto">
+
+          <!-- Resumo topo -->
+          <div id="meq-bonus-banner" style="display:none;margin-bottom:16px">
+            <div class="card" style="border:2px solid #f59e0b;background:#fffbeb">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <div style="font-size:32px">⭐</div>
+                <div style="flex:1">
+                  <div style="font-weight:700;font-size:15px;color:#92400e">Programa Bónus Líder activo!</div>
+                  <div style="font-size:13px;color:#b45309;margin-top:2px">Recebes <strong>0,25% do net</strong> das reservas da tua equipa no final do ano.</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:11px;color:#b45309;font-weight:600;text-transform:uppercase">Acumulado este ano</div>
+                  <div style="font-size:24px;font-weight:800;color:#92400e" id="meq-bonus-valor">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="meq-bonus-alerta" style="display:none;margin-bottom:16px">
+            <div class="card" style="border:1px dashed var(--border);background:var(--bg)">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="font-size:24px">🎯</div>
+                <div>
+                  <div style="font-weight:600;font-size:13px">Ainda não elegível para o Programa Bónus Líder</div>
+                  <div style="font-size:12px;color:var(--muted);margin-top:2px">Precisa de <strong id="meq-faltam">—</strong> consultores activos para ser elegível. Partilha o teu link!</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px" id="meq-stats">
+            <div class="card" style="text-align:center;padding:20px">
+              <div style="font-size:28px;font-weight:800;color:var(--blue)" id="meq-total">—</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">Consultores recrutados</div>
+            </div>
+            <div class="card" style="text-align:center;padding:20px">
+              <div style="font-size:28px;font-weight:800;color:#15803d" id="meq-ativos">—</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">Activos</div>
+            </div>
+            <div class="card" style="text-align:center;padding:20px">
+              <div style="font-size:28px;font-weight:800;color:var(--coral)" id="meq-comissoes">—</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">Comissões geradas pela rede</div>
+            </div>
+          </div>
+
+          <!-- Lista de consultores -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">👥 Consultores recrutados</div>
+            <div id="meq-lista"><div style="text-align:center;color:var(--muted);padding:20px">A carregar...</div></div>
+          </div>
+
+          <!-- Leads em pipeline -->
+          <div class="card">
+            <div class="card-title">🎯 Leads em pipeline (recrutamento)</div>
+            <div id="meq-leads"><div style="text-align:center;color:var(--muted);padding:20px">A carregar...</div></div>
+          </div>
+
+        </div>
+      </div>
 
       <!-- RECIBOS VERDES -->
       <div class="page" id="page-recibos">
@@ -3092,7 +3177,7 @@ function navTo(page, el) {
   if(el) el.classList.add('active')
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
-  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Performance',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes'}
+  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Performance',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa'}
   document.getElementById('tb-title').textContent = titles[page]||page
   document.getElementById('tb-sub').textContent = page==='dashboard'?(currentPerfil?.role==='admin'?'Visão global da agência':'Visão geral das tuas reservas'):''
   if(page==='dashboard') renderDash()
@@ -3127,6 +3212,7 @@ function navTo(page, el) {
   if(page==='atendimento') renderAtendimento()
   if(page==='recibos') renderRecibos()
   if(page==='aceites') renderAceitesPendentes()
+  if(page==='minha-equipa') renderMinhaEquipa()
   if(page==='propostas') renderPropostas()
   if(page==='aprovacoes') renderAprovacoes()
   if(page==='pedidos-orcamento') loadPedidosOrcamento()
@@ -5175,6 +5261,7 @@ async function submitRsv() {
 // ── EQUIPA ─────────────────────────────────
 async function renderEquipa() {
   const isAdmin = currentPerfil.role === 'admin'
+  if(isAdmin) renderBonusAdmin()
   const { data: perfis } = await sb.from('perfis').select('*').eq('ativo', true)
   if (!perfis) return
   const now = new Date()
@@ -7816,6 +7903,181 @@ async function verificarAceitesPendentes24h() {
     .select('id').eq('estado', 'Aceite Pendente').lt('aceite_em', limite)
   if (data?.length) {
     toast(`⚠️ ${data.length} contrato(s) aceite(s) há mais de 12h por efectuar!`, 'err')
+  }
+}
+
+// ── PROGRAMA BÓNUS LÍDER ──────────────────────────────────────
+let _bonusConfig = null
+
+async function carregarConfigBonus() {
+  const { data } = await sb.from('configuracoes').select('valor').eq('chave','programa_bonus_lider').single()
+  _bonusConfig = data?.valor || { ativo: false, min_recrutados: 5, percentagem: 0.25 }
+  return _bonusConfig
+}
+
+async function toggleBonus(ativo) {
+  const cfg = { ..._bonusConfig, ativo }
+  await sb.from('configuracoes').upsert({ chave: 'programa_bonus_lider', valor: cfg, updated_at: new Date().toISOString() })
+  _bonusConfig = cfg
+  toast(ativo ? '✅ Programa bónus activado!' : '⏸ Programa bónus desactivado', ativo ? 'ok' : 'err')
+  renderEquipa()
+}
+
+async function renderBonusAdmin() {
+  const cfg = await carregarConfigBonus()
+  const panel = document.getElementById('bonus-admin-panel')
+  if(!panel) return
+  panel.style.display = 'block'
+
+  document.getElementById('bonus-estado-label').textContent = 'Estado: ' + (cfg.ativo ? '✅ Activo' : '⏸ Inactivo')
+  document.getElementById('btn-bonus-on').style.display = cfg.ativo ? 'none' : 'inline-flex'
+  document.getElementById('btn-bonus-off').style.display = cfg.ativo ? 'inline-flex' : 'none'
+
+  // Consultores elegíveis (≥ 5 recrutados activos)
+  const { data: todos } = await sb.from('perfis').select('id,nome,recrutado_por').eq('status','ativo')
+  const contagem = {}
+  ;(todos||[]).forEach(p => { if(p.recrutado_por) contagem[p.recrutado_por] = (contagem[p.recrutado_por]||0)+1 })
+  const elegiveis = Object.entries(contagem).filter(([,n]) => n >= cfg.min_recrutados)
+  document.getElementById('bonus-elegiveis').textContent = elegiveis.length
+
+  if(!elegiveis.length) { document.getElementById('bonus-acumulado-lista').textContent = 'Sem consultores elegíveis ainda.'; return }
+
+  // Calcular acumulado por elegível
+  const ano = new Date().getFullYear()
+  const rows = []
+  for(const [cid] of elegiveis) {
+    const consultor = (todos||[]).find(p => p.id === cid)
+    const equipaIds = (todos||[]).filter(p => p.recrutado_por === cid).map(p => p.id)
+    const { data: rsvs } = await sb.from('reservas')
+      .select('preco_net').in('consultor_id', equipaIds)
+      .eq('estado','Confirmada').gte('created_at', ano+'-01-01')
+    const netTotal = (rsvs||[]).reduce((s,r) => s+(parseFloat(r.preco_net)||0), 0)
+    const bonus = netTotal * (cfg.percentagem/100)
+    rows.push(`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="font-weight:600">${consultor?.nome||cid}</span><span style="color:var(--blue);font-weight:700">€${bonus.toLocaleString('pt-PT',{minimumFractionDigits:2})} <span style="font-size:11px;color:var(--muted)">(net: €${netTotal.toLocaleString('pt-PT',{minimumFractionDigits:2})})</span></span></div>`)
+  }
+  document.getElementById('bonus-acumulado-lista').innerHTML = rows.join('')
+}
+
+// ── A MINHA EQUIPA ────────────────────────────────────────────
+async function renderMinhaEquipa() {
+  const uid = currentPerfil.id
+
+  // Carregar config do programa bónus
+  const cfg = await carregarConfigBonus()
+
+  // 1. Consultores que recrutei
+  const { data: equipa } = await sb.from('perfis')
+    .select('id,nome,email,status,plano,aprovado_em,created_at,nivel_acesso')
+    .eq('recrutado_por', uid)
+    .order('created_at', { ascending: false })
+
+  // 2. Leads em pipeline
+  const { data: leads } = await sb.from('recrutamento_leads')
+    .select('id,lead_nome,lead_email,lead_tel,pipeline_stage,created_at')
+    .eq('consultor_ref_id', uid)
+    .order('created_at', { ascending: false })
+
+  // 3. Comissões geradas pela rede
+  const equipaIds = (equipa||[]).map(e => e.id)
+  let totalComissoes = 0
+  if(equipaIds.length) {
+    const { data: rsvs } = await sb.from('reservas')
+      .select('comissao_consultor').in('consultor_id', equipaIds).eq('estado','Confirmada')
+    totalComissoes = (rsvs||[]).reduce((s,r) => s+(parseFloat(r.comissao_consultor)||0), 0)
+  }
+
+  // 4. Programa bónus
+  const ativos = (equipa||[]).filter(e => e.status==='ativo'||e.status==='aprovado').length
+  const minRecrut = cfg.min_recrutados || 5
+  const elegivel = ativos >= minRecrut
+
+  if(cfg.ativo) {
+    if(elegivel) {
+      document.getElementById('meq-bonus-banner').style.display = 'block'
+      document.getElementById('meq-bonus-alerta').style.display = 'none'
+      // Calcular bónus acumulado
+      const ano = new Date().getFullYear()
+      let netTotal = 0
+      if(equipaIds.length) {
+        const { data: rsvs } = await sb.from('reservas')
+          .select('preco_net').in('consultor_id', equipaIds)
+          .eq('estado','Confirmada').gte('created_at', ano+'-01-01')
+        netTotal = (rsvs||[]).reduce((s,r) => s+(parseFloat(r.preco_net)||0), 0)
+      }
+      const bonus = netTotal * ((cfg.percentagem||0.25)/100)
+      document.getElementById('meq-bonus-valor').textContent = '€' + bonus.toLocaleString('pt-PT',{minimumFractionDigits:2})
+    } else {
+      document.getElementById('meq-bonus-banner').style.display = 'none'
+      document.getElementById('meq-bonus-alerta').style.display = 'block'
+      document.getElementById('meq-faltam').textContent = (minRecrut - ativos) + ' consultores activos'
+    }
+  }
+
+  // Stats
+  document.getElementById('meq-total').textContent = (equipa||[]).length
+  document.getElementById('meq-ativos').textContent = ativos
+  document.getElementById('meq-comissoes').textContent = '€' + totalComissoes.toLocaleString('pt-PT', {minimumFractionDigits:2})
+
+  // Lista consultores
+  const listaEl = document.getElementById('meq-lista')
+  if(!(equipa||[]).length) {
+    listaEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Ainda não recrutaste nenhum consultor.<br>Partilha o teu link de afiliado para começar!</div>'
+  } else {
+    const STATUS = { ativo:'✅ Activo', aprovado:'✅ Activo', pendente:'⏳ Pendente', formacao:'📚 Formação', inativo:'❌ Inactivo' }
+    listaEl.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="border-bottom:2px solid var(--border)">
+        <th style="text-align:left;padding:8px;color:var(--muted);font-weight:600">Nome</th>
+        <th style="text-align:left;padding:8px;color:var(--muted);font-weight:600">Email</th>
+        <th style="text-align:left;padding:8px;color:var(--muted);font-weight:600">Estado</th>
+        <th style="text-align:left;padding:8px;color:var(--muted);font-weight:600">Plano</th>
+        <th style="text-align:left;padding:8px;color:var(--muted);font-weight:600">Desde</th>
+        <th style="text-align:right;padding:8px;color:var(--muted);font-weight:600">Comissões geradas</th>
+      </tr></thead>
+      <tbody id="meq-tbody"></tbody>
+    </table>`
+
+    // Comissões por consultor
+    for(const e of equipa) {
+      let comissao = 0
+      if(e.status === 'ativo' || e.status === 'aprovado') {
+        const { data: rsvs } = await sb.from('reservas')
+          .select('comissao_consultor').eq('consultor_id', e.id).eq('estado','Confirmada')
+        comissao = (rsvs||[]).reduce((s,r) => s+(parseFloat(r.comissao_consultor)||0), 0)
+      }
+      const tr = document.createElement('tr')
+      tr.style.borderBottom = '1px solid var(--border)'
+      tr.innerHTML = `
+        <td style="padding:10px 8px;font-weight:600">${e.nome||'—'}</td>
+        <td style="padding:10px 8px;color:var(--muted)">${e.email||'—'}</td>
+        <td style="padding:10px 8px">${STATUS[e.status]||e.status||'—'}</td>
+        <td style="padding:10px 8px">${e.plano||'—'}</td>
+        <td style="padding:10px 8px;color:var(--muted)">${e.aprovado_em ? new Date(e.aprovado_em).toLocaleDateString('pt-PT') : '—'}</td>
+        <td style="padding:10px 8px;text-align:right;font-weight:700;color:var(--blue)">€${comissao.toLocaleString('pt-PT',{minimumFractionDigits:2})}</td>`
+      document.getElementById('meq-tbody').appendChild(tr)
+    }
+  }
+
+  // Leads em pipeline
+  const leadsEl = document.getElementById('meq-leads')
+  const STAGES = { novo:'🆕 Novo', contactado:'📞 Contactado', qualificado:'✅ Qualificado', proposta:'📋 Proposta enviada', ativo:'🎉 Activo', perdido:'❌ Perdido' }
+  if(!(leads||[]).length) {
+    leadsEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Sem leads em pipeline.</div>'
+  } else {
+    leadsEl.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="border-bottom:2px solid var(--border)">
+        <th style="text-align:left;padding:8px;color:var(--muted);font-weight:600">Nome</th>
+        <th style="text-align:left;padding:8px;color:var(--muted);font-weight:600">Contacto</th>
+        <th style="text-align:left;padding:8px;color:var(--muted);font-weight:600">Estado</th>
+        <th style="text-align:left;padding:8px;color:var(--muted);font-weight:600">Data</th>
+      </tr></thead>
+      <tbody>${leads.map(l => `
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 8px;font-weight:600">${l.lead_nome||'—'}</td>
+          <td style="padding:10px 8px;color:var(--muted)">${l.lead_email||l.lead_tel||'—'}</td>
+          <td style="padding:10px 8px">${STAGES[l.pipeline_stage]||l.pipeline_stage||'—'}</td>
+          <td style="padding:10px 8px;color:var(--muted)">${l.created_at ? new Date(l.created_at).toLocaleDateString('pt-PT') : '—'}</td>
+        </tr>`).join('')}</tbody>
+    </table>`
   }
 }
 
