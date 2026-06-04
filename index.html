@@ -436,6 +436,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-item" onclick="navTo('followups',this)"><span class="nav-icon">⏰</span> Follow-ups <span class="nav-badge" id="followup-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="navTo('aceites',this)"><span class="nav-icon">⏳</span> Contratos Pendentes <span class="nav-badge" id="aceites-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="navTo('reservas',this)"><span class="nav-icon">✈</span> Reservas</div>
+      <div class="nav-item" onclick="navTo('comissoes',this)"><span class="nav-icon">💶</span> As Minhas Comissões</div>
       <div class="nav-item" onclick="navTo('nova',this)"><span class="nav-icon">＋</span> Nova Reserva</div>
       <div class="nav-item" onclick="navTo('clientes',this)"><span class="nav-icon">👥</span> Clientes</div>
       <div class="nav-item" id="nav-avaliacoes" style="display:none" onclick="navTo('avaliacoes',this)"><span class="nav-icon">⭐</span> Avaliações</div>
@@ -451,6 +452,7 @@ textarea.finput{resize:vertical;min-height:72px}
         <div class="nav-section" data-s="admin">Administração</div>
         <div class="nav-item" onclick="navTo('equipa',this)"><span class="nav-icon">◉</span> Equipa</div>
         <div class="nav-item" onclick="navTo('financeiro',this)"><span class="nav-icon">€</span> Financeiro</div>
+        <div class="nav-item" onclick="navTo('verificacao-recibos',this)"><span class="nav-icon">🔍</span> Verificação de Recibos</div>
         <div class="nav-item" onclick="navTo('recibos',this)"><span class="nav-icon">🧾</span> Recibos Verdes</div>
         <div class="nav-item" onclick="navTo('importacao',this)"><span class="nav-icon">📥</span> Importar Reservas</div>
         <div class="nav-item" onclick="navTo('devolucoes',this)"><span class="nav-icon">↩️</span> Devoluções</div>
@@ -1388,6 +1390,91 @@ textarea.finput{resize:vertical;min-height:72px}
           <div class="card">
             <div class="card-title">🎯 Leads em pipeline (recrutamento)</div>
             <div id="meq-leads"><div style="text-align:center;color:var(--muted);padding:20px">A carregar...</div></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- AS MINHAS COMISSÕES (Consultor) -->
+      <div class="page" id="page-comissoes">
+        <div style="max-width:960px;margin:0 auto">
+
+          <!-- Resumo -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+            <div class="card" style="text-align:center;padding:20px">
+              <div style="font-size:26px;font-weight:800;color:var(--blue)" id="com-total-bruto">—</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">Total comissões (este ano)</div>
+            </div>
+            <div class="card" style="text-align:center;padding:20px">
+              <div style="font-size:26px;font-weight:800;color:#15803d" id="com-total-validado">—</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">Comissões validadas</div>
+            </div>
+            <div class="card" style="text-align:center;padding:20px">
+              <div style="font-size:26px;font-weight:800;color:#f59e0b" id="com-total-pendente">—</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">Pendentes de validação</div>
+            </div>
+          </div>
+
+          <!-- Tabela -->
+          <div class="card">
+            <div class="card-title">💶 Comissões por reserva</div>
+            <div id="com-tabela"></div>
+          </div>
+
+          <!-- Modal upload recibo -->
+          <div id="com-upload-area" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center">
+            <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:440px;margin:20px">
+              <div style="font-weight:700;font-size:16px;margin-bottom:6px">📎 Carregar recibo verde</div>
+              <div style="font-size:13px;color:var(--muted);margin-bottom:16px" id="com-upload-info"></div>
+              <input type="file" id="com-file-input" accept=".pdf" class="finput" style="margin-bottom:12px">
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-coral" style="flex:1;justify-content:center" onclick="comSubmeterRecibo()">Enviar recibo</button>
+                <button class="btn btn-outline" onclick="comFecharUpload()">Cancelar</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VERIFICAÇÃO DE RECIBOS (Admin) -->
+      <div class="page" id="page-verificacao-recibos">
+        <div style="max-width:960px;margin:0 auto">
+
+          <!-- Filtro estado -->
+          <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+            <button class="btn btn-coral" id="vr-filtro-pendente" onclick="vrFiltrar('pendente')">⏳ Por validar</button>
+            <button class="btn btn-outline" id="vr-filtro-validado" onclick="vrFiltrar('validado')">✅ Validados</button>
+            <button class="btn btn-outline" id="vr-filtro-todos" onclick="vrFiltrar('todos')">Todos</button>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🔍 Verificação de Recibos</div>
+            <div id="vr-tabela"></div>
+          </div>
+
+          <!-- Modal de validação -->
+          <div id="vr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+            <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:520px;margin:20px;max-height:90vh;overflow-y:auto">
+              <div style="font-weight:700;font-size:16px;margin-bottom:4px" id="vr-modal-titulo"></div>
+              <div style="font-size:13px;color:var(--muted);margin-bottom:16px" id="vr-modal-sub"></div>
+
+              <!-- Pré-validação IA -->
+              <div id="vr-prevalidacao" style="display:none;border-radius:10px;padding:14px;margin-bottom:14px">
+                <div style="font-weight:700;margin-bottom:10px" id="vr-pv-titulo"></div>
+                <div id="vr-pv-detalhes" style="font-size:13px;display:grid;gap:6px"></div>
+              </div>
+
+              <!-- Recibo PDF preview -->
+              <div id="vr-pdf-preview" style="margin-bottom:14px"></div>
+
+              <!-- Validação manual -->
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-coral" id="vr-btn-validar" style="flex:1;justify-content:center" onclick="vrValidarManual()">✅ Validar recibo</button>
+                <button class="btn btn-outline" id="vr-btn-rejeitar" onclick="vrRejeitarRecibo()" style="color:#ef4444;border-color:#ef4444">❌ Rejeitar</button>
+                <button class="btn btn-outline" onclick="vrFecharModal()">Fechar</button>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -3177,7 +3264,7 @@ function navTo(page, el) {
   if(el) el.classList.add('active')
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
-  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Performance',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa'}
+  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Performance',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
   document.getElementById('tb-title').textContent = titles[page]||page
   document.getElementById('tb-sub').textContent = page==='dashboard'?(currentPerfil?.role==='admin'?'Visão global da agência':'Visão geral das tuas reservas'):''
   if(page==='dashboard') renderDash()
@@ -3213,6 +3300,8 @@ function navTo(page, el) {
   if(page==='recibos') renderRecibos()
   if(page==='aceites') renderAceitesPendentes()
   if(page==='minha-equipa') renderMinhaEquipa()
+  if(page==='comissoes') renderComissoes()
+  if(page==='verificacao-recibos') renderVerificacaoRecibos()
   if(page==='propostas') renderPropostas()
   if(page==='aprovacoes') renderAprovacoes()
   if(page==='pedidos-orcamento') loadPedidosOrcamento()
@@ -7996,6 +8085,278 @@ async function renderEquipasGlobal() {
   // Ocultar secção de leads (não faz sentido para admin aqui)
   const leadsEl = document.getElementById('meq-leads')
   if(leadsEl) leadsEl.closest('.card').style.display = 'none'
+}
+
+// ── AS MINHAS COMISSÕES ────────────────────────────────────────
+let _comReservaActual = null
+
+async function renderComissoes() {
+  const uid = currentPerfil.id
+  const ano = new Date().getFullYear()
+
+  const { data: rsvs } = await sb.from('reservas')
+    .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,recibo_verde_emitido,recibo_verde_validado,recibo_verde_valor,data_partida,estado')
+    .eq('consultor_id', uid)
+    .eq('estado', 'Confirmada')
+    .not('comissao_consultor', 'is', null)
+    .gt('comissao_consultor', 0)
+    .gte('created_at', ano+'-01-01')
+    .order('created_at', { ascending: false })
+
+  const lista = rsvs || []
+  const totalBruto = lista.reduce((s,r) => s+(parseFloat(r.comissao_consultor)||0), 0)
+  const totalValidado = lista.filter(r=>r.recibo_verde_validado).reduce((s,r) => s+(parseFloat(r.recibo_verde_valor||r.comissao_consultor)||0), 0)
+  const totalPendente = lista.filter(r=>!r.recibo_verde_validado).reduce((s,r) => s+(parseFloat(r.comissao_consultor)||0), 0)
+
+  document.getElementById('com-total-bruto').textContent = '€'+totalBruto.toLocaleString('pt-PT',{minimumFractionDigits:2})
+  document.getElementById('com-total-validado').textContent = '€'+totalValidado.toLocaleString('pt-PT',{minimumFractionDigits:2})
+  document.getElementById('com-total-pendente').textContent = '€'+totalPendente.toLocaleString('pt-PT',{minimumFractionDigits:2})
+
+  const el = document.getElementById('com-tabela')
+  if(!lista.length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px">Sem reservas com comissão este ano.</div>'; return }
+
+  el.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;min-width:640px">
+    <thead><tr style="border-bottom:2px solid var(--border)">
+      <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600">Reserva</th>
+      <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600">Destino / Operador</th>
+      <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600">Localizador</th>
+      <th style="text-align:right;padding:10px 8px;color:var(--muted);font-weight:600">Comissão</th>
+      <th style="text-align:center;padding:10px 8px;color:var(--muted);font-weight:600">Estado</th>
+      <th style="text-align:center;padding:10px 8px;color:var(--muted);font-weight:600">Recibo</th>
+    </tr></thead>
+    <tbody>${lista.map(r => {
+      const loc = r.localizador || r.localizador_principal || '—'
+      const estadoBadge = r.recibo_verde_validado
+        ? '<span style="background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">✅ Validado</span>'
+        : r.recibo_verde_emitido
+          ? '<span style="background:#fef9c3;color:#92400e;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">🔍 Em verificação</span>'
+          : '<span style="background:#f3f4f6;color:var(--muted);font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px">⏳ Pendente</span>'
+      const reciboBtn = r.recibo_verde_validado
+        ? '<span style="font-size:20px">✅</span>'
+        : `<button class="btn btn-outline btn-sm" style="font-size:12px;padding:5px 10px" onclick="comAbrirUpload('${r.id}','${r.rnavt||''}',${r.comissao_consultor})">📎 Carregar</button>`
+      const comissaoDisplay = r.recibo_verde_validado
+        ? `<span style="color:#15803d;font-weight:800">€${parseFloat(r.recibo_verde_valor||r.comissao_consultor).toLocaleString('pt-PT',{minimumFractionDigits:2})}</span>`
+        : `<span style="color:var(--muted)">€${parseFloat(r.comissao_consultor).toLocaleString('pt-PT',{minimumFractionDigits:2})}</span>`
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 8px;font-weight:700">${r.rnavt||r.id.slice(0,8)}</td>
+        <td style="padding:10px 8px">${r.destino||'—'}<br><span style="font-size:11px;color:var(--muted)">${r.fornecedor||'—'}</span></td>
+        <td style="padding:10px 8px;font-family:monospace;font-size:12px">${loc}</td>
+        <td style="padding:10px 8px;text-align:right">${comissaoDisplay}</td>
+        <td style="padding:10px 8px;text-align:center">${estadoBadge}</td>
+        <td style="padding:10px 8px;text-align:center">${reciboBtn}</td>
+      </tr>`
+    }).join('')}</tbody>
+  </table></div>`
+}
+
+function comAbrirUpload(id, rnavt, comissao) {
+  _comReservaActual = { id, rnavt, comissao }
+  document.getElementById('com-upload-info').textContent = `Reserva ${rnavt} · Comissão: €${parseFloat(comissao).toFixed(2)}`
+  document.getElementById('com-file-input').value = ''
+  const area = document.getElementById('com-upload-area')
+  area.style.display = 'flex'
+}
+
+function comFecharUpload() {
+  document.getElementById('com-upload-area').style.display = 'none'
+  _comReservaActual = null
+}
+
+async function comSubmeterRecibo() {
+  const file = document.getElementById('com-file-input').files[0]
+  if(!file) { toast('Selecciona um ficheiro PDF', 'err'); return }
+  if(!_comReservaActual) return
+
+  // Converter para base64 e guardar no Supabase
+  const base64 = await new Promise((res,rej) => {
+    const r = new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(file)
+  })
+
+  // Guardar referência do recibo
+  const { error } = await sb.from('reservas').update({
+    recibo_verde_emitido: true,
+    recibo_base64: base64,
+    recibo_nome: file.name
+  }).eq('id', _comReservaActual.id)
+
+  if(error) { toast('Erro ao enviar recibo', 'err'); console.error(error); return }
+  toast('Recibo enviado! O admin irá verificar em breve.', 'ok')
+  comFecharUpload()
+  renderComissoes()
+}
+
+// ── VERIFICAÇÃO DE RECIBOS (Admin) ────────────────────────────
+let _vrFiltro = 'pendente'
+let _vrReservaActual = null
+
+async function renderVerificacaoRecibos() {
+  vrFiltrar('pendente')
+}
+
+async function vrFiltrar(filtro) {
+  _vrFiltro = filtro
+  ;['pendente','validado','todos'].forEach(f => {
+    const btn = document.getElementById('vr-filtro-'+f)
+    if(btn) { btn.className = f===filtro ? 'btn btn-coral' : 'btn btn-outline' }
+  })
+
+  let q = sb.from('reservas')
+    .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,recibo_verde_emitido,recibo_verde_validado,recibo_verde_valor,recibo_nome,data_partida,perfis(nome)')
+    .not('comissao_consultor','is',null)
+    .gt('comissao_consultor',0)
+    .eq('recibo_verde_emitido', true)
+    .order('created_at',{ascending:false})
+
+  if(filtro==='pendente') q = q.eq('recibo_verde_validado', false)
+  if(filtro==='validado') q = q.eq('recibo_verde_validado', true)
+
+  const { data } = await q
+  const lista = data || []
+
+  const el = document.getElementById('vr-tabela')
+  if(!lista.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px">'+
+      (filtro==='pendente' ? 'Sem recibos por validar.' : 'Sem recibos neste filtro.')+
+      '</div>'
+    return
+  }
+
+  el.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;min-width:700px">
+    <thead><tr style="border-bottom:2px solid var(--border)">
+      <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600">Reserva</th>
+      <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600">Consultor</th>
+      <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600">Destino / Operador</th>
+      <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600">Localizador</th>
+      <th style="text-align:right;padding:10px 8px;color:var(--muted);font-weight:600">Comissão</th>
+      <th style="text-align:center;padding:10px 8px;color:var(--muted);font-weight:600">Estado</th>
+      <th style="text-align:center;padding:10px 8px;color:var(--muted);font-weight:600">Acção</th>
+    </tr></thead>
+    <tbody>${lista.map(r => {
+      const loc = r.localizador || r.localizador_principal || '—'
+      const estadoBadge = r.recibo_verde_validado
+        ? '<span style="background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">✅ Validado</span>'
+        : '<span style="background:#fef9c3;color:#92400e;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">🔍 Por validar</span>'
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 8px;font-weight:700">${r.rnavt||r.id.slice(0,8)}</td>
+        <td style="padding:10px 8px">${r.perfis?.nome||'—'}</td>
+        <td style="padding:10px 8px">${r.destino||'—'}<br><span style="font-size:11px;color:var(--muted)">${r.fornecedor||'—'}</span></td>
+        <td style="padding:10px 8px;font-family:monospace;font-size:12px">${loc}</td>
+        <td style="padding:10px 8px;text-align:right;font-weight:700;color:var(--blue)">€${parseFloat(r.comissao_consultor).toLocaleString('pt-PT',{minimumFractionDigits:2})}</td>
+        <td style="padding:10px 8px;text-align:center">${estadoBadge}</td>
+        <td style="padding:10px 8px;text-align:center">
+          <button class="btn btn-outline btn-sm" style="font-size:12px" onclick="vrAbrirModal('${r.id}')">🔍 Analisar</button>
+        </td>
+      </tr>`
+    }).join('')}</tbody>
+  </table></div>`
+}
+
+async function vrAbrirModal(id) {
+  const { data: r } = await sb.from('reservas')
+    .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,recibo_verde_validado,recibo_base64,recibo_nome,perfis(nome)')
+    .eq('id', id).single()
+  if(!r) return
+  _vrReservaActual = r
+
+  const loc = r.localizador || r.localizador_principal || '—'
+  document.getElementById('vr-modal-titulo').textContent = `Reserva ${r.rnavt||r.id.slice(0,8)}`
+  document.getElementById('vr-modal-sub').textContent = `${r.perfis?.nome||'—'} · ${r.destino||'—'} · ${r.fornecedor||'—'} · ${loc}`
+
+  // Pré-validação IA
+  const pvEl = document.getElementById('vr-prevalidacao')
+  const pvTitulo = document.getElementById('vr-pv-titulo')
+  const pvDetalhes = document.getElementById('vr-pv-detalhes')
+  pvEl.style.display = 'none'
+
+  if(r.recibo_base64) {
+    pvTitulo.textContent = '🤖 A analisar recibo com IA...'
+    pvEl.style.background = '#f3f4f6'
+    pvEl.style.display = 'block'
+
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model:'claude-sonnet-4-20250514', max_tokens:800,
+          messages:[{ role:'user', content:[
+            { type:'document', source:{ type:'base64', media_type:'application/pdf', data: r.recibo_base64 }},
+            { type:'text', text:`Analisa este recibo verde e extrai em JSON:
+{"valor_iliquido": número, "retencao": número, "total_pagar": número, "nif_adquirente": "string", "nome_prestador": "string", "data_emissao": "string"}
+Responde APENAS com o JSON.`}
+          ]}]
+        })
+      })
+      const d = await resp.json()
+      const txt = d.content?.[0]?.text||'{}'
+      const dados = JSON.parse(txt.replace(/```json|```/g,'').trim())
+      const comissaoEsperada = parseFloat(r.comissao_consultor)||0
+      const valorOk = Math.abs((dados.valor_iliquido||0) - comissaoEsperada) < 0.10
+      const nifOk = (dados.nif_adquirente||'').includes('518357490')
+      const tudo = valorOk && nifOk
+
+      pvEl.style.background = tudo ? '#dcfce7' : '#fee2e2'
+      pvTitulo.textContent = tudo ? '✅ Pré-validação: tudo correcto' : '⚠️ Pré-validação: verificar valores'
+      pvTitulo.style.color = tudo ? '#15803d' : '#b91c1c'
+      pvDetalhes.innerHTML = [
+        { lbl:'Valor ilíquido', val:'€'+(dados.valor_iliquido||0).toFixed(2), ok:valorOk, esp:'€'+comissaoEsperada.toFixed(2) },
+        { lbl:'NIF APM', val:dados.nif_adquirente||'?', ok:nifOk, esp:'518357490' },
+        { lbl:'Retenção (23%)', val:'€'+(dados.retencao||0).toFixed(2), ok:true },
+        { lbl:'Total a pagar', val:'€'+(dados.total_pagar||0).toFixed(2), ok:true },
+        { lbl:'Prestador', val:dados.nome_prestador||'?', ok:true },
+        { lbl:'Data emissão', val:dados.data_emissao||'?', ok:true },
+      ].map(l => `<div style="display:flex;justify-content:space-between;padding:5px 8px;background:rgba(255,255,255,.6);border-radius:6px">
+        <span style="color:var(--muted)">${l.lbl}</span>
+        <span style="font-weight:700;color:${l.ok?'var(--text)':'#b91c1c'}">${l.ok?'':' ❌ '}${l.val}${!l.ok&&l.esp?` <small style="color:var(--muted)">(esperado: ${l.esp})</small>`:''}</span>
+      </div>`).join('')
+      window._vrDadosIA = dados
+    } catch(e) {
+      pvTitulo.textContent = '⚠️ Não foi possível analisar automaticamente'
+      pvDetalhes.innerHTML = ''
+    }
+
+    // Preview do PDF
+    document.getElementById('vr-pdf-preview').innerHTML =
+      `<div style="font-size:12px;color:var(--muted);margin-bottom:6px">📄 ${r.recibo_nome||'recibo.pdf'}</div>
+       <iframe src="data:application/pdf;base64,${r.recibo_base64}" style="width:100%;height:300px;border:1px solid var(--border);border-radius:8px"></iframe>`
+  }
+
+  // Esconder botões se já validado
+  document.getElementById('vr-btn-validar').style.display = r.recibo_verde_validado ? 'none' : 'inline-flex'
+  document.getElementById('vr-btn-rejeitar').style.display = r.recibo_verde_validado ? 'none' : 'inline-flex'
+
+  document.getElementById('vr-modal').style.display = 'flex'
+}
+
+function vrFecharModal() {
+  document.getElementById('vr-modal').style.display = 'none'
+  _vrReservaActual = null
+  window._vrDadosIA = null
+}
+
+async function vrValidarManual() {
+  if(!_vrReservaActual) return
+  const valorValidado = window._vrDadosIA?.valor_iliquido || _vrReservaActual.comissao_consultor
+  const { error } = await sb.from('reservas').update({
+    recibo_verde_validado: true,
+    recibo_verde_valor: valorValidado
+  }).eq('id', _vrReservaActual.id)
+  if(error) { toast('Erro ao validar', 'err'); return }
+  toast('✅ Recibo validado com sucesso!', 'ok')
+  vrFecharModal()
+  vrFiltrar(_vrFiltro)
+}
+
+async function vrRejeitarRecibo() {
+  if(!_vrReservaActual) return
+  const { error } = await sb.from('reservas').update({
+    recibo_verde_emitido: false,
+    recibo_base64: null
+  }).eq('id', _vrReservaActual.id)
+  if(error) { toast('Erro ao rejeitar', 'err'); return }
+  toast('Recibo rejeitado. O consultor terá de reenviar.', 'err')
+  vrFecharModal()
+  vrFiltrar(_vrFiltro)
 }
 
 // ── PROGRAMA BÓNUS LÍDER ──────────────────────────────────────
