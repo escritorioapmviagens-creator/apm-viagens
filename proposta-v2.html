@@ -381,6 +381,8 @@ async function aceitarProposta() {
         rnavt,
         cliente_id: clienteId,
         consultor_id: D.consultor_id || null,
+        lead_nome: D.cli_nome || D.cli || null,
+        lead_tel: telLimpo || null,
         destino: D.dest || null,
         data_partida: D.part || null,
         data_regresso: D.reg || null,
