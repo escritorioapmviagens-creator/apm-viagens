@@ -6871,6 +6871,26 @@ function checkClientPage() {
   }
 })();
 
+async function loadPropostaById(id) {
+  const loadingEl = document.getElementById('loading')
+  try {
+    const { data, error } = await sb.from('propostas_viagem').select('dados').eq('id', id).single()
+    if(error || !data) throw new Error('Proposta não encontrada')
+    if(loadingEl) loadingEl.style.display = 'none'
+    showPropostaPublica(data.dados)
+  } catch(e) {
+    console.error('Erro ao carregar proposta:', e)
+    if(loadingEl) loadingEl.style.display = 'none'
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666"><div style="text-align:center"><div style="font-size:48px;margin-bottom:16px">⚠️</div><div style="font-size:18px;font-weight:600;margin-bottom:8px">Proposta não encontrada</div><div style="font-size:14px">Este link pode ter expirado ou ser inválido.</div></div></div>'
+  }
+}
+
+function showPropostaPublica(dados) {
+  // showPropostaPublica usa os mesmos dados que showClientPage
+  // dados vêm do campo 'dados' da tabela propostas_viagem
+  showClientPage(dados)
+}
+
 function showClientPage(d) {
   // Hide auth and app
   document.getElementById('loading').style.display = 'none'
