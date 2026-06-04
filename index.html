@@ -8276,14 +8276,15 @@ async function vrFiltrar(filtro) {
   el.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;min-width:700px">
     <thead><tr style="border-bottom:2px solid var(--border)">
       <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600;width:110px">Reserva</th>
-      <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600;width:120px">Consultor</th>
-      <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600">Operador</th>
+      <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600;width:130px">Consultor</th>
+      <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600;width:110px">Operador</th>
+      <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600">Localizador</th>
       <th style="text-align:right;padding:10px 8px;color:var(--muted);font-weight:600;width:90px">Comissão</th>
       <th style="text-align:center;padding:10px 8px;color:var(--muted);font-weight:600;width:130px">Estado</th>
       <th style="text-align:center;padding:10px 8px;color:var(--muted);font-weight:600;width:110px">Acção</th>
     </tr></thead>
     <tbody>${lista.map(r => {
-      const loc = r.localizador || r.localizador_principal || '—'
+      const loc = (r.localizador || r.localizador_principal || '—').toUpperCase()
       const estadoBadge = r.recibo_verde_validado
         ? '<span style="background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap">✅ Validado</span>'
         : r.recibo_verde_emitido
@@ -8294,16 +8295,13 @@ async function vrFiltrar(filtro) {
         : r.recibo_verde_emitido
           ? `<button class="btn btn-outline btn-sm" style="font-size:12px" onclick="vrAbrirModal('${r.id}')">🔍 Analisar</button>`
           : `<span style="font-size:12px;color:var(--muted)">Aguarda recibo</span>`
-      // Calcular comissão: usar campo guardado ou calcular de net/pvp (80% da margem)
       const pvp = parseFloat(r.valor_total)||0
       const net = parseFloat(r.preco_net)||0
       const margem = pvp > net ? pvp - net : 0
       const comissaoAPM = margem > 0 ? Math.max(margem * 0.2, pvp * 0.01) : 0
       const comissaoCalc = margem > 0 ? Math.round((margem - comissaoAPM) * 100) / 100 : 0
       const comissaoFinal = parseFloat(r.comissao_consultor) || comissaoCalc
-      const comissao = comissaoFinal > 0
-        ? '€'+comissaoFinal.toLocaleString('pt-PT',{minimumFractionDigits:2}) 
-        : '—'
+      const comissao = comissaoFinal > 0 ? '€'+comissaoFinal.toLocaleString('pt-PT',{minimumFractionDigits:2}) : '—'
       return `<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:10px 8px;font-weight:700">${r.rnavt||r.id.slice(0,8)}</td>
         <td style="padding:10px 8px">${(r.perfis?.nome||r.consultor_nome_externo||'—').toUpperCase()}</td>
