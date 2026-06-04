@@ -7756,20 +7756,40 @@ async function renderAceitesPendentes() {
           <div style="font-size:12px;color:${urgente?'#b91c1c':'#15803d'};font-weight:600;margin-top:4px">Aceite ${tempoLabel}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;min-width:220px">
-          <input class="finput" id="loc-${r.id}" placeholder="Inserir localizador do fornecedor" style="font-size:13px;padding:8px 12px">
-          <button class="btn btn-coral" style="justify-content:center;font-size:13px" onclick="efetuarReserva('${r.id}')">✅ Marcar como efectuada</button>
+          <div id="locs-${r.id}" style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:6px">
+              <input class="finput" placeholder="Localizador 1 (ex: voo)" style="flex:1;font-size:13px;padding:8px 12px">
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:4px">
+            <button class="btn btn-outline btn-sm" onclick="adicionarLocalizador('${r.id}')" style="font-size:12px;padding:5px 10px">＋ Adicionar</button>
+            <button class="btn btn-coral" style="flex:1;justify-content:center;font-size:13px" onclick="efetuarReserva('${r.id}')">✅ Marcar como efectuada</button>
+          </div>
         </div>
       </div>
     </div>`
   }).join('')
 }
 
+function adicionarLocalizador(id) {
+  const wrap = document.getElementById('locs-'+id)
+  if(!wrap) return
+  const n = wrap.querySelectorAll('input').length + 1
+  const row = document.createElement('div')
+  row.style.cssText = 'display:flex;gap:6px'
+  row.innerHTML = `<input class="finput" placeholder="Localizador ${n}" style="flex:1;font-size:13px;padding:8px 12px"><button onclick="this.parentElement.remove()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:0 10px;cursor:pointer;color:var(--muted);font-size:16px">×</button>`
+  wrap.appendChild(row)
+}
+
 async function efetuarReserva(id) {
-  const loc = document.getElementById('loc-'+id)?.value.trim()
-  if (!loc) { toast('Insere o localizador do fornecedor', 'err'); return }
+  const wrap = document.getElementById('locs-'+id)
+  const inputs = wrap ? Array.from(wrap.querySelectorAll('input')) : []
+  const locs = inputs.map(i => i.value.trim()).filter(Boolean)
+  if(!locs.length) { toast('Insere pelo menos um localizador', 'err'); return }
 
   const { error } = await sb.from('reservas').update({
-    localizador_principal: loc,
+    localizador_principal: locs[0],
+    localizador: locs.length > 1 ? locs.join(' · ') : locs[0],
     reserva_efetuada: true,
     estado: 'Confirmada'
   }).eq('id', id)
