@@ -89,6 +89,13 @@ canvas#sig-canvas { display: block; width: 100%; height: 120px; cursor: crosshai
     <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM Viagens">
     <span style="font-size:.85rem;font-weight:700">APM Viagens</span>
   </div>
+  <div id="topbar-consultor" style="display:none;align-items:center;gap:10px">
+    <div id="topbar-consul-foto" style="width:36px;height:36px;border-radius:50%;background:var(--coral);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0"></div>
+    <div style="line-height:1.3">
+      <div style="font-size:13px;font-weight:700;color:var(--text)" id="topbar-consul-nome"></div>
+      <div style="font-size:11px;color:var(--muted)">Consultor/a APM Viagens</div>
+    </div>
+  </div>
 </div>
 
 <div class="hero" id="hero">
@@ -306,6 +313,20 @@ function renderProposta() {
   if(D.cancel) { document.getElementById('cancel-text').textContent = D.cancel; document.getElementById('section-cancel').style.display = 'block' }
   const cname = D.cnome || 'APM Viagens'
   document.getElementById('consul-name').textContent = cname
+
+  // Topbar consultor
+  const topbarConsultor = document.getElementById('topbar-consultor')
+  const topbarFoto = document.getElementById('topbar-consul-foto')
+  const topbarNome = document.getElementById('topbar-consul-nome')
+  if(topbarConsultor && cname !== 'APM Viagens') {
+    topbarConsultor.style.display = 'flex'
+    topbarNome.textContent = cname
+    if(D.consul_foto) {
+      topbarFoto.innerHTML = `<img src="${D.consul_foto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+    } else {
+      topbarFoto.textContent = cname.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase()
+    }
+  }
   const avatarEl = document.getElementById('consul-avatar')
   if(D.consul_foto) { avatarEl.innerHTML = `<img src="${D.consul_foto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`; avatarEl.style.background = 'transparent' }
   else avatarEl.textContent = cname[0]?.toUpperCase() || 'A'
