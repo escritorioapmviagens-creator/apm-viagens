@@ -7212,8 +7212,13 @@ async function confirmarContrato() {
         condicoes_pagamento: d.condpag || [],
         condicoes_cancelamento: d.cancel ? [{descricao: d.cancel}] : []
       }
-      const { data: newRsv } = await sb.from('reservas').insert(rsvData).select('id').single()
-      console.log('✅ Reserva criada:', rnavt)
+      const { data: newRsv, error: rsvError } = await sb.from('reservas').insert(rsvData).select('id').single()
+      if(rsvError) {
+        console.error('❌ Erro ao criar reserva:', rsvError)
+        console.error('❌ Payload:', JSON.stringify(rsvData))
+      } else {
+        console.log('✅ Reserva criada:', rnavt, newRsv)
+      }
 
       // Guardar passageiros e canal de aquisição
       if(newRsv?.id) {
