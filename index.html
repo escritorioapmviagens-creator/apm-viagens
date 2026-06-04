@@ -449,6 +449,7 @@ textarea.finput{resize:vertical;min-height:72px}
         <div class="nav-section" data-s="admin">Administração</div>
         <div class="nav-item" onclick="navTo('equipa',this)"><span class="nav-icon">◉</span> Equipa</div>
         <div class="nav-item" onclick="navTo('financeiro',this)"><span class="nav-icon">€</span> Financeiro</div>
+        <div class="nav-item" onclick="navTo('recibos',this)"><span class="nav-icon">🧾</span> Recibos Verdes</div>
         <div class="nav-item" onclick="navTo('importacao',this)"><span class="nav-icon">📥</span> Importar Reservas</div>
         <div class="nav-item" onclick="navTo('devolucoes',this)"><span class="nav-icon">↩️</span> Devoluções</div>
         <div class="nav-item" id="nav-performance" style="display:none" onclick="navTo('performance',this)"><span class="nav-icon">📈</span> Performance</div>
@@ -1305,6 +1306,157 @@ textarea.finput{resize:vertical;min-height:72px}
         </div>
       </div>
       <!-- FIM DEVOLUÇÕES -->
+
+      <!-- RECIBOS VERDES -->
+      <div class="page" id="page-recibos">
+        <div style="max-width:900px;margin:0 auto">
+
+          <!-- CONSULTOR: Calculadora -->
+          <div id="rv-consultor-section">
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-title">🧾 Recibo Verde — Calculadora</div>
+              <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Seleccione uma reserva para calcular os valores a inserir no Portal das Finanças.</div>
+
+              <!-- Seletor de reserva -->
+              <div class="fgroup" style="margin-bottom:14px">
+                <label class="flabel">Reserva</label>
+                <select class="finput" id="rv-reserva-select" onchange="rvCarregarReserva()">
+                  <option value="">— Seleccionar reserva —</option>
+                </select>
+              </div>
+
+              <!-- Info da reserva seleccionada -->
+              <div id="rv-reserva-info" style="display:none;background:var(--bg2);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                  <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600">Cliente</div><div style="font-weight:700" id="rv-info-cliente">—</div></div>
+                  <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600">Destino</div><div style="font-weight:700" id="rv-info-destino">—</div></div>
+                  <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600">Comissão consultor</div><div style="font-weight:700;color:var(--blue)" id="rv-info-comissao">—</div></div>
+                </div>
+              </div>
+
+              <!-- Opções -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px" id="rv-opcoes" style="display:none">
+                <div class="fgroup" style="margin:0">
+                  <label class="flabel">Pagamento por Entidade/Referência?</label>
+                  <select class="finput" id="rv-entidade-ref" onchange="rvCalcular()">
+                    <option value="nao">Não</option>
+                    <option value="sim">Sim (desconto 1,00€)</option>
+                  </select>
+                </div>
+                <div class="fgroup" style="margin:0">
+                  <label class="flabel">Atestado Multiusos?</label>
+                  <select class="finput" id="rv-atestado" onchange="rvCalcular()">
+                    <option value="nao">Não</option>
+                    <option value="sim">Sim (50% desconto retenção)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resultado -->
+            <div id="rv-resultado" style="display:none">
+              <div class="card" style="border:2px solid var(--blue);margin-bottom:16px">
+                <div class="card-title" style="color:var(--blue)">📋 O que inserir no Portal das Finanças</div>
+                <div style="background:#eff6ff;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.8">
+                  <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:center">
+                    <span style="color:var(--muted);font-weight:600">Tipo de documento:</span><span style="font-weight:700">Fatura-Recibo</span>
+                    <span style="color:var(--muted);font-weight:600">Descrição:</span><span style="font-weight:700">Comissão reserva <span id="rv-desc-reserva"></span></span>
+                    <span style="color:var(--muted);font-weight:600">Artigo CIRS:</span><span style="font-weight:700">Nº1 a) art.º 101.º-B — Comissionistas</span>
+                    <span style="color:var(--muted);font-weight:600">Valor ilíquido:</span><span style="font-weight:800;font-size:16px;color:var(--blue)" id="rv-valor-bruto">—</span>
+                    <span style="color:var(--muted);font-weight:600">IVA:</span><span style="font-weight:700">0% — Regime de isenção art. 53.º CIVA</span>
+                    <span style="color:var(--muted);font-weight:600">Retenção na fonte:</span><span style="font-weight:700">23% — art. 101.º n.º1 CIRS</span>
+                  </div>
+                </div>
+
+                <!-- Resumo financeiro -->
+                <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+                  <div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px">
+                    <span style="color:var(--muted)">Valor ilíquido (a inserir)</span>
+                    <span style="font-weight:700" id="rv-r-bruto">—</span>
+                  </div>
+                  <div id="rv-r-entidade-row" style="display:none;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--coral)">
+                    <span>Desconto Entidade/Referência</span>
+                    <span style="font-weight:700">− 1,00 €</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px">
+                    <span style="color:var(--muted)">Base para retenção</span>
+                    <span style="font-weight:700" id="rv-r-base">—</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px">
+                    <span style="color:var(--muted)" id="rv-r-ret-label">Retenção na fonte (23%)</span>
+                    <span style="font-weight:700;color:var(--coral)" id="rv-r-retencao">—</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;padding:12px 14px;background:var(--bg2);font-size:15px;font-weight:700">
+                    <span>Total a receber</span>
+                    <span style="color:#15803d" id="rv-r-liquido">—</span>
+                  </div>
+                </div>
+
+                <!-- Aviso -->
+                <div style="background:#fff8e1;border-left:4px solid #f59e0b;border-radius:6px;padding:12px;margin-top:14px;font-size:12px;color:#92400e">
+                  <strong>⚠️ Aviso Legal:</strong> Esta calculadora é uma ferramenta de apoio. Os valores devem ser sempre confirmados no Portal das Finanças da Autoridade Tributária.
+                </div>
+              </div>
+
+              <!-- Botão marcar como emitido -->
+              <button class="btn btn-coral" style="width:100%;justify-content:center" onclick="rvMarcarEmitido()">
+                ✅ Marcar recibo como emitido
+              </button>
+            </div>
+          </div>
+
+          <!-- ADMIN: Validação de recibos -->
+          <div id="rv-admin-section" style="display:none;margin-top:24px">
+            <div class="card">
+              <div class="card-title">🔍 Validação de Recibos (Admin)</div>
+              <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Seleccione uma reserva, carregue o recibo e o sistema verifica se os valores estão correctos.</div>
+
+              <div class="fgroup" style="margin-bottom:14px">
+                <label class="flabel">Reserva a validar</label>
+                <select class="finput" id="rv-admin-reserva" onchange="rvAdminCarregar()">
+                  <option value="">— Seleccionar reserva —</option>
+                </select>
+              </div>
+
+              <div id="rv-admin-info" style="display:none;margin-bottom:14px">
+                <div style="background:var(--bg2);border-radius:8px;padding:12px;font-size:13px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+                  <div><div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">Consultor</div><div style="font-weight:700" id="rv-adm-consultor">—</div></div>
+                  <div><div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">Reserva</div><div style="font-weight:700" id="rv-adm-reserva-cod">—</div></div>
+                  <div><div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">Comissão consultor</div><div style="font-weight:700;color:var(--blue)" id="rv-adm-comissao">—</div></div>
+                  <div><div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">Valor esperado recibo</div><div style="font-weight:700;color:var(--blue)" id="rv-adm-esperado">—</div></div>
+                </div>
+              </div>
+
+              <!-- Upload recibo -->
+              <div id="rv-admin-upload" style="display:none">
+                <div class="fgroup" style="margin-bottom:14px">
+                  <label class="flabel">Carregar recibo (PDF)</label>
+                  <input type="file" class="finput" id="rv-admin-file" accept=".pdf" onchange="rvAnalisarRecibo(this)">
+                </div>
+
+                <!-- Resultado validação -->
+                <div id="rv-validacao-resultado" style="display:none;border-radius:10px;padding:16px;margin-top:12px">
+                  <div style="font-size:15px;font-weight:700;margin-bottom:12px" id="rv-val-titulo"></div>
+                  <div style="display:grid;gap:8px;font-size:13px" id="rv-val-detalhes"></div>
+                  <div style="margin-top:14px;display:flex;gap:8px">
+                    <button class="btn btn-coral" onclick="rvValidarOk()" id="rv-btn-validar" style="display:none">✅ Validar e registar</button>
+                    <button class="btn btn-outline" onclick="rvRejeitarRecibo()" id="rv-btn-rejeitar" style="display:none">❌ Rejeitar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lista de recibos validados -->
+            <div class="card" style="margin-top:16px">
+              <div class="card-title">📄 Recibos Registados</div>
+              <div id="rv-lista-recibos" style="font-size:13px">
+                <div style="text-align:center;color:var(--muted);padding:20px">A carregar...</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
 
       <!-- FINANCEIRO -->
       <div class="page" id="page-pedidos-orcamento">
@@ -2928,7 +3080,7 @@ function navTo(page, el) {
   if(el) el.classList.add('active')
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
-  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Performance',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento'}
+  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Performance',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes'}
   document.getElementById('tb-title').textContent = titles[page]||page
   document.getElementById('tb-sub').textContent = page==='dashboard'?(currentPerfil?.role==='admin'?'Visão global da agência':'Visão geral das tuas reservas'):''
   if(page==='dashboard') renderDash()
@@ -2961,6 +3113,7 @@ function navTo(page, el) {
   if(page==='equipa') renderEquipa()
   if(page==='orcamento-wa') renderOrcamentoWA()
   if(page==='atendimento') renderAtendimento()
+  if(page==='recibos') renderRecibos()
   if(page==='propostas') renderPropostas()
   if(page==='aprovacoes') renderAprovacoes()
   if(page==='pedidos-orcamento') loadPedidosOrcamento()
@@ -7255,6 +7408,261 @@ function partilharInstagram() {
   const link = getChatLink()
   if(!link) return
   navigator.clipboard.writeText(link).then(() => toast('Link copiado! Cola na bio do Instagram.', 'ok'))
+}
+
+// ── RECIBOS VERDES ────────────────────────────────────────────
+let rvReservas = []
+let rvReservaActual = null
+let rvAdminReservaActual = null
+
+async function renderRecibos() {
+  const isAdmin = currentPerfil?.role === 'admin'
+
+  // Mostrar secção admin apenas para admin
+  document.getElementById('rv-admin-section').style.display = isAdmin ? 'block' : 'none'
+
+  // Carregar reservas do consultor (ou todas se admin)
+  let q = sb.from('reservas').select('id,rnavt,nome_cliente,destino,comissao_consultor,consultor_id,preco_net,valor_total,perfis(nome)')
+    .not('comissao_consultor', 'is', null)
+    .gt('comissao_consultor', 0)
+    .order('created_at', { ascending: false })
+
+  if (!isAdmin) q = q.eq('consultor_id', currentPerfil.id)
+
+  const { data } = await q
+  rvReservas = data || []
+
+  // Popular seletor consultor
+  const sel = document.getElementById('rv-reserva-select')
+  sel.innerHTML = '<option value="">— Seleccionar reserva —</option>'
+  rvReservas.forEach(r => {
+    const opt = document.createElement('option')
+    opt.value = r.id
+    opt.textContent = `${r.rnavt||r.id.slice(0,8)} — ${r.nome_cliente||'?'} — ${r.destino||'?'} — ${fmt(r.comissao_consultor)}€`
+    sel.appendChild(opt)
+  })
+
+  // Popular seletor admin
+  if (isAdmin) {
+    const selAdm = document.getElementById('rv-admin-reserva')
+    selAdm.innerHTML = '<option value="">— Seleccionar reserva —</option>'
+    rvReservas.forEach(r => {
+      const opt = document.createElement('option')
+      opt.value = r.id
+      const consultor = r.perfis?.nome || '?'
+      opt.textContent = `${r.rnavt||r.id.slice(0,8)} — ${r.nome_cliente||'?'} — ${consultor} — ${fmt(r.comissao_consultor)}€`
+      selAdm.appendChild(opt)
+    })
+    rvCarregarListaRecibos()
+  }
+}
+
+function fmt(v) { return v ? Number(v).toFixed(2) : '0.00' }
+
+function rvCarregarReserva() {
+  const id = document.getElementById('rv-reserva-select').value
+  if (!id) { document.getElementById('rv-reserva-info').style.display='none'; document.getElementById('rv-resultado').style.display='none'; return }
+  rvReservaActual = rvReservas.find(r => r.id === id)
+  if (!rvReservaActual) return
+
+  document.getElementById('rv-info-cliente').textContent = rvReservaActual.nome_cliente || '—'
+  document.getElementById('rv-info-destino').textContent = rvReservaActual.destino || '—'
+  document.getElementById('rv-info-comissao').textContent = fmt(rvReservaActual.comissao_consultor) + ' €'
+  document.getElementById('rv-reserva-info').style.display = 'block'
+  document.getElementById('rv-opcoes').style.display = 'grid'
+  rvCalcular()
+}
+
+function rvCalcular() {
+  if (!rvReservaActual) return
+  const comissao = parseFloat(rvReservaActual.comissao_consultor) || 0
+  const entRef = document.getElementById('rv-entidade-ref').value === 'sim'
+  const atestado = document.getElementById('rv-atestado').value === 'sim'
+
+  const valorBruto = comissao
+  const desconto = entRef ? 1.00 : 0
+  const baseRetencao = Math.max(0, valorBruto - desconto)
+  const taxaRet = atestado ? 0.115 : 0.23
+  const retencao = Math.round(baseRetencao * taxaRet * 100) / 100
+  const liquido = Math.round((valorBruto - desconto - retencao) * 100) / 100
+
+  // Preencher campos
+  document.getElementById('rv-desc-reserva').textContent = rvReservaActual.rnavt || ''
+  document.getElementById('rv-valor-bruto').textContent = fmt(valorBruto) + ' €'
+  document.getElementById('rv-r-bruto').textContent = fmt(valorBruto) + ' €'
+  document.getElementById('rv-r-base').textContent = fmt(baseRetencao) + ' €'
+  document.getElementById('rv-r-retencao').textContent = fmt(retencao) + ' €'
+  document.getElementById('rv-r-liquido').textContent = fmt(liquido) + ' €'
+  document.getElementById('rv-r-ret-label').textContent = atestado ? 'Retenção na fonte (11,5% — atestado multiusos)' : 'Retenção na fonte (23%)'
+  document.getElementById('rv-r-entidade-row').style.display = entRef ? 'flex' : 'none'
+  document.getElementById('rv-resultado').style.display = 'block'
+}
+
+async function rvMarcarEmitido() {
+  if (!rvReservaActual) return
+  const { error } = await sb.from('reservas').update({ recibo_verde_emitido: true }).eq('id', rvReservaActual.id)
+  if (error) { toast('Erro ao registar', 'err'); return }
+  toast('Recibo marcado como emitido!', 'ok')
+}
+
+// ── ADMIN: Validação ──────────────────────────────────────────
+function rvAdminCarregar() {
+  const id = document.getElementById('rv-admin-reserva').value
+  if (!id) { document.getElementById('rv-admin-info').style.display='none'; document.getElementById('rv-admin-upload').style.display='none'; return }
+  rvAdminReservaActual = rvReservas.find(r => r.id === id)
+  if (!rvAdminReservaActual) return
+
+  const comissao = parseFloat(rvAdminReservaActual.comissao_consultor) || 0
+  document.getElementById('rv-adm-consultor').textContent = rvAdminReservaActual.perfis?.nome || '?'
+  document.getElementById('rv-adm-reserva-cod').textContent = rvAdminReservaActual.rnavt || '?'
+  document.getElementById('rv-adm-comissao').textContent = fmt(comissao) + ' €'
+  document.getElementById('rv-adm-esperado').textContent = fmt(comissao) + ' €'
+  document.getElementById('rv-admin-info').style.display = 'block'
+  document.getElementById('rv-admin-upload').style.display = 'block'
+  document.getElementById('rv-validacao-resultado').style.display = 'none'
+  document.getElementById('rv-admin-file').value = ''
+}
+
+async function rvAnalisarRecibo(input) {
+  if (!input.files[0] || !rvAdminReservaActual) return
+  const file = input.files[0]
+
+  // Usar Claude API para analisar o PDF
+  const base64 = await new Promise((res, rej) => {
+    const r = new FileReader()
+    r.onload = () => res(r.result.split(',')[1])
+    r.onerror = rej
+    r.readAsDataURL(file)
+  })
+
+  toast('A analisar recibo...', 'ok')
+
+  const comissaoEsperada = parseFloat(rvAdminReservaActual.comissao_consultor) || 0
+  const nifAPM = '518357490'
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
+            { type: 'text', text: `Analisa este recibo verde/fatura-recibo e extrai os seguintes valores em JSON:
+{
+  "valor_iliquido": número,
+  "retencao": número,
+  "total_pagar": número,
+  "nif_adquirente": string,
+  "nome_prestador": string,
+  "descricao": string
+}
+Responde APENAS com o JSON, sem mais texto.` }
+          ]
+        }]
+      })
+    })
+    const d = await resp.json()
+    const txt = d.content?.[0]?.text || '{}'
+    const dados = JSON.parse(txt.replace(/```json|```/g,'').trim())
+    rvMostrarValidacao(dados, comissaoEsperada, nifAPM)
+  } catch(e) {
+    toast('Erro ao analisar PDF', 'err')
+    console.error(e)
+  }
+}
+
+function rvMostrarValidacao(dados, esperado, nifAPM) {
+  const res = document.getElementById('rv-validacao-resultado')
+  const valorOk = Math.abs((dados.valor_iliquido || 0) - esperado) < 0.05
+  const nifOk = (dados.nif_adquirente || '').includes(nifAPM)
+  const tudo = valorOk && nifOk
+
+  const cor = tudo ? '#dcfce7' : '#fee2e2'
+  const bordaCor = tudo ? '#22c55e' : '#ef4444'
+  res.style.background = cor
+  res.style.border = '1.5px solid ' + bordaCor
+  res.style.display = 'block'
+
+  document.getElementById('rv-val-titulo').textContent = tudo ? '✅ Recibo válido' : '⚠️ Atenção — verificar valores'
+  document.getElementById('rv-val-titulo').style.color = tudo ? '#15803d' : '#b91c1c'
+
+  const linhas = [
+    { label: 'Valor ilíquido no recibo', val: fmt(dados.valor_iliquido) + ' €', ok: valorOk, esperado: fmt(esperado) + ' €' },
+    { label: 'NIF adquirente (APM)', val: dados.nif_adquirente || '?', ok: nifOk, esperado: nifAPM },
+    { label: 'Retenção na fonte', val: fmt(dados.retencao) + ' €', ok: true },
+    { label: 'Total a pagar', val: fmt(dados.total_pagar) + ' €', ok: true },
+    { label: 'Prestador', val: dados.nome_prestador || '?', ok: true },
+  ]
+
+  document.getElementById('rv-val-detalhes').innerHTML = linhas.map(l => `
+    <div style="display:flex;justify-content:space-between;padding:7px 10px;background:rgba(255,255,255,.6);border-radius:6px">
+      <span style="color:var(--muted)">${l.label}</span>
+      <span style="font-weight:700;color:${l.ok ? 'var(--text)' : '#b91c1c'}">
+        ${l.ok ? '' : '❌ '} ${l.val}
+        ${!l.ok && l.esperado ? `<span style="font-size:11px;color:var(--muted)"> (esperado: ${l.esperado})</span>` : ''}
+      </span>
+    </div>`).join('')
+
+  document.getElementById('rv-btn-validar').style.display = 'inline-flex'
+  document.getElementById('rv-btn-rejeitar').style.display = 'inline-flex'
+
+  // Guardar dados para posterior registo
+  window._rvDadosRecibo = dados
+}
+
+async function rvValidarOk() {
+  if (!rvAdminReservaActual) return
+  const { error } = await sb.from('reservas').update({
+    recibo_verde_validado: true,
+    recibo_verde_valor: window._rvDadosRecibo?.valor_iliquido || rvAdminReservaActual.comissao_consultor
+  }).eq('id', rvAdminReservaActual.id)
+  if (error) { toast('Erro ao validar', 'err'); return }
+  toast('Recibo validado com sucesso!', 'ok')
+  document.getElementById('rv-btn-validar').style.display = 'none'
+  document.getElementById('rv-btn-rejeitar').style.display = 'none'
+  rvCarregarListaRecibos()
+}
+
+async function rvRejeitarRecibo() {
+  toast('Recibo rejeitado — notifique o consultor.', 'err')
+  document.getElementById('rv-btn-validar').style.display = 'none'
+  document.getElementById('rv-btn-rejeitar').style.display = 'none'
+}
+
+async function rvCarregarListaRecibos() {
+  const { data } = await sb.from('reservas')
+    .select('id,rnavt,nome_cliente,destino,comissao_consultor,recibo_verde_emitido,recibo_verde_validado,perfis(nome)')
+    .not('comissao_consultor', 'is', null)
+    .gt('comissao_consultor', 0)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  const el = document.getElementById('rv-lista-recibos')
+  if (!data?.length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">Sem reservas com comissão registada.</div>'; return }
+
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr style="border-bottom:2px solid var(--border)">
+      <th style="text-align:left;padding:8px;color:var(--muted);font-weight:600">Reserva</th>
+      <th style="text-align:left;padding:8px;color:var(--muted);font-weight:600">Cliente</th>
+      <th style="text-align:left;padding:8px;color:var(--muted);font-weight:600">Consultor</th>
+      <th style="text-align:right;padding:8px;color:var(--muted);font-weight:600">Comissão</th>
+      <th style="text-align:center;padding:8px;color:var(--muted);font-weight:600">Emitido</th>
+      <th style="text-align:center;padding:8px;color:var(--muted);font-weight:600">Validado</th>
+    </tr></thead>
+    <tbody>${data.map(r => `
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px;font-weight:600">${r.rnavt||r.id.slice(0,8)}</td>
+      <td style="padding:8px">${r.nome_cliente||'—'}</td>
+      <td style="padding:8px">${r.perfis?.nome||'—'}</td>
+      <td style="padding:8px;text-align:right;font-weight:700;color:var(--blue)">${fmt(r.comissao_consultor)} €</td>
+      <td style="padding:8px;text-align:center">${r.recibo_verde_emitido ? '✅' : '⏳'}</td>
+      <td style="padding:8px;text-align:center">${r.recibo_verde_validado ? '✅' : r.recibo_verde_emitido ? '🔍' : '—'}</td>
+    </tr>`).join('')}</tbody>
+  </table>`
 }
 
 function renderPropostas() {
