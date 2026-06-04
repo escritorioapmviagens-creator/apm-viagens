@@ -434,6 +434,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-item" onclick="navTo('pipeline',this)"><span class="nav-icon">🎯</span> Gestão de Orçamentos <span class="nav-badge" id="pipeline-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="navTo('pedidos-orcamento',this)" id="nav-pedidos-orc"><span class="nav-icon">📋</span> Pedidos de Orçamento <span class="nav-badge" id="pedidos-orc-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="navTo('followups',this)"><span class="nav-icon">⏰</span> Follow-ups <span class="nav-badge" id="followup-badge" style="display:none">0</span></div>
+      <div class="nav-item" onclick="navTo('aceites',this)"><span class="nav-icon">⏳</span> Contratos Pendentes <span class="nav-badge" id="aceites-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="navTo('reservas',this)"><span class="nav-icon">✈</span> Reservas</div>
       <div class="nav-item" onclick="navTo('nova',this)"><span class="nav-icon">＋</span> Nova Reserva</div>
       <div class="nav-item" onclick="navTo('clientes',this)"><span class="nav-icon">👥</span> Clientes</div>
@@ -449,7 +450,6 @@ textarea.finput{resize:vertical;min-height:72px}
         <div class="nav-section" data-s="admin">Administração</div>
         <div class="nav-item" onclick="navTo('equipa',this)"><span class="nav-icon">◉</span> Equipa</div>
         <div class="nav-item" onclick="navTo('financeiro',this)"><span class="nav-icon">€</span> Financeiro</div>
-        <div class="nav-item" onclick="navTo('aceites',this)"><span class="nav-icon">⏳</span> Contratos Pendentes</div>
         <div class="nav-item" onclick="navTo('recibos',this)"><span class="nav-icon">🧾</span> Recibos Verdes</div>
         <div class="nav-item" onclick="navTo('importacao',this)"><span class="nav-icon">📥</span> Importar Reservas</div>
         <div class="nav-item" onclick="navTo('devolucoes',this)"><span class="nav-icon">↩️</span> Devoluções</div>
@@ -7781,12 +7781,19 @@ async function efetuarReserva(id) {
 
 // ── VERIFICAR NOTIFICAÇÕES 24H (admin) ───────────────────────
 async function verificarAceitesPendentes24h() {
-  if (currentPerfil?.role !== 'admin') return
-  const limite = new Date(Date.now() - 43200000).toISOString() // 12h
+  // Badge para todos
+  const isAdmin = currentPerfil?.role === 'admin'
+  let qCount = sb.from('reservas').select('id', {count:'exact',head:true}).eq('estado','Aceite Pendente')
+  if(!isAdmin) qCount = qCount.eq('consultor_id', currentPerfil.id)
+  const { count } = await qCount
+  const badge = document.getElementById('aceites-badge')
+  if(badge && count > 0) { badge.textContent = count; badge.style.display = 'inline-flex' }
+
+  // Notificação 12h apenas para admin
+  if(!isAdmin) return
+  const limite = new Date(Date.now() - 43200000).toISOString()
   const { data } = await sb.from('reservas')
-    .select('id,rnavt,nome_cliente,destino')
-    .eq('estado', 'Aceite Pendente')
-    .lt('aceite_em', limite)
+    .select('id').eq('estado', 'Aceite Pendente').lt('aceite_em', limite)
   if (data?.length) {
     toast(`⚠️ ${data.length} contrato(s) aceite(s) há mais de 12h por efectuar!`, 'err')
   }
