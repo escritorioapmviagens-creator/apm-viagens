@@ -7165,7 +7165,7 @@ async function confirmarContrato() {
       comprovativo_nome: comprovantivoNome
     })
 
-    if(error) throw error
+    if(error) console.warn('⚠️ pedidos_cliente insert falhou (não crítico):', error.message)
 
     // Create new reserva from contract data
     try {
