@@ -10139,7 +10139,8 @@ async function prGerarLink() {
     var baseV2 = window.location.origin + window.location.pathname.replace('index.html','') + 'proposta-v2.html';
     var useV2 = document.getElementById('pr-usar-v2')?.checked || false;
     try {
-      var res = await sb.from('propostas_viagem').insert({
+      console.log('📤 dados a guardar:', JSON.stringify(dados).slice(0,300))
+    var res = await sb.from('propostas_viagem').insert({
         consultor_id: currentPerfil ? currentPerfil.id : null,
         dados: dados
       }).select('id').single();
