@@ -10145,11 +10145,11 @@ async function prGerarLink() {
       }).select('id').single();
 
       if (res.error) throw res.error;
-      url = window.location.origin + window.location.pathname + '?proposta=' + res.data.id;
+      url = baseV2 + '?proposta=' + res.data.id;
     } catch(e) {
       var dadosSemFoto = Object.assign({}, dados); dadosSemFoto.foto = null;
       var encoded = btoa(unescape(encodeURIComponent(JSON.stringify(dadosSemFoto))));
-      url = window.location.origin + window.location.pathname + '?proposta=' + encoded;
+      url = baseV2 + '?proposta=' + encoded;
     }
 
     document.getElementById('pr-link-url').value = url;
