@@ -375,7 +375,7 @@ async function aceitarProposta() {
         }
       }
 
-      const total = D.prices?.reduce((s,p) => s+(parseFloat(p.val)||0), 0) || 0
+      const total = D.prices?.reduce((s,p) => s+(parseFloat(p.val)||0), 0) || null
 
       const { error: rsvErr } = await sb.from('reservas').insert({
         rnavt,
@@ -385,7 +385,7 @@ async function aceitarProposta() {
         data_partida: D.part || null,
         data_regresso: D.reg || null,
         num_passageiros: parseInt(D.pax) || null,
-        valor_total: total || null,
+        valor_total: total || 0,
         hotel: D.sub || null,
         estado: 'Aceite Pendente',
         aceite_em: new Date().toISOString(),
