@@ -6875,9 +6875,10 @@ async function loadPropostaById(id) {
   const loadingEl = document.getElementById('loading')
   try {
     console.log('📤 A carregar proposta:', id)
-    const { data, error } = await sb.from('propostas_viagem').select('dados').eq('id', id).single()
-    console.log('📥 Resposta:', data, error)
-    if(error || !data) throw new Error(error?.message || 'Proposta não encontrada')
+    const { data, error } = await sb.from('propostas_viagem').select('*').eq('id', id).single()
+    console.log('📥 Resposta completa:', JSON.stringify(data), 'Erro:', error)
+    if(error) throw new Error(error.message)
+    if(!data?.dados) throw new Error('Dados da proposta estão vazios')
     if(loadingEl) loadingEl.style.display = 'none'
     showPropostaPublica(data.dados)
   } catch(e) {
@@ -7710,13 +7711,14 @@ async function rvCarregarListaRecibos() {
 async function renderAceitesPendentes() {
   const isAdmin = currentPerfil?.role === 'admin'
   let q = sb.from('reservas')
-    .select('id,rnavt,nome_cliente,destino,data_partida,valor_total,aceite_em,consultor_id,localizador_principal,perfis(nome)')
+    .select('id,rnavt,lead_nome,lead_tel,destino,data_partida,valor_total,aceite_em,consultor_id,localizador_principal,hotel,perfis(nome)')
     .eq('estado', 'Aceite Pendente')
     .order('aceite_em', { ascending: true })
 
   if (!isAdmin) q = q.eq('consultor_id', currentPerfil.id)
 
-  const { data } = await q
+  const { data, error } = await q
+  if(error) console.error('Erro aceites pendentes:', error.message)
   const lista = data || []
 
   // Verificar se alguma tem mais de 24h
@@ -7748,8 +7750,8 @@ async function renderAceitesPendentes() {
       ${urgente ? '<div style="position:absolute;top:12px;right:14px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">⚠️ +12H</div>' : ''}
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <div>
-          <div style="font-size:16px;font-weight:700;margin-bottom:4px">${r.nome_cliente||'—'} <span style="font-size:12px;color:var(--muted);font-weight:400">· ${r.rnavt||'?'}</span></div>
-          <div style="font-size:13px;color:var(--muted);margin-bottom:8px">${r.destino||'—'} · ${r.data_partida ? new Date(r.data_partida).toLocaleDateString('pt-PT') : '—'} · ${r.valor_total ? '€'+Number(r.valor_total).toLocaleString('pt-PT',{minimumFractionDigits:2}) : '—'}</div>
+          <div style="font-size:16px;font-weight:700;margin-bottom:4px">${r.lead_nome||r.passageiro_titular||'—'} <span style="font-size:12px;color:var(--muted);font-weight:400">· ${r.rnavt||'?'}</span></div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px">${r.destino||'—'}${r.hotel?' · '+r.hotel:''} · ${r.data_partida ? new Date(r.data_partida).toLocaleDateString('pt-PT') : '—'} · ${r.valor_total ? '€'+Number(r.valor_total).toLocaleString('pt-PT',{minimumFractionDigits:2}) : '—'}</div>
           ${isAdmin ? `<div style="font-size:12px;color:var(--muted)">Consultor: <strong>${r.perfis?.nome||'?'}</strong></div>` : ''}
           <div style="font-size:12px;color:${urgente?'#b91c1c':'#15803d'};font-weight:600;margin-top:4px">Aceite ${tempoLabel}</div>
         </div>
