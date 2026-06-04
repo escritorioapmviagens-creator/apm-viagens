@@ -8357,16 +8357,20 @@ Responde APENAS com o JSON.`}
       const comissaoEsperada = parseFloat(r.comissao_consultor)||0
       const valorOk = Math.abs((dados.valor_iliquido||0) - comissaoEsperada) < 0.10
       const nifOk = (dados.nif_adquirente||'').includes('518357490')
-      const tudo = valorOk && nifOk
+      const retencaoEsperada = Math.round((dados.valor_iliquido||0) * 0.23 * 100) / 100
+      const retencaoOk = Math.abs((dados.retencao||0) - retencaoEsperada) < 0.05
+      const totalEsperado = Math.round(((dados.valor_iliquido||0) - (dados.retencao||0)) * 100) / 100
+      const totalOk = Math.abs((dados.total_pagar||0) - totalEsperado) < 0.05
+      const tudo = valorOk && nifOk && retencaoOk
 
       pvEl.style.background = tudo ? '#dcfce7' : '#fee2e2'
       pvTitulo.textContent = tudo ? '✅ Pré-validação: tudo correcto' : '⚠️ Pré-validação: verificar valores'
       pvTitulo.style.color = tudo ? '#15803d' : '#b91c1c'
       pvDetalhes.innerHTML = [
         { lbl:'Valor ilíquido', val:'€'+(dados.valor_iliquido||0).toFixed(2), ok:valorOk, esp:'€'+comissaoEsperada.toFixed(2) },
-        { lbl:'NIF APM', val:dados.nif_adquirente||'?', ok:nifOk, esp:'518357490' },
-        { lbl:'Retenção (23%)', val:'€'+(dados.retencao||0).toFixed(2), ok:true },
-        { lbl:'Total a pagar', val:'€'+(dados.total_pagar||0).toFixed(2), ok:true },
+        { lbl:'NIF APM (adquirente)', val:dados.nif_adquirente||'?', ok:nifOk, esp:'518357490' },
+        { lbl:'Retenção IRS (23%)', val:'€'+(dados.retencao||0).toFixed(2), ok:retencaoOk, esp:'€'+retencaoEsperada.toFixed(2) },
+        { lbl:'Total a pagar', val:'€'+(dados.total_pagar||0).toFixed(2), ok:totalOk, esp:'€'+totalEsperado.toFixed(2) },
         { lbl:'Prestador', val:dados.nome_prestador||'?', ok:true },
         { lbl:'Data emissão', val:dados.data_emissao||'?', ok:true },
       ].map(l => `<div style="display:flex;justify-content:space-between;padding:5px 8px;background:rgba(255,255,255,.6);border-radius:6px">
