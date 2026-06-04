@@ -172,13 +172,13 @@ body{font-family:var(--font);color:var(--text)}
 .msg{display:flex;gap:8px;animation:mi .3s ease both}
 @keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .msg.bot{align-self:flex-start;max-width:88%}
-.msg.user{align-self:flex-end;flex-direction:row-reverse;max-width:78%}
-.edit-btn{opacity:.4;background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);padding:2px 5px;border-radius:6px;transition:all .15s;align-self:flex-end;margin-bottom:4px;flex-shrink:0}
-.edit-btn:hover{opacity:1;background:var(--warm);color:var(--coral)}
+.msg.user{align-self:flex-end;flex-direction:column;align-items:flex-end;max-width:78%}
+.msg.user .bub{background:var(--coral);border-bottom-right-radius:4px;color:#fff}
+.edit-btn{opacity:.5;background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);padding:2px 8px;border-radius:6px;transition:all .15s;margin-top:3px;align-self:flex-end}
+.edit-btn:hover{opacity:1;color:var(--coral)}
 .av{width:28px;height:28px;border-radius:50%;background:var(--coral);display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:600;flex-shrink:0;overflow:hidden}
 .bub{padding:11px 15px;border-radius:20px;font-size:14px;line-height:1.7}
 .msg.bot .bub{background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
-.msg.user .bub{background:var(--coral);border-bottom-right-radius:4px;color:#fff}
 .typing .bub{padding:12px 16px;display:flex;gap:4px;align-items:center}
 .dot{width:6px;height:6px;border-radius:50%;background:#ccc;animation:ty 1.2s infinite}
 .dot:nth-child(2){animation-delay:.18s}.dot:nth-child(3){animation-delay:.36s}
@@ -837,11 +837,10 @@ async function concluir(){
   document.getElementById('cp-inp').placeholder='Pedido enviado ✓'
   const nc=dados.criancas==='Não, só adultos'?0:parseInt((dados.criancas||'0').replace(/\D/g,''))||0
 
-  // Campos base (mapeados para as colunas reais da tabela)
   const payloadBase={
     consultor_id:consultor?.id||null,
-    nome_cliente:dados.nome||null,
-    tel_cliente:dados.whatsapp||null,
+    nome:dados.nome||'(sem nome)',
+    telefone:dados.whatsapp||null,
     destino:dados.destino_chat||dados.destino||null,
     estado:'novo',
     canal_origem:'chatbot',
@@ -858,7 +857,6 @@ async function concluir(){
     ].filter(Boolean).join(' · ')||null,
   }
 
-  // Campos extra (adicionados via ALTER TABLE)
   const payloadExtra={
     ...payloadBase,
     nome_cliente:dados.nome||null,
@@ -945,10 +943,10 @@ function addBot(txt,qrs,ph){const d=document.createElement('div');d.className='m
 d.innerHTML=`${getAv()}<div><div class="bub">${html}</div>${qh}</div>`;document.getElementById('cp-msgs').appendChild(d);document.getElementById('cp-inp').placeholder=ph||'Escreva aqui...';scrl()}
 function addUser(txt,etapaNum){
   const d=document.createElement('div');d.className='msg user'
-  const editBtn=etapaNum!=null&&!aguarda
-    ?`<button class="edit-btn" onclick="editarResposta(${etapaNum},this)" title="Editar resposta">✏️</button>`
+  const editBtn=etapaNum!=null
+    ?`<button class="edit-btn" onclick="editarResposta(${etapaNum},this)">✏️ editar</button>`
     :''
-  d.innerHTML=`${editBtn}<div class="bub">${txt}</div>`
+  d.innerHTML=`<div class="bub">${txt}</div>${editBtn}`
   document.getElementById('cp-msgs').appendChild(d);scrl()
 }
 
