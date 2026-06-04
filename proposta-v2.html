@@ -398,7 +398,8 @@ async function aceitarProposta() {
       else console.log('✅ Reserva criada:', rnavt)
     }
     // Notificar consultor
-    const msg = '✅ *Proposta aceite!*\n\nO/A cliente ' + (D.cli_nome||'') + ' aceitou a proposta para *' + (D.dest||'') + '*.' + (D.sval ? '\n\n💳 Aguarda pagamento do sinal de €' + D.sval : '')
+    const cname = D.cnome || 'consultor'
+    const msg = 'Olá ' + cname + '! Aceitei a proposta para ' + (D.dest||'o destino indicado') + '. Aguardo contacto. Obrigado.'
     const waUrl = 'https://wa.me/' + (D.ctel||'').replace(/\D/g,'') + '?text=' + encodeURIComponent(msg)
     document.getElementById('accept-box').style.display = 'none'
     document.getElementById('success-screen').style.display = 'block'
