@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script>
+  // Redireciona para proposta-v2.html mantendo os parâmetros
+  const params = new URLSearchParams(window.location.search)
+  const id = params.get('id') || params.get('proposta')
+  if(id) {
+    window.location.replace('proposta-v2.html?proposta=' + id)
+  } else {
+    window.location.replace('proposta-v2.html' + window.location.search)
+  }
+</script>
+</head>
+<body></body>
+</html>
