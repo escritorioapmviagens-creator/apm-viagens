@@ -115,13 +115,13 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .chart-row{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:1.5rem}
 .card{background:var(--surface);border-radius:var(--radius);padding:1.25rem;border:1px solid var(--border);box-shadow:var(--shadow)}
 .card-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem;font-family:'Poppins',sans-serif}
-.bar-chart{display:flex;align-items:flex-end;gap:8px;height:110px}
-.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
-.bar-fill{width:100%;border-radius:5px 5px 0 0;background:var(--coral);opacity:.8}
-.bar-fill:hover{opacity:1}
-.bar-fill.blue{background:var(--blue)}
-.bar-lbl{font-size:9px;color:var(--muted);font-weight:600}
-.bar-val{font-size:9px;color:var(--muted)}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:160px;padding:0 4px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:default}
+.bar-fill{width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#6272e4 0%,var(--blue) 100%);transition:opacity .2s,transform .2s}
+.bar-fill:hover{opacity:1!important;transform:scaleY(1.03);transform-origin:bottom}
+.bar-fill.coral{background:linear-gradient(180deg,#f06080 0%,var(--coral) 100%)}
+.bar-lbl{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap}
+.bar-val{font-size:10px;color:var(--muted);font-weight:700;white-space:nowrap}
 .dest-list{display:flex;flex-direction:column;gap:10px}
 .dest-row{display:flex;align-items:center;gap:8px}
 .dest-name{flex:1;font-size:13px;font-weight:500}
@@ -3523,13 +3523,16 @@ async function renderDash() {
     const monthlyData = monthlyBilling.map(m => m.pvp)
     const maxVal = Math.max(...monthlyData, 1)
     document.getElementById('bar-chart').innerHTML = meses.map((m,i) => {
-      const h = Math.round(monthlyData[i]/maxVal*90)
-      const val = monthlyData[i]>0 ? '€'+Math.round(monthlyData[i]/1000)+'k' : ''
+      const h = Math.round(monthlyData[i]/maxVal*130)
+      const val = monthlyData[i] >= 1000
+        ? '€'+Math.round(monthlyData[i]/1000)+'k'
+        : monthlyData[i] > 0 ? '€'+Math.round(monthlyData[i]) : ''
       const isCur = i===mesAtual
+      const isFut = i > mesAtual
       return `<div class="bar-col">
-        <div class="bar-val" style="font-size:9px;color:var(--muted)">${val}</div>
-        <div class="bar-fill ${isCur?'':'blue'}" style="height:${Math.max(h,2)}px;opacity:${isCur?'1':'0.6'}" title="${fmt2(monthlyData[i])}"></div>
-        <div class="bar-lbl" style="font-weight:${isCur?'700':'400'};color:${isCur?'var(--coral)':'var(--muted)'}">${m}</div>
+        <div class="bar-val" style="color:${isCur?'var(--coral)':isFut?'var(--border)':'var(--muted)'}">${val}</div>
+        <div class="bar-fill ${isCur?'coral':''}" style="height:${Math.max(h,2)}px;opacity:${isFut?'0.2':isCur?'1':'0.75'}" title="${fmt2(monthlyData[i])}"></div>
+        <div class="bar-lbl" style="font-weight:${isCur?'800':'500'};color:${isCur?'var(--coral)':'var(--muted)'}">${m}</div>
       </div>`
     }).join('')
 
