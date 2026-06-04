@@ -8182,7 +8182,7 @@ async function renderComissoes() {
       const comissaoDisplay = r.recibo_verde_validado
         ? `<span style="color:#15803d;font-weight:800">€${parseFloat(r.recibo_verde_valor||comissaoVal).toLocaleString('pt-PT',{minimumFractionDigits:2})}</span>`
         : comissaoVal > 0
-          ? `<span style="color:var(--muted)">€${comissaoVal.toLocaleString('pt-PT',{minimumFractionDigits:2})}${!r.comissao_consultor?' <small style="font-size:10px">(calc.)</small>':''}</span>`
+          ? `<span style="color:var(--muted)">€${comissaoVal.toLocaleString('pt-PT',{minimumFractionDigits:2})}</span>`
           : '<span style="color:var(--muted)">—</span>'
 
       return `<tr style="border-bottom:1px solid var(--border);${prazoExpirado&&!r.recibo_verde_emitido?'background:#fff5f5':''}">
@@ -8303,7 +8303,7 @@ async function vrFiltrar(filtro) {
       const comissaoCalc = margem > 0 ? Math.round((margem - comissaoAPM) * 100) / 100 : 0
       const comissaoFinal = parseFloat(r.comissao_consultor) || comissaoCalc
       const comissao = comissaoFinal > 0
-        ? '€'+comissaoFinal.toLocaleString('pt-PT',{minimumFractionDigits:2}) + (r.comissao_consultor ? '' : ' <span style="font-size:10px;color:var(--muted)">(calc.)</span>')
+        ? '€'+comissaoFinal.toLocaleString('pt-PT',{minimumFractionDigits:2}) 
         : '—'
       return `<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:10px 8px;font-weight:700">${r.rnavt||r.id.slice(0,8)}</td>
