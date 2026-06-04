@@ -8247,7 +8247,8 @@ async function vrFiltrar(filtro) {
   if(filtro==='pendente') q = q.eq('recibo_verde_validado', false)
   if(filtro==='validado') q = q.eq('recibo_verde_validado', true)
 
-  const { data } = await q
+  const { data, error } = await q
+  console.log('🔍 vrFiltrar:', filtro, '| resultados:', data?.length, '| erro:', error?.message)
   const lista = data || []
 
   const el = document.getElementById('vr-tabela')
