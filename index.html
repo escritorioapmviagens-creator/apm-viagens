@@ -1443,7 +1443,7 @@ textarea.finput{resize:vertical;min-height:72px}
 
           <!-- Filtro estado -->
           <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-            <button class="btn btn-coral" id="vr-filtro-pendente" onclick="vrFiltrar('pendente')">⏳ Por validar</button>
+            <button class="btn btn-coral" id="vr-filtro-pendente" onclick="vrFiltrar('pendente')">⏳ Sem recibo / Por validar</button>
             <button class="btn btn-outline" id="vr-filtro-validado" onclick="vrFiltrar('validado')">✅ Validados</button>
             <button class="btn btn-outline" id="vr-filtro-todos" onclick="vrFiltrar('todos')">Todos</button>
           </div>
@@ -8126,23 +8126,60 @@ async function renderComissoes() {
     </tr></thead>
     <tbody>${lista.map(r => {
       const loc = r.localizador || r.localizador_principal || '—'
+      // Calcular prazo: 7 dias antes do fim do mês da data de partida
+      const calcPrazo = (dataPartida) => {
+        if(!dataPartida) return null
+        const d = new Date(dataPartida+'T12:00:00')
+        // Último dia do mês da partida
+        const fimMes = new Date(d.getFullYear(), d.getMonth()+1, 0)
+        // Prazo = 7 dias antes do fim do mês
+        const prazo = new Date(fimMes)
+        prazo.setDate(prazo.getDate() - 7)
+        return prazo
+      }
+      const prazo = calcPrazo(r.data_partida)
+      const agora = new Date()
+      const prazoExpirado = prazo && agora > prazo
+      const diasRestantes = prazo ? Math.ceil((prazo - agora) / 86400000) : null
+      const prazoLabel = prazo ? prazo.toLocaleDateString('pt-PT', {day:'2-digit',month:'short'}) : '—'
+
+      let prazoBadge = ''
+      if(!r.recibo_verde_validado && !r.recibo_verde_emitido) {
+        if(prazoExpirado) {
+          prazoBadge = `<div style="font-size:10px;color:#b91c1c;font-weight:700;margin-top:3px">⛔ Prazo expirado (${prazoLabel})</div>`
+        } else if(diasRestantes !== null && diasRestantes <= 7) {
+          prazoBadge = `<div style="font-size:10px;color:#92400e;font-weight:700;margin-top:3px">⚠️ ${diasRestantes}d restantes (até ${prazoLabel})</div>`
+        } else if(diasRestantes !== null) {
+          prazoBadge = `<div style="font-size:10px;color:var(--muted);margin-top:3px">📅 Prazo: ${prazoLabel}</div>`
+        }
+      }
+
       const estadoBadge = r.recibo_verde_validado
         ? '<span style="background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">✅ Validado</span>'
         : r.recibo_verde_emitido
           ? '<span style="background:#fef9c3;color:#92400e;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">🔍 Em verificação</span>'
-          : '<span style="background:#f3f4f6;color:var(--muted);font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px">⏳ Pendente</span>'
+          : prazoExpirado
+            ? '<span style="background:#fee2e2;color:#b91c1c;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">⛔ Prazo expirado</span>'
+            : '<span style="background:#f3f4f6;color:var(--muted);font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px">⏳ Pendente</span>'
+
       const reciboBtn = r.recibo_verde_validado
         ? '<span style="font-size:20px">✅</span>'
-        : `<button class="btn btn-outline btn-sm" style="font-size:12px;padding:5px 10px" onclick="comAbrirUpload('${r.id}','${r.rnavt||''}',${r.comissao_consultor})">📎 Carregar</button>`
+        : r.recibo_verde_emitido
+          ? '<span style="font-size:12px;color:var(--muted)">Em verificação</span>'
+          : prazoExpirado
+            ? '<div style="font-size:11px;color:#b91c1c;font-weight:600;line-height:1.4;max-width:160px">Prazo expirado.<br>Contacte o suporte APM Viagens.</div>'
+            : `<button class="btn btn-outline btn-sm" style="font-size:12px;padding:5px 10px" onclick="comAbrirUpload('${r.id}','${r.rnavt||''}',${r.comissao_consultor})">📎 Carregar</button>`
+
       const comissaoDisplay = r.recibo_verde_validado
         ? `<span style="color:#15803d;font-weight:800">€${parseFloat(r.recibo_verde_valor||r.comissao_consultor).toLocaleString('pt-PT',{minimumFractionDigits:2})}</span>`
         : `<span style="color:var(--muted)">€${parseFloat(r.comissao_consultor).toLocaleString('pt-PT',{minimumFractionDigits:2})}</span>`
-      return `<tr style="border-bottom:1px solid var(--border)">
+
+      return `<tr style="border-bottom:1px solid var(--border);${prazoExpirado&&!r.recibo_verde_emitido?'background:#fff5f5':''}">
         <td style="padding:10px 8px;font-weight:700">${r.rnavt||r.id.slice(0,8)}</td>
         <td style="padding:10px 8px">${r.destino||'—'}<br><span style="font-size:11px;color:var(--muted)">${r.fornecedor||'—'}</span></td>
         <td style="padding:10px 8px;font-family:monospace;font-size:12px">${loc}</td>
         <td style="padding:10px 8px;text-align:right">${comissaoDisplay}</td>
-        <td style="padding:10px 8px;text-align:center">${estadoBadge}</td>
+        <td style="padding:10px 8px;text-align:center">${estadoBadge}${prazoBadge}</td>
         <td style="padding:10px 8px;text-align:center">${reciboBtn}</td>
       </tr>`
     }).join('')}</tbody>
@@ -8197,14 +8234,14 @@ async function vrFiltrar(filtro) {
   _vrFiltro = filtro
   ;['pendente','validado','todos'].forEach(f => {
     const btn = document.getElementById('vr-filtro-'+f)
-    if(btn) { btn.className = f===filtro ? 'btn btn-coral' : 'btn btn-outline' }
+    if(btn) btn.className = f===filtro ? 'btn btn-coral' : 'btn btn-outline'
   })
 
   let q = sb.from('reservas')
     .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,recibo_verde_emitido,recibo_verde_validado,recibo_verde_valor,recibo_nome,data_partida,perfis(nome)')
+    .eq('estado','Confirmada')
     .not('comissao_consultor','is',null)
     .gt('comissao_consultor',0)
-    .eq('recibo_verde_emitido', true)
     .order('created_at',{ascending:false})
 
   if(filtro==='pendente') q = q.eq('recibo_verde_validado', false)
@@ -8235,18 +8272,14 @@ async function vrFiltrar(filtro) {
       const loc = r.localizador || r.localizador_principal || '—'
       const estadoBadge = r.recibo_verde_validado
         ? '<span style="background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">✅ Validado</span>'
-        : '<span style="background:#fef9c3;color:#92400e;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">🔍 Por validar</span>'
-      return `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:10px 8px;font-weight:700">${r.rnavt||r.id.slice(0,8)}</td>
-        <td style="padding:10px 8px">${r.perfis?.nome||'—'}</td>
-        <td style="padding:10px 8px">${r.destino||'—'}<br><span style="font-size:11px;color:var(--muted)">${r.fornecedor||'—'}</span></td>
-        <td style="padding:10px 8px;font-family:monospace;font-size:12px">${loc}</td>
-        <td style="padding:10px 8px;text-align:right;font-weight:700;color:var(--blue)">€${parseFloat(r.comissao_consultor).toLocaleString('pt-PT',{minimumFractionDigits:2})}</td>
-        <td style="padding:10px 8px;text-align:center">${estadoBadge}</td>
-        <td style="padding:10px 8px;text-align:center">
-          <button class="btn btn-outline btn-sm" style="font-size:12px" onclick="vrAbrirModal('${r.id}')">🔍 Analisar</button>
-        </td>
-      </tr>`
+        : r.recibo_verde_emitido
+          ? '<span style="background:#fef9c3;color:#92400e;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">🔍 Por validar</span>'
+          : '<span style="background:#fee2e2;color:#b91c1c;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">📎 Sem recibo</span>'
+      const acaoBtns = r.recibo_verde_validado
+        ? '<span style="color:#15803d;font-size:18px">✅</span>'
+        : r.recibo_verde_emitido
+          ? `<button class="btn btn-outline btn-sm" style="font-size:12px" onclick="vrAbrirModal('${r.id}')">🔍 Analisar</button>`
+          : `<span style="font-size:12px;color:var(--muted)">Aguarda recibo</span>`
     }).join('')}</tbody>
   </table></div>`
 }
