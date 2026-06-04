@@ -449,6 +449,7 @@ textarea.finput{resize:vertical;min-height:72px}
         <div class="nav-section" data-s="admin">Administração</div>
         <div class="nav-item" onclick="navTo('equipa',this)"><span class="nav-icon">◉</span> Equipa</div>
         <div class="nav-item" onclick="navTo('financeiro',this)"><span class="nav-icon">€</span> Financeiro</div>
+        <div class="nav-item" onclick="navTo('aceites',this)"><span class="nav-icon">⏳</span> Contratos Pendentes</div>
         <div class="nav-item" onclick="navTo('recibos',this)"><span class="nav-icon">🧾</span> Recibos Verdes</div>
         <div class="nav-item" onclick="navTo('importacao',this)"><span class="nav-icon">📥</span> Importar Reservas</div>
         <div class="nav-item" onclick="navTo('devolucoes',this)"><span class="nav-icon">↩️</span> Devoluções</div>
@@ -1458,6 +1459,16 @@ textarea.finput{resize:vertical;min-height:72px}
         </div>
       </div>
 
+      <!-- CONTRATOS ACEITES PENDENTES -->
+      <div class="page" id="page-aceites">
+        <div style="max-width:900px;margin:0 auto">
+          <div id="aceites-alerta-24h" style="display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:#9a3412">
+            <strong>⚠️ Atenção:</strong> Existem reservas aceites há mais de 12 horas ainda por efectuar no fornecedor.
+          </div>
+          <div id="aceites-lista"></div>
+        </div>
+      </div>
+
       <!-- FINANCEIRO -->
       <div class="page" id="page-pedidos-orcamento">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
@@ -2449,8 +2460,8 @@ textarea.finput{resize:vertical;min-height:72px}
               </div>
               <div id="pr-pv-foto"></div>
               <div style="padding:1.125rem 1.25rem;border-bottom:0.5px solid var(--border)">
-                <div style="font-size:22px;font-weight:500;color:var(--text)" id="pr-pv-dest">--</div>
-                <div style="font-size:12px;color:var(--muted);margin:3px 0 10px" id="pr-pv-sub"></div>
+                <div style="font-size:clamp(24px,4vw,42px);font-weight:700;color:var(--text);letter-spacing:-.01em;line-height:1.1" id="pr-pv-dest">--</div>
+                <div style="font-size:clamp(12px,1.5vw,15px);color:var(--muted);margin:5px 0 14px" id="pr-pv-sub"></div>
                 <div id="pr-pv-pills"></div>
               </div>
               <div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:0.5px solid var(--border)" id="pr-pv-stats"></div>
@@ -2875,6 +2886,7 @@ async function loadPerfil(user) {
   if (!data.ativo) { showAuth('pendente'); document.getElementById('pend-email').textContent = user.email; return }
   currentPerfil = data
   enterApp()
+  setTimeout(verificarAceitesPendentes24h, 3000)
 }
 
 function checkAlertasPagamento() {
@@ -3080,7 +3092,7 @@ function navTo(page, el) {
   if(el) el.classList.add('active')
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
-  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Performance',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes'}
+  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Performance',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes'}
   document.getElementById('tb-title').textContent = titles[page]||page
   document.getElementById('tb-sub').textContent = page==='dashboard'?(currentPerfil?.role==='admin'?'Visão global da agência':'Visão geral das tuas reservas'):''
   if(page==='dashboard') renderDash()
@@ -3114,6 +3126,7 @@ function navTo(page, el) {
   if(page==='orcamento-wa') renderOrcamentoWA()
   if(page==='atendimento') renderAtendimento()
   if(page==='recibos') renderRecibos()
+  if(page==='aceites') renderAceitesPendentes()
   if(page==='propostas') renderPropostas()
   if(page==='aprovacoes') renderAprovacoes()
   if(page==='pedidos-orcamento') loadPedidosOrcamento()
@@ -7193,7 +7206,8 @@ async function confirmarContrato() {
         fornecedor:          d._fornecedor || null,
         hotel:               d._hotel || null,
         reserva_efetuada:    !!(d._localizador),
-        estado:              'Confirmada',
+        estado:              d._localizador ? 'Confirmada' : 'Aceite Pendente',
+        aceite_em:           new Date().toISOString(),
         observacoes:         d.cancel || null,
         condicoes_pagamento: d.condpag || [],
         condicoes_cancelamento: d.cancel ? [{descricao: d.cancel}] : []
@@ -7663,6 +7677,90 @@ async function rvCarregarListaRecibos() {
       <td style="padding:8px;text-align:center">${r.recibo_verde_validado ? '✅' : r.recibo_verde_emitido ? '🔍' : '—'}</td>
     </tr>`).join('')}</tbody>
   </table>`
+}
+
+// ── CONTRATOS ACEITES PENDENTES ───────────────────────────────
+async function renderAceitesPendentes() {
+  const isAdmin = currentPerfil?.role === 'admin'
+  let q = sb.from('reservas')
+    .select('id,rnavt,nome_cliente,destino,data_partida,valor_total,aceite_em,consultor_id,localizador_principal,perfis(nome)')
+    .eq('estado', 'Aceite Pendente')
+    .order('aceite_em', { ascending: true })
+
+  if (!isAdmin) q = q.eq('consultor_id', currentPerfil.id)
+
+  const { data } = await q
+  const lista = data || []
+
+  // Verificar se alguma tem mais de 24h
+  const agora = Date.now()
+  const com24h = lista.filter(r => r.aceite_em && (agora - new Date(r.aceite_em).getTime()) > 43200000)
+  document.getElementById('aceites-alerta-24h').style.display = com24h.length ? 'block' : 'none'
+
+  const el = document.getElementById('aceites-lista')
+  if (!lista.length) {
+    el.innerHTML = `<div class="card" style="text-align:center;padding:40px;color:var(--muted)">
+      <div style="font-size:32px;margin-bottom:8px">✅</div>
+      <div style="font-weight:600">Sem contratos pendentes</div>
+      <div style="font-size:13px;margin-top:4px">Todas as reservas aceites já foram efectuadas no fornecedor.</div>
+    </div>`
+    return
+  }
+
+  el.innerHTML = lista.map(r => {
+    const aceiteEm = r.aceite_em ? new Date(r.aceite_em) : null
+    const horasPassadas = aceiteEm ? Math.floor((agora - aceiteEm.getTime()) / 3600000) : null
+    const urgente = horasPassadas !== null && horasPassadas > 12
+    const cor = urgente ? '#fee2e2' : '#f0fdf4'
+    const corBorda = urgente ? '#ef4444' : '#22c55e'
+    const tempoLabel = horasPassadas !== null
+      ? (horasPassadas < 1 ? 'há menos de 1h' : horasPassadas < 24 ? `há ${horasPassadas}h` : `há ${Math.floor(horasPassadas/24)}d ${horasPassadas%24}h`)
+      : '—'
+
+    return `<div style="background:#fff;border:1.5px solid ${corBorda};border-radius:12px;padding:16px 20px;margin-bottom:12px;position:relative">
+      ${urgente ? '<div style="position:absolute;top:12px;right:14px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">⚠️ +12H</div>' : ''}
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:16px;font-weight:700;margin-bottom:4px">${r.nome_cliente||'—'} <span style="font-size:12px;color:var(--muted);font-weight:400">· ${r.rnavt||'?'}</span></div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px">${r.destino||'—'} · ${r.data_partida ? new Date(r.data_partida).toLocaleDateString('pt-PT') : '—'} · ${r.valor_total ? '€'+Number(r.valor_total).toLocaleString('pt-PT',{minimumFractionDigits:2}) : '—'}</div>
+          ${isAdmin ? `<div style="font-size:12px;color:var(--muted)">Consultor: <strong>${r.perfis?.nome||'?'}</strong></div>` : ''}
+          <div style="font-size:12px;color:${urgente?'#b91c1c':'#15803d'};font-weight:600;margin-top:4px">Aceite ${tempoLabel}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;min-width:220px">
+          <input class="finput" id="loc-${r.id}" placeholder="Inserir localizador do fornecedor" style="font-size:13px;padding:8px 12px">
+          <button class="btn btn-coral" style="justify-content:center;font-size:13px" onclick="efetuarReserva('${r.id}')">✅ Marcar como efectuada</button>
+        </div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+async function efetuarReserva(id) {
+  const loc = document.getElementById('loc-'+id)?.value.trim()
+  if (!loc) { toast('Insere o localizador do fornecedor', 'err'); return }
+
+  const { error } = await sb.from('reservas').update({
+    localizador_principal: loc,
+    reserva_efetuada: true,
+    estado: 'Confirmada'
+  }).eq('id', id)
+
+  if (error) { toast('Erro ao actualizar', 'err'); return }
+  toast('Reserva marcada como efectuada!', 'ok')
+  renderAceitesPendentes()
+}
+
+// ── VERIFICAR NOTIFICAÇÕES 24H (admin) ───────────────────────
+async function verificarAceitesPendentes24h() {
+  if (currentPerfil?.role !== 'admin') return
+  const limite = new Date(Date.now() - 43200000).toISOString() // 12h
+  const { data } = await sb.from('reservas')
+    .select('id,rnavt,nome_cliente,destino')
+    .eq('estado', 'Aceite Pendente')
+    .lt('aceite_em', limite)
+  if (data?.length) {
+    toast(`⚠️ ${data.length} contrato(s) aceite(s) há mais de 12h por efectuar!`, 'err')
+  }
 }
 
 function renderPropostas() {
@@ -9221,11 +9319,12 @@ function prVerProposta() {
 
   var part = prGv('pr-part'), reg = prGv('pr-reg'), pax = prGv('pr-pax'), noites = prGv('pr-noites'), voo = prGv('pr-voo');
   var pills = [];
-  if (part && reg) pills.push('<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;background:var(--bg);color:var(--muted);border:0.5px solid var(--border);margin:2px"><i class=\'ti ti-calendar\'></i> ' + prFmtD(part) + ' - ' + prFmtD(reg) + '</span>');
-  else if (part) pills.push('<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;background:var(--bg);color:var(--muted);border:0.5px solid var(--border);margin:2px"><i class=\'ti ti-calendar\'></i> ' + prFmtD(part) + '</span>');
-  if (pax)    pills.push('<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;background:var(--bg);color:var(--muted);border:0.5px solid var(--border);margin:2px"><i class=\'ti ti-users\'></i> ' + pax + '</span>');
-  if (noites) pills.push('<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;background:var(--bg);color:var(--muted);border:0.5px solid var(--border);margin:2px"><i class=\'ti ti-moon\'></i> ' + noites + '</span>');
-  if (voo)    pills.push('<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;background:var(--bg);color:var(--muted);border:0.5px solid var(--border);margin:2px"><i class=\'ti ti-plane\'></i> ' + voo + '</span>');
+  const pillStyle = 'display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:24px;font-size:13px;background:var(--bg);color:var(--text);border:1px solid var(--border);margin:3px;font-weight:500';
+  if (part && reg) pills.push('<span style="'+pillStyle+'"><i class=\'ti ti-calendar\'></i> ' + prFmtD(part) + ' – ' + prFmtD(reg) + '</span>');
+  else if (part) pills.push('<span style="'+pillStyle+'"><i class=\'ti ti-calendar\'></i> ' + prFmtD(part) + '</span>');
+  if (pax)    pills.push('<span style="'+pillStyle+'"><i class=\'ti ti-users\'></i> ' + pax + '</span>');
+  if (noites) pills.push('<span style="'+pillStyle+'"><i class=\'ti ti-moon\'></i> ' + noites + '</span>');
+  if (voo)    pills.push('<span style="'+pillStyle+'"><i class=\'ti ti-plane\'></i> ' + voo + '</span>');
   prG('pr-pv-pills').innerHTML = pills.join('');
 
   var total = prTot();
