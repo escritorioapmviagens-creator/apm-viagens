@@ -408,6 +408,19 @@ textarea.finput{resize:vertical;min-height:72px}
         </div>
       </div>
 
+      <!-- Blog -->
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleGroup(this)">
+          <span class="nav-icon">✍️</span> Blog <span class="nav-group-arrow">▶</span>
+        </div>
+        <div class="nav-group-items">
+          <div class="nav-item" onclick="navTo('blog',this)"><span class="nav-icon">📰</span> Ver todos os artigos</div>
+          <div class="nav-item" onclick="abrirBlogPost('destinos')"><span class="nav-icon">✈</span> Top Destinos 2026</div>
+          <div class="nav-item" onclick="abrirBlogPost('recrutamento')"><span class="nav-icon">💼</span> Oportunidade de Carreira</div>
+          <div class="nav-item" onclick="copiarLinkBlog('index')"><span class="nav-icon">🔗</span> Copiar link do blog</div>
+        </div>
+      </div>
+
       <!-- Redes Sociais -->
       <div class="nav-group">
         <div class="nav-group-header" onclick="toggleGroup(this)">
@@ -718,6 +731,63 @@ textarea.finput{resize:vertical;min-height:72px}
       </div>
 
       <!-- PÁGINA DE ATENDIMENTO -->
+      <div class="page" id="page-blog">
+        <div style="max-width:700px">
+          <div style="margin-bottom:24px">
+            <div style="font-size:1.1rem;font-weight:700;margin-bottom:4px">✍️ Blog APM Viagens</div>
+            <div style="font-size:13px;color:var(--muted)">Partilha os artigos com o teu link personalizado — os leads ficam associados a ti.</div>
+          </div>
+
+          <!-- Link personalizado -->
+          <div class="card" style="margin-bottom:14px;border:2px solid var(--coral)">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">O teu link do blog</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <div id="blog-link-display" style="flex:1;font-size:12px;color:var(--blue);font-weight:600;word-break:break-all;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px">A carregar...</div>
+              <button onclick="copiarLinkBlog('index')" class="btn btn-coral btn-sm" style="white-space:nowrap">📋 Copiar</button>
+            </div>
+            <div style="font-size:11px;color:var(--muted)">Partilha este link nas redes sociais ou no WhatsApp — quando alguém pede orçamento ou se candidata a consultor, fica associado a ti.</div>
+          </div>
+
+          <!-- Artigos -->
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Artigos disponíveis</div>
+
+          <!-- Card destinos -->
+          <div class="card" style="margin-bottom:12px;display:flex;gap:16px;align-items:center">
+            <div style="font-size:2.5rem;flex-shrink:0">✈</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;font-size:.95rem;margin-bottom:3px">Top Destinos 2026</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Os 5 destinos mais reservados pelos clientes APM este ano. Ideal para partilhar com clientes indecisos.</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button onclick="abrirBlogPost('destinos')" class="btn btn-sm btn-outline" style="font-size:11px">👁 Ver artigo</button>
+                <button onclick="copiarLinkBlog('destinos')" class="btn btn-sm btn-outline" style="font-size:11px">🔗 Copiar link</button>
+                <button onclick="partilharBlogWA('destinos')" class="btn btn-sm" style="background:#25D366;color:#fff;border:none;font-size:11px">💬 WhatsApp</button>
+                <button onclick="partilharBlogFacebook('destinos')" class="btn btn-sm" style="background:#1877f2;color:#fff;border:none;font-size:11px">📘 Facebook</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card recrutamento -->
+          <div class="card" style="margin-bottom:12px;display:flex;gap:16px;align-items:center">
+            <div style="font-size:2.5rem;flex-shrink:0">💼</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;font-size:.95rem;margin-bottom:3px">Oportunidade de Carreira</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Como funciona o modelo de consultor APM. Ideal para partilhar com quem tem interesse em viagens e quer uma fonte de rendimento extra.</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button onclick="abrirBlogPost('recrutamento')" class="btn btn-sm btn-outline" style="font-size:11px">👁 Ver artigo</button>
+                <button onclick="copiarLinkBlog('recrutamento')" class="btn btn-sm btn-outline" style="font-size:11px">🔗 Copiar link</button>
+                <button onclick="partilharBlogWA('recrutamento')" class="btn btn-sm" style="background:#25D366;color:#fff;border:none;font-size:11px">💬 WhatsApp</button>
+                <button onclick="partilharBlogFacebook('recrutamento')" class="btn btn-sm" style="background:#1877f2;color:#fff;border:none;font-size:11px">📘 Facebook</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tip -->
+          <div style="background:var(--blue-light);border:1px solid #c7d7fd;border-radius:10px;padding:14px 16px;font-size:12px;color:var(--blue);line-height:1.6">
+            💡 <strong>Dica:</strong> Partilha o artigo de destinos no teu perfil do Instagram ou Facebook com a legenda <em>"Já sabes para onde vais este verão? 🌍✈ Pede orçamento gratuito pelo link!"</em> — o link leva directamente ao formulário de orçamento com o teu ID.
+          </div>
+        </div>
+      </div>
+
       <div class="page" id="page-atendimento">
         <div class="card" style="max-width:560px;margin:0 auto">
           <div style="text-align:center;margin-bottom:24px">
@@ -3403,6 +3473,7 @@ function navTo(page, el) {
   }
   if(page==='equipa') renderEquipa()
   if(page==='orcamento-wa') renderOrcamentoWA()
+  if(page==='blog') renderBlog()
   if(page==='atendimento') renderAtendimento()
   if(page==='recibos') renderRecibos()
   if(page==='aceites') renderAceitesPendentes()
@@ -7180,13 +7251,50 @@ async function gerarLinkCliente() {
   }
 }
 
+// ── BLOG ─────────────────────────────────────────────────────────────────────
+const BLOG_BASE = 'https://escritorioapmviagens-creator.github.io/apm-viagens/blog/'
+
+function blogUrlComRef(post) {
+  const id = currentPerfil?.id || ''
+  const ref = id ? '?ref=' + id : ''
+  const ficheiros = { index: 'blog-index.html', destinos: 'blog-destinos-2026.html', recrutamento: 'blog-recrutamento.html' }
+  return BLOG_BASE + (ficheiros[post] || 'blog-index.html') + ref
+}
+
+function copiarLinkBlog(post) {
+  const url = blogUrlComRef(post)
+  navigator.clipboard.writeText(url)
+  toast('🔗 Link copiado!', 'ok')
+}
+
+function abrirBlogPost(post) {
+  window.open(blogUrlComRef(post), '_blank')
+}
+
+function partilharBlogWA(post) {
+  const url = encodeURIComponent(blogUrlComRef(post))
+  const msgs = {
+    destinos: encodeURIComponent('Olha os destinos mais populares de 2026! 🌍✈ '),
+    recrutamento: encodeURIComponent('Já viste esta oportunidade no sector das viagens? 💼✈ ')
+  }
+  window.open('https://wa.me/?text=' + (msgs[post] || '') + url, '_blank')
+}
+
+function partilharBlogFacebook(post) {
+  const url = encodeURIComponent(blogUrlComRef(post))
+  window.open('https://www.facebook.com/sharer/sharer.php?u=' + url, '_blank')
+}
+
+function renderBlog() {
+  const el = document.getElementById('blog-link-display')
+  if(el) el.textContent = blogUrlComRef('index')
+}
+
 function copiarLink() {
   const el = document.getElementById('link-cliente-url')
   el.select(); el.setSelectionRange(0,99999)
   navigator.clipboard.writeText(el.value).then(()=>toast('Link copiado!','ok')).catch(()=>{document.execCommand('copy');toast('Link copiado!','ok')})
-}
-
-function enviarWhatsapp() {
+}function enviarWhatsapp() {
   if(!selectedDocType) { toast('Seleciona um tipo de documento','err'); return }
   const tel = gv('cli_tel').replace(/\D/g,'')
   if(!tel) { toast('Preenche o contacto do cliente','err'); return }
