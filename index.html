@@ -1504,6 +1504,39 @@ textarea.finput{resize:vertical;min-height:72px}
             <div id="vr-tabela"></div>
           </div>
 
+          <!-- Modal de correcção de plano/comissão -->
+          <div id="vr-modal-correc" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1001;align-items:center;justify-content:center">
+            <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:420px;margin:20px">
+              <div style="font-weight:700;font-size:15px;margin-bottom:4px">✏️ Corrigir plano / comissão</div>
+              <div style="font-size:13px;color:var(--muted);margin-bottom:16px" id="vr-correc-sub"></div>
+
+              <div style="margin-bottom:14px">
+                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:6px">Plano</label>
+                <div style="display:flex;gap:8px">
+                  <button id="vr-correc-agency" onclick="vrCorrecSetPlano('Agency')"
+                    style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--blue);background:var(--blue-light);color:var(--blue);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">
+                    💼 Agency (80/20)
+                  </button>
+                  <button id="vr-correc-mundo" onclick="vrCorrecSetPlano('Mundo')"
+                    style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:var(--bg2);color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">
+                    🌍 Mundo (tabela)
+                  </button>
+                </div>
+              </div>
+
+              <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:16px">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Comissão calculada</div>
+                <div style="font-size:24px;font-weight:800;color:var(--blue)" id="vr-correc-preview">—</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:2px" id="vr-correc-formula">—</div>
+              </div>
+
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-coral" style="flex:1;justify-content:center" onclick="vrGuardarCorrecao()">✅ Guardar e recalcular</button>
+                <button class="btn btn-outline" onclick="vrFecharCorrecao()">Cancelar</button>
+              </div>
+            </div>
+          </div>
+
           <!-- Modal de validação -->
           <div id="vr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
             <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:520px;margin:20px;max-height:90vh;overflow-y:auto">
@@ -8462,7 +8495,13 @@ async function vrFiltrar(filtro) {
       return `<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:10px 8px;font-weight:700">${r.rnavt||r.id.slice(0,8)}</td>
         <td style="padding:10px 8px">${(r.perfis?.nome||r.consultor_nome_externo||'—').toUpperCase()}</td>
-        <td style="padding:10px 8px;text-align:center">${planoBadge}</td>
+        <td style="padding:10px 8px;text-align:center">
+          ${planoBadge}
+          <button onclick="vrAbrirCorrecao('${r.id}','${(r.perfis?.nome||r.consultor_nome_externo||'').replace(/'/g,"\\'")}','${plano}',${pvp},${net})"
+            style="display:block;margin:4px auto 0;background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);text-decoration:underline">
+            ✏️ corrigir
+          </button>
+        </td>
         <td style="padding:10px 8px">${(r.fornecedor||'—').toUpperCase()}</td>
         <td style="padding:10px 8px;font-family:monospace;font-size:12px">${loc}</td>
         <td style="padding:10px 8px;text-align:right;font-weight:700;color:var(--blue)">${comissao}</td>
@@ -8562,6 +8601,83 @@ function vrFecharModal() {
   document.getElementById('vr-modal').style.display = 'none'
   _vrReservaActual = null
   window._vrDadosIA = null
+}
+
+// ── CORRECÇÃO DE PLANO / COMISSÃO ────────────────────────────
+let _vrCorrecReservaId = null
+let _vrCorrecPlano = 'Agency'
+let _vrCorrecPvp = 0
+let _vrCorrecNet = 0
+
+function vrAbrirCorrecao(reservaId, nomeConsultor, planoActual, pvp, net) {
+  _vrCorrecReservaId = reservaId
+  _vrCorrecPvp = pvp
+  _vrCorrecNet = net
+  _vrCorrecPlano = planoActual
+
+  document.getElementById('vr-correc-sub').textContent = nomeConsultor + ' · PVP: €' + pvp.toLocaleString('pt-PT') + ' · Net: €' + net.toLocaleString('pt-PT')
+  vrCorrecSetPlano(planoActual)
+  document.getElementById('vr-modal-correc').style.display = 'flex'
+}
+
+function vrCorrecSetPlano(plano) {
+  _vrCorrecPlano = plano
+  const agBtn = document.getElementById('vr-correc-agency')
+  const mBtn = document.getElementById('vr-correc-mundo')
+
+  if(plano === 'Mundo') {
+    agBtn.style.cssText = 'flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:var(--bg2);color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit'
+    mBtn.style.cssText = 'flex:1;padding:10px;border-radius:8px;border:2px solid #f59e0b;background:#fef9c3;color:#92400e;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit'
+  } else {
+    agBtn.style.cssText = 'flex:1;padding:10px;border-radius:8px;border:2px solid var(--blue);background:var(--blue-light);color:var(--blue);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit'
+    mBtn.style.cssText = 'flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:var(--bg2);color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit'
+  }
+
+  const comissao = plano === 'Mundo'
+    ? calcComissaoMundo(_vrCorrecPvp, _vrCorrecNet)
+    : calcComissaoAgency(_vrCorrecPvp, _vrCorrecNet)
+
+  document.getElementById('vr-correc-preview').textContent = comissao > 0 ? '€' + comissao.toLocaleString('pt-PT', {minimumFractionDigits:2}) : '—'
+
+  if(plano === 'Mundo') {
+    const bruto = _vrCorrecPvp - _vrCorrecNet
+    const pct = _vrCorrecNet > 0 ? (bruto / _vrCorrecNet * 100).toFixed(1) : 0
+    document.getElementById('vr-correc-formula').textContent = `Margem: €${bruto.toFixed(2)} (${pct}% do net) → tabela Mundo`
+  } else {
+    const margem = _vrCorrecPvp - _vrCorrecNet
+    document.getElementById('vr-correc-formula').textContent = `Margem: €${margem.toFixed(2)} × 80% = €${(margem * 0.8).toFixed(2)}`
+  }
+}
+
+async function vrGuardarCorrecao() {
+  if(!_vrCorrecReservaId) return
+
+  const comissaoNova = _vrCorrecPlano === 'Mundo'
+    ? calcComissaoMundo(_vrCorrecPvp, _vrCorrecNet)
+    : calcComissaoAgency(_vrCorrecPvp, _vrCorrecNet)
+
+  // Actualizar comissão na reserva
+  const { error: rsvErr } = await sb.from('reservas').update({
+    comissao_consultor: comissaoNova,
+    comissao_apm_100: false
+  }).eq('id', _vrCorrecReservaId)
+
+  if(rsvErr) { toast('Erro: ' + rsvErr.message, 'err'); return }
+
+  // Actualizar plano no perfil do consultor (via join)
+  const { data: rsv } = await sb.from('reservas').select('consultor_id').eq('id', _vrCorrecReservaId).single()
+  if(rsv?.consultor_id) {
+    await sb.from('perfis').update({ plano: _vrCorrecPlano }).eq('id', rsv.consultor_id)
+  }
+
+  toast(`✅ Plano ${_vrCorrecPlano} aplicado — comissão actualizada para €${comissaoNova.toFixed(2)}`, 'ok')
+  vrFecharCorrecao()
+  vrFiltrar(_vrFiltro)
+}
+
+function vrFecharCorrecao() {
+  document.getElementById('vr-modal-correc').style.display = 'none'
+  _vrCorrecReservaId = null
 }
 
 async function vrValidarManual() {
