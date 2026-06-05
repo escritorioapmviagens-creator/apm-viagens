@@ -226,8 +226,8 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 const p = new URLSearchParams(location.search)
 const ref = p.get('ref') || ''
 const s = ref ? '?ref=' + ref : ''
-document.getElementById('nav-orcamento').href = '../pedir-orcamento.html' + s
-document.getElementById('cta-orcamento').href = '../pedir-orcamento.html' + s
+document.getElementById('nav-orcamento').href = 'pedir-orcamento.html' + s
+document.getElementById('cta-orcamento').href = 'pedir-orcamento.html' + s
 document.getElementById('back-link').href = 'blog-index.html' + s
 function partilharWA(){const u=encodeURIComponent(location.href);window.open('https://wa.me/?text='+encodeURIComponent('Olha estes destinos incríveis para 2026! 🌍✈ ')+u,'_blank')}
 function copiar(){navigator.clipboard.writeText(location.href).then(()=>toast('✅ Link copiado!'))}
