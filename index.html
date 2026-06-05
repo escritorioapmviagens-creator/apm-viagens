@@ -5475,9 +5475,56 @@ async function renderEquipa() {
           border:1px solid ${p.consultor_do_ano ? '#fcd34d' : 'var(--border)'}">
           ${p.consultor_do_ano ? '⭐ Consultor do Ano — clica para remover' : '☆ Definir como Consultor do Ano'}
         </button>
+      </div>
+      <div style="margin-top:8px;width:100%;display:flex;gap:6px">
+        <button onclick="desactivarConsultor('${p.id}','${p.nome.replace(/'/g,"\\'")}')"
+          style="flex:1;padding:6px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;background:var(--bg);color:var(--muted);border:1px solid var(--border)">
+          ${p.ativo ? '⏸ Desactivar' : '▶ Activar'}
+        </button>
+        <button onclick="eliminarConsultor('${p.id}','${p.nome.replace(/'/g,"\\'")}')"
+          style="padding:6px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;background:#fff0f0;color:#b91c1c;border:1px solid #fecaca">
+          🗑
+        </button>
       </div>` : ''}
     </div>`
   }).join('')
+}
+
+async function desactivarConsultor(id, nome) {
+  const perfil = (await sb.from('perfis').select('ativo').eq('id', id).single()).data
+  if(!perfil) return
+  const novoAtivo = !perfil.ativo
+  const { error } = await sb.from('perfis').update({ ativo: novoAtivo, status: novoAtivo ? 'ativo' : 'inativo' }).eq('id', id)
+  if(error) { toast('Erro: ' + error.message, 'err'); return }
+  toast(novoAtivo ? `✅ ${nome} activado` : `⏸ ${nome} desactivado`, 'ok')
+  renderEquipa()
+}
+
+async function eliminarConsultor(id, nome) {
+  if(!confirm(`Tens a certeza que queres eliminar "${nome}"?\n\nAs reservas serão mantidas mas a comissão passa a ser 100% APM.`)) return
+
+  // 1. Guardar nome nas reservas e marcar comissão 100% APM, desassociar consultor_id
+  const { error: rsvErr } = await sb.from('reservas')
+    .update({
+      consultor_id: null,
+      consultor_nome_externo: nome,
+      comissao_consultor: 0,
+      comissao_apm_100: true
+    })
+    .eq('consultor_id', id)
+
+  if(rsvErr) console.warn('Aviso ao actualizar reservas:', rsvErr.message)
+
+  // 2. Eliminar o perfil
+  const { error } = await sb.from('perfis').delete().eq('id', id)
+  if(error) {
+    // Se falhar por outra FK, desactivar
+    await sb.from('perfis').update({ ativo: false, status: 'inativo' }).eq('id', id)
+    toast(`⚠️ ${nome} desactivado — comissões das reservas passaram para APM`, 'ok')
+  } else {
+    toast(`🗑 ${nome} eliminado — comissões das reservas passaram para APM`, 'ok')
+  }
+  renderEquipa()
 }
 
 function copiarLinkAfiliado() {
