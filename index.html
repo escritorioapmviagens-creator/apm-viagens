@@ -1205,7 +1205,58 @@ textarea.finput{resize:vertical;min-height:72px}
       <!-- IMPORTAÇÃO DE RESERVAS -->
       <div class="page" id="page-importacao">
         <div style="max-width:900px">
-          <div class="card" style="margin-bottom:16px">
+
+          <!-- GOOGLE FORMS SYNC -->
+          <div class="card" style="margin-bottom:16px;border:2px solid #4285f4">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:40px;height:40px;background:#4285f4;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+              </div>
+              <div style="flex:1">
+                <div style="font-weight:700;font-size:.95rem">🔄 Sincronização automática — Google Forms</div>
+                <div style="font-size:.8rem;color:var(--muted);margin-top:2px">Importa automaticamente as respostas do formulário OPTIGEST para o sistema APM</div>
+              </div>
+              <div id="gforms-status-badge" style="font-size:.75rem;font-weight:700;padding:4px 12px;border-radius:20px;background:#f3f4f6;color:var(--muted)">⏸ Inactivo</div>
+            </div>
+
+            <!-- Stats -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+              <div style="background:var(--bg2);border-radius:10px;padding:12px;text-align:center">
+                <div style="font-size:1.4rem;font-weight:800;color:var(--blue)" id="gf-stat-total">—</div>
+                <div style="font-size:.7rem;color:var(--muted)">Total no form</div>
+              </div>
+              <div style="background:var(--bg2);border-radius:10px;padding:12px;text-align:center">
+                <div style="font-size:1.4rem;font-weight:800;color:#15803d" id="gf-stat-importadas">—</div>
+                <div style="font-size:.7rem;color:var(--muted)">Já importadas</div>
+              </div>
+              <div style="background:#fff0f3;border-radius:10px;padding:12px;text-align:center">
+                <div style="font-size:1.4rem;font-weight:800;color:var(--coral)" id="gf-stat-novas">—</div>
+                <div style="font-size:.7rem;color:var(--muted)">Por importar</div>
+              </div>
+              <div style="background:var(--bg2);border-radius:10px;padding:12px;text-align:center">
+                <div style="font-size:.85rem;font-weight:700;color:var(--muted)" id="gf-stat-ultima">—</div>
+                <div style="font-size:.7rem;color:var(--muted)">Última sync</div>
+              </div>
+            </div>
+
+            <!-- Última linha importada -->
+            <div style="background:var(--bg2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:var(--muted)" id="gf-ultima-info">
+              A verificar estado da sincronização...
+            </div>
+
+            <!-- Botões -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-coral" onclick="gfSincronizarAgora()" id="gf-btn-sync" style="flex:1;justify-content:center">
+                🔄 Sincronizar agora
+              </button>
+              <button class="btn btn-outline" onclick="gfVerificarEstado()" style="padding:0 16px">
+                📊 Verificar estado
+              </button>
+            </div>
+
+            <!-- Log -->
+            <div id="gf-log" style="display:none;margin-top:14px;background:#1a1a2e;border-radius:8px;padding:12px;font-size:.75rem;font-family:monospace;color:#a8ff78;max-height:200px;overflow-y:auto;line-height:1.6"></div>
+          </div>
             <div style="font-size:1rem;font-weight:700;margin-bottom:4px">📥 Importar Reservas via CSV</div>
             <div style="font-size:.82rem;color:var(--muted);margin-bottom:16px">
               No Excel: <strong>Ficheiro → Guardar como → CSV UTF-8</strong> na folha "Pagamentos Operador". O sistema verifica duplicados pelo localizador — existentes são atualizados, novas são criadas.
@@ -8249,6 +8300,49 @@ async function renderVerificacaoRecibos() {
   vrFiltrar('pendente')
 }
 
+// Tabela de taxas APM plano Mundo
+const MUNDO_LOOKUP = [
+  { lower:0,      upper:1.00,   rate:1.00 },
+  { lower:1.01,   upper:2.00,   rate:1.10 },
+  { lower:2.01,   upper:2.50,   rate:1.20 },
+  { lower:2.51,   upper:3.00,   rate:1.30 },
+  { lower:3.01,   upper:3.50,   rate:1.40 },
+  { lower:3.51,   upper:4.00,   rate:1.50 },
+  { lower:4.01,   upper:4.50,   rate:1.60 },
+  { lower:4.51,   upper:5.00,   rate:1.70 },
+  { lower:5.01,   upper:5.50,   rate:1.80 },
+  { lower:5.51,   upper:6.00,   rate:1.90 },
+  { lower:6.01,   upper:6.50,   rate:2.00 },
+  { lower:6.51,   upper:7.00,   rate:2.10 },
+  { lower:7.01,   upper:7.50,   rate:2.20 },
+  { lower:7.51,   upper:8.00,   rate:2.30 },
+  { lower:8.01,   upper:8.50,   rate:2.40 },
+  { lower:8.51,   upper:9.00,   rate:2.50 },
+  { lower:9.01,   upper:9.50,   rate:2.60 },
+  { lower:9.51,   upper:10.00,  rate:2.70 },
+  { lower:10.01,  upper:10.50,  rate:2.80 },
+  { lower:10.51,  upper:11.00,  rate:2.90 },
+  { lower:11.01,  upper:100.00, rate:3.00 }
+]
+
+function calcComissaoMundo(pvp, net) {
+  if(!pvp || !net || pvp <= net) return 0
+  const bruto = pvp - net
+  const pct = (bruto / net) * 100
+  let taxa = 1.50 // mínimo
+  for(const row of MUNDO_LOOKUP) {
+    if(pct >= row.lower && pct <= row.upper) { taxa = Math.max(row.rate, 1.50); break }
+  }
+  return Math.round((bruto - pvp * (taxa / 100)) * 100) / 100
+}
+
+function calcComissaoAgency(pvp, net) {
+  if(!pvp || !net || pvp <= net) return 0
+  const margem = pvp - net
+  const apm = Math.max(margem * 0.2, pvp * 0.01)
+  return Math.round((margem - apm) * 100) / 100
+}
+
 async function vrFiltrar(filtro) {
   _vrFiltro = filtro
   ;['pendente','validado','todos'].forEach(f => {
@@ -8257,7 +8351,7 @@ async function vrFiltrar(filtro) {
   })
 
   let q = sb.from('reservas')
-    .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,preco_net,valor_total,recibo_verde_emitido,recibo_verde_validado,recibo_verde_valor,recibo_nome,data_partida,consultor_nome_externo,perfis(nome)')
+    .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,preco_net,valor_total,recibo_verde_emitido,recibo_verde_validado,recibo_verde_valor,recibo_nome,data_partida,consultor_nome_externo,perfis(nome,plano)')
     .eq('estado','Confirmada')
     .order('created_at',{ascending:false})
 
@@ -8281,10 +8375,11 @@ async function vrFiltrar(filtro) {
     return
   }
 
-  el.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;min-width:700px">
+  el.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;min-width:780px">
     <thead><tr style="border-bottom:2px solid var(--border)">
       <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600;width:110px">Reserva</th>
       <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600;width:130px">Consultor</th>
+      <th style="text-align:center;padding:10px 8px;color:var(--muted);font-weight:600;width:80px">Plano</th>
       <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600;width:110px">Operador</th>
       <th style="text-align:left;padding:10px 8px;color:var(--muted);font-weight:600">Localizador</th>
       <th style="text-align:right;padding:10px 8px;color:var(--muted);font-weight:600;width:90px">Comissão</th>
@@ -8293,6 +8388,20 @@ async function vrFiltrar(filtro) {
     </tr></thead>
     <tbody>${lista.map(r => {
       const loc = (r.localizador || r.localizador_principal || '—').toUpperCase()
+      const plano = r.perfis?.plano || 'Agency'
+      const isMundo = plano === 'Mundo'
+      const pvp = parseFloat(r.valor_total)||0
+      const net = parseFloat(r.preco_net)||0
+
+      // Cálculo conforme plano
+      const comissaoCalc = isMundo ? calcComissaoMundo(pvp, net) : calcComissaoAgency(pvp, net)
+      const comissaoFinal = parseFloat(r.comissao_consultor) || comissaoCalc
+      const comissao = comissaoFinal > 0 ? '€'+comissaoFinal.toLocaleString('pt-PT',{minimumFractionDigits:2}) : '—'
+
+      const planoBadge = isMundo
+        ? '<span style="background:#fef9c3;color:#92400e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap">🌍 Mundo</span>'
+        : '<span style="background:#eef2ff;color:#3B5BDB;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap">💼 Agency</span>'
+
       const estadoBadge = r.recibo_verde_validado
         ? '<span style="background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap">✅ Validado</span>'
         : r.recibo_verde_emitido
@@ -8303,16 +8412,10 @@ async function vrFiltrar(filtro) {
         : r.recibo_verde_emitido
           ? `<button class="btn btn-outline btn-sm" style="font-size:12px" onclick="vrAbrirModal('${r.id}')">🔍 Analisar</button>`
           : `<span style="font-size:12px;color:var(--muted)">Aguarda recibo</span>`
-      const pvp = parseFloat(r.valor_total)||0
-      const net = parseFloat(r.preco_net)||0
-      const margem = pvp > net ? pvp - net : 0
-      const comissaoAPM = margem > 0 ? Math.max(margem * 0.2, pvp * 0.01) : 0
-      const comissaoCalc = margem > 0 ? Math.round((margem - comissaoAPM) * 100) / 100 : 0
-      const comissaoFinal = parseFloat(r.comissao_consultor) || comissaoCalc
-      const comissao = comissaoFinal > 0 ? '€'+comissaoFinal.toLocaleString('pt-PT',{minimumFractionDigits:2}) : '—'
       return `<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:10px 8px;font-weight:700">${r.rnavt||r.id.slice(0,8)}</td>
         <td style="padding:10px 8px">${(r.perfis?.nome||r.consultor_nome_externo||'—').toUpperCase()}</td>
+        <td style="padding:10px 8px;text-align:center">${planoBadge}</td>
         <td style="padding:10px 8px">${(r.fornecedor||'—').toUpperCase()}</td>
         <td style="padding:10px 8px;font-family:monospace;font-size:12px">${loc}</td>
         <td style="padding:10px 8px;text-align:right;font-weight:700;color:var(--blue)">${comissao}</td>
@@ -8325,7 +8428,7 @@ async function vrFiltrar(filtro) {
 
 async function vrAbrirModal(id) {
   const { data: r } = await sb.from('reservas')
-    .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,recibo_verde_validado,recibo_base64,recibo_nome,perfis(nome)')
+    .select('id,rnavt,destino,fornecedor,localizador_principal,localizador,comissao_consultor,preco_net,valor_total,recibo_verde_validado,recibo_base64,recibo_nome,perfis(nome,plano)')
     .eq('id', id).single()
   if(!r) return
   _vrReservaActual = r
@@ -8362,7 +8465,11 @@ Responde APENAS com o JSON.`}
       const d = await resp.json()
       const txt = d.content?.[0]?.text||'{}'
       const dados = JSON.parse(txt.replace(/```json|```/g,'').trim())
-      const comissaoEsperada = parseFloat(r.comissao_consultor)||0
+      const planoModal = r.perfis?.plano || 'Agency'
+      const pvpM = parseFloat(r.valor_total)||0
+      const netM = parseFloat(r.preco_net)||0
+      const comissaoEsperada = parseFloat(r.comissao_consultor) ||
+        (planoModal === 'Mundo' ? calcComissaoMundo(pvpM, netM) : calcComissaoAgency(pvpM, netM))
       const valorOk = Math.abs((dados.valor_iliquido||0) - comissaoEsperada) < 0.10
       const nifOk = (dados.nif_adquirente||'').includes('518357490')
       const retencaoEsperada = Math.round((dados.valor_iliquido||0) * 0.23 * 100) / 100
