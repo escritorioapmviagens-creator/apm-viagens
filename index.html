@@ -841,8 +841,10 @@ textarea.finput{resize:vertical;min-height:72px}
             <div class="fsection">
               <div class="fsec-title">Serviços e destino</div>
               <div class="fgrid">
-                <div class="fgroup"><label class="flabel">Destino principal *</label><input class="finput" id="f-dest" placeholder="ex: Lisboa → Paris"></div>
-                <div class="fgroup"><label class="flabel">Tipo de serviço *</label><select class="finput" id="f-tipo"><option>Voo + Hotel</option><option>Só voo</option><option>Só hotel</option><option>Pacote completo</option><option>Cruzeiro</option><option>Transfer</option></select></div>
+                <div class="fgroup"><label class="flabel">Destino principal *</label><input class="finput" id="f-dest" placeholder="ex: Djerba, Tunísia"></div>
+                <div class="fgroup"><label class="flabel">Origem / Partida</label><input class="finput" id="f-origempartida" placeholder="ex: Lisboa, Porto"></div>
+                <div class="fgroup"><label class="flabel">Operador / Fornecedor</label><input class="finput" id="f-fornec" placeholder="ex: Soltour, Newblue, GBN"></div>
+                <div class="fgroup"><label class="flabel">Tipo de serviço *</label><select class="finput" id="f-tipo"><option>Voo + Hotel</option><option>Pacote turístico</option><option>Só voo</option><option>Só hotel</option><option>Cruzeiro</option><option>Transfer</option></select></div>
                 <div class="fgroup"><label class="flabel">Data de partida *</label><input class="finput" type="date" id="f-partida"></div>
                 <div class="fgroup"><label class="flabel">Data de regresso</label><input class="finput" type="date" id="f-regresso"></div>
                 <div class="fgroup"><label class="flabel">Preço Net (€) <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">custo agência</span></label><input class="finput" id="f-net" placeholder="0.00" oninput="calcComissao()"></div>
@@ -3373,7 +3375,10 @@ function navTo(page, el) {
     editId=null;uploadedFiles=[];importedContractFile=null;pagValor=0;pagFile=null;confFile=null;confDataPagForn=null;confDataCancel=null;alertaPag=null;alertaCancel=null;
     const fl=document.getElementById('file-list');if(fl)fl.innerHTML='';
     ['pag-result','pag-error','pag-loading','conf-result','conf-error','conf-loading'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
-    ['f-consul','f-emailc','f-nrnavt','f-paxnome','f-nif','f-nasc','f-tel','f-emailp','f-morada','f-npax','f-dest','f-tipo','f-partida','f-regresso','f-valor','f-net','f-obs','f-adultos','f-criancas','f-idades-criancas'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+    ['f-consul','f-emailc','f-nrnavt','f-paxnome','f-nif','f-nasc','f-tel','f-emailp','f-morada','f-npax','f-dest','f-tipo','f-partida','f-regresso','f-valor','f-net','f-obs','f-adultos','f-criancas','f-idades-criancas','f-local','f-fornec','f-origempartida'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+    // Auto-preencher consultor a partir do perfil
+    if(currentPerfil?.nome) { const ec=document.getElementById('f-consul'); if(ec) ec.value=currentPerfil.nome; }
+    if(currentPerfil?.email) { const ee=document.getElementById('f-emailc'); if(ee) ee.value=currentPerfil.email; };
     const ftv = document.getElementById('f-tipo-viagem'); if(ftv) ftv.value = '';
     const estadoEl=document.getElementById('f-estado');if(estadoEl)estadoEl.value='Pendente';
     const importSuccess=document.getElementById('import-success');if(importSuccess)importSuccess.style.display='none';
@@ -4870,57 +4875,7 @@ function abrirOperadores() {
 
 // ── IMPORTAR PDF/CSV COM IA ───────────────────────────────────────────────────
 async function handleImportFile(file) {
-  if (!file) return
-  const ext = file.name.split('.').pop().toLowerCase()
-  const loading = document.getElementById('import-loading')
-  const success = document.getElementById('import-success')
-  const errEl   = document.getElementById('import-error')
-  loading.style.display = 'flex'
-  loading.style.alignItems = 'center'
-  loading.style.justifyContent = 'center'
-  success.style.display = 'none'
-  errEl.style.display = 'none'
-  document.getElementById('import-file-input').value = ''
-
-  try {
-    let docText = ''
-
-    if (ext === 'pdf') {
-      // Extract text from PDF in browser using PDF.js
-      const arrayBuffer = await file.arrayBuffer()
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i)
-        const content = await page.getTextContent()
-        docText += content.items.map(item => item.str).join(' ') + '\n'
-      }
-    } else {
-      docText = await file.text()
-    }
-
-    console.log('Extracted text FULL:', docText)
-console.log('PARSED:', JSON.stringify(parseContractText(docText)))
-
-    // Parse contract fields using regex — no external API needed
-    const parsed = parseContractText(docText)
-
-    fillImportedData(parsed)
-    importedContractFile = file
-
-    loading.style.display = 'none'
-    const filled = Object.values(parsed).filter(v => v && v !== '').length
-    success.style.display = 'block'
-    success.textContent = '\u2713 ' + filled + ' campos preenchidos automaticamente \u2014 rev\u00ea e completa o que faltar'
-
-    goFS(1)
-
-  } catch(e) {
-    loading.style.display = 'none'
-    errEl.style.display = 'block'
-    errEl.textContent = 'Erro ao analisar o ficheiro: ' + (e.message || 'Tenta novamente')
-    console.error(e)
-  }
+  return handleImportFileWithAI(file)
 }
 
 // ── CONDIÇÕES DE PAGAMENTO E CANCELAMENTO ────────────────────────────────────
@@ -5022,6 +4977,132 @@ function getProxDataPag(r) {
     }
   } catch(e) {}
   return ''
+}
+
+// ── LEITURA DE PDF COM IA ─────────────────────────────────────────────────────
+// Reconhece: Soltrópico, Tour10, Soltour, Travelplan, GBN, Newblue/W2M
+
+const PDF_AI_PROMPT = `És um especialista em documentos de reservas de viagens portuguesas. Analisa o texto extraído de um PDF de reserva/voucher de operador turístico e extrai os dados no JSON abaixo. Devolve APENAS o JSON, sem texto adicional, sem backticks, sem markdown.
+
+Operadores conhecidos e como identificá-los:
+- Soltrópico: "VOUCHER DE PACOTE", localizador numérico (ex: 341894), passageiros em tabela APELIDO/NOME
+- Tour10: "CONFIRMAÇÃO DE RESERVA:", localizador numérico (ex: 4253773), tem "PVP markup agência" e "Preço de compra"  
+- Soltour: logo Soltour, localizador começa com "SPT", tem "Informações da reserva", "Preço final", "Dados do titular"
+- Travelplan: logo travelplan, localizador numérico grande (ex: 604645813), tem "DADOS DA AGÊNCIA" e "DETALHE DA RESERVA"
+- GBN Travel: "GBN-" seguido de número, tem "Dados da viagem", "Dados do passageiro", fornecido por "GBN Travel"
+- Newblue/W2M: logo newblue, "INFORMAÇÃO DE RESERVA", localizador numérico (ex: 6147688), tem "INFORMAÇÃO ECONÔMICA"
+
+JSON a preencher:
+{
+  "operador": "",
+  "localizador": "",
+  "nome_cliente": "",
+  "email_cliente": "",
+  "telefone_cliente": "",
+  "destino": "",
+  "origem_partida": "",
+  "data_partida": "",
+  "data_regresso": "",
+  "adultos": "",
+  "criancas": "",
+  "hotel": "",
+  "tipo_servico": "",
+  "valor_total": "",
+  "preco_net": "",
+  "agente": "",
+  "observacoes": ""
+}
+
+Regras obrigatórias:
+- datas: formato YYYY-MM-DD sempre
+- valor_total: PVP de venda ao cliente (número apenas, sem €)
+- preco_net: preço de custo/compra da agência (número apenas, sem €). No Tour10 é "Preço de compra". No Newblue é "TOTAL A PAGAR PELA AGÊNCIA". No Travelplan é "PVP" (sem TAX)
+- localizador: o código de referência principal do documento
+- operador: nome do operador (ex: "Soltrópico", "Tour10", "Soltour", "Travelplan", "GBN", "Newblue")
+- destino: cidade/país de destino (ex: "Djerba, Tunísia", "Munich, Alemanha", "Tenerife", "Gran Canária")
+- origem_partida: cidade/aeroporto de partida (ex: "Lisboa", "Porto")
+- tipo_servico: "Pacote turístico", "Hotel", "Voo + Hotel", "Cruzeiro" conforme os serviços
+- agente: nome do agente/consultor se indicado no documento
+- hotel: nome do hotel ou alojamento principal
+- Se campo não existe, deixa string vazia ""`
+
+async function handleImportFileWithAI(file) {
+  if (!file) return
+  const ext = file.name.split('.').pop().toLowerCase()
+  const loading = document.getElementById('import-loading')
+  const success = document.getElementById('import-success')
+  const errEl   = document.getElementById('import-error')
+  loading.style.display = 'flex'
+  loading.style.alignItems = 'center'
+  loading.style.justifyContent = 'center'
+  success.style.display = 'none'
+  errEl.style.display = 'none'
+  document.getElementById('import-file-input').value = ''
+
+  try {
+    let docText = ''
+
+    if (ext === 'pdf') {
+      const arrayBuffer = await file.arrayBuffer()
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+      // Ler apenas primeiras 4 páginas — suficiente para todos os operadores
+      const pagesToRead = Math.min(pdf.numPages, 4)
+      for (let i = 1; i <= pagesToRead; i++) {
+        const page = await pdf.getPage(i)
+        const content = await page.getTextContent()
+        docText += content.items.map(item => item.str).join(' ') + '\n'
+      }
+    } else {
+      docText = await file.text()
+    }
+
+    // Truncar para não exceder contexto da API
+    const truncated = docText.substring(0, 8000)
+
+    // Chamar API Claude
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: PDF_AI_PROMPT + '\n\nTexto do documento:\n' + truncated
+        }]
+      })
+    })
+
+    const data = await response.json()
+    const rawText = data.content?.[0]?.text || ''
+    let parsed = {}
+    try {
+      const clean = rawText.replace(/```json|```/g, '').trim()
+      parsed = JSON.parse(clean)
+    } catch(e) {
+      console.warn('AI parse failed, falling back to regex:', e)
+      parsed = parseContractText(docText)
+    }
+
+    fillImportedData(parsed)
+    importedContractFile = file
+
+    loading.style.display = 'none'
+    const filled = Object.values(parsed).filter(v => v && v !== '').length
+    const op = parsed.operador ? ` · ${parsed.operador}` : ''
+    const loc = parsed.localizador ? ` · ${parsed.localizador}` : ''
+    success.style.display = 'block'
+    success.textContent = `✓ ${filled} campos preenchidos${op}${loc} — revê e completa o que faltar`
+
+    goFS(2) // Ir para step 2 (passageiro) depois de importar
+
+  } catch(e) {
+    loading.style.display = 'none'
+    errEl.style.display = 'block'
+    errEl.textContent = 'Erro ao analisar: ' + (e.message || 'Tenta novamente')
+    console.error(e)
+  }
 }
 
 function parseContractText(text) {
@@ -5170,21 +5251,49 @@ Regras:
 - estado sempre "Pendente" por omissao`
 
 function fillImportedData(d) {
-  setVal('f-paxnome', d.nome_cliente || '')
-  if (d.nif_cliente)      setVal('f-nif',     d.nif_cliente)
-  if (d.email_cliente)    setVal('f-emailp',  d.email_cliente)
-  if (d.telefone_cliente) setVal('f-tel',     d.telefone_cliente)
-  if (d.num_passageiros)  setVal('f-npax',    d.num_passageiros)
-  if (d.destino)          setVal('f-dest',    d.destino)
-  if (d.data_partida)     setVal('f-partida', d.data_partida)
-  if (d.data_regresso)    setVal('f-regresso',d.data_regresso)
-  if (d.valor_total)    { setVal('f-valor',   d.valor_total); calcComissao() }
-  if (d.estado)           setVal('f-estado',  d.estado, 'select')
-  if (d.observacoes)      setVal('f-obs',     d.observacoes)
+  // Passageiro
+  if (d.nome_cliente)    setVal('f-paxnome', d.nome_cliente)
+  if (d.nif_cliente)     setVal('f-nif',     d.nif_cliente)
+  if (d.email_cliente)   setVal('f-emailp',  d.email_cliente)
+  if (d.telefone_cliente)setVal('f-tel',     d.telefone_cliente)
+  if (d.adultos)         setVal('f-adultos', d.adultos)
+  if (d.criancas)        setVal('f-criancas',d.criancas)
+
+  // Serviços
+  if (d.destino)         setVal('f-dest',    d.destino)
+  if (d.data_partida)    setVal('f-partida', d.data_partida)
+  if (d.data_regresso)   setVal('f-regresso',d.data_regresso)
+  if (d.tipo_servico)    setVal('f-tipo',    d.tipo_servico, 'select')
+  if (d.valor_total)   { setVal('f-valor',   d.valor_total); }
+  if (d.preco_net)     { setVal('f-net',     d.preco_net); }
+  if (d.valor_total || d.preco_net) calcComissao()
+  if (d.estado)          setVal('f-estado',  d.estado, 'select')
+  if (d.observacoes)     setVal('f-obs',     d.observacoes)
+
+  // Localizador
+  if (d.localizador)     setVal('f-local',   d.localizador)
+
+  // Operador/fornecedor
+  if (d.operador)        setVal('f-fornec',  d.operador)
+
+  // Agente — só preenche se não tiver um consultor logado
+  if (d.agente && !currentPerfil?.nome) setVal('f-consul', d.agente)
+
+  // Origem partida
+  if (d.origem_partida)  setVal('f-origempartida', d.origem_partida)
+
+  // Consultor — preencher sempre com o perfil actual (tem prioridade)
+  if (currentPerfil?.nome) {
+    setVal('f-consul', currentPerfil.nome)
+    setVal('f-emailc', currentPerfil.email || '')
+  }
+
+  // Marcar como cliente novo se tiver nome do cliente
   if (d.nome_cliente) {
     document.querySelectorAll('input[name="cc"]').forEach(r => { r.checked = r.value === 'novo' })
   }
-  if (d.condicoes_pagamento?.length) fillCondPag(d.condicoes_pagamento)
+
+  if (d.condicoes_pagamento?.length)   fillCondPag(d.condicoes_pagamento)
   if (d.condicoes_cancelamento?.length) fillCondCancel(d.condicoes_cancelamento)
 }
 
@@ -5409,7 +5518,9 @@ async function submitRsv() {
       data_limite_cancel_forn:confDataCancel||null,
       alerta_pag:alertaPag||null,
       alerta_cancel:alertaCancel||null,
-      estado:document.getElementById('f-estado').value,
+      fornecedor: document.getElementById('f-fornec')?.value || null,
+      origem_partida: document.getElementById('f-origempartida')?.value || null,
+      canal_origem: 'Sistema',
       observacoes:document.getElementById('f-obs').value,
       localizador_principal:document.getElementById('f-local').value||null,
       reserva_efetuada: (document.getElementById('f-local').value||'').trim().length > 0,
