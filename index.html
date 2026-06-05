@@ -1012,6 +1012,19 @@ textarea.finput{resize:vertical;min-height:72px}
             </div>
           </div>
         </div>
+        <!-- Toolbar de selecção -->
+        <div id="team-select-bar" style="display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--blue-light);border:1.5px solid #c7d7fd;border-radius:10px;margin-bottom:10px">
+          <input type="checkbox" id="team-select-all" onchange="toggleSelectAll(this.checked)" style="width:16px;height:16px;accent-color:var(--coral);cursor:pointer">
+          <span style="font-size:13px;font-weight:600;color:var(--blue)" id="team-select-count">0 seleccionados</span>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button onclick="eliminarSeleccionados()" class="btn btn-sm" style="background:#b91c1c;color:#fff;border:none;padding:6px 14px;font-size:12px">🗑 Eliminar seleccionados</button>
+            <button onclick="cancelarSeleccao()" class="btn btn-outline btn-sm" style="font-size:12px">Cancelar</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px" id="team-actions-bar">
+          <div style="font-size:12px;color:var(--muted)" id="team-count-label"></div>
+          <button onclick="activarModoSeleccao()" class="btn btn-outline btn-sm" style="font-size:11px" id="btn-seleccionar">☑ Seleccionar</button>
+        </div>
         <div class="team-grid" id="team-grid"></div>
       </div>
 
@@ -5576,6 +5589,13 @@ async function renderEquipa() {
     'linear-gradient(135deg,#F7A456,#F4717F)'
   ]
   const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+  const countLabel = document.getElementById('team-count-label')
+  if(countLabel) countLabel.textContent = `${perfis.length} consultor${perfis.length !== 1 ? 'es' : ''}`
+  // Garantir que a barra de selecção fica oculta após re-render
+  const selBar = document.getElementById('team-select-bar')
+  if(selBar) selBar.style.display = 'none'
+  const actBar = document.getElementById('team-actions-bar')
+  if(actBar) actBar.style.display = 'flex'
   document.getElementById('team-grid').innerHTML = perfis.map((p, i) => {
     const v = vol[p.id] || 0
     const meta = p.meta_mensal || 10000
@@ -5583,6 +5603,9 @@ async function renderEquipa() {
     const cor = pct >= 100 ? '#22c55e' : pct >= 60 ? '#f59e0b' : '#E8395A'
     const ini = p.nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
     return `<div class="team-card" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--border);margin-bottom:6px">
+      <input type="checkbox" class="team-cb" data-id="${p.id}" data-nome="${p.nome.replace(/"/g,'&quot;')}"
+        style="display:none;width:16px;height:16px;min-width:16px;accent-color:var(--coral);cursor:pointer"
+        onchange="actualizarContadorSeleccao()">
       <div class="team-av" style="width:38px;height:38px;min-width:38px;border-radius:50%;background:${grads[i % grads.length]};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'Poppins',sans-serif">${ini}</div>
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -5614,6 +5637,67 @@ async function renderEquipa() {
       </div>` : ''}
     </div>`
   }).join('')
+}
+
+// ── SELECÇÃO MÚLTIPLA NA EQUIPA ──────────────────────────────────────────────
+function activarModoSeleccao() {
+  document.querySelectorAll('.team-cb').forEach(cb => cb.style.display = 'block')
+  document.getElementById('team-select-bar').style.display = 'flex'
+  document.getElementById('team-actions-bar').style.display = 'none'
+  actualizarContadorSeleccao()
+}
+
+function cancelarSeleccao() {
+  document.querySelectorAll('.team-cb').forEach(cb => { cb.style.display = 'none'; cb.checked = false })
+  document.getElementById('team-select-bar').style.display = 'none'
+  document.getElementById('team-actions-bar').style.display = 'flex'
+  document.getElementById('team-select-all').checked = false
+}
+
+function toggleSelectAll(checked) {
+  document.querySelectorAll('.team-cb').forEach(cb => cb.checked = checked)
+  actualizarContadorSeleccao()
+}
+
+function actualizarContadorSeleccao() {
+  const total = document.querySelectorAll('.team-cb:checked').length
+  document.getElementById('team-select-count').textContent = total === 0 ? 'Nenhum seleccionado' : `${total} seleccionado${total > 1 ? 's' : ''}`
+}
+
+async function eliminarSeleccionados() {
+  const selecc = Array.from(document.querySelectorAll('.team-cb:checked'))
+  if(!selecc.length) { toast('Selecciona pelo menos um consultor', 'err'); return }
+
+  const nomes = selecc.map(cb => cb.dataset.nome).join(', ')
+  if(!confirm(`Eliminar ${selecc.length} consultor(es)?\n\n${nomes}\n\nAs reservas ficam com comissão 100% APM.`)) return
+
+  let ok = 0, falhou = 0
+  for(const cb of selecc) {
+    const id = cb.dataset.id
+    const nome = cb.dataset.nome
+
+    // Actualizar reservas
+    await sb.from('reservas')
+      .update({ consultor_id: null, consultor_nome_externo: nome, comissao_consultor: 0, comissao_apm_100: true })
+      .eq('consultor_id', id)
+
+    // Desassociar recrutados
+    await sb.from('perfis').update({ recrutado_por: null }).eq('recrutado_por', id)
+
+    // Eliminar
+    const { error } = await sb.from('perfis').delete().eq('id', id)
+    if(error) {
+      await sb.from('perfis').update({ ativo: false, status: 'inativo' }).eq('id', id)
+      falhou++
+    } else {
+      ok++
+    }
+  }
+
+  cancelarSeleccao()
+  renderEquipa()
+  if(falhou > 0) toast(`✅ ${ok} eliminados · ⚠️ ${falhou} desactivados (FK)`, 'ok')
+  else toast(`🗑 ${ok} consultor(es) eliminados`, 'ok')
 }
 
 async function desactivarConsultor(id, nome) {
