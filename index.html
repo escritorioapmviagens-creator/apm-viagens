@@ -7552,6 +7552,12 @@ function artigoPublicoUrl(id) {
   return BLOG_BASE + 'blog-artigo.html?id=' + id + (ref ? '&ref=' + ref : '')
 }
 
+function artigoPartilhaUrl(id) {
+  // URL com meta OG correctas para WhatsApp/redes sociais
+  const ref = currentPerfil?.id || ''
+  return SUPA_URL + '/functions/v1/og-artigo?id=' + id + (ref ? '&ref=' + ref : '')
+}
+
 // ── GERAR COM IA ─────────────────────────────────────────────────────────────
 async function gerarArtigoIA() {
   const prompt = document.getElementById('ea-ia-prompt')?.value.trim()
@@ -7880,12 +7886,12 @@ async function renderMeusArtigos() {
 }
 
 function copiarLinkArtigo(id) {
-  navigator.clipboard.writeText(artigoPublicoUrl(id))
+  navigator.clipboard.writeText(artigoPartilhaUrl(id))
   toast('🔗 Link copiado!', 'ok')
 }
 
 function partilharArtigoWA(id) {
-  const url = encodeURIComponent(artigoPublicoUrl(id))
+  const url = encodeURIComponent(artigoPartilhaUrl(id))
   window.open('https://wa.me/?text=' + encodeURIComponent('Olha este artigo! ✈ ') + url, '_blank')
 }
 
