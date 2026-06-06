@@ -853,19 +853,20 @@ textarea.finput{resize:vertical;min-height:72px}
               <textarea class="finput" id="ea-subtitulo" rows="2" style="resize:vertical" placeholder="Breve descrição que aparece no hero..."></textarea>
             </div>
 
-            <!-- HERO IMAGE -->
+            <!-- HERO CARROSSEL -->
             <div style="margin-bottom:18px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-                <label style="font-size:12px;font-weight:600">Imagem de capa</label>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <label style="font-size:12px;font-weight:600">Imagens de capa <span style="font-size:11px;color:var(--muted);font-weight:400">(carrossel — até 6 imagens)</span></label>
                 <div style="display:flex;gap:6px">
-                  <button class="btn btn-sm btn-outline" onclick="abrirPickerImagem('hero')" style="font-size:11px">🔍 Pesquisar Pexels/Unsplash</button>
+                  <button class="btn btn-sm btn-outline" onclick="abrirPickerImagem('hero')" style="font-size:11px">🔍 Pesquisar</button>
                   <button class="btn btn-sm btn-outline" onclick="document.getElementById('ea-hero-inp').click()" style="font-size:11px">📁 Upload</button>
                 </div>
               </div>
-              <div id="ea-hero-preview" style="width:100%;height:150px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
-                <div id="ea-hero-placeholder" style="text-align:center;color:var(--muted);font-size:13px;pointer-events:none"><div style="font-size:2rem;margin-bottom:4px">🖼</div><div>Pesquisa ou faz upload de imagem</div></div>
-                <img id="ea-hero-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
-                <button id="ea-hero-remove" onclick="removerImg(event,'hero')" style="display:none;position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;z-index:2">✕ Remover</button>
+              <!-- Thumbnails do carrossel -->
+              <div id="ea-hero-thumbs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;min-height:0"></div>
+              <!-- Área de drop / preview principal -->
+              <div id="ea-hero-preview" style="width:100%;height:130px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;cursor:pointer" onclick="abrirPickerImagem('hero')">
+                <div id="ea-hero-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.8rem;margin-bottom:4px">🖼</div><div>Clica para adicionar imagem ao carrossel</div></div>
               </div>
               <input type="file" id="ea-hero-inp" accept="image/*" style="display:none" onchange="uploadImgStorage(this.files[0],'hero')">
             </div>
@@ -7542,7 +7543,7 @@ const PEXELS_KEY = 'cbnYFhaUvlz1hVKRkRSoYqUQi1rXPdK5XYJgW6bJpAewcBVeTPm8hpHV'
 const UNSPLASH_KEY = 'lvuZ06ZCQKhkrbsWK2AGELUA_fKdZiXYYVcH1MUp6TQ'
 
 let _editorArtigoId = null
-let _imgData = { hero: null, s1: null, s2: null, s3: null } // URLs ou base64
+let _imgData = { hero: [], s1: null, s2: null, s3: null } // hero = array de URLs; secções = URL único
 let _pickerTarget = null  // qual slot está a ser preenchido
 let _meusArtigos = []
 
@@ -7590,7 +7591,10 @@ Responde APENAS com este JSON (sem mais nada):
       })
     })
     const art = await res.json()
-    if(art.error) throw new Error(art.error)
+    if(art.error) {
+      console.error('Edge Function error:', art)
+      throw new Error(art.raw ? 'Resposta inesperada da IA: ' + art.raw.slice(0,200) : art.error)
+    }
 
     // Preencher campos
     document.getElementById('ea-titulo').value = art.titulo || ''
@@ -7711,8 +7715,15 @@ function usarUrlDirecto() {
 
 // ── GESTÃO DE IMAGENS ─────────────────────────────────────────────────────────
 function setImgSlot(slot, url) {
+  if(slot === 'hero') {
+    if(_imgData.hero.length >= 6) { toast('Máx. 6 imagens no carrossel', 'err'); return }
+    _imgData.hero.push(url)
+    renderHeroThumbs()
+    document.getElementById('ea-hero-placeholder').style.display = 'none'
+    return
+  }
   _imgData[slot] = url
-  const prefix = slot === 'hero' ? 'ea-hero' : 'ea-' + slot
+  const prefix = 'ea-' + slot
   const imgEl  = document.getElementById(prefix + '-img-preview')
   const phEl   = document.getElementById(prefix + '-placeholder')
   const rmEl   = document.getElementById(prefix + '-remove')
@@ -7721,10 +7732,37 @@ function setImgSlot(slot, url) {
   if(rmEl)  rmEl.style.display = 'block'
 }
 
+function renderHeroThumbs() {
+  const el = document.getElementById('ea-hero-thumbs')
+  if(!el) return
+  el.innerHTML = _imgData.hero.map((url, i) => `
+    <div style="position:relative;width:80px;height:56px;border-radius:6px;overflow:hidden;border:2px solid var(--border);flex-shrink:0">
+      <img src="${url}" style="width:100%;height:100%;object-fit:cover">
+      <button onclick="removerHeroImg(${i})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:3px;padding:1px 5px;font-size:10px;cursor:pointer;line-height:1.4">✕</button>
+      ${i > 0 ? `<button onclick="moverHeroImg(${i},-1)" style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:3px;padding:1px 4px;font-size:10px;cursor:pointer;line-height:1.4">←</button>` : ''}
+      ${i < _imgData.hero.length-1 ? `<button onclick="moverHeroImg(${i},1)" style="position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:3px;padding:1px 4px;font-size:10px;cursor:pointer;line-height:1.4">→</button>` : ''}
+    </div>`).join('')
+  if(_imgData.hero.length === 0) document.getElementById('ea-hero-placeholder').style.display = 'block'
+}
+
+function removerHeroImg(idx) {
+  _imgData.hero.splice(idx, 1)
+  renderHeroThumbs()
+}
+
+function moverHeroImg(idx, dir) {
+  const arr = _imgData.hero
+  const swap = idx + dir
+  if(swap < 0 || swap >= arr.length) return
+  ;[arr[idx], arr[swap]] = [arr[swap], arr[idx]]
+  renderHeroThumbs()
+}
+
 function removerImg(e, slot) {
   e.stopPropagation()
+  if(slot === 'hero') { _imgData.hero = []; renderHeroThumbs(); return }
   _imgData[slot] = null
-  const prefix = slot === 'hero' ? 'ea-hero' : 'ea-' + slot
+  const prefix = 'ea-' + slot
   const imgEl = document.getElementById(prefix + '-img-preview')
   const phEl  = document.getElementById(prefix + '-placeholder')
   const rmEl  = document.getElementById(prefix + '-remove')
@@ -7821,7 +7859,7 @@ async function renderMeusArtigos() {
     const dataCriacao = new Date(a.criado_em).toLocaleDateString('pt-PT')
     return `
     <div class="card" style="margin-bottom:12px;display:flex;gap:14px;align-items:flex-start">
-      ${a.hero_img ? `<img src="${a.hero_img}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0">` : '<div style="width:80px;height:60px;border-radius:6px;background:var(--bg2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem">✈</div>'}
+      ${(a.hero_imgs?.[0]||a.hero_img) ? `<img src="${a.hero_imgs?.[0]||a.hero_img}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0">` : '<div style="width:80px;height:60px;border-radius:6px;background:var(--bg2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem">✈</div>'}
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap">
           <div style="font-weight:700;font-size:.9rem">${a.titulo}</div>
@@ -7861,12 +7899,13 @@ async function confirmarEliminarArtigo(id) {
 
 // ── EDITOR ────────────────────────────────────────────────────────────────────
 function limparEditorArtigo() {
-  _imgData = { hero: null, s1: null, s2: null, s3: null }
+  _imgData = { hero: [], s1: null, s2: null, s3: null }
   _editorArtigoId = null
   const ids = ['ea-titulo','ea-regiao','ea-subtitulo','ea-ia-prompt',
                'ea-s1-titulo','ea-s1-texto','ea-s2-titulo','ea-s2-texto','ea-s3-titulo','ea-s3-texto']
   ids.forEach(id => { const el=document.getElementById(id); if(el) el.value='' })
-  ;['hero','s1','s2','s3'].forEach(slot => removerImg({stopPropagation:()=>{}}, slot))
+  ;['s1','s2','s3'].forEach(slot => removerImg({stopPropagation:()=>{}}, slot))
+  renderHeroThumbs()
   const iaStatus = document.getElementById('ea-ia-status')
   if(iaStatus) iaStatus.textContent = ''
   document.getElementById('ea-url-preview').textContent = '— guarda o artigo para gerar o link —'
@@ -7892,7 +7931,8 @@ function abrirEditorArtigo(id) {
     document.getElementById('ea-s2-texto').value = a.s2_texto||''
     document.getElementById('ea-s3-titulo').value = a.s3_titulo||''
     document.getElementById('ea-s3-texto').value = a.s3_texto||''
-    if(a.hero_img) setImgSlot('hero', a.hero_img)
+    const heroImgs = a.hero_imgs || (a.hero_img ? [a.hero_img] : [])
+    heroImgs.forEach(u => setImgSlot('hero', u))
     if(a.s1_img)   setImgSlot('s1',   a.s1_img)
     if(a.s2_img)   setImgSlot('s2',   a.s2_img)
     if(a.s3_img)   setImgSlot('s3',   a.s3_img)
@@ -7926,7 +7966,8 @@ async function guardarArtigo() {
     titulo,
     subtitulo:  gvEA('ea-subtitulo') || null,
     regiao:     gvEA('ea-regiao') || null,
-    hero_img:   _imgData.hero || null,
+    hero_imgs:  _imgData.hero.length ? _imgData.hero : null,
+    hero_img:   _imgData.hero[0] || null, // compatibilidade com lista
     s1_titulo:  gvEA('ea-s1-titulo') || null,
     s1_texto:   gvEA('ea-s1-texto') || null,
     s1_img:     _imgData.s1 || null,
