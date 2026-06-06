@@ -794,9 +794,18 @@ textarea.finput{resize:vertical;min-height:72px}
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
             <div>
               <div style="font-size:1.1rem;font-weight:700;margin-bottom:3px">✏️ Os meus artigos</div>
-              <div style="font-size:13px;color:var(--muted)">Cria artigos de destino com o teu link — os clientes ficam sempre associados a ti.</div>
+              <div style="font-size:13px;color:var(--muted)">Cria artigos com o teu link — os clientes e candidatos ficam sempre associados a ti.</div>
             </div>
-            <button class="btn btn-coral" onclick="abrirEditorArtigo(null)">+ Novo artigo</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline" onclick="abrirEditorArtigo(null,'recrutamento')" style="font-size:12px">+ Recrutamento</button>
+              <button class="btn btn-coral" onclick="abrirEditorArtigo(null,'viagem')">+ Viagem</button>
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px">
+            <button id="tab-viagens" onclick="filtrarArtigosTab('viagem')" style="padding:8px 20px;border:none;background:none;font-family:var(--font);font-size:13px;font-weight:700;color:var(--coral);border-bottom:2px solid var(--coral);margin-bottom:-2px;cursor:pointer">✈ Viagens</button>
+            <button id="tab-recrutamento" onclick="filtrarArtigosTab('recrutamento')" style="padding:8px 20px;border:none;background:none;font-family:var(--font);font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">💼 Recrutamento</button>
           </div>
 
           <!-- Lista -->
@@ -5030,6 +5039,7 @@ async function submeterPedidoEliminacao(id) {
     reserva_id: id,
     consultor_id: currentPerfil.id,
     consultor_nome: currentPerfil.nome,
+    categoria: _categoriaEditor,
     reserva_info: { codigo: rsv.rnavt, destino: rsv.destino, valor_total: rsv.valor_total, estado: rsv.estado },
     motivo,
     estado: 'pendente'
@@ -7729,37 +7739,50 @@ function removerImg(e,slot) {
 }
 
 // ── LISTA DE ARTIGOS ──────────────────────────────────────────────────────────
-async function renderMeusArtigos() {
+let _tabActiva = 'viagem'
+let _categoriaEditor = 'viagem'
+
+function filtrarArtigosTab(tab) {
+  _tabActiva = tab
+  // Actualizar visual das tabs
+  const tabV = document.getElementById('tab-viagens')
+  const tabR = document.getElementById('tab-recrutamento')
+  if(tabV && tabR) {
+    const activeStyle = 'padding:8px 20px;border:none;background:none;font-family:var(--font);font-size:13px;font-weight:700;color:var(--coral);border-bottom:2px solid var(--coral);margin-bottom:-2px;cursor:pointer'
+    const inactiveStyle = 'padding:8px 20px;border:none;background:none;font-family:var(--font);font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer'
+    tabV.style.cssText = tab==='viagem' ? activeStyle : inactiveStyle
+    tabV.style.color = tab==='viagem' ? 'var(--coral)' : 'var(--muted)'
+    tabR.style.cssText = tab==='recrutamento' ? activeStyle : inactiveStyle
+    tabR.style.color = tab==='recrutamento' ? 'var(--coral)' : 'var(--muted)'
+  }
+  renderListaArtigos()
+}
+
+function renderListaArtigos() {
   const el = document.getElementById('meus-artigos-lista')
   if(!el) return
-  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">A carregar...</div>'
-
   const isAdmin = currentPerfil?.role==='admin'
-  let query = sb.from('artigos_consultores').select('*').order('criado_em',{ascending:false})
-  if(!isAdmin) query = query.eq('consultor_id', currentPerfil.id)
 
-  const { data, error } = await query
-  if(error) { el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">Erro ao carregar.</div>'; return }
-  _meusArtigos = data || []
+  // Filtrar por categoria
+  let artigos = _meusArtigos.filter(a => (a.categoria||'viagem') === _tabActiva)
 
-  const optsEl = document.getElementById('ea-link-meus-opts')
-  if(optsEl) {
-    optsEl.innerHTML = _meusArtigos.map(a =>
-      `<option value="blog-artigo.html?id=${a.id}">${a.titulo}${isAdmin&&a.consultor_nome?' ('+a.consultor_nome+')':''}</option>`
-    ).join('')
+  // Ordenar: viagens alfabeticamente por título, recrutamento por data
+  if(_tabActiva === 'viagem') {
+    artigos = artigos.sort((a,b) => (a.titulo||'').localeCompare(b.titulo||'', 'pt'))
   }
 
-  if(!_meusArtigos.length) {
+  if(!artigos.length) {
+    const isEmpty = !_meusArtigos.filter(a => (a.categoria||'viagem') === _tabActiva).length
     el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--muted)">
-      <div style="font-size:2.5rem;margin-bottom:12px">✍️</div>
-      <div style="font-weight:700;margin-bottom:6px">Ainda não tens artigos</div>
-      <div style="font-size:13px;margin-bottom:18px">Usa a IA para gerar o teu primeiro artigo em segundos.</div>
-      <button class="btn btn-coral" onclick="abrirEditorArtigo(null)">✨ Criar primeiro artigo</button>
+      <div style="font-size:2.5rem;margin-bottom:12px">${_tabActiva==='viagem'?'✈':'💼'}</div>
+      <div style="font-weight:700;margin-bottom:6px">Ainda não tens artigos de ${_tabActiva==='viagem'?'viagem':'recrutamento'}</div>
+      <div style="font-size:13px;margin-bottom:18px">Cria o teu primeiro artigo com a ajuda da IA.</div>
+      <button class="btn btn-coral" onclick="abrirEditorArtigo(null,'${_tabActiva}')">✨ Criar artigo</button>
     </div>`
     return
   }
 
-  el.innerHTML = _meusArtigos.map(a => {
+  el.innerHTML = artigos.map(a => {
     const url = artigoPublicoUrl(a.id)
     const thumb = a.hero_imgs?.[0]||a.hero_img||null
     const data_c = new Date(a.criado_em).toLocaleDateString('pt-PT')
@@ -7784,6 +7807,30 @@ async function renderMeusArtigos() {
       </div>
     </div>`
   }).join('')
+}
+
+async function renderMeusArtigos() {
+  const el = document.getElementById('meus-artigos-lista')
+  if(!el) return
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">A carregar...</div>'
+
+  const isAdmin = currentPerfil?.role==='admin'
+  let query = sb.from('artigos_consultores').select('*').order('titulo',{ascending:true})
+  if(!isAdmin) query = query.eq('consultor_id', currentPerfil.id)
+
+  const { data, error } = await query
+  if(error) { el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">Erro ao carregar.</div>'; return }
+  _meusArtigos = data || []
+
+  // Popular dropdown de links
+  const optsEl = document.getElementById('ea-link-meus-opts')
+  if(optsEl) {
+    optsEl.innerHTML = _meusArtigos.map(a =>
+      `<option value="blog-artigo.html?id=${a.id}">${a.titulo}${isAdmin&&a.consultor_nome?' ('+a.consultor_nome+')':''}</option>`
+    ).join('')
+  }
+
+  renderListaArtigos()
 }
 
 function copiarLinkArtigo(id) { navigator.clipboard.writeText(artigoPartilhaUrl(id)); toast('🔗 Link copiado!','ok') }
@@ -7814,13 +7861,15 @@ function limparEditorArtigo() {
   if(btnG) btnG.textContent = '💾 Publicar artigo'
 }
 
-function abrirEditorArtigo(id) {
+function abrirEditorArtigo(id, categoriaDefault) {
   limparEditorArtigo()
+  _categoriaEditor = categoriaDefault || _tabActiva || 'viagem'
   if(id) {
     const a = _meusArtigos.find(x=>x.id===id)
     if(!a) return
     _editorArtigoId = id
     document.getElementById('editor-artigo-titulo-modal').textContent = '✏️ Editar artigo'
+    _categoriaEditor = a.categoria || 'viagem'
     document.getElementById('ea-titulo').value = a.titulo||''
     document.getElementById('ea-regiao').value = a.regiao||''
     document.getElementById('ea-subtitulo').value = a.subtitulo||''
@@ -7845,7 +7894,7 @@ function abrirEditorArtigo(id) {
     const btnG = document.getElementById('ea-btn-guardar')
     if(btnG) btnG.textContent = '💾 Guardar alterações'
   } else {
-    document.getElementById('editor-artigo-titulo-modal').textContent = '✏️ Novo artigo'
+    document.getElementById('editor-artigo-titulo-modal').textContent = _categoriaEditor==='recrutamento' ? '✏️ Novo artigo de recrutamento' : '✏️ Novo artigo de viagem'
     // Começar com 1 secção vazia
     adicionarSeccao()
   }
