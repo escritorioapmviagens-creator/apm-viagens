@@ -19,8 +19,8 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 .nav-cta:hover{background:#d42e4f}
 .hero{position:relative;overflow:hidden;min-height:340px;background:#1a1a2e;display:flex;align-items:flex-end}
 .hero-bg{position:absolute;inset:0;background:linear-gradient(135deg,#050d1a 0%,#0d1a35 30%,#1a2550 60%,#0d1020 100%)}
-.hero-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,rgba(59,91,219,.3) 0%,transparent 55%),radial-gradient(ellipse at 80% 70%,rgba(232,57,90,.15) 0%,transparent 45%)}
-.hero-bg::after{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.05) 1px,transparent 1px);background-size:24px 24px}
+.hero-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,rgba(59,91,219,.35) 0%,transparent 55%),radial-gradient(ellipse at 80% 70%,rgba(232,57,90,.2) 0%,transparent 45%),radial-gradient(ellipse at 60% 10%,rgba(59,150,219,.15) 0%,transparent 40%)}
+.hero-bg::after{content:'💼';position:absolute;right:-1%;bottom:-8%;font-size:24rem;opacity:.05;pointer-events:none;line-height:1}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,13,26,.9) 0%,transparent 60%)}
 .hero-content{position:relative;padding:48px 40px}
 .hero-tag{display:inline-block;background:#3B5BDB;color:#fff;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:5px 12px;border-radius:4px;margin-bottom:16px}
@@ -228,6 +228,26 @@ function toggleWA(cb, id) {
 function entrarGrupo(btn) {
   window.open('https://chat.whatsapp.com/LVYNdfwRjcWBwtKASreRbG', '_blank')
 }
+
+
+// Carregar hero via Unsplash
+async function loadHeroImage() {
+  try {
+    const res = await fetch(
+      `https://api.unsplash.com/search/photos?query=travel professional laptop beach&per_page=1&orientation=landscape`,
+      { headers: { Authorization: 'Client-ID lvuZ06ZCQKhkrbsWK2AGELUA_fKdZiXYYVcH1MUp6TQ' } }
+    )
+    const data = await res.json()
+    if(data.results && data.results[0]) {
+      const url = data.results[0].urls.regular
+      document.querySelector('.hero-bg').style.backgroundImage = `url('${url}')`
+      document.querySelector('.hero-bg').style.backgroundSize = 'cover'
+      document.querySelector('.hero-bg').style.backgroundPosition = 'center'
+      document.querySelector('.hero-bg').style.opacity = '0.35'
+    }
+  } catch(e) { console.warn('Hero image error:', e) }
+}
+loadHeroImage()
 
 function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000)}
 </script>
