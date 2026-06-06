@@ -415,6 +415,7 @@ textarea.finput{resize:vertical;min-height:72px}
         </div>
         <div class="nav-group-items">
           <div class="nav-item" onclick="navTo('blog',this)"><span class="nav-icon">📰</span> Ver todos os artigos</div>
+          <div class="nav-item" onclick="navTo('meus-artigos',this)"><span class="nav-icon">✏️</span> Os meus artigos</div>
           <div class="nav-item" onclick="abrirBlogPost('destinos')"><span class="nav-icon">✈</span> Top Destinos 2026</div>
           <div class="nav-item" onclick="abrirBlogPost('recrutamento')"><span class="nav-icon">💼</span> Oportunidade de Carreira</div>
           <div class="nav-item" onclick="copiarLinkBlog('index')"><span class="nav-icon">🔗</span> Copiar link do blog</div>
@@ -748,10 +749,9 @@ textarea.finput{resize:vertical;min-height:72px}
             <div style="font-size:11px;color:var(--muted)">Partilha este link nas redes sociais ou no WhatsApp — quando alguém pede orçamento ou se candidata a consultor, fica associado a ti.</div>
           </div>
 
-          <!-- Artigos -->
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Artigos disponíveis</div>
+          <!-- Artigos APM -->
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Artigos APM disponíveis</div>
 
-          <!-- Card destinos -->
           <div class="card" style="margin-bottom:12px;display:flex;gap:16px;align-items:center">
             <div style="font-size:2.5rem;flex-shrink:0">✈</div>
             <div style="flex:1;min-width:0">
@@ -766,7 +766,6 @@ textarea.finput{resize:vertical;min-height:72px}
             </div>
           </div>
 
-          <!-- Card recrutamento -->
           <div class="card" style="margin-bottom:12px;display:flex;gap:16px;align-items:center">
             <div style="font-size:2.5rem;flex-shrink:0">💼</div>
             <div style="flex:1;min-width:0">
@@ -781,9 +780,182 @@ textarea.finput{resize:vertical;min-height:72px}
             </div>
           </div>
 
-          <!-- Tip -->
           <div style="background:var(--blue-light);border:1px solid #c7d7fd;border-radius:10px;padding:14px 16px;font-size:12px;color:var(--blue);line-height:1.6">
             💡 <strong>Dica:</strong> Partilha o artigo de destinos no teu perfil do Instagram ou Facebook com a legenda <em>"Já sabes para onde vais este verão? 🌍✈ Pede orçamento gratuito pelo link!"</em> — o link leva directamente ao formulário de orçamento com o teu ID.
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ OS MEUS ARTIGOS ══════════════════════════════════════════════ -->
+      <div class="page" id="page-meus-artigos">
+        <div style="max-width:780px">
+
+          <!-- Header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+            <div>
+              <div style="font-size:1.1rem;font-weight:700;margin-bottom:3px">✏️ Os meus artigos</div>
+              <div style="font-size:13px;color:var(--muted)">Cria artigos de destino com o teu link — os clientes ficam sempre associados a ti.</div>
+            </div>
+            <button class="btn btn-coral" onclick="abrirEditorArtigo(null)">+ Novo artigo</button>
+          </div>
+
+          <!-- Lista -->
+          <div id="meus-artigos-lista">
+            <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">A carregar...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ MODAL EDITOR DE ARTIGO ════════════════════════════════════════ -->
+      <div class="overlay" id="modal-editor-artigo" style="display:none">
+        <div class="modal" style="max-width:680px;width:95%;max-height:90vh;overflow-y:auto">
+          <div class="modal-head">
+            <span class="modal-title" id="editor-artigo-titulo-modal">✏️ Novo artigo</span>
+            <button class="modal-x" onclick="fecharEditorArtigo()">✕</button>
+          </div>
+          <div style="padding:0 1.5rem 1.5rem">
+
+            <!-- Aviso links -->
+            <div style="background:var(--blue-light);border:1px solid #c7d7fd;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--blue);margin-bottom:18px;line-height:1.6">
+              💡 Para inserir links no texto usa a sintaxe <strong>[texto do link](url)</strong> — ex: <code>[Ver Djerba](blog-djerba.html)</code>. O teu ID é adicionado automaticamente.
+            </div>
+
+            <!-- HERO -->
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;margin-top:4px">Cabeçalho</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+              <div>
+                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título do artigo *</label>
+                <input class="finput" id="ea-titulo" placeholder="Ex: Djerba — Ilha do Sol">
+              </div>
+              <div>
+                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Região</label>
+                <input class="finput" id="ea-regiao" placeholder="Ex: Norte de África">
+              </div>
+            </div>
+            <div style="margin-bottom:12px">
+              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Subtítulo / introdução</label>
+              <textarea class="finput" id="ea-subtitulo" rows="2" placeholder="Breve descrição que aparece no hero do artigo..." style="resize:vertical"></textarea>
+            </div>
+            <div style="margin-bottom:18px">
+              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Imagem de capa</label>
+              <div id="ea-hero-preview" style="width:100%;height:140px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative" onclick="document.getElementById('ea-hero-inp').click()">
+                <div id="ea-hero-placeholder" style="text-align:center;color:var(--muted);font-size:13px;pointer-events:none">
+                  <div style="font-size:2rem;margin-bottom:4px">🖼</div>
+                  <div>Clica para carregar imagem</div>
+                  <div style="font-size:11px;margin-top:2px">JPG ou PNG, máx. 2MB</div>
+                </div>
+                <img id="ea-hero-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
+                <div id="ea-hero-remove" onclick="removerHero(event)" style="display:none;position:absolute;top:6px;right:6px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;z-index:2">✕ Remover</div>
+              </div>
+              <input type="file" id="ea-hero-inp" accept="image/*" style="display:none" onchange="carregarHero(this.files[0])">
+            </div>
+
+            <!-- SECÇÃO 1 -->
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:4px;border-top:1px solid var(--border)">Secção 1</div>
+            <div style="margin-bottom:12px">
+              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título da secção</label>
+              <input class="finput" id="ea-s1-titulo" placeholder="Ex: Porquê visitar?">
+            </div>
+            <div style="margin-bottom:12px">
+              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
+              <textarea class="finput" id="ea-s1-texto" rows="4" placeholder="Escreve o conteúdo aqui... Usa [texto](url) para links." style="resize:vertical"></textarea>
+            </div>
+            <div style="margin-bottom:18px">
+              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Imagem</label>
+              <div id="ea-s1-preview" style="width:100%;height:110px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative" onclick="document.getElementById('ea-s1-inp').click()">
+                <div id="ea-s1-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Clica para carregar</div>
+                <img id="ea-s1-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
+                <div id="ea-s1-remove" onclick="removerImg(event,'s1')" style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;z-index:2">✕</div>
+              </div>
+              <input type="file" id="ea-s1-inp" accept="image/*" style="display:none" onchange="carregarImgSecao(this.files[0],'s1')">
+            </div>
+
+            <!-- SECÇÃO 2 -->
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:4px;border-top:1px solid var(--border)">Secção 2</div>
+            <div style="margin-bottom:12px">
+              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título da secção</label>
+              <input class="finput" id="ea-s2-titulo" placeholder="Ex: O que fazer">
+            </div>
+            <div style="margin-bottom:12px">
+              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
+              <textarea class="finput" id="ea-s2-texto" rows="4" placeholder="Escreve o conteúdo aqui... Usa [texto](url) para links." style="resize:vertical"></textarea>
+            </div>
+            <div style="margin-bottom:18px">
+              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Imagem</label>
+              <div id="ea-s2-preview" style="width:100%;height:110px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative" onclick="document.getElementById('ea-s2-inp').click()">
+                <div id="ea-s2-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Clica para carregar</div>
+                <img id="ea-s2-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
+                <div id="ea-s2-remove" onclick="removerImg(event,'s2')" style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;z-index:2">✕</div>
+              </div>
+              <input type="file" id="ea-s2-inp" accept="image/*" style="display:none" onchange="carregarImgSecao(this.files[0],'s2')">
+            </div>
+
+            <!-- SECÇÃO 3 -->
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:4px;border-top:1px solid var(--border)">Secção 3</div>
+            <div style="margin-bottom:12px">
+              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título da secção</label>
+              <input class="finput" id="ea-s3-titulo" placeholder="Ex: Dicas práticas">
+            </div>
+            <div style="margin-bottom:12px">
+              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
+              <textarea class="finput" id="ea-s3-texto" rows="4" placeholder="Escreve o conteúdo aqui... Usa [texto](url) para links." style="resize:vertical"></textarea>
+            </div>
+            <div style="margin-bottom:18px">
+              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Imagem</label>
+              <div id="ea-s3-preview" style="width:100%;height:110px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative" onclick="document.getElementById('ea-s3-inp').click()">
+                <div id="ea-s3-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Clica para carregar</div>
+                <img id="ea-s3-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
+                <div id="ea-s3-remove" onclick="removerImg(event,'s3')" style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;z-index:2">✕</div>
+              </div>
+              <input type="file" id="ea-s3-inp" accept="image/*" style="display:none" onchange="carregarImgSecao(this.files[0],'s3')">
+            </div>
+
+            <!-- Inserir link -->
+            <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:18px">
+              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Inserir link para artigo</div>
+              <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+                <div style="flex:2;min-width:140px">
+                  <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Artigo de destino</label>
+                  <select class="finput" id="ea-link-artigo" style="height:38px">
+                    <option value="">— escolher artigo —</option>
+                    <optgroup label="Blog APM">
+                      <option value="blog-destinos-2026.html">Top Destinos 2026</option>
+                      <option value="blog-djerba.html">Djerba</option>
+                      <option value="blog-bayahibe.html">Bayahibe</option>
+                      <option value="blog-maiorca.html">Maiorca</option>
+                      <option value="blog-cabo-verde.html">Cabo Verde</option>
+                      <option value="blog-paris-disneyland.html">Paris & Disneyland</option>
+                      <option value="blog-recrutamento.html">Oportunidade de Carreira</option>
+                    </optgroup>
+                    <optgroup label="Os meus artigos" id="ea-link-meus-opts"></optgroup>
+                  </select>
+                </div>
+                <div style="flex:2;min-width:120px">
+                  <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto do link</label>
+                  <input class="finput" id="ea-link-texto" placeholder="Ex: sabe mais sobre Djerba">
+                </div>
+                <div>
+                  <button class="btn btn-outline btn-sm" onclick="copiarSnippetLink()" style="height:38px;white-space:nowrap">📋 Copiar snippet</button>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--muted);margin-top:6px">O snippet gerado é copiado — cola-o no campo de texto onde queres o link.</div>
+            </div>
+
+            <!-- Pré-visualização -->
+            <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Pré-visualização do link público</div>
+                <button class="btn btn-sm btn-outline" onclick="preVisualizarArtigo()" style="font-size:11px">👁 Abrir</button>
+              </div>
+              <div id="ea-url-preview" style="font-size:11px;color:var(--blue);background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;word-break:break-all;font-family:monospace">— guarda o artigo para gerar o link —</div>
+            </div>
+
+            <!-- Botões -->
+            <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+              <button class="btn btn-outline" onclick="fecharEditorArtigo()">Cancelar</button>
+              <button class="btn" id="ea-btn-despublicar" onclick="togglePublicadoArtigo(false)" style="display:none;background:var(--bg2);color:var(--text);border:1px solid var(--border)">Despublicar</button>
+              <button class="btn btn-coral" onclick="guardarArtigo()" id="ea-btn-guardar">💾 Publicar artigo</button>
+            </div>
           </div>
         </div>
       </div>
@@ -3474,6 +3646,7 @@ function navTo(page, el) {
   if(page==='equipa') renderEquipa()
   if(page==='orcamento-wa') renderOrcamentoWA()
   if(page==='blog') renderBlog()
+  if(page==='meus-artigos') renderMeusArtigos()
   if(page==='atendimento') renderAtendimento()
   if(page==='recibos') renderRecibos()
   if(page==='aceites') renderAceitesPendentes()
@@ -7288,6 +7461,301 @@ function partilharBlogFacebook(post) {
 function renderBlog() {
   const el = document.getElementById('blog-link-display')
   if(el) el.textContent = blogUrlComRef('index')
+}
+
+// ── ARTIGOS DE CONSULTORES ──────────────────────────────────────────────────
+
+let _editorArtigoId = null      // null = novo, string = editar
+let _heroB64 = null
+let _s1B64 = null, _s2B64 = null, _s3B64 = null
+let _meusArtigos = []
+
+function artigoPublicoUrl(id) {
+  const ref = currentPerfil?.id || ''
+  return BLOG_BASE + 'blog-artigo.html?id=' + id + (ref ? '&ref=' + ref : '')
+}
+
+async function renderMeusArtigos() {
+  const el = document.getElementById('meus-artigos-lista')
+  if(!el) return
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">A carregar...</div>'
+
+  const isAdmin = currentPerfil?.role === 'admin'
+  let query = sb.from('artigos_consultores').select('*').order('criado_em', {ascending:false})
+  if(!isAdmin) query = query.eq('consultor_id', currentPerfil.id)
+
+  const { data, error } = await query
+  if(error) { el.innerHTML = '<div style="color:var(--red);font-size:13px;padding:20px">Erro ao carregar artigos.</div>'; return }
+  _meusArtigos = data || []
+
+  // Popular dropdown de links
+  const optsEl = document.getElementById('ea-link-meus-opts')
+  if(optsEl) {
+    optsEl.innerHTML = _meusArtigos.map(a =>
+      `<option value="blog-artigo.html?id=${a.id}">${a.titulo}${isAdmin && a.consultor_nome ? ' ('+a.consultor_nome+')' : ''}</option>`
+    ).join('')
+  }
+
+  if(_meusArtigos.length === 0) {
+    el.innerHTML = `
+      <div style="text-align:center;padding:48px 20px;color:var(--muted)">
+        <div style="font-size:2.5rem;margin-bottom:12px">✍️</div>
+        <div style="font-weight:700;margin-bottom:6px">Ainda não tens artigos</div>
+        <div style="font-size:13px;margin-bottom:18px">Cria o teu primeiro artigo e partilha-o com os teus clientes.</div>
+        <button class="btn btn-coral" onclick="abrirEditorArtigo(null)">+ Criar primeiro artigo</button>
+      </div>`
+    return
+  }
+
+  el.innerHTML = _meusArtigos.map(a => {
+    const url = artigoPublicoUrl(a.id)
+    const dataCriacao = new Date(a.criado_em).toLocaleDateString('pt-PT')
+    return `
+    <div class="card" style="margin-bottom:12px;display:flex;gap:14px;align-items:flex-start">
+      ${a.hero_img ? `<img src="${a.hero_img}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0">` : '<div style="width:80px;height:60px;border-radius:6px;background:var(--bg2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem">✈</div>'}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap">
+          <div style="font-weight:700;font-size:.9rem">${a.titulo}</div>
+          <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:${a.publicado?'rgba(22,163,74,.12)':'rgba(107,114,128,.12)'};color:${a.publicado?'#15803d':'var(--muted)'}">${a.publicado?'Publicado':'Rascunho'}</span>
+        </div>
+        ${a.regiao ? `<div style="font-size:11px;color:var(--muted);margin-bottom:4px">📍 ${a.regiao}</div>` : ''}
+        <div style="font-size:11px;color:var(--muted2);margin-bottom:8px">Criado em ${dataCriacao}${currentPerfil?.role==='admin'&&a.consultor_nome?' · '+a.consultor_nome:''}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button onclick="window.open('${url}','_blank')" class="btn btn-sm btn-outline" style="font-size:11px">👁 Ver</button>
+          <button onclick="copiarLinkArtigo('${a.id}')" class="btn btn-sm btn-outline" style="font-size:11px">🔗 Copiar link</button>
+          <button onclick="partilharArtigoWA('${a.id}')" class="btn btn-sm" style="background:#25D366;color:#fff;border:none;font-size:11px">💬 WA</button>
+          <button onclick="abrirEditorArtigo('${a.id}')" class="btn btn-sm btn-outline" style="font-size:11px">✏️ Editar</button>
+          <button onclick="confirmarEliminarArtigo('${a.id}')" class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.2);font-size:11px">🗑 Eliminar</button>
+        </div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+function copiarLinkArtigo(id) {
+  navigator.clipboard.writeText(artigoPublicoUrl(id))
+  toast('🔗 Link copiado!', 'ok')
+}
+
+function partilharArtigoWA(id) {
+  const url = encodeURIComponent(artigoPublicoUrl(id))
+  window.open('https://wa.me/?text=' + encodeURIComponent('Olha este artigo! ✈ ') + url, '_blank')
+}
+
+async function confirmarEliminarArtigo(id) {
+  if(!confirm('Eliminar este artigo? Esta acção não pode ser desfeita.')) return
+  const { error } = await sb.from('artigos_consultores').delete().eq('id', id)
+  if(error) { toast('Erro ao eliminar', 'err'); return }
+  toast('Artigo eliminado', 'ok')
+  renderMeusArtigos()
+}
+
+function imgToB64(file, maxW, cb) {
+  if(file.size > 2.5*1024*1024) { toast('Imagem demasiado grande (máx. 2MB)', 'err'); return }
+  const reader = new FileReader()
+  reader.onload = e => {
+    const img = new Image()
+    img.onload = () => {
+      const scale = Math.min(1, maxW / img.width)
+      const w = Math.round(img.width * scale)
+      const h = Math.round(img.height * scale)
+      const canvas = document.createElement('canvas')
+      canvas.width = w; canvas.height = h
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+      cb(canvas.toDataURL('image/jpeg', 0.82))
+    }
+    img.src = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
+function carregarHero(file) {
+  imgToB64(file, 1400, b64 => {
+    _heroB64 = b64
+    const prev = document.getElementById('ea-hero-img-preview')
+    const ph = document.getElementById('ea-hero-placeholder')
+    const rm = document.getElementById('ea-hero-remove')
+    prev.src = b64; prev.style.display = 'block'
+    ph.style.display = 'none'; rm.style.display = 'block'
+  })
+}
+function removerHero(e) {
+  e.stopPropagation()
+  _heroB64 = null
+  document.getElementById('ea-hero-img-preview').style.display = 'none'
+  document.getElementById('ea-hero-placeholder').style.display = 'block'
+  document.getElementById('ea-hero-remove').style.display = 'none'
+}
+
+function carregarImgSecao(file, sec) {
+  imgToB64(file, 1200, b64 => {
+    if(sec==='s1') _s1B64=b64
+    else if(sec==='s2') _s2B64=b64
+    else if(sec==='s3') _s3B64=b64
+    document.getElementById('ea-'+sec+'-img-preview').src = b64
+    document.getElementById('ea-'+sec+'-img-preview').style.display = 'block'
+    document.getElementById('ea-'+sec+'-placeholder').style.display = 'none'
+    document.getElementById('ea-'+sec+'-remove').style.display = 'block'
+  })
+}
+function removerImg(e, sec) {
+  e.stopPropagation()
+  if(sec==='s1') _s1B64=null
+  else if(sec==='s2') _s2B64=null
+  else if(sec==='s3') _s3B64=null
+  document.getElementById('ea-'+sec+'-img-preview').style.display = 'none'
+  document.getElementById('ea-'+sec+'-placeholder').style.display = 'block'
+  document.getElementById('ea-'+sec+'-remove').style.display = 'none'
+}
+
+function limparEditorArtigo() {
+  _heroB64=null; _s1B64=null; _s2B64=null; _s3B64=null
+  const ids = ['ea-titulo','ea-regiao','ea-subtitulo','ea-s1-titulo','ea-s1-texto','ea-s2-titulo','ea-s2-texto','ea-s3-titulo','ea-s3-texto']
+  ids.forEach(id => { const el=document.getElementById(id); if(el) el.value='' })
+  ;['hero','s1','s2','s3'].forEach(sec => {
+    const prefix = sec==='hero' ? 'ea-hero' : 'ea-'+sec
+    const img = document.getElementById(prefix+'-img-preview')
+    const ph = document.getElementById(prefix+'-placeholder')
+    const rm = document.getElementById(prefix+'-remove')
+    if(img) { img.style.display='none'; img.src='' }
+    if(ph) ph.style.display='block'
+    if(rm) rm.style.display='none'
+  })
+  document.getElementById('ea-url-preview').textContent = '— guarda o artigo para gerar o link —'
+  const btnD = document.getElementById('ea-btn-despublicar')
+  if(btnD) btnD.style.display='none'
+  const btnG = document.getElementById('ea-btn-guardar')
+  if(btnG) btnG.textContent = '💾 Publicar artigo'
+}
+
+function abrirEditorArtigo(id) {
+  _editorArtigoId = id
+  limparEditorArtigo()
+
+  if(id) {
+    const a = _meusArtigos.find(x => x.id === id)
+    if(!a) return
+    document.getElementById('editor-artigo-titulo-modal').textContent = '✏️ Editar artigo'
+    document.getElementById('ea-titulo').value = a.titulo||''
+    document.getElementById('ea-regiao').value = a.regiao||''
+    document.getElementById('ea-subtitulo').value = a.subtitulo||''
+    document.getElementById('ea-s1-titulo').value = a.s1_titulo||''
+    document.getElementById('ea-s1-texto').value = a.s1_texto||''
+    document.getElementById('ea-s2-titulo').value = a.s2_titulo||''
+    document.getElementById('ea-s2-texto').value = a.s2_texto||''
+    document.getElementById('ea-s3-titulo').value = a.s3_titulo||''
+    document.getElementById('ea-s3-texto').value = a.s3_texto||''
+
+    // Imagens
+    function previewImg(b64, sec) {
+      if(!b64) return
+      const prefix = sec==='hero' ? 'ea-hero' : 'ea-'+sec
+      const img = document.getElementById(prefix+'-img-preview')
+      const ph = document.getElementById(prefix+'-placeholder')
+      const rm = document.getElementById(prefix+'-remove')
+      if(img) { img.src=b64; img.style.display='block' }
+      if(ph) ph.style.display='none'
+      if(rm) rm.style.display='block'
+    }
+    if(a.hero_img) { _heroB64=a.hero_img; previewImg(a.hero_img,'hero') }
+    if(a.s1_img)   { _s1B64=a.s1_img;    previewImg(a.s1_img,'s1') }
+    if(a.s2_img)   { _s2B64=a.s2_img;    previewImg(a.s2_img,'s2') }
+    if(a.s3_img)   { _s3B64=a.s3_img;    previewImg(a.s3_img,'s3') }
+
+    document.getElementById('ea-url-preview').textContent = artigoPublicoUrl(id)
+    const btnD = document.getElementById('ea-btn-despublicar')
+    if(btnD) btnD.style.display = a.publicado ? 'inline-flex' : 'none'
+    const btnG = document.getElementById('ea-btn-guardar')
+    if(btnG) btnG.textContent = '💾 Guardar alterações'
+  } else {
+    document.getElementById('editor-artigo-titulo-modal').textContent = '✏️ Novo artigo'
+  }
+
+  document.getElementById('modal-editor-artigo').style.display = 'flex'
+}
+
+function fecharEditorArtigo() {
+  document.getElementById('modal-editor-artigo').style.display = 'none'
+  limparEditorArtigo()
+}
+
+function gv(id) { const el=document.getElementById(id); return el?el.value.trim():'' }
+
+async function guardarArtigo() {
+  const titulo = gv('ea-titulo')
+  if(!titulo) { toast('O título é obrigatório', 'err'); return }
+
+  const btn = document.getElementById('ea-btn-guardar')
+  btn.disabled = true; btn.textContent = 'A guardar...'
+
+  const payload = {
+    consultor_id: currentPerfil.id,
+    consultor_nome: currentPerfil.nome,
+    titulo,
+    subtitulo: gv('ea-subtitulo') || null,
+    regiao: gv('ea-regiao') || null,
+    hero_img: _heroB64 || null,
+    s1_titulo: gv('ea-s1-titulo') || null,
+    s1_texto: gv('ea-s1-texto') || null,
+    s1_img: _s1B64 || null,
+    s2_titulo: gv('ea-s2-titulo') || null,
+    s2_texto: gv('ea-s2-texto') || null,
+    s2_img: _s2B64 || null,
+    s3_titulo: gv('ea-s3-titulo') || null,
+    s3_texto: gv('ea-s3-texto') || null,
+    s3_img: _s3B64 || null,
+    publicado: true,
+    atualizado_em: new Date().toISOString()
+  }
+
+  let error, data
+  if(_editorArtigoId) {
+    const res = await sb.from('artigos_consultores').update(payload).eq('id', _editorArtigoId).select().single()
+    error = res.error; data = res.data
+  } else {
+    const res = await sb.from('artigos_consultores').insert(payload).select().single()
+    error = res.error; data = res.data
+  }
+
+  btn.disabled = false; btn.textContent = _editorArtigoId ? '💾 Guardar alterações' : '💾 Publicar artigo'
+
+  if(error) { toast('Erro ao guardar: ' + (error.message||''), 'err'); return }
+
+  _editorArtigoId = data.id
+  document.getElementById('ea-url-preview').textContent = artigoPublicoUrl(data.id)
+  const btnD = document.getElementById('ea-btn-despublicar')
+  if(btnD) btnD.style.display = 'inline-flex'
+  btn.textContent = '💾 Guardar alterações'
+
+  toast('✅ Artigo publicado!', 'ok')
+  renderMeusArtigos()
+}
+
+async function togglePublicadoArtigo(publicar) {
+  if(!_editorArtigoId) return
+  const { error } = await sb.from('artigos_consultores')
+    .update({ publicado: publicar, atualizado_em: new Date().toISOString() })
+    .eq('id', _editorArtigoId)
+  if(error) { toast('Erro', 'err'); return }
+  toast(publicar ? '✅ Artigo publicado' : 'Artigo despublicado', 'ok')
+  const btnD = document.getElementById('ea-btn-despublicar')
+  if(btnD) btnD.style.display = publicar ? 'inline-flex' : 'none'
+  renderMeusArtigos()
+}
+
+function preVisualizarArtigo() {
+  if(!_editorArtigoId) { toast('Guarda o artigo primeiro', 'err'); return }
+  window.open(artigoPublicoUrl(_editorArtigoId), '_blank')
+}
+
+function copiarSnippetLink() {
+  const artigo = document.getElementById('ea-link-artigo')?.value
+  const texto = document.getElementById('ea-link-texto')?.value.trim()
+  if(!artigo) { toast('Escolhe um artigo', 'err'); return }
+  if(!texto) { toast('Escreve o texto do link', 'err'); return }
+  const snippet = `[${texto}](${artigo})`
+  navigator.clipboard.writeText(snippet)
+  toast('📋 Snippet copiado! Cola no texto.', 'ok')
 }
 
 function copiarLink() {
