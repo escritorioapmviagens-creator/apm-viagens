@@ -807,124 +807,165 @@ textarea.finput{resize:vertical;min-height:72px}
       </div>
 
       <!-- ══ MODAL EDITOR DE ARTIGO ════════════════════════════════════════ -->
+      <!-- ══ MODAL EDITOR DE ARTIGO ════════════════════════════════════════ -->
       <div class="overlay" id="modal-editor-artigo" style="display:none">
-        <div class="modal" style="max-width:680px;width:95%;max-height:90vh;overflow-y:auto">
+        <div class="modal" style="max-width:720px;width:95%;max-height:92vh;overflow-y:auto">
           <div class="modal-head">
             <span class="modal-title" id="editor-artigo-titulo-modal">✏️ Novo artigo</span>
             <button class="modal-x" onclick="fecharEditorArtigo()">✕</button>
           </div>
           <div style="padding:0 1.5rem 1.5rem">
 
-            <!-- Aviso links -->
-            <div style="background:var(--blue-light);border:1px solid #c7d7fd;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--blue);margin-bottom:18px;line-height:1.6">
-              💡 Para inserir links no texto usa a sintaxe <strong>[texto do link](url)</strong> — ex: <code>[Ver Djerba](blog-djerba.html)</code>. O teu ID é adicionado automaticamente.
+            <!-- IA: Gerar artigo -->
+            <div style="background:linear-gradient(135deg,#1a1a2e,#2d1a3a);border-radius:10px;padding:16px;margin-bottom:20px">
+              <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                <span style="font-size:1.1rem">✨</span> Gerar artigo com IA
+              </div>
+              <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:flex-end">
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:rgba(255,255,255,.6);display:block;margin-bottom:5px">Destino + instruções (opcional)</label>
+                  <input class="finput" id="ea-ia-prompt" placeholder="Ex: Maldivas, foco em famílias, mencionar snorkeling e all-inclusive" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff">
+                </div>
+                <button class="btn btn-coral" id="ea-ia-btn" onclick="gerarArtigoIA()" style="white-space:nowrap;height:38px">✨ Gerar</button>
+              </div>
+              <div id="ea-ia-status" style="font-size:11px;color:rgba(255,255,255,.5);margin-top:8px;min-height:16px"></div>
             </div>
 
-            <!-- HERO -->
-            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;margin-top:4px">Cabeçalho</div>
+            <!-- Aviso links -->
+            <div style="background:var(--blue-light);border:1px solid #c7d7fd;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--blue);margin-bottom:16px;line-height:1.6">
+              💡 Para inserir links no texto usa <strong>[texto](url)</strong> — ex: <code>[Ver Djerba](blog-djerba.html)</code>. O teu ID é adicionado automaticamente.
+            </div>
+
+            <!-- CABEÇALHO -->
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Cabeçalho</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
               <div>
-                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título do artigo *</label>
-                <input class="finput" id="ea-titulo" placeholder="Ex: Djerba — Ilha do Sol">
+                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título *</label>
+                <input class="finput" id="ea-titulo" placeholder="Ex: Maldivas — Paraíso no Índico">
               </div>
               <div>
                 <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Região</label>
-                <input class="finput" id="ea-regiao" placeholder="Ex: Norte de África">
+                <input class="finput" id="ea-regiao" placeholder="Ex: Oceano Índico">
               </div>
             </div>
-            <div style="margin-bottom:12px">
+            <div style="margin-bottom:14px">
               <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Subtítulo / introdução</label>
-              <textarea class="finput" id="ea-subtitulo" rows="2" placeholder="Breve descrição que aparece no hero do artigo..." style="resize:vertical"></textarea>
+              <textarea class="finput" id="ea-subtitulo" rows="2" style="resize:vertical" placeholder="Breve descrição que aparece no hero..."></textarea>
             </div>
+
+            <!-- HERO IMAGE -->
             <div style="margin-bottom:18px">
-              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Imagem de capa</label>
-              <div id="ea-hero-preview" style="width:100%;height:140px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative" onclick="document.getElementById('ea-hero-inp').click()">
-                <div id="ea-hero-placeholder" style="text-align:center;color:var(--muted);font-size:13px;pointer-events:none">
-                  <div style="font-size:2rem;margin-bottom:4px">🖼</div>
-                  <div>Clica para carregar imagem</div>
-                  <div style="font-size:11px;margin-top:2px">JPG ou PNG, máx. 2MB</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                <label style="font-size:12px;font-weight:600">Imagem de capa</label>
+                <div style="display:flex;gap:6px">
+                  <button class="btn btn-sm btn-outline" onclick="abrirPickerImagem('hero')" style="font-size:11px">🔍 Pesquisar Pexels/Unsplash</button>
+                  <button class="btn btn-sm btn-outline" onclick="document.getElementById('ea-hero-inp').click()" style="font-size:11px">📁 Upload</button>
                 </div>
+              </div>
+              <div id="ea-hero-preview" style="width:100%;height:150px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
+                <div id="ea-hero-placeholder" style="text-align:center;color:var(--muted);font-size:13px;pointer-events:none"><div style="font-size:2rem;margin-bottom:4px">🖼</div><div>Pesquisa ou faz upload de imagem</div></div>
                 <img id="ea-hero-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
-                <div id="ea-hero-remove" onclick="removerHero(event)" style="display:none;position:absolute;top:6px;right:6px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;z-index:2">✕ Remover</div>
+                <button id="ea-hero-remove" onclick="removerImg(event,'hero')" style="display:none;position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;z-index:2">✕ Remover</button>
               </div>
-              <input type="file" id="ea-hero-inp" accept="image/*" style="display:none" onchange="carregarHero(this.files[0])">
+              <input type="file" id="ea-hero-inp" accept="image/*" style="display:none" onchange="uploadImgStorage(this.files[0],'hero')">
             </div>
 
-            <!-- SECÇÃO 1 -->
-            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:4px;border-top:1px solid var(--border)">Secção 1</div>
-            <div style="margin-bottom:12px">
-              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título da secção</label>
-              <input class="finput" id="ea-s1-titulo" placeholder="Ex: Porquê visitar?">
-            </div>
-            <div style="margin-bottom:12px">
-              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
-              <textarea class="finput" id="ea-s1-texto" rows="4" placeholder="Escreve o conteúdo aqui... Usa [texto](url) para links." style="resize:vertical"></textarea>
-            </div>
-            <div style="margin-bottom:18px">
-              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Imagem</label>
-              <div id="ea-s1-preview" style="width:100%;height:110px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative" onclick="document.getElementById('ea-s1-inp').click()">
-                <div id="ea-s1-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Clica para carregar</div>
-                <img id="ea-s1-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
-                <div id="ea-s1-remove" onclick="removerImg(event,'s1')" style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;z-index:2">✕</div>
+            <!-- SECÇÕES 1-3 -->
+            
+            <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:4px">
+              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Secção 1</div>
+              <div style="margin-bottom:10px">
+                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título</label>
+                <input class="finput" id="ea-s1-titulo" placeholder="Ex: Porquê visitar?">
               </div>
-              <input type="file" id="ea-s1-inp" accept="image/*" style="display:none" onchange="carregarImgSecao(this.files[0],'s1')">
-            </div>
-
-            <!-- SECÇÃO 2 -->
-            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:4px;border-top:1px solid var(--border)">Secção 2</div>
-            <div style="margin-bottom:12px">
-              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título da secção</label>
-              <input class="finput" id="ea-s2-titulo" placeholder="Ex: O que fazer">
-            </div>
-            <div style="margin-bottom:12px">
-              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
-              <textarea class="finput" id="ea-s2-texto" rows="4" placeholder="Escreve o conteúdo aqui... Usa [texto](url) para links." style="resize:vertical"></textarea>
-            </div>
-            <div style="margin-bottom:18px">
-              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Imagem</label>
-              <div id="ea-s2-preview" style="width:100%;height:110px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative" onclick="document.getElementById('ea-s2-inp').click()">
-                <div id="ea-s2-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Clica para carregar</div>
-                <img id="ea-s2-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
-                <div id="ea-s2-remove" onclick="removerImg(event,'s2')" style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;z-index:2">✕</div>
+              <div style="margin-bottom:10px">
+                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
+                <textarea class="finput" id="ea-s1-texto" rows="4" style="resize:vertical" placeholder="Escreve aqui... Usa [texto](url) para links."></textarea>
               </div>
-              <input type="file" id="ea-s2-inp" accept="image/*" style="display:none" onchange="carregarImgSecao(this.files[0],'s2')">
-            </div>
-
-            <!-- SECÇÃO 3 -->
-            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:4px;border-top:1px solid var(--border)">Secção 3</div>
-            <div style="margin-bottom:12px">
-              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título da secção</label>
-              <input class="finput" id="ea-s3-titulo" placeholder="Ex: Dicas práticas">
-            </div>
-            <div style="margin-bottom:12px">
-              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
-              <textarea class="finput" id="ea-s3-texto" rows="4" placeholder="Escreve o conteúdo aqui... Usa [texto](url) para links." style="resize:vertical"></textarea>
-            </div>
-            <div style="margin-bottom:18px">
-              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Imagem</label>
-              <div id="ea-s3-preview" style="width:100%;height:110px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative" onclick="document.getElementById('ea-s3-inp').click()">
-                <div id="ea-s3-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Clica para carregar</div>
-                <img id="ea-s3-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
-                <div id="ea-s3-remove" onclick="removerImg(event,'s3')" style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;z-index:2">✕</div>
+              <div style="margin-bottom:14px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                  <label style="font-size:12px;font-weight:600">Imagem</label>
+                  <div style="display:flex;gap:6px">
+                    <button class="btn btn-sm btn-outline" onclick="abrirPickerImagem('s1')" style="font-size:11px">🔍 Pesquisar</button>
+                    <button class="btn btn-sm btn-outline" onclick="document.getElementById('ea-s1-inp').click()" style="font-size:11px">📁 Upload</button>
+                  </div>
+                </div>
+                <div id="ea-s1-preview" style="width:100%;height:110px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
+                  <div id="ea-s1-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Pesquisa ou faz upload</div>
+                  <img id="ea-s1-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
+                  <button id="ea-s1-remove" onclick="removerImg(event,'s1')" style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;z-index:2">✕</button>
+                </div>
+                <input type="file" id="ea-s1-inp" accept="image/*" style="display:none" onchange="uploadImgStorage(this.files[0],'s1')">
               </div>
-              <input type="file" id="ea-s3-inp" accept="image/*" style="display:none" onchange="carregarImgSecao(this.files[0],'s3')">
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:4px">
+              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Secção 2</div>
+              <div style="margin-bottom:10px">
+                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título</label>
+                <input class="finput" id="ea-s2-titulo" placeholder="Ex: O que fazer">
+              </div>
+              <div style="margin-bottom:10px">
+                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
+                <textarea class="finput" id="ea-s2-texto" rows="4" style="resize:vertical" placeholder="Escreve aqui... Usa [texto](url) para links."></textarea>
+              </div>
+              <div style="margin-bottom:14px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                  <label style="font-size:12px;font-weight:600">Imagem</label>
+                  <div style="display:flex;gap:6px">
+                    <button class="btn btn-sm btn-outline" onclick="abrirPickerImagem('s2')" style="font-size:11px">🔍 Pesquisar</button>
+                    <button class="btn btn-sm btn-outline" onclick="document.getElementById('ea-s2-inp').click()" style="font-size:11px">📁 Upload</button>
+                  </div>
+                </div>
+                <div id="ea-s2-preview" style="width:100%;height:110px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
+                  <div id="ea-s2-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Pesquisa ou faz upload</div>
+                  <img id="ea-s2-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
+                  <button id="ea-s2-remove" onclick="removerImg(event,'s2')" style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;z-index:2">✕</button>
+                </div>
+                <input type="file" id="ea-s2-inp" accept="image/*" style="display:none" onchange="uploadImgStorage(this.files[0],'s2')">
+              </div>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:4px">
+              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Secção 3</div>
+              <div style="margin-bottom:10px">
+                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título</label>
+                <input class="finput" id="ea-s3-titulo" placeholder="Ex: Dicas práticas">
+              </div>
+              <div style="margin-bottom:10px">
+                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
+                <textarea class="finput" id="ea-s3-texto" rows="4" style="resize:vertical" placeholder="Escreve aqui... Usa [texto](url) para links."></textarea>
+              </div>
+              <div style="margin-bottom:14px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                  <label style="font-size:12px;font-weight:600">Imagem</label>
+                  <div style="display:flex;gap:6px">
+                    <button class="btn btn-sm btn-outline" onclick="abrirPickerImagem('s3')" style="font-size:11px">🔍 Pesquisar</button>
+                    <button class="btn btn-sm btn-outline" onclick="document.getElementById('ea-s3-inp').click()" style="font-size:11px">📁 Upload</button>
+                  </div>
+                </div>
+                <div id="ea-s3-preview" style="width:100%;height:110px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
+                  <div id="ea-s3-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Pesquisa ou faz upload</div>
+                  <img id="ea-s3-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
+                  <button id="ea-s3-remove" onclick="removerImg(event,'s3')" style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;z-index:2">✕</button>
+                </div>
+                <input type="file" id="ea-s3-inp" accept="image/*" style="display:none" onchange="uploadImgStorage(this.files[0],'s3')">
+              </div>
             </div>
 
             <!-- Inserir link -->
-            <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:18px">
+            <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:16px">
               <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Inserir link para artigo</div>
               <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
                 <div style="flex:2;min-width:140px">
-                  <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Artigo de destino</label>
+                  <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Artigo</label>
                   <select class="finput" id="ea-link-artigo" style="height:38px">
-                    <option value="">— escolher artigo —</option>
+                    <option value="">— escolher —</option>
                     <optgroup label="Blog APM">
                       <option value="blog-destinos-2026.html">Top Destinos 2026</option>
                       <option value="blog-djerba.html">Djerba</option>
                       <option value="blog-bayahibe.html">Bayahibe</option>
                       <option value="blog-maiorca.html">Maiorca</option>
                       <option value="blog-cabo-verde.html">Cabo Verde</option>
-                      <option value="blog-paris-disneyland.html">Paris & Disneyland</option>
+                      <option value="blog-paris-disneyland.html">Paris &amp; Disneyland</option>
                       <option value="blog-recrutamento.html">Oportunidade de Carreira</option>
                     </optgroup>
                     <optgroup label="Os meus artigos" id="ea-link-meus-opts"></optgroup>
@@ -934,27 +975,59 @@ textarea.finput{resize:vertical;min-height:72px}
                   <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto do link</label>
                   <input class="finput" id="ea-link-texto" placeholder="Ex: sabe mais sobre Djerba">
                 </div>
-                <div>
-                  <button class="btn btn-outline btn-sm" onclick="copiarSnippetLink()" style="height:38px;white-space:nowrap">📋 Copiar snippet</button>
-                </div>
+                <button class="btn btn-outline btn-sm" onclick="copiarSnippetLink()" style="height:38px;white-space:nowrap">📋 Copiar snippet</button>
               </div>
-              <div style="font-size:11px;color:var(--muted);margin-top:6px">O snippet gerado é copiado — cola-o no campo de texto onde queres o link.</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:6px">Copia o snippet e cola no campo de texto onde queres o link.</div>
             </div>
 
-            <!-- Pré-visualização -->
-            <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:18px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Pré-visualização do link público</div>
+            <!-- Link público -->
+            <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Link público do artigo</div>
                 <button class="btn btn-sm btn-outline" onclick="preVisualizarArtigo()" style="font-size:11px">👁 Abrir</button>
               </div>
               <div id="ea-url-preview" style="font-size:11px;color:var(--blue);background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;word-break:break-all;font-family:monospace">— guarda o artigo para gerar o link —</div>
             </div>
 
-            <!-- Botões -->
+            <!-- Botões finais -->
             <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
               <button class="btn btn-outline" onclick="fecharEditorArtigo()">Cancelar</button>
               <button class="btn" id="ea-btn-despublicar" onclick="togglePublicadoArtigo(false)" style="display:none;background:var(--bg2);color:var(--text);border:1px solid var(--border)">Despublicar</button>
               <button class="btn btn-coral" onclick="guardarArtigo()" id="ea-btn-guardar">💾 Publicar artigo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ MODAL PICKER DE IMAGENS ════════════════════════════════════════ -->
+      <div class="overlay" id="modal-img-picker" style="display:none">
+        <div class="modal" style="max-width:700px;width:95%;max-height:88vh;overflow-y:auto">
+          <div class="modal-head">
+            <span class="modal-title">🔍 Escolher imagem</span>
+            <button class="modal-x" onclick="fecharPickerImagem()">✕</button>
+          </div>
+          <div style="padding:0 1.5rem 1.5rem">
+            <div style="display:flex;gap:8px;margin-bottom:14px">
+              <input class="finput" id="picker-query" placeholder="Ex: maldivas praia turquesa" style="flex:1" onkeydown="if(event.key==='Enter')pesquisarImagens()">
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-sm" id="picker-btn-pexels" onclick="pesquisarImagens('pexels')" style="background:var(--coral);color:#fff;border:none">Pexels</button>
+                <button class="btn btn-sm btn-outline" id="picker-btn-unsplash" onclick="pesquisarImagens('unsplash')">Unsplash</button>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:12px">
+              Ou cola um URL directo de imagem:
+              <div style="display:flex;gap:6px;margin-top:6px">
+                <input class="finput" id="picker-url-directo" placeholder="https://..." style="flex:1;font-size:12px">
+                <button class="btn btn-sm btn-coral" onclick="usarUrlDirecto()">Usar</button>
+              </div>
+            </div>
+            <div id="picker-results" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;min-height:120px">
+              <div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px;font-size:13px">Pesquisa imagens acima</div>
+            </div>
+            <div id="picker-links" style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center">
+              Podes também pesquisar directamente em:
+              <a href="https://www.pexels.com" target="_blank" style="color:var(--coral);margin:0 6px">Pexels.com</a> ·
+              <a href="https://unsplash.com" target="_blank" style="color:var(--blue);margin:0 6px">Unsplash.com</a>
             </div>
           </div>
         </div>
@@ -7465,9 +7538,12 @@ function renderBlog() {
 
 // ── ARTIGOS DE CONSULTORES ──────────────────────────────────────────────────
 
-let _editorArtigoId = null      // null = novo, string = editar
-let _heroB64 = null
-let _s1B64 = null, _s2B64 = null, _s3B64 = null
+const PEXELS_KEY = 'cbnYFhaUvlz1hVKRkRSoYqUQi1rXPdK5XYJgW6bJpAewcBVeTPm8hpHV'
+const UNSPLASH_KEY = 'lvuZ06ZCQKhkrbsWK2AGELUA_fKdZiXYYVcH1MUp6TQ'
+
+let _editorArtigoId = null
+let _imgData = { hero: null, s1: null, s2: null, s3: null } // URLs ou base64
+let _pickerTarget = null  // qual slot está a ser preenchido
 let _meusArtigos = []
 
 function artigoPublicoUrl(id) {
@@ -7475,6 +7551,244 @@ function artigoPublicoUrl(id) {
   return BLOG_BASE + 'blog-artigo.html?id=' + id + (ref ? '&ref=' + ref : '')
 }
 
+// ── GERAR COM IA ─────────────────────────────────────────────────────────────
+async function gerarArtigoIA() {
+  const prompt = document.getElementById('ea-ia-prompt')?.value.trim()
+  if(!prompt) { toast('Escreve o destino ou instruções', 'err'); return }
+
+  const btn = document.getElementById('ea-ia-btn')
+  const status = document.getElementById('ea-ia-status')
+  btn.disabled = true; btn.textContent = '⏳ A gerar...'
+  status.textContent = '✨ A escrever o artigo...'
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'És um especialista em turismo a escrever artigos de blog para a agência de viagens APM Viagens, em português europeu. Responde APENAS em JSON válido, sem markdown, sem texto extra.',
+        messages: [{
+          role: 'user',
+          content: `Cria um artigo de blog de viagem sobre: ${prompt}
+
+Responde APENAS com este JSON (sem mais nada):
+{
+  "titulo": "Título apelativo do artigo (máx 60 chars)",
+  "regiao": "Região geográfica curta",
+  "subtitulo": "Frase de introdução apelativa (máx 150 chars)",
+  "s1_titulo": "Título da secção 1",
+  "s1_texto": "Texto da secção 1 (2-3 parágrafos, separados por linha vazia)",
+  "s1_query": "3-4 palavras em inglês para pesquisar foto desta secção no Pexels",
+  "s2_titulo": "Título da secção 2",
+  "s2_texto": "Texto da secção 2 (2-3 parágrafos)",
+  "s2_query": "3-4 palavras em inglês para pesquisar foto desta secção no Pexels",
+  "s3_titulo": "Título da secção 3",
+  "s3_texto": "Texto da secção 3 (2-3 parágrafos)",
+  "s3_query": "3-4 palavras em inglês para pesquisar foto desta secção no Pexels",
+  "hero_query": "3-4 palavras em inglês para pesquisar foto de capa no Pexels"
+}`
+        }]
+      })
+    })
+    const data = await res.json()
+    const raw = data.content?.[0]?.text || ''
+    const clean = raw.replace(/```json|```/g, '').trim()
+    const art = JSON.parse(clean)
+
+    // Preencher campos
+    document.getElementById('ea-titulo').value = art.titulo || ''
+    document.getElementById('ea-regiao').value = art.regiao || ''
+    document.getElementById('ea-subtitulo').value = art.subtitulo || ''
+    document.getElementById('ea-s1-titulo').value = art.s1_titulo || ''
+    document.getElementById('ea-s1-texto').value = art.s1_texto || ''
+    document.getElementById('ea-s2-titulo').value = art.s2_titulo || ''
+    document.getElementById('ea-s2-texto').value = art.s2_texto || ''
+    document.getElementById('ea-s3-titulo').value = art.s3_titulo || ''
+    document.getElementById('ea-s3-texto').value = art.s3_texto || ''
+
+    status.textContent = '🖼 A pesquisar imagens no Pexels...'
+
+    // Buscar imagens automaticamente
+    const queries = {
+      hero: art.hero_query,
+      s1: art.s1_query,
+      s2: art.s2_query,
+      s3: art.s3_query
+    }
+    for(const [slot, q] of Object.entries(queries)) {
+      if(!q) continue
+      try {
+        const imgRes = await fetch(
+          `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=1&orientation=landscape`,
+          { headers: { Authorization: PEXELS_KEY } }
+        )
+        const imgData = await imgRes.json()
+        const url = imgData.photos?.[0]?.src?.large2x || imgData.photos?.[0]?.src?.large
+        if(url) setImgSlot(slot, url)
+      } catch(e) {}
+    }
+
+    status.textContent = '✅ Artigo gerado! Revê e edita antes de publicar.'
+    toast('✅ Artigo gerado com sucesso!', 'ok')
+  } catch(e) {
+    status.textContent = '❌ Erro ao gerar. Tenta novamente.'
+    toast('Erro ao gerar artigo', 'err')
+    console.error(e)
+  }
+  btn.disabled = false; btn.textContent = '✨ Gerar'
+}
+
+// ── PICKER DE IMAGENS ─────────────────────────────────────────────────────────
+function abrirPickerImagem(slot) {
+  _pickerTarget = slot
+  document.getElementById('picker-query').value = document.getElementById('ea-titulo')?.value || ''
+  document.getElementById('picker-results').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px;font-size:13px">Pesquisa imagens acima</div>'
+  document.getElementById('picker-url-directo').value = ''
+  document.getElementById('modal-img-picker').style.display = 'flex'
+}
+
+function fecharPickerImagem() {
+  document.getElementById('modal-img-picker').style.display = 'none'
+}
+
+async function pesquisarImagens(fonte) {
+  const q = document.getElementById('picker-query').value.trim()
+  if(!q) { toast('Escreve o que queres pesquisar', 'err'); return }
+  const resultsEl = document.getElementById('picker-results')
+  resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px">A pesquisar...</div>'
+
+  // Destacar botão activo
+  document.getElementById('picker-btn-pexels').style.opacity = fonte==='pexels' ? '1' : '.5'
+  document.getElementById('picker-btn-unsplash').style.opacity = fonte==='unsplash' ? '1' : '.5'
+
+  try {
+    let urls = []
+    if(fonte === 'pexels') {
+      const res = await fetch(
+        `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=9&orientation=landscape`,
+        { headers: { Authorization: PEXELS_KEY } }
+      )
+      const data = await res.json()
+      urls = (data.photos || []).map(p => ({ thumb: p.src.medium, full: p.src.large2x || p.src.large, credit: p.photographer }))
+    } else {
+      const res = await fetch(
+        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=9&orientation=landscape`,
+        { headers: { Authorization: 'Client-ID ' + UNSPLASH_KEY } }
+      )
+      const data = await res.json()
+      urls = (data.results || []).map(p => ({ thumb: p.urls.small, full: p.urls.regular, credit: p.user.name }))
+    }
+
+    if(urls.length === 0) {
+      resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px">Sem resultados. Tenta outra pesquisa.</div>'
+      return
+    }
+
+    resultsEl.innerHTML = urls.map((u,i) => `
+      <div onclick="selecionarImgPicker('${u.full.replace(/'/g,"\'")}');return false"
+           style="cursor:pointer;border-radius:6px;overflow:hidden;position:relative;aspect-ratio:16/9;background:#f0f0f0;border:2px solid transparent;transition:border-color .15s"
+           onmouseover="this.style.borderColor='var(--coral)'" onmouseout="this.style.borderColor='transparent'">
+        <img src="${u.thumb}" style="width:100%;height:100%;object-fit:cover" loading="lazy">
+        <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:4px 6px;font-size:9px;color:rgba(255,255,255,.8)">📸 ${u.credit}</div>
+      </div>`).join('')
+  } catch(e) {
+    resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px">Erro na pesquisa. Tenta novamente.</div>'
+  }
+}
+
+function selecionarImgPicker(url) {
+  if(!_pickerTarget) return
+  setImgSlot(_pickerTarget, url)
+  fecharPickerImagem()
+  toast('✅ Imagem seleccionada', 'ok')
+}
+
+function usarUrlDirecto() {
+  const url = document.getElementById('picker-url-directo').value.trim()
+  if(!url || !url.startsWith('http')) { toast('URL inválido', 'err'); return }
+  if(!_pickerTarget) return
+  setImgSlot(_pickerTarget, url)
+  fecharPickerImagem()
+  toast('✅ Imagem definida', 'ok')
+}
+
+// ── GESTÃO DE IMAGENS ─────────────────────────────────────────────────────────
+function setImgSlot(slot, url) {
+  _imgData[slot] = url
+  const prefix = slot === 'hero' ? 'ea-hero' : 'ea-' + slot
+  const imgEl  = document.getElementById(prefix + '-img-preview')
+  const phEl   = document.getElementById(prefix + '-placeholder')
+  const rmEl   = document.getElementById(prefix + '-remove')
+  if(imgEl) { imgEl.src = url; imgEl.style.display = 'block' }
+  if(phEl)  phEl.style.display = 'none'
+  if(rmEl)  rmEl.style.display = 'block'
+}
+
+function removerImg(e, slot) {
+  e.stopPropagation()
+  _imgData[slot] = null
+  const prefix = slot === 'hero' ? 'ea-hero' : 'ea-' + slot
+  const imgEl = document.getElementById(prefix + '-img-preview')
+  const phEl  = document.getElementById(prefix + '-placeholder')
+  const rmEl  = document.getElementById(prefix + '-remove')
+  if(imgEl) { imgEl.style.display = 'none'; imgEl.src = '' }
+  if(phEl)  phEl.style.display = 'block'
+  if(rmEl)  rmEl.style.display = 'none'
+}
+
+// Upload para Supabase Storage
+async function uploadImgStorage(file, slot) {
+  if(!file) return
+  if(file.size > 3*1024*1024) { toast('Imagem demasiado grande (máx. 3MB)', 'err'); return }
+
+  toast('⏳ A fazer upload...', '')
+  const ext = file.name.split('.').pop().toLowerCase()
+  const path = `artigos/${currentPerfil.id}/${Date.now()}_${slot}.${ext}`
+
+  // Redimensionar antes de upload
+  const b64 = await new Promise(resolve => {
+    const reader = new FileReader()
+    reader.onload = e => {
+      const img = new Image()
+      img.onload = () => {
+        const maxW = 1400
+        const scale = Math.min(1, maxW / img.width)
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.round(img.width * scale)
+        canvas.height = Math.round(img.height * scale)
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+        resolve(canvas.toDataURL('image/jpeg', 0.82))
+      }
+      img.src = e.target.result
+    }
+    reader.readAsDataURL(file)
+  })
+
+  // Converter base64 para blob
+  const byteStr = atob(b64.split(',')[1])
+  const arr = new Uint8Array(byteStr.length)
+  for(let i=0;i<byteStr.length;i++) arr[i]=byteStr.charCodeAt(i)
+  const blob = new Blob([arr], {type:'image/jpeg'})
+
+  const { data, error } = await sb.storage.from('artigos-imgs').upload(path, blob, {
+    contentType: 'image/jpeg', upsert: true
+  })
+
+  if(error) {
+    // Fallback: usar base64 directamente (se Storage não existir ainda)
+    setImgSlot(slot, b64)
+    toast('✅ Imagem carregada', 'ok')
+    return
+  }
+
+  const { data: urlData } = sb.storage.from('artigos-imgs').getPublicUrl(path)
+  setImgSlot(slot, urlData.publicUrl)
+  toast('✅ Imagem carregada', 'ok')
+}
+
+// ── LISTA DE ARTIGOS ──────────────────────────────────────────────────────────
 async function renderMeusArtigos() {
   const el = document.getElementById('meus-artigos-lista')
   if(!el) return
@@ -7501,8 +7815,8 @@ async function renderMeusArtigos() {
       <div style="text-align:center;padding:48px 20px;color:var(--muted)">
         <div style="font-size:2.5rem;margin-bottom:12px">✍️</div>
         <div style="font-weight:700;margin-bottom:6px">Ainda não tens artigos</div>
-        <div style="font-size:13px;margin-bottom:18px">Cria o teu primeiro artigo e partilha-o com os teus clientes.</div>
-        <button class="btn btn-coral" onclick="abrirEditorArtigo(null)">+ Criar primeiro artigo</button>
+        <div style="font-size:13px;margin-bottom:18px">Usa a IA para gerar o teu primeiro artigo em segundos.</div>
+        <button class="btn btn-coral" onclick="abrirEditorArtigo(null)">✨ Criar primeiro artigo</button>
       </div>`
     return
   }
@@ -7518,14 +7832,14 @@ async function renderMeusArtigos() {
           <div style="font-weight:700;font-size:.9rem">${a.titulo}</div>
           <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:${a.publicado?'rgba(22,163,74,.12)':'rgba(107,114,128,.12)'};color:${a.publicado?'#15803d':'var(--muted)'}">${a.publicado?'Publicado':'Rascunho'}</span>
         </div>
-        ${a.regiao ? `<div style="font-size:11px;color:var(--muted);margin-bottom:4px">📍 ${a.regiao}</div>` : ''}
-        <div style="font-size:11px;color:var(--muted2);margin-bottom:8px">Criado em ${dataCriacao}${currentPerfil?.role==='admin'&&a.consultor_nome?' · '+a.consultor_nome:''}</div>
+        ${a.regiao ? `<div style="font-size:11px;color:var(--muted);margin-bottom:3px">📍 ${a.regiao}</div>` : ''}
+        <div style="font-size:11px;color:var(--muted2);margin-bottom:8px">${dataCriacao}${isAdmin && a.consultor_nome?' · '+a.consultor_nome:''}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button onclick="window.open('${url}','_blank')" class="btn btn-sm btn-outline" style="font-size:11px">👁 Ver</button>
-          <button onclick="copiarLinkArtigo('${a.id}')" class="btn btn-sm btn-outline" style="font-size:11px">🔗 Copiar link</button>
+          <button onclick="copiarLinkArtigo('${a.id}')" class="btn btn-sm btn-outline" style="font-size:11px">🔗 Link</button>
           <button onclick="partilharArtigoWA('${a.id}')" class="btn btn-sm" style="background:#25D366;color:#fff;border:none;font-size:11px">💬 WA</button>
           <button onclick="abrirEditorArtigo('${a.id}')" class="btn btn-sm btn-outline" style="font-size:11px">✏️ Editar</button>
-          <button onclick="confirmarEliminarArtigo('${a.id}')" class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.2);font-size:11px">🗑 Eliminar</button>
+          <button onclick="confirmarEliminarArtigo('${a.id}')" class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.2);font-size:11px">🗑</button>
         </div>
       </div>
     </div>`
@@ -7550,91 +7864,29 @@ async function confirmarEliminarArtigo(id) {
   renderMeusArtigos()
 }
 
-function imgToB64(file, maxW, cb) {
-  if(file.size > 2.5*1024*1024) { toast('Imagem demasiado grande (máx. 2MB)', 'err'); return }
-  const reader = new FileReader()
-  reader.onload = e => {
-    const img = new Image()
-    img.onload = () => {
-      const scale = Math.min(1, maxW / img.width)
-      const w = Math.round(img.width * scale)
-      const h = Math.round(img.height * scale)
-      const canvas = document.createElement('canvas')
-      canvas.width = w; canvas.height = h
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h)
-      cb(canvas.toDataURL('image/jpeg', 0.82))
-    }
-    img.src = e.target.result
-  }
-  reader.readAsDataURL(file)
-}
-
-function carregarHero(file) {
-  imgToB64(file, 1400, b64 => {
-    _heroB64 = b64
-    const prev = document.getElementById('ea-hero-img-preview')
-    const ph = document.getElementById('ea-hero-placeholder')
-    const rm = document.getElementById('ea-hero-remove')
-    prev.src = b64; prev.style.display = 'block'
-    ph.style.display = 'none'; rm.style.display = 'block'
-  })
-}
-function removerHero(e) {
-  e.stopPropagation()
-  _heroB64 = null
-  document.getElementById('ea-hero-img-preview').style.display = 'none'
-  document.getElementById('ea-hero-placeholder').style.display = 'block'
-  document.getElementById('ea-hero-remove').style.display = 'none'
-}
-
-function carregarImgSecao(file, sec) {
-  imgToB64(file, 1200, b64 => {
-    if(sec==='s1') _s1B64=b64
-    else if(sec==='s2') _s2B64=b64
-    else if(sec==='s3') _s3B64=b64
-    document.getElementById('ea-'+sec+'-img-preview').src = b64
-    document.getElementById('ea-'+sec+'-img-preview').style.display = 'block'
-    document.getElementById('ea-'+sec+'-placeholder').style.display = 'none'
-    document.getElementById('ea-'+sec+'-remove').style.display = 'block'
-  })
-}
-function removerImg(e, sec) {
-  e.stopPropagation()
-  if(sec==='s1') _s1B64=null
-  else if(sec==='s2') _s2B64=null
-  else if(sec==='s3') _s3B64=null
-  document.getElementById('ea-'+sec+'-img-preview').style.display = 'none'
-  document.getElementById('ea-'+sec+'-placeholder').style.display = 'block'
-  document.getElementById('ea-'+sec+'-remove').style.display = 'none'
-}
-
+// ── EDITOR ────────────────────────────────────────────────────────────────────
 function limparEditorArtigo() {
-  _heroB64=null; _s1B64=null; _s2B64=null; _s3B64=null
-  const ids = ['ea-titulo','ea-regiao','ea-subtitulo','ea-s1-titulo','ea-s1-texto','ea-s2-titulo','ea-s2-texto','ea-s3-titulo','ea-s3-texto']
+  _imgData = { hero: null, s1: null, s2: null, s3: null }
+  _editorArtigoId = null
+  const ids = ['ea-titulo','ea-regiao','ea-subtitulo','ea-ia-prompt',
+               'ea-s1-titulo','ea-s1-texto','ea-s2-titulo','ea-s2-texto','ea-s3-titulo','ea-s3-texto']
   ids.forEach(id => { const el=document.getElementById(id); if(el) el.value='' })
-  ;['hero','s1','s2','s3'].forEach(sec => {
-    const prefix = sec==='hero' ? 'ea-hero' : 'ea-'+sec
-    const img = document.getElementById(prefix+'-img-preview')
-    const ph = document.getElementById(prefix+'-placeholder')
-    const rm = document.getElementById(prefix+'-remove')
-    if(img) { img.style.display='none'; img.src='' }
-    if(ph) ph.style.display='block'
-    if(rm) rm.style.display='none'
-  })
+  ;['hero','s1','s2','s3'].forEach(slot => removerImg({stopPropagation:()=>{}}, slot))
+  const iaStatus = document.getElementById('ea-ia-status')
+  if(iaStatus) iaStatus.textContent = ''
   document.getElementById('ea-url-preview').textContent = '— guarda o artigo para gerar o link —'
   const btnD = document.getElementById('ea-btn-despublicar')
-  if(btnD) btnD.style.display='none'
+  if(btnD) btnD.style.display = 'none'
   const btnG = document.getElementById('ea-btn-guardar')
   if(btnG) btnG.textContent = '💾 Publicar artigo'
 }
 
 function abrirEditorArtigo(id) {
-  _editorArtigoId = id
   limparEditorArtigo()
-
   if(id) {
     const a = _meusArtigos.find(x => x.id === id)
     if(!a) return
+    _editorArtigoId = id
     document.getElementById('editor-artigo-titulo-modal').textContent = '✏️ Editar artigo'
     document.getElementById('ea-titulo').value = a.titulo||''
     document.getElementById('ea-regiao').value = a.regiao||''
@@ -7645,23 +7897,10 @@ function abrirEditorArtigo(id) {
     document.getElementById('ea-s2-texto').value = a.s2_texto||''
     document.getElementById('ea-s3-titulo').value = a.s3_titulo||''
     document.getElementById('ea-s3-texto').value = a.s3_texto||''
-
-    // Imagens
-    function previewImg(b64, sec) {
-      if(!b64) return
-      const prefix = sec==='hero' ? 'ea-hero' : 'ea-'+sec
-      const img = document.getElementById(prefix+'-img-preview')
-      const ph = document.getElementById(prefix+'-placeholder')
-      const rm = document.getElementById(prefix+'-remove')
-      if(img) { img.src=b64; img.style.display='block' }
-      if(ph) ph.style.display='none'
-      if(rm) rm.style.display='block'
-    }
-    if(a.hero_img) { _heroB64=a.hero_img; previewImg(a.hero_img,'hero') }
-    if(a.s1_img)   { _s1B64=a.s1_img;    previewImg(a.s1_img,'s1') }
-    if(a.s2_img)   { _s2B64=a.s2_img;    previewImg(a.s2_img,'s2') }
-    if(a.s3_img)   { _s3B64=a.s3_img;    previewImg(a.s3_img,'s3') }
-
+    if(a.hero_img) setImgSlot('hero', a.hero_img)
+    if(a.s1_img)   setImgSlot('s1',   a.s1_img)
+    if(a.s2_img)   setImgSlot('s2',   a.s2_img)
+    if(a.s3_img)   setImgSlot('s3',   a.s3_img)
     document.getElementById('ea-url-preview').textContent = artigoPublicoUrl(id)
     const btnD = document.getElementById('ea-btn-despublicar')
     if(btnD) btnD.style.display = a.publicado ? 'inline-flex' : 'none'
@@ -7670,19 +7909,17 @@ function abrirEditorArtigo(id) {
   } else {
     document.getElementById('editor-artigo-titulo-modal').textContent = '✏️ Novo artigo'
   }
-
   document.getElementById('modal-editor-artigo').style.display = 'flex'
 }
 
 function fecharEditorArtigo() {
   document.getElementById('modal-editor-artigo').style.display = 'none'
-  limparEditorArtigo()
 }
 
-function gv(id) { const el=document.getElementById(id); return el?el.value.trim():'' }
+function gvEA(id) { const el=document.getElementById(id); return el?el.value.trim():'' }
 
 async function guardarArtigo() {
-  const titulo = gv('ea-titulo')
+  const titulo = gvEA('ea-titulo')
   if(!titulo) { toast('O título é obrigatório', 'err'); return }
 
   const btn = document.getElementById('ea-btn-guardar')
@@ -7692,19 +7929,19 @@ async function guardarArtigo() {
     consultor_id: currentPerfil.id,
     consultor_nome: currentPerfil.nome,
     titulo,
-    subtitulo: gv('ea-subtitulo') || null,
-    regiao: gv('ea-regiao') || null,
-    hero_img: _heroB64 || null,
-    s1_titulo: gv('ea-s1-titulo') || null,
-    s1_texto: gv('ea-s1-texto') || null,
-    s1_img: _s1B64 || null,
-    s2_titulo: gv('ea-s2-titulo') || null,
-    s2_texto: gv('ea-s2-texto') || null,
-    s2_img: _s2B64 || null,
-    s3_titulo: gv('ea-s3-titulo') || null,
-    s3_texto: gv('ea-s3-texto') || null,
-    s3_img: _s3B64 || null,
-    publicado: true,
+    subtitulo:  gvEA('ea-subtitulo') || null,
+    regiao:     gvEA('ea-regiao') || null,
+    hero_img:   _imgData.hero || null,
+    s1_titulo:  gvEA('ea-s1-titulo') || null,
+    s1_texto:   gvEA('ea-s1-texto') || null,
+    s1_img:     _imgData.s1 || null,
+    s2_titulo:  gvEA('ea-s2-titulo') || null,
+    s2_texto:   gvEA('ea-s2-texto') || null,
+    s2_img:     _imgData.s2 || null,
+    s3_titulo:  gvEA('ea-s3-titulo') || null,
+    s3_texto:   gvEA('ea-s3-texto') || null,
+    s3_img:     _imgData.s3 || null,
+    publicado:  true,
     atualizado_em: new Date().toISOString()
   }
 
@@ -7717,7 +7954,8 @@ async function guardarArtigo() {
     error = res.error; data = res.data
   }
 
-  btn.disabled = false; btn.textContent = _editorArtigoId ? '💾 Guardar alterações' : '💾 Publicar artigo'
+  btn.disabled = false
+  btn.textContent = _editorArtigoId ? '💾 Guardar alterações' : '💾 Publicar artigo'
 
   if(error) { toast('Erro ao guardar: ' + (error.message||''), 'err'); return }
 
@@ -7726,7 +7964,6 @@ async function guardarArtigo() {
   const btnD = document.getElementById('ea-btn-despublicar')
   if(btnD) btnD.style.display = 'inline-flex'
   btn.textContent = '💾 Guardar alterações'
-
   toast('✅ Artigo publicado!', 'ok')
   renderMeusArtigos()
 }
@@ -7750,11 +7987,10 @@ function preVisualizarArtigo() {
 
 function copiarSnippetLink() {
   const artigo = document.getElementById('ea-link-artigo')?.value
-  const texto = document.getElementById('ea-link-texto')?.value.trim()
+  const texto  = document.getElementById('ea-link-texto')?.value.trim()
   if(!artigo) { toast('Escolhe um artigo', 'err'); return }
-  if(!texto) { toast('Escreve o texto do link', 'err'); return }
-  const snippet = `[${texto}](${artigo})`
-  navigator.clipboard.writeText(snippet)
+  if(!texto)  { toast('Escreve o texto do link', 'err'); return }
+  navigator.clipboard.writeText(`[${texto}](${artigo})`)
   toast('📋 Snippet copiado! Cola no texto.', 'ok')
 }
 
@@ -10484,8 +10720,7 @@ function calcComissaoContrato() {
 // ════════════════════════════════════════════════════════════════
 // SELECTOR DE MÉDIA (Unsplash + Pexels + Pixabay)
 // ════════════════════════════════════════════════════════════════
-const UNSPLASH_KEY = 'lvuZ06ZCQKhkrbsWK2AGELUA_fKdZiXYYVcH1MUp6TQ'
-const PEXELS_KEY   = 'cbnYFhaUvlz1hVKRkRSoYqUQi1rXPdK5XYJgW6bJpAewcBVeTPm8hpHV'
+// UNSPLASH_KEY e PEXELS_KEY declaradas no bloco de artigos de consultores
 const PIXABAY_KEY  = '55893407-1dd87c686abba8b1e11341562'
 
 var prMediaTab = 'foto'
