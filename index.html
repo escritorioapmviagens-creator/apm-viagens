@@ -7589,10 +7589,8 @@ Responde APENAS com este JSON (sem mais nada):
 }`
       })
     })
-    const data = await res.json()
-    const raw = data.content?.[0]?.text || ''
-    const clean = raw.replace(/```json|```/g, '').trim()
-    const art = JSON.parse(clean)
+    const art = await res.json()
+    if(art.error) throw new Error(art.error)
 
     // Preencher campos
     document.getElementById('ea-titulo').value = art.titulo || ''
