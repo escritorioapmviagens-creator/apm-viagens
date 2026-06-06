@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Artigo · APM Viagens</title>
 <meta id="meta-desc" name="description" content="Artigo de viagem APM Viagens">
+<meta property="og:site_name" content="APM Viagens">
+<meta property="og:type" content="article">
+<meta id="og-title" property="og:title" content="APM Viagens">
+<meta id="og-desc" property="og:description" content="Artigo de viagem APM Viagens">
+<meta id="og-image" property="og:image" content="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png">
+<meta id="og-url" property="og:url" content="">
+<meta name="twitter:card" content="summary_large_image">
+<meta id="tw-title" name="twitter:title" content="APM Viagens">
+<meta id="tw-desc" name="twitter:description" content="Artigo de viagem APM Viagens">
+<meta id="tw-image" name="twitter:image" content="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -234,9 +244,28 @@ function renderArtigo(a) {
   `
 
   // Meta
-  document.title = a.titulo + ' · APM Viagens'
-  const md = document.getElementById('meta-desc')
-  if (md && a.subtitulo) md.setAttribute('content', a.subtitulo)
+  // Meta tags básicas
+  document.title = 'APM Viagens · ' + a.titulo
+  const setMeta = (id, attr, val) => { const el=document.getElementById(id); if(el&&val) el.setAttribute(attr,'val'.replace('val',val)) }
+
+  // Descrição
+  const desc = a.subtitulo || a.titulo
+  document.getElementById('meta-desc')?.setAttribute('content', desc)
+
+  // Open Graph — título com prefixo APM Viagens
+  const ogTitle = 'APM Viagens · ' + a.titulo
+  document.getElementById('og-title')?.setAttribute('content', ogTitle)
+  document.getElementById('og-desc')?.setAttribute('content', desc)
+  document.getElementById('og-url')?.setAttribute('content', location.href)
+  document.getElementById('tw-title')?.setAttribute('content', ogTitle)
+  document.getElementById('tw-desc')?.setAttribute('content', desc)
+
+  // Imagem OG — primeira imagem do carrossel ou hero_img
+  const ogImg = a.hero_imgs?.[0] || a.hero_img || ''
+  if(ogImg) {
+    document.getElementById('og-image')?.setAttribute('content', ogImg)
+    document.getElementById('tw-image')?.setAttribute('content', ogImg)
+  }
 }
 
 function renderErro(msg) {
