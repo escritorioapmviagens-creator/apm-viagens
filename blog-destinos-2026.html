@@ -32,8 +32,8 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 .article-body{padding:40px}
 .article-body p{font-size:13px;color:#4b5563;line-height:1.85;margin-bottom:20px}
 .article-body p strong{color:#1a1a2e;font-weight:600}
-.dest-item{display:flex;border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;margin-bottom:16px;transition:box-shadow .2s}
-.dest-item:hover{box-shadow:0 4px 16px rgba(0,0,0,.07)}
+.dest-item{display:flex;border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;margin-bottom:16px;transition:box-shadow .2s, border-color .2s}
+.dest-item:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);border-color:#ffd6de}
 .dest-num-wrap{flex-shrink:0;width:52px;display:flex;align-items:center;justify-content:center;background:#fafafa}
 .dest-num{font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:600;color:#e0e0e0;line-height:1}
 .dest-num.top{color:#E8395A}
@@ -118,7 +118,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 <div class="article-body">
   <p>Já passámos de metade de 2026 e os números das reservas dizem muito sobre aquilo que os portugueses procuram quando viajam. Separámos os 5 destinos que mais se destacaram este ano — há um favorito para cada tipo de viajante.</p>
 
-  <div class="dest-item">
+  <div class="dest-item" onclick="irPara('blog-djerba.html')" style="cursor:pointer">
     <div class="dest-num-wrap"><div class="dest-num top">1</div></div>
     <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="djerba tunisia beach" alt="Djerba">
     <div class="dest-body"><span class="dest-num-mobile top">1</span>
@@ -129,7 +129,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
     </div>
   </div>
 
-  <div class="dest-item">
+  <div class="dest-item" onclick="irPara('blog-bayahibe.html')" style="cursor:pointer">
     <div class="dest-num-wrap"><div class="dest-num">2</div></div>
     <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="bayahibe dominican republic beach" alt="Bayahibe">
     <div class="dest-body"><span class="dest-num-mobile">2</span>
@@ -140,7 +140,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
     </div>
   </div>
 
-  <div class="dest-item">
+  <div class="dest-item" onclick="irPara('blog-maiorca.html')" style="cursor:pointer">
     <div class="dest-num-wrap"><div class="dest-num">3</div></div>
     <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="mallorca spain cala beach" alt="Maiorca">
     <div class="dest-body"><span class="dest-num-mobile">3</span>
@@ -172,7 +172,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
   <div class="wa-note">🔒 Podes sair do grupo a qualquer momento</div>
 </div>
 
-  <div class="dest-item">
+  <div class="dest-item" onclick="irPara('blog-cabo-verde.html')" style="cursor:pointer">
     <div class="dest-num-wrap"><div class="dest-num">4</div></div>
     <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="cape verde sal island beach" alt="Cabo Verde - Ilha do Sal">
     <div class="dest-body"><span class="dest-num-mobile">4</span>
@@ -183,7 +183,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
     </div>
   </div>
 
-  <div class="dest-item">
+  <div class="dest-item" onclick="irPara('blog-paris-disneyland.html')" style="cursor:pointer">
     <div class="dest-num-wrap"><div class="dest-num">5</div></div>
     <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="paris eiffel tower" alt="Paris">
     <div class="dest-body"><span class="dest-num-mobile">5</span>
@@ -303,6 +303,10 @@ async function loadHeroImage() {
 }
 loadHeroImage()
 
+function irPara(page) {
+  const s = new URLSearchParams(location.search).get('ref') ? '?ref=' + new URLSearchParams(location.search).get('ref') : ''
+  window.location.href = page + s
+}
 function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000)}
 </script>
 </body>
