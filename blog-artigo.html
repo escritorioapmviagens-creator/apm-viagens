@@ -153,16 +153,24 @@ function waIconSVG(size=26) {
 function renderArtigo(a) {
   const orcUrl = BLOG_BASE + 'pedir-orcamento.html' + refStr
 
-  // Secções dinâmicas
+  // Secções dinâmicas — suporta novo formato (seccoes array) e legado (s1/s2/s3)
   function secao(titulo, texto, img) {
     if (!titulo && !texto) return ''
     return `
     <div class="section-block">
-      ${img ? `<img class="section-img" src="${img}" alt="${titulo||''}">` : ''}
+      ${img ? `<img class="section-img" src="${img}" alt="${titulo||''}" onerror="this.style.display='none'">` : ''}
       ${titulo ? `<div class="section-title">${titulo}</div>` : ''}
       <div>${processarTexto(texto)}</div>
     </div>`
   }
+
+  const seccoes = a.seccoes?.length
+    ? a.seccoes
+    : [
+        {titulo:a.s1_titulo, texto:a.s1_texto, img:a.s1_img},
+        {titulo:a.s2_titulo, texto:a.s2_texto, img:a.s2_img},
+        {titulo:a.s3_titulo, texto:a.s3_texto, img:a.s3_img},
+      ].filter(s => s.titulo || s.texto)
 
   // Suporte a carrossel: hero_imgs (array) ou hero_img (string legacy)
   const heroImgs = a.hero_imgs?.length ? a.hero_imgs
@@ -198,9 +206,7 @@ function renderArtigo(a) {
     <div class="divider"></div>
 
     <div class="article-body">
-      ${secao(a.s1_titulo, a.s1_texto, a.s1_img)}
-      ${secao(a.s2_titulo, a.s2_texto, a.s2_img)}
-      ${secao(a.s3_titulo, a.s3_texto, a.s3_img)}
+      ${seccoes.map(s => secao(s.titulo, s.texto, s.img)).join('')}
     </div>
 
     <div class="divider"></div>
