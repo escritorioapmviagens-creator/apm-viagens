@@ -19,8 +19,8 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 .nav-cta:hover{background:#d42e4f}
 .hero{position:relative;overflow:hidden;min-height:340px;background:#1a1a2e;display:flex;align-items:flex-end}
 .hero-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0d0a1a 0%,#1a1035 30%,#2d1520 60%,#1a0d10 100%)}
-.hero-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(232,57,90,.25) 0%,transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(59,91,219,.2) 0%,transparent 50%)}
-.hero-bg::after{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px);background-size:28px 28px}
+.hero-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(232,57,90,.3) 0%,transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(59,91,219,.25) 0%,transparent 50%),radial-gradient(ellipse at 50% 10%,rgba(232,150,57,.15) 0%,transparent 40%)}
+.hero-bg::after{content:'✈';position:absolute;right:-2%;bottom:-10%;font-size:28rem;opacity:.04;transform:rotate(25deg);pointer-events:none;line-height:1}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,13,26,.9) 0%,transparent 60%)}
 .hero-content{position:relative;padding:48px 40px}
 .hero-tag{display:inline-block;background:#E8395A;color:#fff;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:5px 12px;border-radius:4px;margin-bottom:16px}
@@ -73,6 +73,11 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 .wa-btn:not([disabled]){cursor:pointer;opacity:1}
 .wa-btn:not([disabled]):hover{background:#1da851}
 .wa-note{text-align:center;font-size:11px;color:#9ca3af;margin-top:8px}
+
+@media(max-width:560px){
+  .dest-photo{display:none!important}
+  .dest-item{min-height:auto}
+}
 </style>
 </head>
 <body>
@@ -110,7 +115,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 
   <div class="dest-item">
     <div class="dest-num-wrap"><div class="dest-num top">1</div></div>
-    <img class="dest-photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect fill='%23f0f0f0' width='150' height='150'/%3E%3C/svg%3E" data-pexels="djerba tunisia beach turquoise sea" alt="Djerba">
+    <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="djerba tunisia beach" alt="Djerba">
     <div class="dest-body">
       <div class="dest-region">Norte de África · Tunísia</div>
       <div class="dest-name">Djerba</div>
@@ -121,7 +126,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 
   <div class="dest-item">
     <div class="dest-num-wrap"><div class="dest-num">2</div></div>
-    <img class="dest-photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect fill='%23f0f0f0' width='150' height='150'/%3E%3C/svg%3E" data-pexels="bayahibe beach caribbean crystal water" alt="Bayahibe">
+    <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="bayahibe dominican republic beach" alt="Bayahibe">
     <div class="dest-body">
       <div class="dest-region">Caraíbas · República Dominicana</div>
       <div class="dest-name">Bayahibe</div>
@@ -132,7 +137,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 
   <div class="dest-item">
     <div class="dest-num-wrap"><div class="dest-num">3</div></div>
-    <img class="dest-photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect fill='%23f0f0f0' width='150' height='150'/%3E%3C/svg%3E" data-pexels="mallorca cala beach spain" alt="Maiorca">
+    <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="mallorca spain cala beach" alt="Maiorca">
     <div class="dest-body">
       <div class="dest-region">Espanha · Ilhas Baleares</div>
       <div class="dest-name">Maiorca</div>
@@ -164,7 +169,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 
   <div class="dest-item">
     <div class="dest-num-wrap"><div class="dest-num">4</div></div>
-    <img class="dest-photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect fill='%23f0f0f0' width='150' height='150'/%3E%3C/svg%3E" data-pexels="cape verde sal island beach" alt="Cabo Verde - Ilha do Sal">
+    <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="cape verde sal island beach" alt="Cabo Verde - Ilha do Sal">
     <div class="dest-body">
       <div class="dest-region">Cabo Verde · Atlântico</div>
       <div class="dest-name">Cabo Verde — Ilha do Sal</div>
@@ -175,7 +180,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 
   <div class="dest-item">
     <div class="dest-num-wrap"><div class="dest-num">5</div></div>
-    <img class="dest-photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect fill='%23f0f0f0' width='150' height='150'/%3E%3C/svg%3E" data-pexels="paris eiffel tower disneyland" alt="Paris">
+    <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="paris eiffel tower" alt="Paris">
     <div class="dest-body">
       <div class="dest-region">França · Europa</div>
       <div class="dest-name">Paris & Disneyland</div>
@@ -251,7 +256,7 @@ function entrarGrupo(btn) {
 }
 
 
-// Load images via Supabase Edge Function proxy (evita bloqueio CORS do Pexels)
+// Images loaded via inline SVG
 const PROXY = 'https://uiaorfcgvqwxjezgisps.supabase.co/functions/v1/pexels-proxy'
 const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
 
@@ -272,6 +277,26 @@ async function loadPexelsImages() {
   }
 }
 loadPexelsImages()
+
+
+// Carregar hero via Unsplash
+async function loadHeroImage() {
+  try {
+    const res = await fetch(
+      `https://api.unsplash.com/search/photos?query=tropical beach turquoise water aerial&per_page=1&orientation=landscape`,
+      { headers: { Authorization: 'Client-ID lvuZ06ZCQKhkrbsWK2AGELUA_fKdZiXYYVcH1MUp6TQ' } }
+    )
+    const data = await res.json()
+    if(data.results && data.results[0]) {
+      const url = data.results[0].urls.regular
+      document.querySelector('.hero-bg').style.backgroundImage = `url('${url}')`
+      document.querySelector('.hero-bg').style.backgroundSize = 'cover'
+      document.querySelector('.hero-bg').style.backgroundPosition = 'center'
+      document.querySelector('.hero-bg').style.opacity = '0.35'
+    }
+  } catch(e) { console.warn('Hero image error:', e) }
+}
+loadHeroImage()
 
 function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000)}
 </script>
