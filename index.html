@@ -7499,43 +7499,52 @@ function artigoPartilhaUrl(id) {
 function adicionarSeccao(dados) {
   if(_seccoes.length >= MAX_SECCOES) { toast('Máximo ' + MAX_SECCOES + ' secções', 'err'); return }
   const idx = _seccoes.length
-  _seccoes.push({ titulo: dados?.titulo||'', texto: dados?.texto||'', img: dados?.img||null })
+  _seccoes.push({
+    tipo: dados?.tipo || 'texto',
+    titulo: dados?.titulo || '',
+    texto: dados?.texto || '',
+    img: dados?.img || null,
+    cards: dados?.cards || []  // array de {id, titulo, subtitulo, img}
+  })
   renderSeccoes()
   return idx
 }
 
-function removerSeccao(idx) {
-  _seccoes.splice(idx, 1)
-  renderSeccoes()
-}
+function removerSeccao(idx) { _seccoes.splice(idx,1); renderSeccoes() }
 
 function moverSeccao(idx, dir) {
-  const swap = idx + dir
-  if(swap < 0 || swap >= _seccoes.length) return
-  ;[_seccoes[idx], _seccoes[swap]] = [_seccoes[swap], _seccoes[idx]]
+  const swap = idx+dir
+  if(swap<0||swap>=_seccoes.length) return
+  ;[_seccoes[idx],_seccoes[swap]]=[_seccoes[swap],_seccoes[idx]]; renderSeccoes()
+}
+
+function mudarTipoSeccao(idx, tipo) {
+  _seccoes[idx].tipo = tipo
   renderSeccoes()
 }
 
-function renderSeccoes() {
-  const el = document.getElementById('ea-seccoes-container')
-  if(!el) return
-  el.innerHTML = _seccoes.map((s, i) => `
-    <div style="border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;background:var(--bg2)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Secção ${i+1}</div>
-        <div style="display:flex;gap:4px">
-          ${i > 0 ? `<button class="btn btn-sm btn-outline" onclick="moverSeccao(${i},-1)" style="font-size:11px;padding:3px 8px">↑</button>` : ''}
-          ${i < _seccoes.length-1 ? `<button class="btn btn-sm btn-outline" onclick="moverSeccao(${i},1)" style="font-size:11px;padding:3px 8px">↓</button>` : ''}
-          <button class="btn btn-sm" onclick="removerSeccao(${i})" style="background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.2);font-size:11px;padding:3px 8px">✕</button>
-        </div>
-      </div>
+// Adicionar/remover card de artigo numa secção de tipo cards
+function adicionarCardSeccao(idx, artigo) {
+  if(!_seccoes[idx]) return
+  if(_seccoes[idx].cards.find(c=>c.id===artigo.id)) { toast('Artigo já adicionado','err'); return }
+  _seccoes[idx].cards.push(artigo)
+  renderSeccoes()
+}
+
+function removerCardSeccao(idxSec, idxCard) {
+  _seccoes[idxSec].cards.splice(idxCard,1)
+  renderSeccoes()
+}
+
+function renderSeccaoTexto(s, i) {
+  return `
       <div style="margin-bottom:8px">
         <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título</label>
-        <input class="finput" value="${s.titulo.replace(/"/g,'&quot;')}" oninput="_seccoes[${i}].titulo=this.value" placeholder="Ex: Porquê visitar?">
+        <input class="finput" value="${(s.titulo||'').replace(/"/g,'&quot;')}" oninput="_seccoes[${i}].titulo=this.value" placeholder="Ex: Porquê visitar?">
       </div>
       <div style="margin-bottom:8px">
         <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
-        <textarea class="finput" rows="4" style="resize:vertical" oninput="_seccoes[${i}].texto=this.value" placeholder="Escreve aqui... Usa [texto](url) para links.">${s.texto.replace(/</g,'&lt;')}</textarea>
+        <textarea class="finput" rows="4" style="resize:vertical" oninput="_seccoes[${i}].texto=this.value" placeholder="Escreve aqui... Usa [texto](url) para links.">${(s.texto||'').replace(/</g,'&lt;')}</textarea>
       </div>
       <div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -7548,10 +7557,79 @@ function renderSeccoes() {
             : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Clica para adicionar</div>`
           }
         </div>
+      </div>`
+}
+
+function renderSeccaoCards(s, i) {
+  const cardsHtml = (s.cards||[]).map((c,ci) => `
+    <div style="display:flex;gap:10px;align-items:center;padding:8px;background:#fff;border:1px solid var(--border);border-radius:6px;margin-bottom:6px">
+      ${c.img ? `<img src="${c.img}" style="width:56px;height:42px;object-fit:cover;border-radius:4px;flex-shrink:0">` : '<div style="width:56px;height:42px;border-radius:4px;background:var(--bg2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem">✈</div>'}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.titulo}</div>
+        <div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.subtitulo||''}</div>
       </div>
+      <button onclick="removerCardSeccao(${i},${ci})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 6px">✕</button>
     </div>`).join('')
 
-  // Botão adicionar se não atingiu máximo
+  // Dropdown de artigos disponíveis
+  const optsHtml = _meusArtigos
+    .filter(a => !(s.cards||[]).find(c=>c.id===a.id))
+    .map(a => `<option value="${a.id}">${a.titulo}</option>`).join('')
+
+  return `
+      <div style="margin-bottom:8px">
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título da secção (opcional)</label>
+        <input class="finput" value="${(s.titulo||'').replace(/"/g,'&quot;')}" oninput="_seccoes[${i}].titulo=this.value" placeholder="Ex: Os melhores destinos">
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Artigos a mostrar como cards</label>
+        ${cardsHtml}
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <select class="finput" id="card-picker-${i}" style="flex:1;height:36px">
+            <option value="">— escolher artigo —</option>
+            ${optsHtml}
+          </select>
+          <button class="btn btn-sm btn-outline" onclick="adicionarCardDoPicker(${i})" style="white-space:nowrap">+ Adicionar</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Só aparecem os teus artigos e os da APM Viagens.</div>
+      </div>`
+}
+
+async function adicionarCardDoPicker(idxSec) {
+  const sel = document.getElementById('card-picker-'+idxSec)
+  if(!sel||!sel.value) return
+  const artigo = _meusArtigos.find(a=>a.id===sel.value)
+  if(!artigo) return
+  adicionarCardSeccao(idxSec, {
+    id: artigo.id,
+    titulo: artigo.titulo,
+    subtitulo: artigo.subtitulo||'',
+    img: artigo.hero_imgs?.[0]||artigo.hero_img||null
+  })
+}
+
+function renderSeccoes() {
+  const el = document.getElementById('ea-seccoes-container')
+  if(!el) return
+  el.innerHTML = _seccoes.map((s,i) => `
+    <div style="border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;background:var(--bg2)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Secção ${i+1}</div>
+          <div style="display:flex;border:1px solid var(--border);border-radius:4px;overflow:hidden">
+            <button onclick="mudarTipoSeccao(${i},'texto')" style="padding:3px 10px;font-size:11px;border:none;cursor:pointer;background:${(s.tipo||'texto')==='texto'?'var(--coral)':'#fff'};color:${(s.tipo||'texto')==='texto'?'#fff':'var(--muted)'}">📝 Texto</button>
+            <button onclick="mudarTipoSeccao(${i},'cards')" style="padding:3px 10px;font-size:11px;border:none;cursor:pointer;background:${s.tipo==='cards'?'var(--coral)':'#fff'};color:${s.tipo==='cards'?'#fff':'var(--muted)'}">🃏 Cards</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:4px">
+          ${i>0?`<button class="btn btn-sm btn-outline" onclick="moverSeccao(${i},-1)" style="font-size:11px;padding:3px 8px">↑</button>`:''}
+          ${i<_seccoes.length-1?`<button class="btn btn-sm btn-outline" onclick="moverSeccao(${i},1)" style="font-size:11px;padding:3px 8px">↓</button>`:''}
+          <button class="btn btn-sm" onclick="removerSeccao(${i})" style="background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.2);font-size:11px;padding:3px 8px">✕</button>
+        </div>
+      </div>
+      ${s.tipo==='cards' ? renderSeccaoCards(s,i) : renderSeccaoTexto(s,i)}
+    </div>`).join('')
+
   if(_seccoes.length < MAX_SECCOES) {
     el.innerHTML += `<button class="btn btn-outline" onclick="adicionarSeccao()" style="width:100%;font-size:12px;margin-top:4px">+ Adicionar secção</button>`
   }
