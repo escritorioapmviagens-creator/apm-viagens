@@ -870,74 +870,13 @@ textarea.finput{resize:vertical;min-height:72px}
 
             <!-- SECÇÕES 1-3 -->
             
+                        <!-- SECÇÕES LIVRES -->
             <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:4px">
-              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Secção 1</div>
-              <div style="margin-bottom:10px">
-                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título</label>
-                <input class="finput" id="ea-s1-titulo" placeholder="Ex: Porquê visitar?">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Secções do artigo</div>
+                <button class="btn btn-sm btn-outline" onclick="adicionarSeccao()" style="font-size:11px">+ Adicionar secção</button>
               </div>
-              <div style="margin-bottom:10px">
-                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
-                <textarea class="finput" id="ea-s1-texto" rows="4" style="resize:vertical" placeholder="Escreve aqui... Usa [texto](url) para links."></textarea>
-              </div>
-              <div style="margin-bottom:14px">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-                  <label style="font-size:12px;font-weight:600">Imagem</label>
-                  <button class="btn btn-sm btn-outline" onclick="abrirPickerImagem('s1')" style="font-size:11px">🔍 Pesquisar Pexels/Unsplash</button>
-                </div>
-                <div id="ea-s1-preview" style="width:100%;height:110px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
-                  <div id="ea-s1-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Pesquisa ou faz upload</div>
-                  <img id="ea-s1-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
-                  <button id="ea-s1-remove" onclick="removerImg(event,'s1')" style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;z-index:2">✕</button>
-                </div>
-  
-              </div>
-            </div>
-            <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:4px">
-              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Secção 2</div>
-              <div style="margin-bottom:10px">
-                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título</label>
-                <input class="finput" id="ea-s2-titulo" placeholder="Ex: O que fazer">
-              </div>
-              <div style="margin-bottom:10px">
-                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
-                <textarea class="finput" id="ea-s2-texto" rows="4" style="resize:vertical" placeholder="Escreve aqui... Usa [texto](url) para links."></textarea>
-              </div>
-              <div style="margin-bottom:14px">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-                  <label style="font-size:12px;font-weight:600">Imagem</label>
-                  <button class="btn btn-sm btn-outline" onclick="abrirPickerImagem('s2')" style="font-size:11px">🔍 Pesquisar Pexels/Unsplash</button>
-                </div>
-                <div id="ea-s2-preview" style="width:100%;height:110px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
-                  <div id="ea-s2-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Pesquisa ou faz upload</div>
-                  <img id="ea-s2-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
-                  <button id="ea-s2-remove" onclick="removerImg(event,'s2')" style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;z-index:2">✕</button>
-                </div>
-  
-              </div>
-            </div>
-            <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:4px">
-              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Secção 3</div>
-              <div style="margin-bottom:10px">
-                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título</label>
-                <input class="finput" id="ea-s3-titulo" placeholder="Ex: Dicas práticas">
-              </div>
-              <div style="margin-bottom:10px">
-                <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
-                <textarea class="finput" id="ea-s3-texto" rows="4" style="resize:vertical" placeholder="Escreve aqui... Usa [texto](url) para links."></textarea>
-              </div>
-              <div style="margin-bottom:14px">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-                  <label style="font-size:12px;font-weight:600">Imagem</label>
-                  <button class="btn btn-sm btn-outline" onclick="abrirPickerImagem('s3')" style="font-size:11px">🔍 Pesquisar Pexels/Unsplash</button>
-                </div>
-                <div id="ea-s3-preview" style="width:100%;height:110px;border-radius:8px;background:var(--bg2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
-                  <div id="ea-s3-placeholder" style="text-align:center;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Pesquisa ou faz upload</div>
-                  <img id="ea-s3-img-preview" style="display:none;width:100%;height:100%;object-fit:cover">
-                  <button id="ea-s3-remove" onclick="removerImg(event,'s3')" style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;z-index:2">✕</button>
-                </div>
-  
-              </div>
+              <div id="ea-seccoes-container"></div>
             </div>
 
             <!-- Inserir link -->
@@ -7529,21 +7468,83 @@ function renderBlog() {
 
 const PEXELS_KEY = 'cbnYFhaUvlz1hVKRkRSoYqUQi1rXPdK5XYJgW6bJpAewcBVeTPm8hpHV'
 const UNSPLASH_KEY = 'lvuZ06ZCQKhkrbsWK2AGELUA_fKdZiXYYVcH1MUp6TQ'
+const MAX_SECCOES = 10
 
 let _editorArtigoId = null
-let _imgData = { hero: [], s1: null, s2: null, s3: null } // hero = array de URLs; secções = URL único
-let _pickerTarget = null  // qual slot está a ser preenchido
+let _imgData = { hero: [] }   // hero = array; secções dinâmicas em _seccoes
+let _seccoes = []              // [{titulo, texto, img}]
+let _pickerTarget = null
 let _meusArtigos = []
 
 function artigoPublicoUrl(id) {
   const ref = currentPerfil?.id || ''
   return BLOG_BASE + 'blog-artigo.html?id=' + id + (ref ? '&ref=' + ref : '')
 }
-
 function artigoPartilhaUrl(id) {
-  // URL com meta OG correctas para WhatsApp/redes sociais
   const ref = currentPerfil?.id || ''
   return SUPA_URL + '/functions/v1/og-artigo?id=' + id + (ref ? '&ref=' + ref : '')
+}
+
+// ── SECÇÕES DINÂMICAS ─────────────────────────────────────────────────────────
+function adicionarSeccao(dados) {
+  if(_seccoes.length >= MAX_SECCOES) { toast('Máximo ' + MAX_SECCOES + ' secções', 'err'); return }
+  const idx = _seccoes.length
+  _seccoes.push({ titulo: dados?.titulo||'', texto: dados?.texto||'', img: dados?.img||null })
+  renderSeccoes()
+  return idx
+}
+
+function removerSeccao(idx) {
+  _seccoes.splice(idx, 1)
+  renderSeccoes()
+}
+
+function moverSeccao(idx, dir) {
+  const swap = idx + dir
+  if(swap < 0 || swap >= _seccoes.length) return
+  ;[_seccoes[idx], _seccoes[swap]] = [_seccoes[swap], _seccoes[idx]]
+  renderSeccoes()
+}
+
+function renderSeccoes() {
+  const el = document.getElementById('ea-seccoes-container')
+  if(!el) return
+  el.innerHTML = _seccoes.map((s, i) => `
+    <div style="border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;background:var(--bg2)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Secção ${i+1}</div>
+        <div style="display:flex;gap:4px">
+          ${i > 0 ? `<button class="btn btn-sm btn-outline" onclick="moverSeccao(${i},-1)" style="font-size:11px;padding:3px 8px">↑</button>` : ''}
+          ${i < _seccoes.length-1 ? `<button class="btn btn-sm btn-outline" onclick="moverSeccao(${i},1)" style="font-size:11px;padding:3px 8px">↓</button>` : ''}
+          <button class="btn btn-sm" onclick="removerSeccao(${i})" style="background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.2);font-size:11px;padding:3px 8px">✕</button>
+        </div>
+      </div>
+      <div style="margin-bottom:8px">
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Título</label>
+        <input class="finput" value="${s.titulo.replace(/"/g,'&quot;')}" oninput="_seccoes[${i}].titulo=this.value" placeholder="Ex: Porquê visitar?">
+      </div>
+      <div style="margin-bottom:8px">
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Texto</label>
+        <textarea class="finput" rows="4" style="resize:vertical" oninput="_seccoes[${i}].texto=this.value" placeholder="Escreve aqui... Usa [texto](url) para links.">${s.texto.replace(/</g,'&lt;')}</textarea>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <label style="font-size:12px;font-weight:600">Imagem</label>
+          <button class="btn btn-sm btn-outline" onclick="abrirPickerImagem('sec-${i}')" style="font-size:11px">🔍 Pesquisar Pexels/Unsplash</button>
+        </div>
+        <div style="width:100%;height:90px;border-radius:6px;background:${s.img?'transparent':'var(--bg2)'};border:${s.img?'none':'2px dashed var(--border)'};overflow:hidden;position:relative;cursor:pointer" onclick="abrirPickerImagem('sec-${i}')">
+          ${s.img
+            ? `<img src="${s.img}" style="width:100%;height:100%;object-fit:cover"><button onclick="event.stopPropagation();_seccoes[${i}].img=null;renderSeccoes()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer">✕</button>`
+            : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:12px;pointer-events:none"><div style="font-size:1.5rem">🖼</div>Clica para adicionar</div>`
+          }
+        </div>
+      </div>
+    </div>`).join('')
+
+  // Botão adicionar se não atingiu máximo
+  if(_seccoes.length < MAX_SECCOES) {
+    el.innerHTML += `<button class="btn btn-outline" onclick="adicionarSeccao()" style="width:100%;font-size:12px;margin-top:4px">+ Adicionar secção</button>`
+  }
 }
 
 // ── GERAR COM IA ─────────────────────────────────────────────────────────────
@@ -7557,80 +7558,77 @@ async function gerarArtigoIA() {
   status.textContent = '✨ A escrever o artigo...'
 
   try {
+    const nSec = Math.min(parseInt(prompt.match(/\d+/)?.[0]||3), MAX_SECCOES) || 3
     const res = await fetch(`${SUPA_URL}/functions/v1/gerar-artigo`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPA_KEY}`
-      },
-      body: JSON.stringify({
-        prompt: `Cria um artigo de blog de viagem sobre: ${prompt}
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPA_KEY}` },
+      body: JSON.stringify({ prompt: `Cria um artigo de blog de viagem sobre: ${prompt}
 
-Responde APENAS com este JSON (sem mais nada):
+Responde APENAS com este JSON, sem texto antes ou depois:
 {
-  "titulo": "Título apelativo do artigo (máx 60 chars)",
+  "titulo": "Título apelativo (máx 60 chars)",
   "regiao": "Região geográfica curta",
   "subtitulo": "Frase de introdução apelativa (máx 150 chars)",
-  "s1_titulo": "Título da secção 1",
-  "s1_texto": "Texto da secção 1 (2-3 parágrafos, separados por linha vazia)",
-  "s1_query": "3-4 palavras em inglês para pesquisar foto desta secção no Pexels",
-  "s2_titulo": "Título da secção 2",
-  "s2_texto": "Texto da secção 2 (2-3 parágrafos)",
-  "s2_query": "3-4 palavras em inglês para pesquisar foto desta secção no Pexels",
-  "s3_titulo": "Título da secção 3",
-  "s3_texto": "Texto da secção 3 (2-3 parágrafos)",
-  "s3_query": "3-4 palavras em inglês para pesquisar foto desta secção no Pexels",
-  "hero_query": "3-4 palavras em inglês para pesquisar foto de capa no Pexels"
-}`
-      })
+  "hero_query": "3-4 palavras em inglês para pesquisar foto de capa no Pexels",
+  "seccoes": [
+    {"titulo": "Título secção", "texto": "Texto 2-3 parágrafos separados por linha vazia", "img_query": "3-4 palavras em inglês para foto"}
+  ]
+}
+Cria entre 3 e ${nSec} secções relevantes para o tema.` })
     })
     const art = await res.json()
-    if(art.error) {
-      console.error('Edge Function error:', art)
-      throw new Error(art.raw ? 'Resposta inesperada da IA: ' + art.raw.slice(0,200) : art.error)
-    }
+    if(art.error) throw new Error(art.raw || art.error)
 
-    // Preencher campos
     document.getElementById('ea-titulo').value = art.titulo || ''
     document.getElementById('ea-regiao').value = art.regiao || ''
     document.getElementById('ea-subtitulo').value = art.subtitulo || ''
-    document.getElementById('ea-s1-titulo').value = art.s1_titulo || ''
-    document.getElementById('ea-s1-texto').value = art.s1_texto || ''
-    document.getElementById('ea-s2-titulo').value = art.s2_titulo || ''
-    document.getElementById('ea-s2-texto').value = art.s2_texto || ''
-    document.getElementById('ea-s3-titulo').value = art.s3_titulo || ''
-    document.getElementById('ea-s3-texto').value = art.s3_texto || ''
 
-    status.textContent = '🖼 A pesquisar imagens no Pexels...'
+    status.textContent = '🖼 A pesquisar imagens...'
 
-    // Buscar imagens automaticamente
-    const queries = {
-      hero: art.hero_query,
-      s1: art.s1_query,
-      s2: art.s2_query,
-      s3: art.s3_query
+    // Hero image
+    if(art.hero_query) {
+      const url = await buscarImgPexels(art.hero_query)
+      if(url) setImgSlot('hero', url)
     }
-    for(const [slot, q] of Object.entries(queries)) {
-      if(!q) continue
-      try {
-        const imgRes = await fetch(
-          `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=1&orientation=landscape`,
-          { headers: { Authorization: PEXELS_KEY } }
-        )
-        const imgData = await imgRes.json()
-        const url = imgData.photos?.[0]?.src?.large2x || imgData.photos?.[0]?.src?.large
-        if(url) setImgSlot(slot, url)
-      } catch(e) {}
+
+    // Secções
+    _seccoes = []
+    for(const s of (art.seccoes || [])) {
+      const idx = adicionarSeccao({ titulo: s.titulo||'', texto: s.texto||'' })
+      if(s.img_query) {
+        const url = await buscarImgPexels(s.img_query)
+        if(url) { _seccoes[idx].img = url; renderSeccoes() }
+      }
     }
 
     status.textContent = '✅ Artigo gerado! Revê e edita antes de publicar.'
-    toast('✅ Artigo gerado com sucesso!', 'ok')
+    toast('✅ Artigo gerado!', 'ok')
   } catch(e) {
-    status.textContent = '❌ Erro ao gerar. Tenta novamente.'
-    toast('Erro ao gerar artigo', 'err')
+    status.textContent = '❌ Erro: ' + e.message
     console.error(e)
   }
   btn.disabled = false; btn.textContent = '✨ Gerar'
+}
+
+async function buscarImgPexels(q) {
+  try {
+    const res = await fetch(
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=1&orientation=landscape`,
+      { headers: { Authorization: PEXELS_KEY } }
+    )
+    const data = await res.json()
+    return data.photos?.[0]?.src?.large2x || data.photos?.[0]?.src?.large || null
+  } catch(e) {
+    // Fallback Unsplash
+    try {
+      const res = await fetch(
+        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=1&orientation=landscape`,
+        { headers: { Authorization: 'Client-ID ' + UNSPLASH_KEY } }
+      )
+      const data = await res.json()
+      return data.results?.[0]?.urls?.regular || null
+    } catch(e2) { return null }
+  }
 }
 
 // ── PICKER DE IMAGENS ─────────────────────────────────────────────────────────
@@ -7641,45 +7639,28 @@ function abrirPickerImagem(slot) {
   document.getElementById('picker-url-directo').value = ''
   document.getElementById('modal-img-picker').style.display = 'flex'
 }
-
-function fecharPickerImagem() {
-  document.getElementById('modal-img-picker').style.display = 'none'
-}
+function fecharPickerImagem() { document.getElementById('modal-img-picker').style.display = 'none' }
 
 async function pesquisarImagens(fonte) {
   const q = document.getElementById('picker-query').value.trim()
   if(!q) { toast('Escreve o que queres pesquisar', 'err'); return }
   const resultsEl = document.getElementById('picker-results')
   resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px">A pesquisar...</div>'
-
-  // Destacar botão activo
-  document.getElementById('picker-btn-pexels').style.opacity = fonte==='pexels' ? '1' : '.5'
-  document.getElementById('picker-btn-unsplash').style.opacity = fonte==='unsplash' ? '1' : '.5'
-
+  document.getElementById('picker-btn-pexels').style.opacity = fonte==='pexels'?'1':'.5'
+  document.getElementById('picker-btn-unsplash').style.opacity = fonte==='unsplash'?'1':'.5'
   try {
     let urls = []
-    if(fonte === 'pexels') {
-      const res = await fetch(
-        `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=9&orientation=landscape`,
-        { headers: { Authorization: PEXELS_KEY } }
-      )
+    if(fonte==='pexels') {
+      const res = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=9&orientation=landscape`, { headers: { Authorization: PEXELS_KEY } })
       const data = await res.json()
-      urls = (data.photos || []).map(p => ({ thumb: p.src.medium, full: p.src.large2x || p.src.large, credit: p.photographer }))
+      urls = (data.photos||[]).map(p => ({ thumb: p.src.medium, full: p.src.large2x||p.src.large, credit: p.photographer }))
     } else {
-      const res = await fetch(
-        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=9&orientation=landscape`,
-        { headers: { Authorization: 'Client-ID ' + UNSPLASH_KEY } }
-      )
+      const res = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=9&orientation=landscape`, { headers: { Authorization: 'Client-ID ' + UNSPLASH_KEY } })
       const data = await res.json()
-      urls = (data.results || []).map(p => ({ thumb: p.urls.small, full: p.urls.regular, credit: p.user.name }))
+      urls = (data.results||[]).map(p => ({ thumb: p.urls.small, full: p.urls.regular, credit: p.user.name }))
     }
-
-    if(urls.length === 0) {
-      resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px">Sem resultados. Tenta outra pesquisa.</div>'
-      return
-    }
-
-    resultsEl.innerHTML = urls.map((u,i) => `
+    if(!urls.length) { resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px">Sem resultados.</div>'; return }
+    resultsEl.innerHTML = urls.map(u => `
       <div onclick="selecionarImgPicker('${u.full.replace(/'/g,"\'")}');return false"
            style="cursor:pointer;border-radius:6px;overflow:hidden;position:relative;aspect-ratio:16/9;background:#f0f0f0;border:2px solid transparent;transition:border-color .15s"
            onmouseover="this.style.borderColor='var(--coral)'" onmouseout="this.style.borderColor='transparent'">
@@ -7687,13 +7668,18 @@ async function pesquisarImagens(fonte) {
         <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:4px 6px;font-size:9px;color:rgba(255,255,255,.8)">📸 ${u.credit}</div>
       </div>`).join('')
   } catch(e) {
-    resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px">Erro na pesquisa. Tenta novamente.</div>'
+    resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px">Erro. Tenta novamente.</div>'
   }
 }
 
 function selecionarImgPicker(url) {
   if(!_pickerTarget) return
-  setImgSlot(_pickerTarget, url)
+  if(_pickerTarget.startsWith('sec-')) {
+    const idx = parseInt(_pickerTarget.replace('sec-',''))
+    if(_seccoes[idx] !== undefined) { _seccoes[idx].img = url; renderSeccoes() }
+  } else {
+    setImgSlot(_pickerTarget, url)
+  }
   fecharPickerImagem()
   toast('✅ Imagem seleccionada', 'ok')
 }
@@ -7701,71 +7687,46 @@ function selecionarImgPicker(url) {
 function usarUrlDirecto() {
   const url = document.getElementById('picker-url-directo').value.trim()
   if(!url || !url.startsWith('http')) { toast('URL inválido', 'err'); return }
-  if(!_pickerTarget) return
-  setImgSlot(_pickerTarget, url)
-  fecharPickerImagem()
-  toast('✅ Imagem definida', 'ok')
+  selecionarImgPicker(url)
 }
 
-// ── GESTÃO DE IMAGENS ─────────────────────────────────────────────────────────
+// ── GESTÃO IMAGENS HERO ───────────────────────────────────────────────────────
 function setImgSlot(slot, url) {
-  if(slot === 'hero') {
+  if(slot==='hero') {
     if(_imgData.hero.length >= 6) { toast('Máx. 6 imagens no carrossel', 'err'); return }
     _imgData.hero.push(url)
     renderHeroThumbs()
     document.getElementById('ea-hero-placeholder').style.display = 'none'
     return
   }
+  // Secções antigas (compatibilidade)
   _imgData[slot] = url
-  const prefix = 'ea-' + slot
-  const imgEl  = document.getElementById(prefix + '-img-preview')
-  const phEl   = document.getElementById(prefix + '-placeholder')
-  const rmEl   = document.getElementById(prefix + '-remove')
-  if(imgEl) { imgEl.src = url; imgEl.style.display = 'block' }
-  if(phEl)  phEl.style.display = 'none'
-  if(rmEl)  rmEl.style.display = 'block'
 }
 
 function renderHeroThumbs() {
   const el = document.getElementById('ea-hero-thumbs')
   if(!el) return
-  el.innerHTML = _imgData.hero.map((url, i) => `
+  el.innerHTML = _imgData.hero.map((url,i) => `
     <div style="position:relative;width:80px;height:56px;border-radius:6px;overflow:hidden;border:2px solid var(--border);flex-shrink:0">
       <img src="${url}" style="width:100%;height:100%;object-fit:cover">
       <button onclick="removerHeroImg(${i})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:3px;padding:1px 5px;font-size:10px;cursor:pointer;line-height:1.4">✕</button>
-      ${i > 0 ? `<button onclick="moverHeroImg(${i},-1)" style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:3px;padding:1px 4px;font-size:10px;cursor:pointer;line-height:1.4">←</button>` : ''}
-      ${i < _imgData.hero.length-1 ? `<button onclick="moverHeroImg(${i},1)" style="position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:3px;padding:1px 4px;font-size:10px;cursor:pointer;line-height:1.4">→</button>` : ''}
+      ${i>0?`<button onclick="moverHeroImg(${i},-1)" style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:3px;padding:1px 4px;font-size:10px;cursor:pointer;line-height:1.4">←</button>`:''}
+      ${i<_imgData.hero.length-1?`<button onclick="moverHeroImg(${i},1)" style="position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:3px;padding:1px 4px;font-size:10px;cursor:pointer;line-height:1.4">→</button>`:''}
     </div>`).join('')
-  if(_imgData.hero.length === 0) document.getElementById('ea-hero-placeholder').style.display = 'block'
+  if(!_imgData.hero.length) document.getElementById('ea-hero-placeholder').style.display = 'block'
 }
 
-function removerHeroImg(idx) {
-  _imgData.hero.splice(idx, 1)
-  renderHeroThumbs()
+function removerHeroImg(idx) { _imgData.hero.splice(idx,1); renderHeroThumbs() }
+function moverHeroImg(idx,dir) {
+  const arr=_imgData.hero, swap=idx+dir
+  if(swap<0||swap>=arr.length) return
+  ;[arr[idx],arr[swap]]=[arr[swap],arr[idx]]; renderHeroThumbs()
 }
-
-function moverHeroImg(idx, dir) {
-  const arr = _imgData.hero
-  const swap = idx + dir
-  if(swap < 0 || swap >= arr.length) return
-  ;[arr[idx], arr[swap]] = [arr[swap], arr[idx]]
-  renderHeroThumbs()
-}
-
-function removerImg(e, slot) {
+function removerImg(e,slot) {
   e.stopPropagation()
-  if(slot === 'hero') { _imgData.hero = []; renderHeroThumbs(); return }
-  _imgData[slot] = null
-  const prefix = 'ea-' + slot
-  const imgEl = document.getElementById(prefix + '-img-preview')
-  const phEl  = document.getElementById(prefix + '-placeholder')
-  const rmEl  = document.getElementById(prefix + '-remove')
-  if(imgEl) { imgEl.style.display = 'none'; imgEl.src = '' }
-  if(phEl)  phEl.style.display = 'block'
-  if(rmEl)  rmEl.style.display = 'none'
+  if(slot==='hero') { _imgData.hero=[]; renderHeroThumbs(); return }
+  _imgData[slot]=null
 }
-
-// Upload de imagens desactivado — usar apenas Pexels/Unsplash ou URL directo
 
 // ── LISTA DE ARTIGOS ──────────────────────────────────────────────────────────
 async function renderMeusArtigos() {
@@ -7773,85 +7734,77 @@ async function renderMeusArtigos() {
   if(!el) return
   el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">A carregar...</div>'
 
-  const isAdmin = currentPerfil?.role === 'admin'
-  let query = sb.from('artigos_consultores').select('*').order('criado_em', {ascending:false})
+  const isAdmin = currentPerfil?.role==='admin'
+  let query = sb.from('artigos_consultores').select('*').order('criado_em',{ascending:false})
   if(!isAdmin) query = query.eq('consultor_id', currentPerfil.id)
 
   const { data, error } = await query
-  if(error) { el.innerHTML = '<div style="color:var(--red);font-size:13px;padding:20px">Erro ao carregar artigos.</div>'; return }
+  if(error) { el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">Erro ao carregar.</div>'; return }
   _meusArtigos = data || []
 
-  // Popular dropdown de links
   const optsEl = document.getElementById('ea-link-meus-opts')
   if(optsEl) {
     optsEl.innerHTML = _meusArtigos.map(a =>
-      `<option value="blog-artigo.html?id=${a.id}">${a.titulo}${isAdmin && a.consultor_nome ? ' ('+a.consultor_nome+')' : ''}</option>`
+      `<option value="blog-artigo.html?id=${a.id}">${a.titulo}${isAdmin&&a.consultor_nome?' ('+a.consultor_nome+')':''}</option>`
     ).join('')
   }
 
-  if(_meusArtigos.length === 0) {
-    el.innerHTML = `
-      <div style="text-align:center;padding:48px 20px;color:var(--muted)">
-        <div style="font-size:2.5rem;margin-bottom:12px">✍️</div>
-        <div style="font-weight:700;margin-bottom:6px">Ainda não tens artigos</div>
-        <div style="font-size:13px;margin-bottom:18px">Usa a IA para gerar o teu primeiro artigo em segundos.</div>
-        <button class="btn btn-coral" onclick="abrirEditorArtigo(null)">✨ Criar primeiro artigo</button>
-      </div>`
+  if(!_meusArtigos.length) {
+    el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--muted)">
+      <div style="font-size:2.5rem;margin-bottom:12px">✍️</div>
+      <div style="font-weight:700;margin-bottom:6px">Ainda não tens artigos</div>
+      <div style="font-size:13px;margin-bottom:18px">Usa a IA para gerar o teu primeiro artigo em segundos.</div>
+      <button class="btn btn-coral" onclick="abrirEditorArtigo(null)">✨ Criar primeiro artigo</button>
+    </div>`
     return
   }
 
   el.innerHTML = _meusArtigos.map(a => {
     const url = artigoPublicoUrl(a.id)
-    const dataCriacao = new Date(a.criado_em).toLocaleDateString('pt-PT')
+    const thumb = a.hero_imgs?.[0]||a.hero_img||null
+    const data_c = new Date(a.criado_em).toLocaleDateString('pt-PT')
+    const canEdit = isAdmin || a.consultor_id === currentPerfil.id
     return `
     <div class="card" style="margin-bottom:12px;display:flex;gap:14px;align-items:flex-start">
-      ${(a.hero_imgs?.[0]||a.hero_img) ? `<img src="${a.hero_imgs?.[0]||a.hero_img}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0">` : '<div style="width:80px;height:60px;border-radius:6px;background:var(--bg2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem">✈</div>'}
+      ${thumb?`<img src="${thumb}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0">`:'<div style="width:80px;height:60px;border-radius:6px;background:var(--bg2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem">✈</div>'}
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap">
           <div style="font-weight:700;font-size:.9rem">${a.titulo}</div>
           <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:${a.publicado?'rgba(22,163,74,.12)':'rgba(107,114,128,.12)'};color:${a.publicado?'#15803d':'var(--muted)'}">${a.publicado?'Publicado':'Rascunho'}</span>
         </div>
-        ${a.regiao ? `<div style="font-size:11px;color:var(--muted);margin-bottom:3px">📍 ${a.regiao}</div>` : ''}
-        <div style="font-size:11px;color:var(--muted2);margin-bottom:8px">${dataCriacao}${isAdmin && a.consultor_nome?' · '+a.consultor_nome:''}</div>
+        ${a.regiao?`<div style="font-size:11px;color:var(--muted);margin-bottom:3px">📍 ${a.regiao}</div>`:''}
+        <div style="font-size:11px;color:var(--muted2);margin-bottom:8px">${data_c}${isAdmin&&a.consultor_nome?' · '+a.consultor_nome:''}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button onclick="window.open('${url}','_blank')" class="btn btn-sm btn-outline" style="font-size:11px">👁 Ver</button>
           <button onclick="copiarLinkArtigo('${a.id}')" class="btn btn-sm btn-outline" style="font-size:11px">🔗 Link</button>
           <button onclick="partilharArtigoWA('${a.id}')" class="btn btn-sm" style="background:#25D366;color:#fff;border:none;font-size:11px">💬 WA</button>
-          <button onclick="abrirEditorArtigo('${a.id}')" class="btn btn-sm btn-outline" style="font-size:11px">✏️ Editar</button>
-          <button onclick="confirmarEliminarArtigo('${a.id}')" class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.2);font-size:11px">🗑</button>
+          ${canEdit?`<button onclick="abrirEditorArtigo('${a.id}')" class="btn btn-sm btn-outline" style="font-size:11px">✏️ Editar</button>`:''}
+          ${canEdit?`<button onclick="confirmarEliminarArtigo('${a.id}')" class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.2);font-size:11px">🗑</button>`:''}
         </div>
       </div>
     </div>`
   }).join('')
 }
 
-function copiarLinkArtigo(id) {
-  navigator.clipboard.writeText(artigoPartilhaUrl(id))
-  toast('🔗 Link copiado!', 'ok')
-}
-
+function copiarLinkArtigo(id) { navigator.clipboard.writeText(artigoPartilhaUrl(id)); toast('🔗 Link copiado!','ok') }
 function partilharArtigoWA(id) {
-  const url = encodeURIComponent(artigoPartilhaUrl(id))
-  window.open('https://wa.me/?text=' + encodeURIComponent('Olha este artigo! ✈ ') + url, '_blank')
+  window.open('https://wa.me/?text='+encodeURIComponent('Olha este artigo! ✈ ')+encodeURIComponent(artigoPartilhaUrl(id)),'_blank')
 }
-
 async function confirmarEliminarArtigo(id) {
-  if(!confirm('Eliminar este artigo? Esta acção não pode ser desfeita.')) return
-  const { error } = await sb.from('artigos_consultores').delete().eq('id', id)
-  if(error) { toast('Erro ao eliminar', 'err'); return }
-  toast('Artigo eliminado', 'ok')
-  renderMeusArtigos()
+  if(!confirm('Eliminar este artigo?')) return
+  const {error} = await sb.from('artigos_consultores').delete().eq('id',id)
+  if(error) { toast('Erro','err'); return }
+  toast('Eliminado','ok'); renderMeusArtigos()
 }
 
 // ── EDITOR ────────────────────────────────────────────────────────────────────
 function limparEditorArtigo() {
-  _imgData = { hero: [], s1: null, s2: null, s3: null }
+  _imgData = { hero: [] }
+  _seccoes = []
   _editorArtigoId = null
-  const ids = ['ea-titulo','ea-regiao','ea-subtitulo','ea-ia-prompt',
-               'ea-s1-titulo','ea-s1-texto','ea-s2-titulo','ea-s2-texto','ea-s3-titulo','ea-s3-texto']
-  ids.forEach(id => { const el=document.getElementById(id); if(el) el.value='' })
-  ;['s1','s2','s3'].forEach(slot => removerImg({stopPropagation:()=>{}}, slot))
+  ;['ea-titulo','ea-regiao','ea-subtitulo','ea-ia-prompt'].forEach(id => { const el=document.getElementById(id); if(el) el.value='' })
   renderHeroThumbs()
+  renderSeccoes()
   const iaStatus = document.getElementById('ea-ia-status')
   if(iaStatus) iaStatus.textContent = ''
   document.getElementById('ea-url-preview').textContent = '— guarda o artigo para gerar o link —'
@@ -7864,116 +7817,115 @@ function limparEditorArtigo() {
 function abrirEditorArtigo(id) {
   limparEditorArtigo()
   if(id) {
-    const a = _meusArtigos.find(x => x.id === id)
+    const a = _meusArtigos.find(x=>x.id===id)
     if(!a) return
     _editorArtigoId = id
     document.getElementById('editor-artigo-titulo-modal').textContent = '✏️ Editar artigo'
     document.getElementById('ea-titulo').value = a.titulo||''
     document.getElementById('ea-regiao').value = a.regiao||''
     document.getElementById('ea-subtitulo').value = a.subtitulo||''
-    document.getElementById('ea-s1-titulo').value = a.s1_titulo||''
-    document.getElementById('ea-s1-texto').value = a.s1_texto||''
-    document.getElementById('ea-s2-titulo').value = a.s2_titulo||''
-    document.getElementById('ea-s2-texto').value = a.s2_texto||''
-    document.getElementById('ea-s3-titulo').value = a.s3_titulo||''
-    document.getElementById('ea-s3-texto').value = a.s3_texto||''
-    const heroImgs = a.hero_imgs || (a.hero_img ? [a.hero_img] : [])
-    heroImgs.forEach(u => setImgSlot('hero', u))
-    if(a.s1_img)   setImgSlot('s1',   a.s1_img)
-    if(a.s2_img)   setImgSlot('s2',   a.s2_img)
-    if(a.s3_img)   setImgSlot('s3',   a.s3_img)
+
+    // Hero imgs
+    const heroImgs = a.hero_imgs||( a.hero_img?[a.hero_img]:[] )
+    heroImgs.forEach(u => setImgSlot('hero',u))
+
+    // Secções — suporte a novo formato (seccoes JSONB) e legado (s1/s2/s3)
+    if(a.seccoes?.length) {
+      a.seccoes.forEach(s => adicionarSeccao(s))
+    } else {
+      // Legado: s1/s2/s3
+      if(a.s1_titulo||a.s1_texto) adicionarSeccao({titulo:a.s1_titulo||'',texto:a.s1_texto||'',img:a.s1_img||null})
+      if(a.s2_titulo||a.s2_texto) adicionarSeccao({titulo:a.s2_titulo||'',texto:a.s2_texto||'',img:a.s2_img||null})
+      if(a.s3_titulo||a.s3_texto) adicionarSeccao({titulo:a.s3_titulo||'',texto:a.s3_texto||'',img:a.s3_img||null})
+    }
+
     document.getElementById('ea-url-preview').textContent = artigoPublicoUrl(id)
     const btnD = document.getElementById('ea-btn-despublicar')
-    if(btnD) btnD.style.display = a.publicado ? 'inline-flex' : 'none'
+    if(btnD) btnD.style.display = a.publicado?'inline-flex':'none'
     const btnG = document.getElementById('ea-btn-guardar')
     if(btnG) btnG.textContent = '💾 Guardar alterações'
   } else {
     document.getElementById('editor-artigo-titulo-modal').textContent = '✏️ Novo artigo'
+    // Começar com 1 secção vazia
+    adicionarSeccao()
   }
   document.getElementById('modal-editor-artigo').style.display = 'flex'
 }
 
-function fecharEditorArtigo() {
-  document.getElementById('modal-editor-artigo').style.display = 'none'
-}
+function fecharEditorArtigo() { document.getElementById('modal-editor-artigo').style.display = 'none' }
 
 function gvEA(id) { const el=document.getElementById(id); return el?el.value.trim():'' }
 
 async function guardarArtigo() {
   const titulo = gvEA('ea-titulo')
-  if(!titulo) { toast('O título é obrigatório', 'err'); return }
+  if(!titulo) { toast('O título é obrigatório','err'); return }
+  if(!_seccoes.length) { toast('Adiciona pelo menos uma secção','err'); return }
 
   const btn = document.getElementById('ea-btn-guardar')
-  btn.disabled = true; btn.textContent = 'A guardar...'
+  btn.disabled=true; btn.textContent='A guardar...'
 
   const payload = {
     consultor_id: currentPerfil.id,
     consultor_nome: currentPerfil.nome,
     titulo,
-    subtitulo:  gvEA('ea-subtitulo') || null,
-    regiao:     gvEA('ea-regiao') || null,
-    hero_imgs:  _imgData.hero.length ? _imgData.hero : null,
-    hero_img:   _imgData.hero[0] || null, // compatibilidade com lista
-    s1_titulo:  gvEA('ea-s1-titulo') || null,
-    s1_texto:   gvEA('ea-s1-texto') || null,
-    s1_img:     _imgData.s1 || null,
-    s2_titulo:  gvEA('ea-s2-titulo') || null,
-    s2_texto:   gvEA('ea-s2-texto') || null,
-    s2_img:     _imgData.s2 || null,
-    s3_titulo:  gvEA('ea-s3-titulo') || null,
-    s3_texto:   gvEA('ea-s3-texto') || null,
-    s3_img:     _imgData.s3 || null,
-    publicado:  true,
+    subtitulo: gvEA('ea-subtitulo')||null,
+    regiao: gvEA('ea-regiao')||null,
+    hero_imgs: _imgData.hero.length?_imgData.hero:null,
+    hero_img: _imgData.hero[0]||null,
+    seccoes: _seccoes,
+    // Limpar campos legados
+    s1_titulo:null, s1_texto:null, s1_img:null,
+    s2_titulo:null, s2_texto:null, s2_img:null,
+    s3_titulo:null, s3_texto:null, s3_img:null,
+    publicado: true,
     atualizado_em: new Date().toISOString()
   }
 
   let error, data
   if(_editorArtigoId) {
-    const res = await sb.from('artigos_consultores').update(payload).eq('id', _editorArtigoId).select().single()
-    error = res.error; data = res.data
+    const res = await sb.from('artigos_consultores').update(payload).eq('id',_editorArtigoId).select().single()
+    error=res.error; data=res.data
   } else {
     const res = await sb.from('artigos_consultores').insert(payload).select().single()
-    error = res.error; data = res.data
+    error=res.error; data=res.data
   }
 
-  btn.disabled = false
-  btn.textContent = _editorArtigoId ? '💾 Guardar alterações' : '💾 Publicar artigo'
+  btn.disabled=false
+  btn.textContent = _editorArtigoId?'💾 Guardar alterações':'💾 Publicar artigo'
 
-  if(error) { toast('Erro ao guardar: ' + (error.message||''), 'err'); return }
+  if(error) { toast('Erro: '+(error.message||''),'err'); return }
 
   _editorArtigoId = data.id
   document.getElementById('ea-url-preview').textContent = artigoPublicoUrl(data.id)
   const btnD = document.getElementById('ea-btn-despublicar')
-  if(btnD) btnD.style.display = 'inline-flex'
-  btn.textContent = '💾 Guardar alterações'
-  toast('✅ Artigo publicado!', 'ok')
+  if(btnD) btnD.style.display='inline-flex'
+  btn.textContent='💾 Guardar alterações'
+  toast('✅ Artigo publicado!','ok')
   renderMeusArtigos()
 }
 
 async function togglePublicadoArtigo(publicar) {
   if(!_editorArtigoId) return
-  const { error } = await sb.from('artigos_consultores')
-    .update({ publicado: publicar, atualizado_em: new Date().toISOString() })
-    .eq('id', _editorArtigoId)
-  if(error) { toast('Erro', 'err'); return }
-  toast(publicar ? '✅ Artigo publicado' : 'Artigo despublicado', 'ok')
-  const btnD = document.getElementById('ea-btn-despublicar')
-  if(btnD) btnD.style.display = publicar ? 'inline-flex' : 'none'
+  const {error} = await sb.from('artigos_consultores').update({publicado:publicar,atualizado_em:new Date().toISOString()}).eq('id',_editorArtigoId)
+  if(error) { toast('Erro','err'); return }
+  toast(publicar?'✅ Publicado':'Despublicado','ok')
+  const btnD=document.getElementById('ea-btn-despublicar')
+  if(btnD) btnD.style.display=publicar?'inline-flex':'none'
   renderMeusArtigos()
 }
 
 function preVisualizarArtigo() {
-  if(!_editorArtigoId) { toast('Guarda o artigo primeiro', 'err'); return }
-  window.open(artigoPublicoUrl(_editorArtigoId), '_blank')
+  if(!_editorArtigoId) { toast('Guarda primeiro','err'); return }
+  window.open(artigoPublicoUrl(_editorArtigoId),'_blank')
 }
 
 function copiarSnippetLink() {
   const artigo = document.getElementById('ea-link-artigo')?.value
   const texto  = document.getElementById('ea-link-texto')?.value.trim()
-  if(!artigo) { toast('Escolhe um artigo', 'err'); return }
-  if(!texto)  { toast('Escreve o texto do link', 'err'); return }
+  if(!artigo) { toast('Escolhe um artigo','err'); return }
+  if(!texto)  { toast('Escreve o texto','err'); return }
   navigator.clipboard.writeText(`[${texto}](${artigo})`)
-  toast('📋 Snippet copiado! Cola no texto.', 'ok')
+  toast('📋 Snippet copiado!','ok')
 }
 
 function copiarLink() {
