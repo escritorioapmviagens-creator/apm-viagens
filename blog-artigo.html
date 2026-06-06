@@ -211,6 +211,17 @@ function renderArtigo(a) {
 
     <div class="divider"></div>
 
+    ${a.categoria !== 'recrutamento' ? `
+    <div style="background:linear-gradient(135deg,#1a1a2e 0%,#2d1a3a 100%);margin:0;padding:28px 40px;display:flex;gap:20px;align-items:center">
+      <div style="flex-shrink:0;width:48px;height:48px;border-radius:50%;background:rgba(232,57,90,.2);border:2px solid rgba(232,57,90,.4);display:flex;align-items:center;justify-content:center;font-size:1.4rem">💼</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">Gostas de viagens? Transforma isso num negócio.</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:12px">Junta-te à rede APM Viagens como consultor independente — trabalha de onde quiseres e ganha comissão em cada reserva.</div>
+        <a href="${'https://escritorioapmviagens-creator.github.io/apm-viagens/consultores/index.html' + (ref ? '?ref=' + ref : '')}" style="display:inline-flex;align-items:center;gap:6px;background:#E8395A;color:#fff;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:8px 18px;border-radius:4px">Saber mais →</a>
+      </div>
+    </div>
+    ` : ''}
+
     <div class="wa-box">
       <div class="wa-box-inner">
         <div class="wa-icon">${waIconSVG(26)}</div>
