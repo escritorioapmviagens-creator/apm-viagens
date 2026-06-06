@@ -7562,16 +7562,14 @@ async function gerarArtigoIA() {
   status.textContent = '✨ A escrever o artigo...'
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(`${SUPA_URL}/functions/v1/gerar-artigo`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPA_KEY}`
+      },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: 'És um especialista em turismo a escrever artigos de blog para a agência de viagens APM Viagens, em português europeu. Responde APENAS em JSON válido, sem markdown, sem texto extra.',
-        messages: [{
-          role: 'user',
-          content: `Cria um artigo de blog de viagem sobre: ${prompt}
+        prompt: `Cria um artigo de blog de viagem sobre: ${prompt}
 
 Responde APENAS com este JSON (sem mais nada):
 {
@@ -7589,7 +7587,6 @@ Responde APENAS com este JSON (sem mais nada):
   "s3_query": "3-4 palavras em inglês para pesquisar foto desta secção no Pexels",
   "hero_query": "3-4 palavras em inglês para pesquisar foto de capa no Pexels"
 }`
-        }]
       })
     })
     const data = await res.json()
