@@ -78,6 +78,13 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
   .dest-item{flex-direction:column}.dest-photo{width:100%;min-width:unset;height:180px;object-fit:cover}.dest-num-wrap{display:none}
   .dest-item{min-height:auto}
 }
+
+.dest-num-mobile{display:none}
+@media(max-width:560px){
+  .dest-num-mobile{display:block;position:absolute;top:8px;right:12px;font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:600;color:#e0e0e0;line-height:1;pointer-events:none}
+  .dest-num-mobile.top{color:#E8395A;opacity:.25}
+  .dest-num-mobile{opacity:.2}
+}
 </style>
 </head>
 <body>
@@ -116,7 +123,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
   <div class="dest-item">
     <div class="dest-num-wrap"><div class="dest-num top">1</div></div>
     <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="djerba tunisia beach" alt="Djerba">
-    <div class="dest-body">
+    <div class="dest-body"><span class="dest-num-mobile top">1</span>
       <div class="dest-region">Norte de África · Tunísia</div>
       <div class="dest-name">Djerba</div>
       <div class="dest-desc">Praias douradas, mercados de especiarias e resorts all-inclusive com mar turquesa. O favorito das famílias portuguesas.</div>
@@ -127,7 +134,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
   <div class="dest-item">
     <div class="dest-num-wrap"><div class="dest-num">2</div></div>
     <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="bayahibe dominican republic beach" alt="Bayahibe">
-    <div class="dest-body">
+    <div class="dest-body"><span class="dest-num-mobile">2</span>
       <div class="dest-region">Caraíbas · República Dominicana</div>
       <div class="dest-name">Bayahibe</div>
       <div class="dest-desc">Caraíbas autênticas — areia branca, água cristalina e ambiente tranquilo, longe das multidões.</div>
@@ -138,7 +145,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
   <div class="dest-item">
     <div class="dest-num-wrap"><div class="dest-num">3</div></div>
     <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="mallorca spain cala beach" alt="Maiorca">
-    <div class="dest-body">
+    <div class="dest-body"><span class="dest-num-mobile">3</span>
       <div class="dest-region">Espanha · Ilhas Baleares</div>
       <div class="dest-name">Maiorca</div>
       <div class="dest-desc">Calas secretas, gastronomia mediterrânea e paisagens de cortar a respiração. Maiorca surpreende sempre.</div>
@@ -170,7 +177,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
   <div class="dest-item">
     <div class="dest-num-wrap"><div class="dest-num">4</div></div>
     <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="cape verde sal island beach" alt="Cabo Verde - Ilha do Sal">
-    <div class="dest-body">
+    <div class="dest-body"><span class="dest-num-mobile">4</span>
       <div class="dest-region">Cabo Verde · Atlântico</div>
       <div class="dest-name">Cabo Verde — Ilha do Sal</div>
       <div class="dest-desc">Sol garantido, praias de areia branca e o calor de um povo acolhedor. Perfeito para recarregar energias.</div>
@@ -181,7 +188,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
   <div class="dest-item">
     <div class="dest-num-wrap"><div class="dest-num">5</div></div>
     <img class="dest-photo" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-pexels="paris eiffel tower" alt="Paris">
-    <div class="dest-body">
+    <div class="dest-body"><span class="dest-num-mobile">5</span>
       <div class="dest-region">França · Europa</div>
       <div class="dest-name">Paris & Disneyland</div>
       <div class="dest-desc">A magia do castelo da Cinderela encontra a elegância parisiense. Uma memória para toda a família.</div>
