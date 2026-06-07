@@ -34,7 +34,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .app{display:flex;min-height:100vh}
 .sidebar{width:240px;min-width:240px;background:var(--surface);display:flex;flex-direction:column;border-right:1px solid var(--border);box-shadow:2px 0 8px rgba(0,0,0,0.04);transition:width .2s ease,min-width .2s ease}
 .sidebar.collapsed{width:0;min-width:0;overflow:hidden;border-right:none;box-shadow:none}
-.main{flex:1;overflow:auto;display:flex;flex-direction:column;justify-content:flex-start}
+.main{flex:1;overflow:auto;display:flex;flex-direction:column}
 
 /* ── SIDEBAR ── */
 .sidebar-logo{padding:1.5rem 1.25rem 1rem;border-bottom:1px solid var(--border)}
@@ -79,7 +79,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .topbar-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:var(--text)}
 .topbar-sub{font-size:12px;color:var(--muted);margin-top:1px}
 .topbar-actions{display:flex;gap:8px;align-items:center}
-.content{padding:1.5rem;width:100%}
+.content{padding:1.5rem;flex:1}
 .page{display:none}
 .page.active{display:block}
 
@@ -3620,8 +3620,6 @@ function navTo(page, el) {
   if(el) el.classList.add('active')
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
-  const mainEl = document.querySelector('.main')
-  if(mainEl) mainEl.scrollTop = 0
   const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Performance',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
   document.getElementById('tb-title').textContent = titles[page]||page
   document.getElementById('tb-sub').textContent = page==='dashboard'?(currentPerfil?.role==='admin'?'Visão global da agência':'Visão geral das tuas reservas'):''
@@ -6254,8 +6252,9 @@ async function moverPedidoParaPipeline(id) {
   await sb.from('pedidos_orcamento').update({ estado: 'convertido' }).eq('id', id)
 
   toast('✅ Movido para o pipeline!', 'ok')
-  loadPedidosOrcamento()
+  setTimeout(() => { navTo('pipeline', document.getElementById('nav-pipeline') || document.querySelector('[onclick*=\'pipeline\']')); }, 800)
 }
+
 
 async function loadPedidosOrcBadge() {
   const { data } = await sb.from('pedidos_orcamento').select('id').eq('estado','novo')
@@ -6320,6 +6319,7 @@ async function loadPedidosOrcamento() {
       + '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">'
       + (telLink ? '<a href="' + telLink + '" target="_blank" style="background:#25d366;color:#fff;border-radius:8px;padding:6px 12px;font-size:.75rem;font-weight:600;text-decoration:none;text-align:center">💬 WhatsApp</a>' : '')
       + '<button onclick="moverPedidoParaPipeline(\'' + p.id + '\')" style="background:var(--blue-light);border:1px solid #c7d7fd;color:var(--blue);border-radius:8px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:var(--font)">→ Pipeline</button>'
+      + '<button onclick="abrirOrcamentoComDados(\'' + p.id + '\')" style="background:#fff0f3;border:1px solid #fdd;color:var(--coral);border-radius:8px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:var(--font)">💶 Criar orçamento</button>'
       + '<select onchange="atualizarEstadoPedidoOrc(\'' + p.id + '\',this.value)" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:.72rem;font-family:var(--font);cursor:pointer;color:var(--text)">'
       + ['novo','contactado','proposta_enviada','convertido','sem_interesse'].map(s =>
           '<option value="' + s + '" ' + (p.estado===s?'selected':'') + '>' + (estadoColors[s]?.label||s) + '</option>'
@@ -6329,6 +6329,24 @@ async function loadPedidosOrcamento() {
       + '</div>'
       + '</div>'
   }).join('')
+}
+
+async function abrirOrcamentoComDados(id) {
+  const { data: p } = await sb.from('pedidos_orcamento').select('*').eq('id', id).single()
+  if(!p) return
+  // Construir URL com dados pré-preenchidos
+  const base = window.location.href.replace('index.html','').replace(/\?.*$/,'')
+  const params = new URLSearchParams({
+    dest: p.destino || '',
+    cli_nome: p.nome || '',
+    cli_tel: p.telefone || '',
+    cli_email: p.email || '',
+    pax: p.num_pax || '',
+    mes: p.data_aproximada || '',
+    notas: p.notas || '',
+    pedido_id: p.id
+  })
+  window.open(base + 'orcamento.html?' + params.toString(), '_blank')
 }
 
 async function atualizarEstadoPedidoOrc(id, estado) {
