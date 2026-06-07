@@ -785,6 +785,19 @@ nav{position:sticky;top:0;left:0;right:0;z-index:200;background:rgba(248,248,248
       <div class="estimativa-sub" id="estimativa-sub"></div>
       <div class="estimativa-disclaimer">⚠ Este valor é uma estimativa indicativa com base em preços médios de mercado. O preço real será confirmado pelo teu consultor APM Viagens após análise das disponibilidades e datas específicas. A reserva só fica garantida após confirmação e pagamento.</div>
     </div>
+    <!-- Dados do cliente -->
+    <div class="form-group">
+      <label class="form-label">O seu nome *</label>
+      <input class="form-input" id="cli-nome" placeholder="Nome completo" oninput="calcularPreco()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Telemóvel / WhatsApp *</label>
+      <input class="form-input" id="cli-tel" placeholder="912 345 678" type="tel" oninput="calcularPreco()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email (opcional)</label>
+      <input class="form-input" id="cli-email" placeholder="email@exemplo.com" type="email">
+    </div>
     <!-- Voucher info -->
     <div id="voucher-box" style="background:#fff9e6;border:1.5px solid #fde68a;border-radius:10px;padding:14px;margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -800,10 +813,11 @@ nav{position:sticky;top:0;left:0;right:0;z-index:200;background:rgba(248,248,248
         <span style="font-size:10px;color:#9ca3af">* Voucher válido na próxima reserva do consultor que recomendou. Não acumulável com outras promoções.</span>
       </div>
     </div>
-    <button class="reservar-btn" id="reservar-btn" onclick="enviarReserva()" disabled>Pedir confirmação de disponibilidade</button>
+    <button class="reservar-btn" id="reservar-btn" onclick="enviarReserva()" disabled>Confirmar pedido ✈</button>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const UNSPLASH = 'lvuZ06ZCQKhkrbsWK2AGELUA_fKdZiXYYVcH1MUp6TQ'
 const CHAT_BASE = 'https://escritorioapmviagens-creator.github.io/apm-viagens/chat.html'
@@ -906,6 +920,13 @@ function abrirDrawer(nome) {
   // Stars - activar 4★ por defeito
   document.querySelectorAll('.star-btn').forEach((b,i) => b.classList.toggle('active', i===1))
   renderHoteis()
+  // Limpar campos cliente
+  const cliNome = document.getElementById('cli-nome')
+  const cliTel = document.getElementById('cli-tel')
+  const cliEmail = document.getElementById('cli-email')
+  if(cliNome) cliNome.value = ''
+  if(cliTel) cliTel.value = ''
+  if(cliEmail) cliEmail.value = ''
   document.getElementById('drawer-overlay').classList.add('open')
   document.getElementById('drawer').classList.add('open')
   document.body.style.overflow = 'hidden'
@@ -979,25 +1000,71 @@ function calcularPreco() {
   document.getElementById('estimativa-sub').textContent = 
     `${adultos} adulto${adultos>1?'s':''}${criancas>0?' + '+criancas+' criança'+(criancas>1?'s':''):''} · ${noites} noites · ${mes} · ${_hotel}`
   document.getElementById('estimativa-box').style.display = 'block'
-  document.getElementById('reservar-btn').disabled = false
+  // Activar botão só se nome e tel preenchidos
+  const cNome = document.getElementById('cli-nome')?.value.trim()
+  const cTel = document.getElementById('cli-tel')?.value.trim()
+  document.getElementById('reservar-btn').disabled = !(cNome && cTel)
 }
 
-function enviarReserva() {
+const SUPA_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const { createClient } = supabase
+const sb = createClient(SUPA_URL, SUPA_KEY)
+
+async function enviarReserva() {
+  const nome = document.getElementById('cli-nome')?.value.trim()
+  const tel = document.getElementById('cli-tel')?.value.trim()
+  const email = document.getElementById('cli-email')?.value.trim()
   const mes = document.getElementById('mes-select').value
   const noites = document.getElementById('noites-select').value
   const adultos = document.getElementById('adultos-select').value
   const criancas = document.getElementById('criancas-select').value
   const precoEl = document.getElementById('estimativa-preco').textContent
-  
-  const msg = `Olá! Tenho interesse em reservar:\n\n🌍 Destino: ${_destino}\n🏨 Hotel: ${_hotel} (${_stars}★)\n📅 Mês: ${mes}\n🌙 Noites: ${noites}\n👥 Adultos: ${adultos}${criancas>0?' | Crianças: '+criancas:''}\n💰 Estimativa: ${precoEl}\n\nGostaria de confirmar disponibilidade e preço real.`
-  
-  const params = new URLSearchParams()
-  if(ref) params.set('c', ref)
-  params.set('dest', _destino)
-  params.set('hotel', _hotel || '')
-  params.set('msg', msg)
-  
-  window.open(CHAT_BASE + '?' + params.toString(), '_blank')
+
+  if(!nome) { alert('Por favor indique o seu nome.'); return }
+  if(!tel) { alert('Por favor indique o seu telemóvel.'); return }
+
+  const btn = document.getElementById('reservar-btn')
+  btn.disabled = true
+  btn.textContent = 'A enviar...'
+
+  const notas = `Hotel: ${_hotel} (${_stars}★) · ${adultos} adulto(s)${criancas>0?' + '+criancas+' criança(s)':''} · ${noites} noites · ${mes} · Estimativa: ${precoEl}`
+
+  const { error } = await sb.from('pedidos_orcamento').insert({
+    nome,
+    telefone: tel,
+    email: email || null,
+    destino: _destino,
+    consultor_id: ref || null,
+    estado: 'novo',
+    orcamento: precoEl,
+    num_pax: parseInt(adultos) + parseInt(criancas),
+    data_aproximada: mes,
+    notas
+  })
+
+  btn.disabled = false
+  btn.textContent = 'Pedir confirmação de disponibilidade'
+
+  if(error) {
+    alert('Erro ao enviar pedido. Tente novamente.')
+    console.error(error)
+    return
+  }
+
+  // Mostrar confirmação
+  document.getElementById('drawer').innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center">
+      <div style="font-size:3rem;margin-bottom:16px">✅</div>
+      <div style="font-size:1.1rem;font-weight:800;color:#1a1a2e;margin-bottom:8px">Pedido enviado!</div>
+      <div style="font-size:13px;color:#6b7280;line-height:1.7;margin-bottom:24px">O seu pedido de orçamento para <strong>${_destino}</strong> foi recebido. O seu consultor APM Viagens entrará em contacto em breve com a confirmação de disponibilidade e valores.</div>
+      <div style="background:#fff0f3;border:1px solid #fdd;border-radius:10px;padding:14px;font-size:12px;color:#6b7280;margin-bottom:24px">
+        <strong>${_hotel}</strong> · ${_stars}★<br>
+        ${adultos} adulto(s)${criancas>0?' + '+criancas+' criança(s)':''} · ${noites} noites · ${mes}<br>
+        <strong style="color:#E8395A">Estimativa: ${precoEl}</strong>
+      </div>
+      <button onclick="fecharDrawer()" style="background:#E8395A;color:#fff;border:none;border-radius:8px;padding:12px 28px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Fechar</button>
+    </div>`
 }
 
 // Filtros
