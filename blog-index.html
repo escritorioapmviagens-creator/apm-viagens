@@ -6,12 +6,14 @@
 <title>Blog APM Viagens — Inspiração para viajar</title>
 <meta property="og:title" content="Blog APM Viagens — Inspiração para viajar">
 <meta property="og:description" content="Destinos, dicas e oportunidades de carreira no mundo das viagens.">
-<meta property="og:image" content="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png">
+<meta property="og:image" content="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&h=630&fit=crop">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="APM Viagens">
 <meta property="og:url" content="https://escritorioapmviagens-creator.github.io/apm-viagens/blog-index.html">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png">
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&h=630&fit=crop">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -76,6 +78,7 @@ body{background:#fff;font-family:'Poppins',sans-serif;color:#1a1a2e}
 <div class="wrap">
 
 <nav class="site-nav">
+  <a href="#" class="nav-back" id="nav-destinos" style="color:#6b7280;text-decoration:none;font-size:12px;font-weight:500">🌍 Destinos</a>
   <a href="#" class="nav-cta" id="nav-orcamento">✈ Pedir orçamento</a>
 </nav>
 
@@ -131,6 +134,7 @@ const p = new URLSearchParams(location.search)
 const ref = p.get('ref') || ''
 const s = ref ? '?ref=' + ref : ''
 document.getElementById('nav-orcamento').href = 'pedir-orcamento.html' + s
+document.getElementById('nav-destinos').href = 'destinos.html' + s
 
 // ── CARROSSEL HERO ────────────────────────────────────────────────────────────
 const FALLBACK_IMGS = [
