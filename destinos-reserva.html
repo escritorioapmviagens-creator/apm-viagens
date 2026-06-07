@@ -844,19 +844,19 @@ async function processQueue() {
     const d = await r.json()
     const url = small ? d.results?.[0]?.urls?.small : d.results?.[0]?.urls?.regular
     if(url) { img.src = url; _imgCache[q] = url }
+    else if(q.split(' ').length > 2) {
+      // Tentar query mais simples
+      const qSimple = q.split(' ').slice(0,2).join(' ')
+      queueImg(img, qSimple, small)
+    }
   } catch(e) {}
   _imgRunning--
   processQueue()
 }
 
-const IMG_FALLBACKS = {"Cabo Verde": "https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?w=600&fit=crop", "Moçambique": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&fit=crop", "São Tomé e Príncipe": "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=600&fit=crop", "Madagáscar": "https://images.unsplash.com/photo-1504432842672-1a79f78e4084?w=600&fit=crop", "Gâmbia": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=600&fit=crop", "Quénia": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=600&fit=crop", "Tanzânia": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&fit=crop", "Seicheles": "https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?w=600&fit=crop", "Maurícia": "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=600&fit=crop", "Maldivas": "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=600&fit=crop", "Polinésia Francesa": "https://images.unsplash.com/photo-1589179447237-e49d2b82ab93?w=600&fit=crop", "Havaí": "https://images.unsplash.com/photo-1505852679233-d9fd70aff56d?w=600&fit=crop", "Japão": "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&fit=crop", "Indonésia": "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&fit=crop", "Tailândia": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&fit=crop", "Vietname": "https://images.unsplash.com/photo-1528127269322-539801943592?w=600&fit=crop", "Sri Lanka": "https://images.unsplash.com/photo-1546708673-aea6bf0a5a44?w=600&fit=crop", "Singapura": "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=600&fit=crop", "Camboja": "https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=600&fit=crop", "Brasil": "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=600&fit=crop", "Estados Unidos": "https://images.unsplash.com/photo-1485871981521-5b1fd3805eee?w=600&fit=crop", "Porto Rico": "https://images.unsplash.com/photo-1579687196544-08ae8e3e3b1e?w=600&fit=crop", "Cuba": "https://images.unsplash.com/photo-1500759285222-a95626359773?w=600&fit=crop", "Grenada": "https://images.unsplash.com/photo-1548574505-5e239809ee19?w=600&fit=crop"}
+const IMG_FALLBACKS = {}  // Sem fallbacks hardcoded — usar API
 
 async function carregarImg(img, q) {
-  // Verificar se temos fallback para este destino
-  const destNome = img.closest('.dest-card')?.querySelector('.dest-card-name')?.textContent
-  if(destNome && IMG_FALLBACKS[destNome] && !img.src) {
-    img.src = IMG_FALLBACKS[destNome]
-  }
   queueImg(img, q, false)
 }
 async function carregarImgHotel(img, hotelNome, destino) {
