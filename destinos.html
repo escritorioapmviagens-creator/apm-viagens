@@ -29,9 +29,8 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 .region-section+.region-section{border-top:1px solid #f0f0f0}
 .region-title{font-size:11px;font-weight:700;color:#E8395A;text-transform:uppercase;letter-spacing:.15em;margin-bottom:16px;display:flex;align-items:center;gap:10px}
 .region-title::after{content:'';flex:1;height:1px;background:#f0f0f0}
-.cards-row{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-ms-overflow-style:none;scrollbar-width:none}
-.cards-row::-webkit-scrollbar{display:none}
-.dest-card{flex-shrink:0;width:200px;border:1px solid #f0f0f0;border-radius:10px;overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s;scroll-snap-align:start;background:#fff}
+.cards-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.dest-card{border:1px solid #f0f0f0;border-radius:10px;overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s;background:#fff}
 .dest-card:hover{box-shadow:0 6px 24px rgba(0,0,0,.1);transform:translateY(-2px)}
 .dest-card-img{width:100%;height:120px;object-fit:cover;display:block;background:#f5f5f5}
 .dest-card-body{padding:12px}
@@ -85,7 +84,7 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
     <a href="https://escritorioapmviagens-creator.github.io/apm-viagens/consultores/#como-funciona">Como funciona</a>
     <a href="https://escritorioapmviagens-creator.github.io/apm-viagens/consultores/#planos">Planos</a>
     <a href="https://escritorioapmviagens-creator.github.io/apm-viagens/consultores/#faq">FAQ</a>
-    <a href="https://escritorioapmviagens-creator.github.io/apm-viagens/destinos.html" id="nav-destinos">Destinos</a>
+    <a href="https://escritorioapmviagens-creator.github.io/apm-viagens/destinos.html">Destinos</a>
     <a href="https://escritorioapmviagens-creator.github.io/apm-viagens/consultores/inscricao" class="nav-btn" id="nav-inscricao">Efectuar Inscrição</a>
   </div>
 </nav>
@@ -104,6 +103,12 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
   <button class="region-btn" onclick="filtrarRegiao('Caribe',this)">Caribe</button>
   <button class="region-btn" onclick="filtrarRegiao('América',this)">América</button>
   <button class="region-btn" onclick="filtrarRegiao('Ásia e Oceania',this)">Ásia e Oceania</button>
+</div>
+
+<div style="background:linear-gradient(90deg,#fff0f3,#f0f4ff);border-top:1px solid #fdd;border-bottom:1px solid #fdd;padding:10px 40px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <span style="font-size:1.1rem">🎟</span>
+  <span style="font-size:12px;color:#1a1a2e"><strong>Reserve connosco</strong> e saiba como ganhar um voucher até <strong style="color:#E8395A">300 €</strong> para a sua próxima reserva.</span>
+  <a href="#voucher-info" onclick="mostrarVoucher();return false" style="font-size:11px;font-weight:700;color:#E8395A;text-decoration:underline;white-space:nowrap">Saber mais →</a>
 </div>
 
 <div id="destinos-container">
@@ -880,6 +885,10 @@ function fecharModal() {
 }
 
 document.addEventListener('keydown', e => { if(e.key==='Escape') fecharModal() })
+
+function mostrarVoucher() {
+  alert('🎟 Programa de Vouchers APM Viagens\n\nReserve connosco e ganhe um voucher até 300€ para a sua próxima viagem!\n\n✅ Válido em reservas ≥ 1.000€\n✅ Enviado por email após conclusão da viagem\n✅ Válido 12 meses\n\nContacte o seu consultor APM para mais informações.')
+}
 
 let regiaoActiva = 'todos', queryActiva = ''
 
