@@ -628,6 +628,38 @@ async function initApp() {
     }
   }
 
+  // Pré-preencher com dados do pedido de orçamento (via URL params)
+  const _urlParams = new URLSearchParams(window.location.search)
+  if(_urlParams.get('dest')) {
+    const destEl = document.getElementById('f-dest')
+    if(destEl) { destEl.value = _urlParams.get('dest'); updatePreview && updatePreview() }
+  }
+  if(_urlParams.get('cli_nome')) {
+    const el = document.getElementById('f-cli-nome')
+    if(el) el.value = _urlParams.get('cli_nome')
+  }
+  if(_urlParams.get('cli_tel')) {
+    const el = document.getElementById('f-cli-tel')
+    if(el) el.value = _urlParams.get('cli_tel')
+  }
+  if(_urlParams.get('cli_email')) {
+    const el = document.getElementById('f-cli-email')
+    if(el) el.value = _urlParams.get('cli_email')
+  }
+  if(_urlParams.get('pax')) {
+    const el = document.getElementById('f-pax')
+    if(el) el.value = _urlParams.get('pax')
+  }
+  if(_urlParams.get('notas')) {
+    // Mostrar notas do pedido como referência
+    const notasEl = document.getElementById('f-sub')
+    if(notasEl && !notasEl.value) notasEl.value = _urlParams.get('notas')
+  }
+  // Guardar pedido_id para marcar como convertido quando gerar orçamento
+  if(_urlParams.get('pedido_id')) {
+    window._pedidoOrcId = _urlParams.get('pedido_id')
+  }
+
   // Load templates
   const { data: tmpls } = await sb.from('templates_condicoes').select('*').eq('ativo', true).order('nome')
   templates = tmpls || []
@@ -1526,6 +1558,11 @@ async function gerarLink() {
 
   btn.disabled = false; btn.textContent = 'Gerar orçamento →'
   toast('Link gerado!', 'ok')
+  // Marcar pedido de orçamento original como convertido
+  if(window._pedidoOrcId) {
+    await sb.from('pedidos_orcamento').update({ estado: 'convertido' }).eq('id', window._pedidoOrcId)
+    window._pedidoOrcId = null
+  }
 }
 
 function v(id) { return document.getElementById(id)?.value || '' }
