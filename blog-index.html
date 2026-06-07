@@ -15,10 +15,14 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 .nav-cta{background:#E8395A;color:#fff;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:9px 22px;border-radius:4px;transition:background .2s}
 .nav-cta:hover{background:#d42e4f}
 /* HERO */
-.hero{position:relative;overflow:hidden;aspect-ratio:16/9;max-height:420px;background:#1a1a2e}
-.hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;background-color:#1a1a2e}
+.hero{position:relative;overflow:hidden;aspect-ratio:16/9;max-height:420px;background:#1a1a2e;user-select:none}
+.hero-track{display:flex;height:100%;transition:transform .6s cubic-bezier(.4,0,.2,1)}
+.hero-slide{min-width:100%;height:100%;background-size:cover;background-position:center;flex-shrink:0}
 .hero-logo{position:absolute;top:16px;left:16px;z-index:10;width:52px;height:52px;border-radius:50%;overflow:hidden;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;padding:6px}
 .hero-logo img{width:100%;height:100%;object-fit:contain}
+.hero-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:5}
+.hero-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.4);border:none;cursor:pointer;padding:0;transition:background .2s,transform .2s}
+.hero-dot.active{background:#fff;transform:scale(1.3)}
 .hero-content{padding:24px 40px 20px;background:#fff}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:#E8395A;color:#fff;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:12px}
 .hero-title{font-family:'Poppins',sans-serif;font-size:clamp(1.5rem,4vw,2.2rem);font-weight:800;color:#1a1a2e;line-height:1.15;margin-bottom:10px}
@@ -74,11 +78,12 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
   <a href="#" class="nav-cta" id="nav-orcamento">✈ Pedir orçamento</a>
 </nav>
 
-<div class="hero">
-  <div class="hero-bg" id="hero-bg"></div>
+<div class="hero" id="hero-carousel">
+  <div class="hero-track" id="hero-track"></div>
   <div class="hero-logo">
     <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM Viagens">
   </div>
+  <div class="hero-dots" id="hero-dots"></div>
 </div>
 <div class="hero-content">
   <div class="hero-eyebrow">✦ Blog APM Viagens</div>
