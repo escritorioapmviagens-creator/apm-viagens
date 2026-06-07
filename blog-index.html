@@ -9,12 +9,10 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 .wrap{max-width:900px;margin:0 auto;background:#fff}
-/* NAV */
-.site-nav{background:#fff;padding:16px 40px;border-bottom:3px solid #E8395A;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.site-nav img{height:40px}
+.site-nav{background:#fff;padding:12px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:flex-end;position:sticky;top:0;z-index:100}
 .nav-cta{background:#E8395A;color:#fff;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:9px 22px;border-radius:4px;transition:background .2s}
 .nav-cta:hover{background:#d42e4f}
-/* HERO */
+/* HERO CARROSSEL */
 .hero{position:relative;overflow:hidden;aspect-ratio:16/9;max-height:420px;background:#1a1a2e;user-select:none}
 .hero-track{display:flex;height:100%;transition:transform .6s cubic-bezier(.4,0,.2,1)}
 .hero-slide{min-width:100%;height:100%;background-size:cover;background-position:center;flex-shrink:0}
@@ -23,68 +21,64 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 .hero-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:5}
 .hero-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.4);border:none;cursor:pointer;padding:0;transition:background .2s,transform .2s}
 .hero-dot.active{background:#fff;transform:scale(1.3)}
+/* HERO CONTENT */
 .hero-content{padding:24px 40px 20px;background:#fff}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:#E8395A;color:#fff;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:12px}
 .hero-title{font-family:'Poppins',sans-serif;font-size:clamp(1.5rem,4vw,2.2rem);font-weight:800;color:#1a1a2e;line-height:1.15;margin-bottom:10px}
 .hero-title em{color:#E8395A;font-style:normal}
-.hero-sub{font-size:13px;color:#6b7280;line-height:1.75;max-width:560px;padding-top:12px;border-top:1px solid #f3f4f6}
+.hero-sub{font-size:13px;color:#6b7280;line-height:1.75;padding-top:12px;border-top:1px solid #f3f4f6}
 /* SEARCH */
-.search-wrap{padding:28px 40px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.search-wrap{padding:20px 40px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .search-input{flex:1;min-width:200px;padding:10px 16px;border:1.5px solid #e5e7eb;border-radius:4px;font-family:'Poppins',sans-serif;font-size:13px;color:#1a1a2e;outline:none;transition:border-color .2s}
 .search-input:focus{border-color:#E8395A}
 .cat-btn{padding:8px 16px;border:1.5px solid #e5e7eb;background:#fff;border-radius:4px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s}
 .cat-btn:hover,.cat-btn.active{border-color:#E8395A;color:#E8395A;background:#fff0f3}
-/* DIVIDER */
 .divider{height:4px;background:linear-gradient(90deg,#E8395A 0%,#3B5BDB 100%)}
-/* SECTION */
-.section{padding:40px}
-.section-tag{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#E8395A;font-weight:700;margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.section{padding:32px 40px}
+.section-tag{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#E8395A;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px}
 .section-tag::after{content:'';flex:1;height:1px;background:#f0f0f0}
-/* FEATURED */
 .featured-card{display:flex;gap:0;border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;text-decoration:none;color:inherit;transition:box-shadow .2s;margin-bottom:16px}
 .featured-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08)}
-.featured-card img{width:260px;min-width:260px;object-fit:cover}
-.featured-card .fc-body{flex:1;padding:28px;display:flex;flex-direction:column;justify-content:center}
-.fc-tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px;background:#fff0f3;color:#E8395A;border:1px solid #ffd6de}
+.featured-card img{width:240px;min-width:240px;object-fit:cover}
+.featured-card .fc-body{flex:1;padding:24px;display:flex;flex-direction:column;justify-content:center}
+.fc-tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:10px;background:#fff0f3;color:#E8395A;border:1px solid #ffd6de}
 .fc-tag.blue{background:#eef2ff;color:#3B5BDB;border-color:#c7d7fd}
-.fc-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:#1a1a2e;line-height:1.25;margin-bottom:10px}
-.fc-desc{font-size:12px;color:#6b7280;line-height:1.7;margin-bottom:14px}
+.fc-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:#1a1a2e;line-height:1.25;margin-bottom:8px}
+.fc-desc{font-size:12px;color:#6b7280;line-height:1.7;margin-bottom:12px}
 .fc-meta{font-size:11px;color:#9ca3af;display:flex;align-items:center;gap:8px}
-.fc-read{margin-top:auto;font-size:11px;font-weight:700;color:#E8395A;text-decoration:none;letter-spacing:.06em;text-transform:uppercase}
-/* GRID */
 .posts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
 .post-card{border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;text-decoration:none;color:inherit;transition:box-shadow .2s;display:flex;flex-direction:column}
 .post-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08)}
 .post-card img{width:100%;aspect-ratio:16/9;object-fit:cover}
-.post-card .body{padding:20px;flex:1;display:flex;flex-direction:column}
-.post-tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:10px;background:#fff0f3;color:#E8395A;border:1px solid #ffd6de}
+.post-card .body{padding:16px;flex:1;display:flex;flex-direction:column}
+.post-tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:8px;background:#fff0f3;color:#E8395A;border:1px solid #ffd6de}
 .post-tag.blue{background:#eef2ff;color:#3B5BDB;border-color:#c7d7fd}
-.post-card h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:#1a1a2e;line-height:1.3;margin-bottom:8px}
+.post-card h3{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:#1a1a2e;line-height:1.3;margin-bottom:6px}
 .post-card p{font-size:12px;color:#6b7280;line-height:1.65;flex:1}
-.post-footer{padding:12px 20px;border-top:1px solid #f5f5f5;display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.post-footer{padding:10px 16px;border-top:1px solid #f5f5f5;display:flex;justify-content:space-between;align-items:center;font-size:11px}
 .post-footer span{color:#9ca3af}
 .post-footer .read{color:#E8395A;font-weight:700}
-/* FOOTER */
-.site-footer{background:#f5f5f5;padding:28px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.site-footer img{height:32px;opacity:.5}
+.site-footer{background:#f5f5f5;padding:24px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.site-footer img{height:30px;opacity:.5}
 .site-footer p{font-size:11px;color:#9ca3af}
-@media(max-width:680px){.featured-card{flex-direction:column}.featured-card img{width:100%;min-width:auto;height:180px}}
+@media(max-width:600px){.featured-card{flex-direction:column}.featured-card img{width:100%;min-width:auto;height:180px}.hero-content{padding:16px 20px}.search-wrap{padding:16px 20px}.section{padding:24px 20px}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<nav class="site-nav" style="justify-content:flex-end">
+<nav class="site-nav">
   <a href="#" class="nav-cta" id="nav-orcamento">✈ Pedir orçamento</a>
 </nav>
 
-<div class="hero" id="hero-carousel">
+<div class="hero">
   <div class="hero-track" id="hero-track"></div>
   <div class="hero-logo">
     <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM Viagens">
   </div>
   <div class="hero-dots" id="hero-dots"></div>
 </div>
+
 <div class="hero-content">
   <div class="hero-eyebrow">✦ Blog APM Viagens</div>
   <div class="hero-title">Inspiração para a tua <em>próxima aventura</em></div>
@@ -102,54 +96,14 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 
 <div class="section">
   <div class="section-tag">Em destaque</div>
-
-  <a class="featured-card" href="#" id="card-destinos" data-cat="destinos" data-titulo="Os destinos que estão a conquistar os portugueses em 2026">
-    <img src="https://images.unsplash.com/photo-1528702748617-c64d49f918af?w=600&h=400&fit=crop" alt="Destinos 2026">
-    <div class="fc-body">
-      <div class="fc-tag">✈ Destinos</div>
-      <div class="fc-title">Os destinos que estão a conquistar os portugueses em 2026</div>
-      <div class="fc-desc">Da Tunísia às Caraíbas — os 5 destinos mais reservados pelos nossos clientes este ano, com tudo o que os torna especiais.</div>
-      <div class="fc-meta"><span>5 min de leitura</span><span>·</span><span>Junho 2026</span></div>
-      <div style="margin-top:14px;font-size:11px;font-weight:700;color:#E8395A;text-transform:uppercase;letter-spacing:.06em">Ler artigo →</div>
-    </div>
-  </a>
-
-  <a class="featured-card" href="#" id="card-carreira" data-cat="carreira" data-titulo="A tua paixão por viagens pode ser o teu negócio">
-    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=400&fit=crop" alt="Carreira">
-    <div class="fc-body">
-      <div class="fc-tag blue">💼 Carreira</div>
-      <div class="fc-title">A tua paixão por viagens pode ser o teu negócio</div>
-      <div class="fc-desc">Descobre como 130+ consultores independentes em Portugal transformaram a paixão por viagens numa fonte de rendimento real.</div>
-      <div class="fc-meta"><span>4 min de leitura</span><span>·</span><span>Junho 2026</span></div>
-      <div style="margin-top:14px;font-size:11px;font-weight:700;color:#3B5BDB;text-transform:uppercase;letter-spacing:.06em">Ler artigo →</div>
-    </div>
-  </a>
+  <div id="featured-dinamico"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:13px">A carregar...</div></div>
 </div>
 
 <div class="divider"></div>
 
-<div class="section" id="section-grid">
+<div class="section">
   <div class="section-tag">Todos os artigos</div>
-  <div class="posts-grid" id="posts-grid">
-    <a class="post-card" href="#" data-cat="destinos" data-titulo="Os destinos que estão a conquistar os portugueses em 2026" id="grid-destinos">
-      <img src="https://images.unsplash.com/photo-1528702748617-c64d49f918af?w=500&h=280&fit=crop" alt="Destinos">
-      <div class="body">
-        <div class="post-tag">✈ Destinos</div>
-        <h3>Os destinos que estão a conquistar os portugueses em 2026</h3>
-        <p>Da praia ao parque de diversões — os 5 destinos mais populares e o que os torna irresistíveis.</p>
-      </div>
-      <div class="post-footer"><span>5 min · Jun 2026</span><span class="read">Ler →</span></div>
-    </a>
-    <a class="post-card" href="#" data-cat="carreira" data-titulo="A tua paixão por viagens pode ser o teu negócio" id="grid-carreira">
-      <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&h=280&fit=crop" alt="Carreira">
-      <div class="body">
-        <div class="post-tag blue">💼 Carreira</div>
-        <h3>A tua paixão por viagens pode ser o teu negócio</h3>
-        <p>O modelo de consultor independente APM Viagens explicado em detalhe — como funciona, quanto se ganha e como começar.</p>
-      </div>
-      <div class="post-footer"><span>4 min · Jun 2026</span><span class="read">Ler →</span></div>
-    </a>
-  </div>
+  <div class="posts-grid" id="posts-grid"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:13px;grid-column:1/-1">A carregar...</div></div>
 </div>
 
 <div class="site-footer">
@@ -158,33 +112,125 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
 </div>
 
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const SUPA_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const { createClient } = supabase
+const sb = createClient(SUPA_URL, SUPA_KEY)
+
 const p = new URLSearchParams(location.search)
 const ref = p.get('ref') || ''
 const s = ref ? '?ref=' + ref : ''
-
 document.getElementById('nav-orcamento').href = 'pedir-orcamento.html' + s
-document.getElementById('card-destinos').href = 'blog-destinos-2026.html' + s
-document.getElementById('card-carreira').href = 'blog-recrutamento.html' + s
-document.getElementById('grid-destinos').href = 'blog-destinos-2026.html' + s
-document.getElementById('grid-carreira').href = 'blog-recrutamento.html' + s
 
+// ── CARROSSEL HERO ────────────────────────────────────────────────────────────
+const FALLBACK_IMGS = [
+  'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1400&fit=crop',
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1400&fit=crop',
+  'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1400&fit=crop'
+]
+let _hIdx=0, _hTotal=0, _hTimer=null
+
+function heroInit(imgs) {
+  const track = document.getElementById('hero-track')
+  const dotsEl = document.getElementById('hero-dots')
+  _hTotal = imgs.length
+  if(track) track.innerHTML = imgs.map(u => `<div class="hero-slide" style="background-image:url('${u}')"></div>`).join('')
+  if(dotsEl && imgs.length > 1) {
+    dotsEl.innerHTML = imgs.map((_,i) => `<button class="hero-dot${i===0?' active':''}" onclick="heroGo(${i})"></button>`).join('')
+  }
+  if(_hTotal > 1) _hTimer = setInterval(() => heroMove(1), 4000)
+}
+function heroMove(dir) { _hIdx=(_hIdx+dir+_hTotal)%_hTotal; heroRender() }
+function heroGo(idx) { _hIdx=idx; clearInterval(_hTimer); _hTimer=setInterval(()=>heroMove(1),4000); heroRender() }
+function heroRender() {
+  const t=document.getElementById('hero-track')
+  if(t) t.style.transform=`translateX(-${_hIdx*100}%)`
+  document.querySelectorAll('.hero-dot').forEach((d,i)=>d.classList.toggle('active',i===_hIdx))
+}
+
+// ── ARTIGOS ───────────────────────────────────────────────────────────────────
+function artigoUrl(id) { return 'blog-artigo.html?id='+id+(ref?'&ref='+ref:'') }
+
+function renderCard(a, featured) {
+  const url = artigoUrl(a.id)
+  const img = a.hero_imgs?.[0] || a.hero_img || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&h=400&fit=crop'
+  const isCarreira = a.categoria === 'recrutamento'
+  const tagClass = isCarreira ? 'blue' : ''
+  const tagLabel = isCarreira ? '💼 Carreira' : '✈ Destinos'
+  const cat = isCarreira ? 'carreira' : 'destinos'
+  const autor = a.consultor_nome === 'APM Viagens' ? 'APM Viagens' : 'Por ' + a.consultor_nome
+
+  if(featured) return `
+    <a class="featured-card" href="${url}" data-cat="${cat}" data-titulo="${a.titulo}">
+      <img src="${img}" alt="${a.titulo}">
+      <div class="fc-body">
+        <div class="fc-tag ${tagClass}">${tagLabel}</div>
+        <div class="fc-title">${a.titulo}</div>
+        <div class="fc-desc">${a.subtitulo||''}</div>
+        <div class="fc-meta"><span>5 min</span><span>·</span><span>${autor}</span></div>
+        <div style="margin-top:12px;font-size:11px;font-weight:700;color:${isCarreira?'#3B5BDB':'#E8395A'};text-transform:uppercase;letter-spacing:.06em">Ler artigo →</div>
+      </div>
+    </a>`
+
+  return `
+    <a class="post-card" href="${url}" data-cat="${cat}" data-titulo="${a.titulo}">
+      <img src="${img}" alt="${a.titulo}">
+      <div class="body">
+        <div class="post-tag ${tagClass}">${tagLabel}</div>
+        <h3>${a.titulo}</h3>
+        <p>${a.subtitulo||''}</p>
+      </div>
+      <div class="post-footer">
+        <span>5 min · ${new Date(a.criado_em).toLocaleDateString('pt-PT',{month:'short',year:'numeric'})}</span>
+        <span class="read">Ler →</span>
+      </div>
+    </a>`
+}
+
+async function carregarArtigos() {
+  const { data, error } = await sb
+    .from('artigos_consultores')
+    .select('id,titulo,subtitulo,regiao,categoria,hero_img,hero_imgs,consultor_nome,criado_em')
+    .eq('publicado', true)
+    .order('criado_em', { ascending: false })
+
+  if(error || !data) {
+    heroInit(FALLBACK_IMGS)
+    return
+  }
+
+  // Carrossel hero
+  const comImg = data.filter(a => a.hero_imgs?.[0] || a.hero_img).slice(0,6)
+  heroInit(comImg.length ? comImg.map(a => a.hero_imgs?.[0]||a.hero_img) : FALLBACK_IMGS)
+
+  // Featured: primeiros 2
+  document.getElementById('featured-dinamico').innerHTML =
+    data.slice(0,2).map(a => renderCard(a,true)).join('')
+
+  // Grid: todos
+  document.getElementById('posts-grid').innerHTML =
+    data.map(a => renderCard(a,false)).join('')
+}
+
+carregarArtigos()
+
+// ── FILTROS ───────────────────────────────────────────────────────────────────
 let catActiva = 'todos'
 function filtrarCat(cat, btn) {
   catActiva = cat
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'))
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'))
   btn.classList.add('active')
   aplicar()
 }
 function filtrar(q) { aplicar(q) }
-function aplicar(q = '') {
+function aplicar(q='') {
   const ql = q.toLowerCase()
-  ;[...document.querySelectorAll('.featured-card'), ...document.querySelectorAll('.post-card')].forEach(el => {
-    const cat = el.dataset.cat
-    const titulo = (el.dataset.titulo || '').toLowerCase()
-    const mc = catActiva === 'todos' || cat === catActiva
-    const mq = !ql || titulo.includes(ql)
-    el.style.display = mc && mq ? '' : 'none'
+  ;[...document.querySelectorAll('.featured-card'),...document.querySelectorAll('.post-card')].forEach(el => {
+    const mc = catActiva==='todos' || el.dataset.cat===catActiva
+    const mq = !ql || (el.dataset.titulo||'').toLowerCase().includes(ql)
+    el.style.display = mc&&mq ? '' : 'none'
   })
 }
 </script>
