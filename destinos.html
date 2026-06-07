@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Destinos · APM Viagens</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e}
+.wrap{max-width:1100px;margin:0 auto;background:#fff}
+
+/* NAV */
+.site-nav{background:#fff;padding:16px 40px;border-bottom:3px solid #E8395A;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.site-nav img{height:40px}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-back{color:#6b7280;text-decoration:none;font-size:12px;font-weight:500;transition:color .2s}
+.nav-back:hover{color:#E8395A}
+.nav-cta{background:#E8395A;color:#fff;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:9px 20px;border-radius:4px}
+.nav-cta:hover{background:#d42e4f}
+
+/* HERO */
+.page-hero{padding:48px 40px 32px;border-bottom:4px solid;border-image:linear-gradient(90deg,#E8395A,#3B5BDB) 1}
+.page-hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,5vw,3rem);font-weight:600;margin-bottom:8px;color:#1a1a2e}
+.page-hero h1 em{color:#E8395A;font-style:italic}
+.page-hero p{font-size:13px;color:#6b7280;max-width:480px}
+
+/* PESQUISA + FILTROS */
+.filters-bar{padding:20px 40px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff}
+.search-input{flex:1;min-width:200px;padding:10px 16px;border:1.5px solid #e5e7eb;border-radius:4px;font-family:'Poppins',sans-serif;font-size:13px;color:#1a1a2e;outline:none;transition:border-color .2s}
+.search-input:focus{border-color:#E8395A}
+.region-btn{padding:7px 14px;border:1.5px solid #e5e7eb;background:#fff;border-radius:4px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;white-space:nowrap}
+.region-btn:hover,.region-btn.active{border-color:#E8395A;color:#E8395A;background:#fff0f3}
+
+/* SECÇÕES */
+.region-section{padding:28px 40px}
+.region-section+.region-section{border-top:1px solid #f0f0f0}
+.region-title{font-size:11px;font-weight:700;color:#E8395A;text-transform:uppercase;letter-spacing:.15em;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.region-title::after{content:'';flex:1;height:1px;background:#f0f0f0}
+
+/* CARROSSEL */
+.cards-row{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-ms-overflow-style:none;scrollbar-width:none}
+.cards-row::-webkit-scrollbar{display:none}
+
+/* CARD */
+.dest-card{flex-shrink:0;width:200px;border:1px solid #f0f0f0;border-radius:10px;overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s;scroll-snap-align:start;background:#fff}
+.dest-card:hover{box-shadow:0 6px 24px rgba(0,0,0,.1);transform:translateY(-2px)}
+.dest-card-img{width:100%;height:120px;object-fit:cover;display:block;background:#f5f5f5}
+.dest-card-body{padding:12px}
+.dest-card-top{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.dest-card-flag{font-size:1.2rem}
+.dest-card-name{font-size:13px;font-weight:700;color:#1a1a2e}
+.dest-card-region{font-size:10px;color:#9ca3af;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.dest-card-desc{font-size:11px;color:#6b7280;line-height:1.5;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dest-card-doc{display:flex;align-items:flex-start;gap:4px;font-size:10px;color:#9ca3af;line-height:1.4;margin-bottom:10px}
+.dest-card-doc span{flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dest-card-voo{font-size:10px;color:#9ca3af;margin-bottom:8px}
+.dest-card-btn{display:block;text-align:center;background:#E8395A;color:#fff;text-decoration:none;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:7px;border-radius:6px}
+.dest-card-btn:hover{background:#d42e4f}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:12px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto;position:relative}
+.modal-img{width:100%;height:220px;object-fit:cover;border-radius:12px 12px 0 0;background:#f5f5f5;display:block}
+.modal-body{padding:24px}
+.modal-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.modal-flag{font-size:2.2rem;flex-shrink:0}
+.modal-title{font-size:1.3rem;font-weight:800;color:#1a1a2e;margin-bottom:2px}
+.modal-region-tag{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em}
+.modal-desc{font-size:13px;color:#4b5563;line-height:1.75;margin-bottom:16px}
+.modal-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.modal-info-item{background:#f8f9fa;border-radius:8px;padding:10px 12px;border-left:3px solid #E8395A}
+.modal-info-label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.modal-info-value{font-size:12px;color:#1a1a2e;font-weight:600;line-height:1.4}
+.modal-cta{display:block;text-align:center;background:#E8395A;color:#fff;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:14px;border-radius:8px}
+.modal-cta:hover{background:#d42e4f}
+.modal-close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.4);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:5}
+
+/* FOOTER */
+.site-footer{background:#f5f5f5;padding:24px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.site-footer img{height:30px;opacity:.5}
+.site-footer p{font-size:11px;color:#9ca3af}
+
+@media(max-width:600px){
+  .site-nav,.page-hero,.region-section,.filters-bar,.site-footer{padding-left:20px;padding-right:20px}
+  .dest-card{width:170px}
+  .modal-info{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="site-nav">
+  <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM Viagens">
+  <div class="nav-right">
+    <a href="#" class="nav-back" id="back-link">← Blog</a>
+    <a href="#" class="nav-cta" id="nav-cta">✈ Pedir orçamento</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>Descobre o teu próximo <em>destino</em></h1>
+  <p>59 destinos em todo o mundo — clica para saber mais e pedir orçamento.</p>
+</div>
+
+<div class="filters-bar">
+  <input type="text" class="search-input" id="search-input" placeholder="🔍  Pesquisar destino..." oninput="pesquisar(this.value)">
+  <button class="region-btn active" onclick="filtrarRegiao('todos',this)">Todos</button>
+  <button class="region-btn" onclick="filtrarRegiao('Europa',this)">Europa</button>
+  <button class="region-btn" onclick="filtrarRegiao('Norte de África e Médio Oriente',this)">Norte de África e Médio Oriente</button>
+  <button class="region-btn" onclick="filtrarRegiao('África',this)">África</button>
+  <button class="region-btn" onclick="filtrarRegiao('Caribe',this)">Caribe</button>
+  <button class="region-btn" onclick="filtrarRegiao('América',this)">América</button>
+  <button class="region-btn" onclick="filtrarRegiao('Ásia e Oceania',this)">Ásia e Oceania</button>
+</div>
+
+<div id="destinos-container">
+<div class="region-section" data-region="Europa">
+  <div class="region-title">Europa</div>
+  <div class="cards-row">
+    <div class="dest-card" onclick="abrirModal('Açores')" data-nome="açores" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="azores island lagoon portugal" alt="Açores">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇵🇹</span><span class="dest-card-name">Açores</span></div>
+        <div class="dest-card-region">Região Autónoma dos Açores, Portugal</div>
+        <div class="dest-card-desc">Arquipélago português no Atlântico, conhecido pela sua natureza exuberante, lagoas, vulcões e cultura única.</div>
+        <div class="dest-card-voo">✈ ~2h</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Açores');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Espanha')" data-nome="espanha" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="spain barcelona architecture" alt="Espanha">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇪🇸</span><span class="dest-card-name">Espanha</span></div>
+        <div class="dest-card-region">Península Ibérica</div>
+        <div class="dest-card-desc">País da Península Ibérica conhecido pela rica história, arte, gastronomia e diversidade cultural.</div>
+        <div class="dest-card-voo">✈ ~2h25</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Espanha');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Formentera')" data-nome="formentera" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="formentera beach turquoise water" alt="Formentera">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇪🇸</span><span class="dest-card-name">Formentera</span></div>
+        <div class="dest-card-region">Ilhas Baleares, Espanha</div>
+        <div class="dest-card-desc">Pequena ilha das Baleares com praias de areia branca e águas cristalinas.</div>
+        <div class="dest-card-voo">✈ ~2h</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Formentera');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('França')" data-nome="frança" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="paris eiffel tower france" alt="França">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇫🇷</span><span class="dest-card-name">França</span></div>
+        <div class="dest-card-region">Europa Ocidental</div>
+        <div class="dest-card-desc">País conhecido pela história, arte, gastronomia e monumentos icónicos.</div>
+        <div class="dest-card-voo">✈ ~2h25</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('França');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Fuerteventura')" data-nome="fuerteventura" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="fuerteventura canary islands beach" alt="Fuerteventura">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇪🇸</span><span class="dest-card-name">Fuerteventura</span></div>
+        <div class="dest-card-region">Ilhas Canárias, Espanha</div>
+        <div class="dest-card-desc">Ilha das Canárias com praias de areia dourada e ventos constantes, ideal para desportos aquáticos.</div>
+        <div class="dest-card-voo">✈ ~3h</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Fuerteventura');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Gran Canária')" data-nome="gran canária" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="gran canaria dunes beach" alt="Gran Canária">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇪🇸</span><span class="dest-card-name">Gran Canária</span></div>
+        <div class="dest-card-region">Ilhas Canárias, Espanha</div>
+        <div class="dest-card-desc">Ilha das Canárias com paisagens diversas, desde dunas a florestas, e clima subtropical.</div>
+        <div class="dest-card-voo">✈ ~3h</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Gran Canária');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Grécia')" data-nome="grécia" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="greece santorini white blue island" alt="Grécia">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇬🇷</span><span class="dest-card-name">Grécia</span></div>
+        <div class="dest-card-region">Europa do Sul</div>
+        <div class="dest-card-desc">País conhecido pela história antiga, ilhas paradisíacas e gastronomia mediterrânica.</div>
+        <div class="dest-card-voo">✈ ~4h</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Grécia');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Havaí')" data-nome="havaí" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="hawaii beach tropical volcano" alt="Havaí">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇺🇸</span><span class="dest-card-name">Havaí</span></div>
+        <div class="dest-card-region">Estado do Havaí, EUA</div>
+        <div class="dest-card-desc">Arquipélago vulcânico no Pacífico, conhecido pelas praias, ondas e paisagens tropicais.</div>
+        <div class="dest-card-voo">✈ 18-23h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + ESTA</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Havaí');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Ibiza')" data-nome="ibiza" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="ibiza beach sunset balearic" alt="Ibiza">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇪🇸</span><span class="dest-card-name">Ibiza</span></div>
+        <div class="dest-card-region">Ilhas Baleares, Espanha</div>
+        <div class="dest-card-desc">Ilha das Baleares mundialmente famosa pela vida noturna, praias e vilas pitorescas.</div>
+        <div class="dest-card-voo">✈ ~2h</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Ibiza');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Lanzarote')" data-nome="lanzarote" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="lanzarote volcanic landscape canary" alt="Lanzarote">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇪🇸</span><span class="dest-card-name">Lanzarote</span></div>
+        <div class="dest-card-region">Ilhas Canárias, Espanha</div>
+        <div class="dest-card-desc">Ilha das Canárias com paisagens vulcânicas únicas, obra do artista César Manrique.</div>
+        <div class="dest-card-voo">✈ ~4h20</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Lanzarote');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Madeira')" data-nome="madeira" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="madeira island portugal flowers" alt="Madeira">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇵🇹</span><span class="dest-card-name">Madeira</span></div>
+        <div class="dest-card-region">Região Autónoma da Madeira</div>
+        <div class="dest-card-desc">Arquipélago português no Atlântico com natureza exuberante, paisagens montanhosas e gastronomia única.</div>
+        <div class="dest-card-voo">✈ ~1h30</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Madeira');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Maiorca')" data-nome="maiorca" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="mallorca cala beach blue water" alt="Maiorca">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇪🇸</span><span class="dest-card-name">Maiorca</span></div>
+        <div class="dest-card-region">Ilhas Baleares, Espanha</div>
+        <div class="dest-card-desc">A maior das Ilhas Baleares, com praias, calas escondidas, vida noturna e paisagens montanhosas.</div>
+        <div class="dest-card-voo">✈ ~1h30</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Maiorca');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Malta')" data-nome="malta" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="malta valletta mediterranean sea" alt="Malta">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇲🇹</span><span class="dest-card-name">Malta</span></div>
+        <div class="dest-card-region">Europa do Sul, Mediterrâneo</div>
+        <div class="dest-card-desc">Arquipélago no Mediterrâneo com história rica, património cultural e águas cristalinas.</div>
+        <div class="dest-card-voo">✈ ~3h</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Malta');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Menorca')" data-nome="menorca" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="menorca beach turquoise balearic" alt="Menorca">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇪🇸</span><span class="dest-card-name">Menorca</span></div>
+        <div class="dest-card-region">Ilhas Baleares, Espanha</div>
+        <div class="dest-card-desc">Ilha das Baleares com praias tranquilas, águas cristalinas e património histórico.</div>
+        <div class="dest-card-voo">✈ ~3h</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Menorca');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Porto Santo')" data-nome="porto santo" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="porto santo beach golden sand" alt="Porto Santo">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇵🇹</span><span class="dest-card-name">Porto Santo</span></div>
+        <div class="dest-card-region">Região Autónoma da Madeira</div>
+        <div class="dest-card-desc">Ilha com praia de areia dourada de 9 km, clima ameno e tranquilidade.</div>
+        <div class="dest-card-voo">✈ ~1h30</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Porto Santo');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Portugal')" data-nome="portugal" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="lisbon portugal sintra castle" alt="Portugal">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇵🇹</span><span class="dest-card-name">Portugal</span></div>
+        <div class="dest-card-region">Europa do Sul</div>
+        <div class="dest-card-desc">País com história rica, gastronomia renomada, praias atlânticas e cidades históricas.</div>
+        <div class="dest-card-voo">✈ —</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Portugal');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Tenerife')" data-nome="tenerife" data-region="Europa">
+      <img class="dest-card-img" src="" data-query="tenerife teide volcano canary" alt="Tenerife">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇪🇸</span><span class="dest-card-name">Tenerife</span></div>
+        <div class="dest-card-region">Ilhas Canárias, Espanha</div>
+        <div class="dest-card-desc">Maior das Canárias, com clima primaveril todo o ano, praias e o vulcão Teide.</div>
+        <div class="dest-card-voo">✈ ~3h</div>
+        <div class="dest-card-doc">🪪 <span>Bilhete de Identidade ou Cartão de Cidadão</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Tenerife');return false">Pedir orçamento</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="region-section" data-region="Norte de África e Médio Oriente">
+  <div class="region-title">Norte de África e Médio Oriente</div>
+  <div class="cards-row">
+    <div class="dest-card" onclick="abrirModal('Abu Dhabi')" data-nome="abu dhabi" data-region="Norte de África e Médio Oriente">
+      <img class="dest-card-img" src="" data-query="abu dhabi mosque architecture" alt="Abu Dhabi">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇦🇪</span><span class="dest-card-name">Abu Dhabi</span></div>
+        <div class="dest-card-region">Emirados Árabes Unidos</div>
+        <div class="dest-card-desc">Emirado e capital dos EAU, com arquitetura moderna, ilhas culturais e a majestosa Sheikh Zayed Grand Mosque.</div>
+        <div class="dest-card-voo">✈ ~8h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Abu Dhabi');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Dubai')" data-nome="dubai" data-region="Norte de África e Médio Oriente">
+      <img class="dest-card-img" src="" data-query="dubai skyline burj khalifa" alt="Dubai">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇦🇪</span><span class="dest-card-name">Dubai</span></div>
+        <div class="dest-card-region">Emirados Árabes Unidos</div>
+        <div class="dest-card-desc">Cidade futurista conhecida pelo luxo, arranha-céus e compras sem igual.</div>
+        <div class="dest-card-voo">✈ ~8h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Dubai');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Marrocos')" data-nome="marrocos" data-region="Norte de África e Médio Oriente">
+      <img class="dest-card-img" src="" data-query="morocco marrakech medina colorful" alt="Marrocos">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇲🇦</span><span class="dest-card-name">Marrocos</span></div>
+        <div class="dest-card-region">Norte de África</div>
+        <div class="dest-card-desc">Medinas históricas, mercados vibrantes e paisagens do deserto ao litoral.</div>
+        <div class="dest-card-voo">✈ ~1h30</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 3 meses</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Marrocos');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Omã')" data-nome="omã" data-region="Norte de África e Médio Oriente">
+      <img class="dest-card-img" src="" data-query="oman desert fort landscape" alt="Omã">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇴🇲</span><span class="dest-card-name">Omã</span></div>
+        <div class="dest-card-region">Médio Oriente</div>
+        <div class="dest-card-desc">Sultanato com paisagens desérticas, fortalezas antigas e hospitalidade única.</div>
+        <div class="dest-card-voo">✈ ~10h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, isenção até 14 dias</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Omã');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Qatar')" data-nome="qatar" data-region="Norte de África e Médio Oriente">
+      <img class="dest-card-img" src="" data-query="qatar doha skyline modern" alt="Qatar">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇶🇦</span><span class="dest-card-name">Qatar</span></div>
+        <div class="dest-card-region">Médio Oriente</div>
+        <div class="dest-card-desc">País com arquitetura futurista, cultura rica e hospitalidade excepcional.</div>
+        <div class="dest-card-voo">✈ ~8h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Qatar');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Ras Al Khaimah')" data-nome="ras al khaimah" data-region="Norte de África e Médio Oriente">
+      <img class="dest-card-img" src="" data-query="ras al khaimah mountains resort" alt="Ras Al Khaimah">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇦🇪</span><span class="dest-card-name">Ras Al Khaimah</span></div>
+        <div class="dest-card-region">Emirados Árabes Unidos</div>
+        <div class="dest-card-desc">Emirado com paisagens montanhosas, praias, resorts de luxo e deserto.</div>
+        <div class="dest-card-voo">✈ ~8h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Ras Al Khaimah');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Tunísia')" data-nome="tunísia" data-region="Norte de África e Médio Oriente">
+      <img class="dest-card-img" src="" data-query="tunisia beach mediterranean sidi bou said" alt="Tunísia">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇹🇳</span><span class="dest-card-name">Tunísia</span></div>
+        <div class="dest-card-region">Norte de África</div>
+        <div class="dest-card-desc">País com história fenícia e romana, praias mediterrânicas e deserto do Sahara.</div>
+        <div class="dest-card-voo">✈ ~3h40</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Tunísia');return false">Pedir orçamento</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="region-section" data-region="África">
+  <div class="region-title">África</div>
+  <div class="cards-row">
+    <div class="dest-card" onclick="abrirModal('Cabo Verde')" data-nome="cabo verde" data-region="África">
+      <img class="dest-card-img" src="" data-query="cape verde sal island beach" alt="Cabo Verde">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇨🇻</span><span class="dest-card-name">Cabo Verde</span></div>
+        <div class="dest-card-region">África Ocidental</div>
+        <div class="dest-card-desc">Arquipélago vulcânico com praias, cultura crioula e música única.</div>
+        <div class="dest-card-voo">✈ ~4h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 3 meses + pré-registo EASE</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Cabo Verde');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Gâmbia')" data-nome="gâmbia" data-region="África">
+      <img class="dest-card-img" src="" data-query="gambia beach africa tropical" alt="Gâmbia">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇬🇲</span><span class="dest-card-name">Gâmbia</span></div>
+        <div class="dest-card-region">África Ocidental</div>
+        <div class="dest-card-desc">Pequeno país com praias, natureza e cultura vibrante.</div>
+        <div class="dest-card-voo">✈ ~4h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, sem visto</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Gâmbia');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Madagáscar')" data-nome="madagáscar" data-region="África">
+      <img class="dest-card-img" src="" data-query="madagascar baobab landscape" alt="Madagáscar">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇲🇬</span><span class="dest-card-name">Madagáscar</span></div>
+        <div class="dest-card-region">África Oriental</div>
+        <div class="dest-card-desc">Grande ilha com biodiversidade única, paisagens exóticas e cultura distinta.</div>
+        <div class="dest-card-voo">✈ ~14h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, visto à chegada</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Madagáscar');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Maurícia')" data-nome="maurícia" data-region="África">
+      <img class="dest-card-img" src="" data-query="mauritius beach lagoon turquoise" alt="Maurícia">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇲🇺</span><span class="dest-card-name">Maurícia</span></div>
+        <div class="dest-card-region">Oceano Índico</div>
+        <div class="dest-card-desc">Ilha paradisíaca com praias de areia branca, lagoas cristalinas e diversidade cultural.</div>
+        <div class="dest-card-voo">✈ ~15h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + formulário online</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Maurícia');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Moçambique')" data-nome="moçambique" data-region="África">
+      <img class="dest-card-img" src="" data-query="mozambique beach africa paradise" alt="Moçambique">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇲🇿</span><span class="dest-card-name">Moçambique</span></div>
+        <div class="dest-card-region">África Austral</div>
+        <div class="dest-card-desc">Costa sudeste de África com praias paradisíacas e arquitetura colonial.</div>
+        <div class="dest-card-voo">✈ ~10h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, sem visto desde 2023</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Moçambique');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('São Tomé e Príncipe')" data-nome="são tomé e príncipe" data-region="África">
+      <img class="dest-card-img" src="" data-query="sao tome principe tropical beach" alt="São Tomé e Príncipe">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇸🇹</span><span class="dest-card-name">São Tomé e Príncipe</span></div>
+        <div class="dest-card-region">África Central</div>
+        <div class="dest-card-desc">Arquipélago tropical com natureza exuberante, praias paradisíacas e cultura afro-portuguesa.</div>
+        <div class="dest-card-voo">✈ ~5h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 3 meses, sem visto <15 dias</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('São Tomé e Príncipe');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Senegal')" data-nome="senegal" data-region="África">
+      <img class="dest-card-img" src="" data-query="senegal saly beach africa" alt="Senegal">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇸🇳</span><span class="dest-card-name">Senegal</span></div>
+        <div class="dest-card-region">África Ocidental</div>
+        <div class="dest-card-desc">Cultura vibrante, música, dança, história e paisagens do litoral ao deserto.</div>
+        <div class="dest-card-voo">✈ ~3h30</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, sem visto</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Senegal');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Seicheles')" data-nome="seicheles" data-region="África">
+      <img class="dest-card-img" src="" data-query="seychelles beach granite rocks turquoise" alt="Seicheles">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇸🇨</span><span class="dest-card-name">Seicheles</span></div>
+        <div class="dest-card-region">Oceano Índico</div>
+        <div class="dest-card-desc">Arquipélago com praias de areia branca, rochas graníticas e reservas naturais.</div>
+        <div class="dest-card-voo">✈ ~10h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, visto gratuito à chegada</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Seicheles');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Tanzânia')" data-nome="tanzânia" data-region="África">
+      <img class="dest-card-img" src="" data-query="zanzibar beach tanzania safari" alt="Tanzânia">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇹🇿</span><span class="dest-card-name">Tanzânia</span></div>
+        <div class="dest-card-region">África Oriental</div>
+        <div class="dest-card-desc">Praias de Zanzibar, safaris no Serengeti, Monte Kilimanjaro e cultura suaíli.</div>
+        <div class="dest-card-voo">✈ ~12h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, visto 50 USD</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Tanzânia');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Quénia')" data-nome="quénia" data-region="África">
+      <img class="dest-card-img" src="" data-query="kenya safari savanna animals" alt="Quénia">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇰🇪</span><span class="dest-card-name">Quénia</span></div>
+        <div class="dest-card-region">África Oriental</div>
+        <div class="dest-card-desc">Safaris, paisagens deslumbrantes, Monte Quilimanjaro e diversidade cultural.</div>
+        <div class="dest-card-voo">✈ ~11h30</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, eTA obrigatório</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Quénia');return false">Pedir orçamento</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="region-section" data-region="Caribe">
+  <div class="region-title">Caribe</div>
+  <div class="cards-row">
+    <div class="dest-card" onclick="abrirModal('Antígua e Barbuda')" data-nome="antígua e barbuda" data-region="Caribe">
+      <img class="dest-card-img" src="" data-query="antigua barbuda beach caribbean" alt="Antígua e Barbuda">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇦🇬</span><span class="dest-card-name">Antígua e Barbuda</span></div>
+        <div class="dest-card-region">Caribe</div>
+        <div class="dest-card-desc">Duas ilhas com praias de areia branca, recifes de coral e resorts de luxo.</div>
+        <div class="dest-card-voo">✈ ~10h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, sem visto até 6 meses</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Antígua e Barbuda');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Aruba')" data-nome="aruba" data-region="Caribe">
+      <img class="dest-card-img" src="" data-query="aruba beach palm tree caribbean" alt="Aruba">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇦🇼</span><span class="dest-card-name">Aruba</span></div>
+        <div class="dest-card-region">Caribe</div>
+        <div class="dest-card-desc">Ilha caribenha com praias de areia branca, clima seco e ventos alísios.</div>
+        <div class="dest-card-voo">✈ ~10h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 3 meses + Cartão Vacinação Febre Amarela</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Aruba');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Bahamas')" data-nome="bahamas" data-region="Caribe">
+      <img class="dest-card-img" src="" data-query="bahamas turquoise water beach" alt="Bahamas">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇧🇸</span><span class="dest-card-name">Bahamas</span></div>
+        <div class="dest-card-region">Caribe</div>
+        <div class="dest-card-desc">Arquipélago de 700+ ilhas com praias paradisíacas e águas cristalinas.</div>
+        <div class="dest-card-voo">✈ ~15h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Bahamas');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Barbados')" data-nome="barbados" data-region="Caribe">
+      <img class="dest-card-img" src="" data-query="barbados beach caribbean tropical" alt="Barbados">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇧🇧</span><span class="dest-card-name">Barbados</span></div>
+        <div class="dest-card-region">Caribe</div>
+        <div class="dest-card-desc">Ilha das Caraíbas com praias de areia branca, cultura Bajan e hospitalidade.</div>
+        <div class="dest-card-voo">✈ ~10h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + formulário eletrónico</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Barbados');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Cuba')" data-nome="cuba" data-region="Caribe">
+      <img class="dest-card-img" src="" data-query="cuba havana classic cars colorful" alt="Cuba">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇨🇺</span><span class="dest-card-name">Cuba</span></div>
+        <div class="dest-card-region">Caribe</div>
+        <div class="dest-card-desc">Carros clássicos, arquitetura colonial, música e praias inesquecíveis.</div>
+        <div class="dest-card-voo">✈ ~15h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + visto obrigatório</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Cuba');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Curaçao')" data-nome="curaçao" data-region="Caribe">
+      <img class="dest-card-img" src="" data-query="curacao willemstad colorful buildings" alt="Curaçao">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇨🇼</span><span class="dest-card-name">Curaçao</span></div>
+        <div class="dest-card-region">Caribe</div>
+        <div class="dest-card-desc">Ilha com arquitetura holandesa colorida, praias e recifes de coral.</div>
+        <div class="dest-card-voo">✈ ~10h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + Cartão Digital Imigração</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Curaçao');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Grenada')" data-nome="grenada" data-region="Caribe">
+      <img class="dest-card-img" src="" data-query="grenada beach caribbean spice island" alt="Grenada">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇬🇩</span><span class="dest-card-name">Grenada</span></div>
+        <div class="dest-card-region">Caribe</div>
+        <div class="dest-card-desc">Ilha das Especiarias com praias e florestas tropicais únicas.</div>
+        <div class="dest-card-voo">✈ ~14h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Grenada');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Porto Rico')" data-nome="porto rico" data-region="Caribe">
+      <img class="dest-card-img" src="" data-query="puerto rico old san juan beach" alt="Porto Rico">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇵🇷</span><span class="dest-card-name">Porto Rico</span></div>
+        <div class="dest-card-region">Caribe</div>
+        <div class="dest-card-desc">Ilha com história rica, florestas tropicais, praias e cultura vibrante.</div>
+        <div class="dest-card-voo">✈ ~9-11h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + ESTA</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Porto Rico');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('República Dominicana')" data-nome="república dominicana" data-region="Caribe">
+      <img class="dest-card-img" src="" data-query="dominican republic punta cana beach" alt="República Dominicana">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇩🇴</span><span class="dest-card-name">República Dominicana</span></div>
+        <div class="dest-card-region">Caribe</div>
+        <div class="dest-card-desc">Praias de areia branca, resorts all-inclusive e história colonial.</div>
+        <div class="dest-card-voo">✈ ~7h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + formulário eletrónico</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('República Dominicana');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Santa Lúcia')" data-nome="santa lúcia" data-region="Caribe">
+      <img class="dest-card-img" src="" data-query="saint lucia pitons mountains beach" alt="Santa Lúcia">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇱🇨</span><span class="dest-card-name">Santa Lúcia</span></div>
+        <div class="dest-card-region">Caribe</div>
+        <div class="dest-card-desc">Montanhas vulcânicas, praias de areia preta e branca e recifes de coral.</div>
+        <div class="dest-card-voo">✈ ~11h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 3 meses, sem visto <90 dias</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Santa Lúcia');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('São Vicente e Granadinas')" data-nome="são vicente e granadinas" data-region="Caribe">
+      <img class="dest-card-img" src="" data-query="saint vincent grenadines beach sailing" alt="São Vicente e Granadinas">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇻🇨</span><span class="dest-card-name">São Vicente e Granadinas</span></div>
+        <div class="dest-card-region">Caribe</div>
+        <div class="dest-card-desc">Arquipélago com praias, recifes e iatismo de excelência.</div>
+        <div class="dest-card-voo">✈ ~14h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, sem visto <30 dias</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('São Vicente e Granadinas');return false">Pedir orçamento</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="region-section" data-region="América">
+  <div class="region-title">América</div>
+  <div class="cards-row">
+    <div class="dest-card" onclick="abrirModal('Brasil')" data-nome="brasil" data-region="América">
+      <img class="dest-card-img" src="" data-query="brazil rio de janeiro beach carnival" alt="Brasil">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇧🇷</span><span class="dest-card-name">Brasil</span></div>
+        <div class="dest-card-region">América do Sul</div>
+        <div class="dest-card-desc">Maior país da América do Sul com praias, floresta amazónica, cidades vibrantes e cultura rica.</div>
+        <div class="dest-card-voo">✈ ~9h30</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido durante a estadia</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Brasil');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Estados Unidos')" data-nome="estados unidos" data-region="América">
+      <img class="dest-card-img" src="" data-query="new york city usa skyline" alt="Estados Unidos">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇺🇸</span><span class="dest-card-name">Estados Unidos</span></div>
+        <div class="dest-card-region">América do Norte</div>
+        <div class="dest-card-desc">País diverso com paisagens impressionantes, cidades icónicas e cultura global.</div>
+        <div class="dest-card-voo">✈ 8-12h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + ESTA</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Estados Unidos');return false">Pedir orçamento</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="region-section" data-region="Ásia e Oceania">
+  <div class="region-title">Ásia e Oceania</div>
+  <div class="cards-row">
+    <div class="dest-card" onclick="abrirModal('Camboja')" data-nome="camboja" data-region="Ásia e Oceania">
+      <img class="dest-card-img" src="" data-query="cambodia angkor wat temple" alt="Camboja">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇰🇭</span><span class="dest-card-name">Camboja</span></div>
+        <div class="dest-card-region">Sudeste Asiático</div>
+        <div class="dest-card-desc">Reino do Sudeste Asiático famoso pelos templos de Angkor Wat e cultura Khmer.</div>
+        <div class="dest-card-voo">✈ ~15h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + visto + APP E-arrival</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Camboja');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('China')" data-nome="china" data-region="Ásia e Oceania">
+      <img class="dest-card-img" src="" data-query="china great wall beijing" alt="China">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇨🇳</span><span class="dest-card-name">China</span></div>
+        <div class="dest-card-region">Ásia Oriental</div>
+        <div class="dest-card-desc">País com história milenar, cultura rica e paisagens diversas.</div>
+        <div class="dest-card-voo">✈ 12-15h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, isenção visto até 30 dias</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('China');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Indonésia')" data-nome="indonésia" data-region="Ásia e Oceania">
+      <img class="dest-card-img" src="" data-query="bali indonesia rice terrace temple" alt="Indonésia">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇮🇩</span><span class="dest-card-name">Indonésia</span></div>
+        <div class="dest-card-region">Sudeste Asiático</div>
+        <div class="dest-card-desc">Arquipélago com milhares de ilhas, culturas diversas e paisagens vulcânicas.</div>
+        <div class="dest-card-voo">✈ ~25h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + visto ~35 EUR</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Indonésia');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Japão')" data-nome="japão" data-region="Ásia e Oceania">
+      <img class="dest-card-img" src="" data-query="japan cherry blossom mount fuji" alt="Japão">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇯🇵</span><span class="dest-card-name">Japão</span></div>
+        <div class="dest-card-region">Ásia Oriental</div>
+        <div class="dest-card-desc">Tecnologia, tradições milenares, gastronomia e paisagens únicas.</div>
+        <div class="dest-card-voo">✈ 12-15h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, sem visto até 90 dias</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Japão');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Malásia')" data-nome="malásia" data-region="Ásia e Oceania">
+      <img class="dest-card-img" src="" data-query="malaysia kuala lumpur petronas towers" alt="Malásia">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇲🇾</span><span class="dest-card-name">Malásia</span></div>
+        <div class="dest-card-region">Sudeste Asiático</div>
+        <div class="dest-card-desc">Diversidade cultural, gastronomia e paisagens de florestas a metrópoles modernas.</div>
+        <div class="dest-card-voo">✈ ~15h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, sem visto <90 dias</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Malásia');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Maldivas')" data-nome="maldivas" data-region="Ásia e Oceania">
+      <img class="dest-card-img" src="" data-query="maldives overwater bungalow turquoise" alt="Maldivas">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇲🇻</span><span class="dest-card-name">Maldivas</span></div>
+        <div class="dest-card-region">Oceano Índico</div>
+        <div class="dest-card-desc">Arquipélago paradisíaco com águas cristalinas, resorts de luxo e vida marinha.</div>
+        <div class="dest-card-voo">✈ ~14h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, visto gratuito à chegada</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Maldivas');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Polinésia Francesa')" data-nome="polinésia francesa" data-region="Ásia e Oceania">
+      <img class="dest-card-img" src="" data-query="bora bora french polynesia overwater" alt="Polinésia Francesa">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇵🇫</span><span class="dest-card-name">Polinésia Francesa</span></div>
+        <div class="dest-card-region">Oceano Pacífico</div>
+        <div class="dest-card-desc">Arquipélago paradisíaco com Taiti, Bora Bora e Moorea e resorts de luxo.</div>
+        <div class="dest-card-voo">✈ ~25h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Polinésia Francesa');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Singapura')" data-nome="singapura" data-region="Ásia e Oceania">
+      <img class="dest-card-img" src="" data-query="singapore marina bay sands gardens" alt="Singapura">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇸🇬</span><span class="dest-card-name">Singapura</span></div>
+        <div class="dest-card-region">Sudeste Asiático</div>
+        <div class="dest-card-desc">Cidade-Estado moderna com jardins exuberantes, gastronomia multicultural e eficiência.</div>
+        <div class="dest-card-voo">✈ ~18h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + Cartão Chegada SG</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Singapura');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Sri Lanka')" data-nome="sri lanka" data-region="Ásia e Oceania">
+      <img class="dest-card-img" src="" data-query="sri lanka tea plantation beach elephant" alt="Sri Lanka">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇱🇰</span><span class="dest-card-name">Sri Lanka</span></div>
+        <div class="dest-card-region">Ásia do Sul</div>
+        <div class="dest-card-desc">Praias tropicais, plantações de chá, património budista e vida selvagem.</div>
+        <div class="dest-card-voo">✈ 11-12h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + visto ~50 USD</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Sri Lanka');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Tailândia')" data-nome="tailândia" data-region="Ásia e Oceania">
+      <img class="dest-card-img" src="" data-query="thailand temple beach tropical" alt="Tailândia">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇹🇭</span><span class="dest-card-name">Tailândia</span></div>
+        <div class="dest-card-region">Sudeste Asiático</div>
+        <div class="dest-card-desc">Terra dos Sorrisos com templos dourados, praias paradisíacas e gastronomia excecional.</div>
+        <div class="dest-card-voo">✈ ~13h30</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, sem visto até 30 dias</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Tailândia');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Turquia')" data-nome="turquia" data-region="Ásia e Oceania">
+      <img class="dest-card-img" src="" data-query="turkey cappadocia balloon istanbul" alt="Turquia">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇹🇷</span><span class="dest-card-name">Turquia</span></div>
+        <div class="dest-card-region">Eurásia</div>
+        <div class="dest-card-desc">Ponte entre Europa e Ásia com história milenar, praias mediterrânicas e Capadócia.</div>
+        <div class="dest-card-voo">✈ ~4h40</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses, sem visto até 90 dias</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Turquia');return false">Pedir orçamento</a>
+      </div>
+    </div>
+    <div class="dest-card" onclick="abrirModal('Vietname')" data-nome="vietname" data-region="Ásia e Oceania">
+      <img class="dest-card-img" src="" data-query="vietnam halong bay rice fields" alt="Vietname">
+      <div class="dest-card-body">
+        <div class="dest-card-top"><span class="dest-card-flag">🇻🇳</span><span class="dest-card-name">Vietname</span></div>
+        <div class="dest-card-region">Sudeste Asiático</div>
+        <div class="dest-card-desc">História rica, paisagens das montanhas do norte às praias do sul e gastronomia excecional.</div>
+        <div class="dest-card-voo">✈ ~15h</div>
+        <div class="dest-card-doc">🪪 <span>Passaporte válido 6 meses + visto 25 USD</span></div>
+        <a href="#" class="dest-card-btn" onclick="event.stopPropagation();pedirOrcamento('Vietname');return false">Pedir orçamento</a>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)fecharModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal()">✕</button>
+    <img class="modal-img" id="modal-img" src="" alt="">
+    <div class="modal-body">
+      <div class="modal-header">
+        <div class="modal-flag" id="modal-flag"></div>
+        <div>
+          <div class="modal-title" id="modal-title"></div>
+          <div class="modal-region-tag" id="modal-region"></div>
+        </div>
+      </div>
+      <div class="modal-desc" id="modal-desc"></div>
+      <div class="modal-info" id="modal-info"></div>
+      <a href="#" class="modal-cta" id="modal-cta">✈ Pedir orçamento gratuito</a>
+    </div>
+  </div>
+</div>
+
+<div class="site-footer">
+  <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM Viagens">
+  <p>© 2026 APM Viagens · Andar nas Praias do Mundo Lda · Odivelas, Lisboa</p>
+</div>
+
+</div>
+<script>
+const UNSPLASH = 'lvuZ06ZCQKhkrbsWK2AGELUA_fKdZiXYYVcH1MUp6TQ'
+const ref = new URLSearchParams(location.search).get('ref') || ''
+const s = ref ? '?ref=' + ref : ''
+document.getElementById('back-link').href = 'blog-index.html' + s
+document.getElementById('nav-cta').href = 'pedir-orcamento.html' + s
+
+const DESTINOS = {"Açores": {"nome": "Açores", "bandeira": "🇵🇹", "regiao": "Região Autónoma dos Açores, Portugal", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "Arquipélago português no Atlântico, conhecido pela sua natureza exuberante, lagoas, vulcões e cultura única.", "voo": "~2h", "query": "azores island lagoon portugal"}, "Espanha": {"nome": "Espanha", "bandeira": "🇪🇸", "regiao": "Península Ibérica", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "País da Península Ibérica conhecido pela rica história, arte, gastronomia e diversidade cultural.", "voo": "~2h25", "query": "spain barcelona architecture"}, "Formentera": {"nome": "Formentera", "bandeira": "🇪🇸", "regiao": "Ilhas Baleares, Espanha", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "Pequena ilha das Baleares com praias de areia branca e águas cristalinas.", "voo": "~2h", "query": "formentera beach turquoise water"}, "França": {"nome": "França", "bandeira": "🇫🇷", "regiao": "Europa Ocidental", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "País conhecido pela história, arte, gastronomia e monumentos icónicos.", "voo": "~2h25", "query": "paris eiffel tower france"}, "Fuerteventura": {"nome": "Fuerteventura", "bandeira": "🇪🇸", "regiao": "Ilhas Canárias, Espanha", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "Ilha das Canárias com praias de areia dourada e ventos constantes, ideal para desportos aquáticos.", "voo": "~3h", "query": "fuerteventura canary islands beach"}, "Gran Canária": {"nome": "Gran Canária", "bandeira": "🇪🇸", "regiao": "Ilhas Canárias, Espanha", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "Ilha das Canárias com paisagens diversas, desde dunas a florestas, e clima subtropical.", "voo": "~3h", "query": "gran canaria dunes beach"}, "Grécia": {"nome": "Grécia", "bandeira": "🇬🇷", "regiao": "Europa do Sul", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "País conhecido pela história antiga, ilhas paradisíacas e gastronomia mediterrânica.", "voo": "~4h", "query": "greece santorini white blue island"}, "Havaí": {"nome": "Havaí", "bandeira": "🇺🇸", "regiao": "Estado do Havaí, EUA", "doc": "Passaporte válido 6 meses + ESTA", "desc": "Arquipélago vulcânico no Pacífico, conhecido pelas praias, ondas e paisagens tropicais.", "voo": "18-23h", "query": "hawaii beach tropical volcano"}, "Ibiza": {"nome": "Ibiza", "bandeira": "🇪🇸", "regiao": "Ilhas Baleares, Espanha", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "Ilha das Baleares mundialmente famosa pela vida noturna, praias e vilas pitorescas.", "voo": "~2h", "query": "ibiza beach sunset balearic"}, "Lanzarote": {"nome": "Lanzarote", "bandeira": "🇪🇸", "regiao": "Ilhas Canárias, Espanha", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "Ilha das Canárias com paisagens vulcânicas únicas, obra do artista César Manrique.", "voo": "~4h20", "query": "lanzarote volcanic landscape canary"}, "Madeira": {"nome": "Madeira", "bandeira": "🇵🇹", "regiao": "Região Autónoma da Madeira", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "Arquipélago português no Atlântico com natureza exuberante, paisagens montanhosas e gastronomia única.", "voo": "~1h30", "query": "madeira island portugal flowers"}, "Maiorca": {"nome": "Maiorca", "bandeira": "🇪🇸", "regiao": "Ilhas Baleares, Espanha", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "A maior das Ilhas Baleares, com praias, calas escondidas, vida noturna e paisagens montanhosas.", "voo": "~1h30", "query": "mallorca cala beach blue water"}, "Malta": {"nome": "Malta", "bandeira": "🇲🇹", "regiao": "Europa do Sul, Mediterrâneo", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "Arquipélago no Mediterrâneo com história rica, património cultural e águas cristalinas.", "voo": "~3h", "query": "malta valletta mediterranean sea"}, "Menorca": {"nome": "Menorca", "bandeira": "🇪🇸", "regiao": "Ilhas Baleares, Espanha", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "Ilha das Baleares com praias tranquilas, águas cristalinas e património histórico.", "voo": "~3h", "query": "menorca beach turquoise balearic"}, "Porto Santo": {"nome": "Porto Santo", "bandeira": "🇵🇹", "regiao": "Região Autónoma da Madeira", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "Ilha com praia de areia dourada de 9 km, clima ameno e tranquilidade.", "voo": "~1h30", "query": "porto santo beach golden sand"}, "Portugal": {"nome": "Portugal", "bandeira": "🇵🇹", "regiao": "Europa do Sul", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "País com história rica, gastronomia renomada, praias atlânticas e cidades históricas.", "voo": "—", "query": "lisbon portugal sintra castle"}, "Tenerife": {"nome": "Tenerife", "bandeira": "🇪🇸", "regiao": "Ilhas Canárias, Espanha", "doc": "Bilhete de Identidade ou Cartão de Cidadão", "desc": "Maior das Canárias, com clima primaveril todo o ano, praias e o vulcão Teide.", "voo": "~3h", "query": "tenerife teide volcano canary"}, "Abu Dhabi": {"nome": "Abu Dhabi", "bandeira": "🇦🇪", "regiao": "Emirados Árabes Unidos", "doc": "Passaporte válido 6 meses", "desc": "Emirado e capital dos EAU, com arquitetura moderna, ilhas culturais e a majestosa Sheikh Zayed Grand Mosque.", "voo": "~8h", "query": "abu dhabi mosque architecture"}, "Dubai": {"nome": "Dubai", "bandeira": "🇦🇪", "regiao": "Emirados Árabes Unidos", "doc": "Passaporte válido 6 meses", "desc": "Cidade futurista conhecida pelo luxo, arranha-céus e compras sem igual.", "voo": "~8h", "query": "dubai skyline burj khalifa"}, "Marrocos": {"nome": "Marrocos", "bandeira": "🇲🇦", "regiao": "Norte de África", "doc": "Passaporte válido 3 meses", "desc": "Medinas históricas, mercados vibrantes e paisagens do deserto ao litoral.", "voo": "~1h30", "query": "morocco marrakech medina colorful"}, "Omã": {"nome": "Omã", "bandeira": "🇴🇲", "regiao": "Médio Oriente", "doc": "Passaporte válido 6 meses, isenção até 14 dias", "desc": "Sultanato com paisagens desérticas, fortalezas antigas e hospitalidade única.", "voo": "~10h", "query": "oman desert fort landscape"}, "Qatar": {"nome": "Qatar", "bandeira": "🇶🇦", "regiao": "Médio Oriente", "doc": "Passaporte válido 6 meses", "desc": "País com arquitetura futurista, cultura rica e hospitalidade excepcional.", "voo": "~8h", "query": "qatar doha skyline modern"}, "Ras Al Khaimah": {"nome": "Ras Al Khaimah", "bandeira": "🇦🇪", "regiao": "Emirados Árabes Unidos", "doc": "Passaporte válido 6 meses", "desc": "Emirado com paisagens montanhosas, praias, resorts de luxo e deserto.", "voo": "~8h", "query": "ras al khaimah mountains resort"}, "Tunísia": {"nome": "Tunísia", "bandeira": "🇹🇳", "regiao": "Norte de África", "doc": "Passaporte válido", "desc": "País com história fenícia e romana, praias mediterrânicas e deserto do Sahara.", "voo": "~3h40", "query": "tunisia beach mediterranean sidi bou said"}, "Cabo Verde": {"nome": "Cabo Verde", "bandeira": "🇨🇻", "regiao": "África Ocidental", "doc": "Passaporte válido 3 meses + pré-registo EASE", "desc": "Arquipélago vulcânico com praias, cultura crioula e música única.", "voo": "~4h", "query": "cape verde sal island beach"}, "Gâmbia": {"nome": "Gâmbia", "bandeira": "🇬🇲", "regiao": "África Ocidental", "doc": "Passaporte válido 6 meses, sem visto", "desc": "Pequeno país com praias, natureza e cultura vibrante.", "voo": "~4h", "query": "gambia beach africa tropical"}, "Madagáscar": {"nome": "Madagáscar", "bandeira": "🇲🇬", "regiao": "África Oriental", "doc": "Passaporte válido 6 meses, visto à chegada", "desc": "Grande ilha com biodiversidade única, paisagens exóticas e cultura distinta.", "voo": "~14h", "query": "madagascar baobab landscape"}, "Maurícia": {"nome": "Maurícia", "bandeira": "🇲🇺", "regiao": "Oceano Índico", "doc": "Passaporte válido 6 meses + formulário online", "desc": "Ilha paradisíaca com praias de areia branca, lagoas cristalinas e diversidade cultural.", "voo": "~15h", "query": "mauritius beach lagoon turquoise"}, "Moçambique": {"nome": "Moçambique", "bandeira": "🇲🇿", "regiao": "África Austral", "doc": "Passaporte válido 6 meses, sem visto desde 2023", "desc": "Costa sudeste de África com praias paradisíacas e arquitetura colonial.", "voo": "~10h", "query": "mozambique beach africa paradise"}, "São Tomé e Príncipe": {"nome": "São Tomé e Príncipe", "bandeira": "🇸🇹", "regiao": "África Central", "doc": "Passaporte válido 3 meses, sem visto <15 dias", "desc": "Arquipélago tropical com natureza exuberante, praias paradisíacas e cultura afro-portuguesa.", "voo": "~5h", "query": "sao tome principe tropical beach"}, "Senegal": {"nome": "Senegal", "bandeira": "🇸🇳", "regiao": "África Ocidental", "doc": "Passaporte válido 6 meses, sem visto", "desc": "Cultura vibrante, música, dança, história e paisagens do litoral ao deserto.", "voo": "~3h30", "query": "senegal saly beach africa"}, "Seicheles": {"nome": "Seicheles", "bandeira": "🇸🇨", "regiao": "Oceano Índico", "doc": "Passaporte válido 6 meses, visto gratuito à chegada", "desc": "Arquipélago com praias de areia branca, rochas graníticas e reservas naturais.", "voo": "~10h", "query": "seychelles beach granite rocks turquoise"}, "Tanzânia": {"nome": "Tanzânia", "bandeira": "🇹🇿", "regiao": "África Oriental", "doc": "Passaporte válido 6 meses, visto 50 USD", "desc": "Praias de Zanzibar, safaris no Serengeti, Monte Kilimanjaro e cultura suaíli.", "voo": "~12h", "query": "zanzibar beach tanzania safari"}, "Quénia": {"nome": "Quénia", "bandeira": "🇰🇪", "regiao": "África Oriental", "doc": "Passaporte válido 6 meses, eTA obrigatório", "desc": "Safaris, paisagens deslumbrantes, Monte Quilimanjaro e diversidade cultural.", "voo": "~11h30", "query": "kenya safari savanna animals"}, "Antígua e Barbuda": {"nome": "Antígua e Barbuda", "bandeira": "🇦🇬", "regiao": "Caribe", "doc": "Passaporte válido 6 meses, sem visto até 6 meses", "desc": "Duas ilhas com praias de areia branca, recifes de coral e resorts de luxo.", "voo": "~10h", "query": "antigua barbuda beach caribbean"}, "Aruba": {"nome": "Aruba", "bandeira": "🇦🇼", "regiao": "Caribe", "doc": "Passaporte válido 3 meses + Cartão Vacinação Febre Amarela", "desc": "Ilha caribenha com praias de areia branca, clima seco e ventos alísios.", "voo": "~10h", "query": "aruba beach palm tree caribbean"}, "Bahamas": {"nome": "Bahamas", "bandeira": "🇧🇸", "regiao": "Caribe", "doc": "Passaporte válido 6 meses", "desc": "Arquipélago de 700+ ilhas com praias paradisíacas e águas cristalinas.", "voo": "~15h", "query": "bahamas turquoise water beach"}, "Barbados": {"nome": "Barbados", "bandeira": "🇧🇧", "regiao": "Caribe", "doc": "Passaporte válido 6 meses + formulário eletrónico", "desc": "Ilha das Caraíbas com praias de areia branca, cultura Bajan e hospitalidade.", "voo": "~10h", "query": "barbados beach caribbean tropical"}, "Cuba": {"nome": "Cuba", "bandeira": "🇨🇺", "regiao": "Caribe", "doc": "Passaporte válido 6 meses + visto obrigatório", "desc": "Carros clássicos, arquitetura colonial, música e praias inesquecíveis.", "voo": "~15h", "query": "cuba havana classic cars colorful"}, "Curaçao": {"nome": "Curaçao", "bandeira": "🇨🇼", "regiao": "Caribe", "doc": "Passaporte válido 6 meses + Cartão Digital Imigração", "desc": "Ilha com arquitetura holandesa colorida, praias e recifes de coral.", "voo": "~10h", "query": "curacao willemstad colorful buildings"}, "Grenada": {"nome": "Grenada", "bandeira": "🇬🇩", "regiao": "Caribe", "doc": "Passaporte válido 6 meses", "desc": "Ilha das Especiarias com praias e florestas tropicais únicas.", "voo": "~14h", "query": "grenada beach caribbean spice island"}, "Porto Rico": {"nome": "Porto Rico", "bandeira": "🇵🇷", "regiao": "Caribe", "doc": "Passaporte válido 6 meses + ESTA", "desc": "Ilha com história rica, florestas tropicais, praias e cultura vibrante.", "voo": "~9-11h", "query": "puerto rico old san juan beach"}, "República Dominicana": {"nome": "República Dominicana", "bandeira": "🇩🇴", "regiao": "Caribe", "doc": "Passaporte válido 6 meses + formulário eletrónico", "desc": "Praias de areia branca, resorts all-inclusive e história colonial.", "voo": "~7h", "query": "dominican republic punta cana beach"}, "Santa Lúcia": {"nome": "Santa Lúcia", "bandeira": "🇱🇨", "regiao": "Caribe", "doc": "Passaporte válido 3 meses, sem visto <90 dias", "desc": "Montanhas vulcânicas, praias de areia preta e branca e recifes de coral.", "voo": "~11h", "query": "saint lucia pitons mountains beach"}, "São Vicente e Granadinas": {"nome": "São Vicente e Granadinas", "bandeira": "🇻🇨", "regiao": "Caribe", "doc": "Passaporte válido 6 meses, sem visto <30 dias", "desc": "Arquipélago com praias, recifes e iatismo de excelência.", "voo": "~14h", "query": "saint vincent grenadines beach sailing"}, "Brasil": {"nome": "Brasil", "bandeira": "🇧🇷", "regiao": "América do Sul", "doc": "Passaporte válido durante a estadia", "desc": "Maior país da América do Sul com praias, floresta amazónica, cidades vibrantes e cultura rica.", "voo": "~9h30", "query": "brazil rio de janeiro beach carnival"}, "Estados Unidos": {"nome": "Estados Unidos", "bandeira": "🇺🇸", "regiao": "América do Norte", "doc": "Passaporte válido 6 meses + ESTA", "desc": "País diverso com paisagens impressionantes, cidades icónicas e cultura global.", "voo": "8-12h", "query": "new york city usa skyline"}, "Camboja": {"nome": "Camboja", "bandeira": "🇰🇭", "regiao": "Sudeste Asiático", "doc": "Passaporte válido 6 meses + visto + APP E-arrival", "desc": "Reino do Sudeste Asiático famoso pelos templos de Angkor Wat e cultura Khmer.", "voo": "~15h", "query": "cambodia angkor wat temple"}, "China": {"nome": "China", "bandeira": "🇨🇳", "regiao": "Ásia Oriental", "doc": "Passaporte válido 6 meses, isenção visto até 30 dias", "desc": "País com história milenar, cultura rica e paisagens diversas.", "voo": "12-15h", "query": "china great wall beijing"}, "Indonésia": {"nome": "Indonésia", "bandeira": "🇮🇩", "regiao": "Sudeste Asiático", "doc": "Passaporte válido 6 meses + visto ~35 EUR", "desc": "Arquipélago com milhares de ilhas, culturas diversas e paisagens vulcânicas.", "voo": "~25h", "query": "bali indonesia rice terrace temple"}, "Japão": {"nome": "Japão", "bandeira": "🇯🇵", "regiao": "Ásia Oriental", "doc": "Passaporte válido 6 meses, sem visto até 90 dias", "desc": "Tecnologia, tradições milenares, gastronomia e paisagens únicas.", "voo": "12-15h", "query": "japan cherry blossom mount fuji"}, "Malásia": {"nome": "Malásia", "bandeira": "🇲🇾", "regiao": "Sudeste Asiático", "doc": "Passaporte válido 6 meses, sem visto <90 dias", "desc": "Diversidade cultural, gastronomia e paisagens de florestas a metrópoles modernas.", "voo": "~15h", "query": "malaysia kuala lumpur petronas towers"}, "Maldivas": {"nome": "Maldivas", "bandeira": "🇲🇻", "regiao": "Oceano Índico", "doc": "Passaporte válido 6 meses, visto gratuito à chegada", "desc": "Arquipélago paradisíaco com águas cristalinas, resorts de luxo e vida marinha.", "voo": "~14h", "query": "maldives overwater bungalow turquoise"}, "Polinésia Francesa": {"nome": "Polinésia Francesa", "bandeira": "🇵🇫", "regiao": "Oceano Pacífico", "doc": "Passaporte válido 6 meses", "desc": "Arquipélago paradisíaco com Taiti, Bora Bora e Moorea e resorts de luxo.", "voo": "~25h", "query": "bora bora french polynesia overwater"}, "Singapura": {"nome": "Singapura", "bandeira": "🇸🇬", "regiao": "Sudeste Asiático", "doc": "Passaporte válido 6 meses + Cartão Chegada SG", "desc": "Cidade-Estado moderna com jardins exuberantes, gastronomia multicultural e eficiência.", "voo": "~18h", "query": "singapore marina bay sands gardens"}, "Sri Lanka": {"nome": "Sri Lanka", "bandeira": "🇱🇰", "regiao": "Ásia do Sul", "doc": "Passaporte válido 6 meses + visto ~50 USD", "desc": "Praias tropicais, plantações de chá, património budista e vida selvagem.", "voo": "11-12h", "query": "sri lanka tea plantation beach elephant"}, "Tailândia": {"nome": "Tailândia", "bandeira": "🇹🇭", "regiao": "Sudeste Asiático", "doc": "Passaporte válido 6 meses, sem visto até 30 dias", "desc": "Terra dos Sorrisos com templos dourados, praias paradisíacas e gastronomia excecional.", "voo": "~13h30", "query": "thailand temple beach tropical"}, "Turquia": {"nome": "Turquia", "bandeira": "🇹🇷", "regiao": "Eurásia", "doc": "Passaporte válido 6 meses, sem visto até 90 dias", "desc": "Ponte entre Europa e Ásia com história milenar, praias mediterrânicas e Capadócia.", "voo": "~4h40", "query": "turkey cappadocia balloon istanbul"}, "Vietname": {"nome": "Vietname", "bandeira": "🇻🇳", "regiao": "Sudeste Asiático", "doc": "Passaporte válido 6 meses + visto 25 USD", "desc": "História rica, paisagens das montanhas do norte às praias do sul e gastronomia excecional.", "voo": "~15h", "query": "vietnam halong bay rice fields"}}
+
+// Lazy load imagens via Unsplash
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      const img = e.target
+      if(!img.src || img.src === location.href) {
+        carregarImg(img, img.dataset.query)
+        obs.unobserve(img)
+      }
+    }
+  })
+}, { rootMargin: '300px' })
+document.querySelectorAll('.dest-card-img').forEach(img => obs.observe(img))
+
+async function carregarImg(img, q) {
+  try {
+    const r = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=1&orientation=landscape`,
+      { headers: { Authorization: 'Client-ID ' + UNSPLASH } })
+    const d = await r.json()
+    if(d.results?.[0]) img.src = d.results[0].urls.regular
+  } catch(e) {}
+}
+
+function pedirOrcamento(nome) {
+  const dest = encodeURIComponent(nome)
+  location.href = 'pedir-orcamento.html' + (s ? s + '&dest=' + dest : '?dest=' + dest)
+}
+
+function abrirModal(nome) {
+  const d = DESTINOS[nome]
+  if(!d) return
+  document.getElementById('modal-flag').textContent = d.bandeira
+  document.getElementById('modal-title').textContent = nome
+  document.getElementById('modal-region').textContent = d.regiao
+  document.getElementById('modal-desc').textContent = d.desc
+  document.getElementById('modal-info').innerHTML = `
+    <div class="modal-info-item"><div class="modal-info-label">Documentação</div><div class="modal-info-value">${d.doc}</div></div>
+    <div class="modal-info-item"><div class="modal-info-label">Tempo de voo</div><div class="modal-info-value">✈ ${d.voo}</div></div>`
+  const cta = document.getElementById('modal-cta')
+  cta.onclick = e => { e.preventDefault(); pedirOrcamento(nome) }
+  const mImg = document.getElementById('modal-img')
+  mImg.src = ''
+  carregarImg(mImg, d.query)
+  document.getElementById('modal').classList.add('open')
+  document.body.style.overflow = 'hidden'
+}
+
+function fecharModal() {
+  document.getElementById('modal').classList.remove('open')
+  document.body.style.overflow = ''
+}
+
+document.addEventListener('keydown', e => { if(e.key==='Escape') fecharModal() })
+
+let regiaoActiva = 'todos', queryActiva = ''
+
+function filtrarRegiao(r, btn) {
+  regiaoActiva = r
+  document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  aplicar()
+}
+
+function pesquisar(q) { queryActiva = q.toLowerCase().trim(); aplicar() }
+
+function aplicar() {
+  document.querySelectorAll('.region-section').forEach(sec => {
+    const matchSec = regiaoActiva === 'todos' || sec.dataset.region === regiaoActiva
+    let vis = 0
+    sec.querySelectorAll('.dest-card').forEach(c => {
+      const show = matchSec && (!queryActiva || c.dataset.nome.includes(queryActiva))
+      c.style.display = show ? '' : 'none'
+      if(show) vis++
+    })
+    sec.style.display = vis > 0 ? '' : 'none'
+  })
+}
+</script>
+</body>
+</html>
