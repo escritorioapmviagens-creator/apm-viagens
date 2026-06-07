@@ -860,6 +860,19 @@ let _stars = '4'
 let _hotel = null
 let _drawerImg = ''
 
+async function carregarImg(img, q) {
+  // Tentar Supabase primeiro via SUPA_IMGS
+  const destNome = img.closest('.dest-card')?.querySelector('.dest-card-name')?.textContent || _destino
+  if(destNome && SUPA_IMGS[destNome]) { img.src = SUPA_IMGS[destNome]; return }
+  // Fallback Unsplash
+  try {
+    const r = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=1&orientation=landscape`,
+      {headers:{Authorization:'Client-ID lvuZ06ZCQKhkrbsWK2AGELUA_fKdZiXYYVcH1MUp6TQ'}})
+    const d = await r.json()
+    if(d.results?.[0]) img.src = d.results[0].urls.regular
+  } catch(e) {}
+}
+
 function abrirDrawer(nome) {
   _destino = nome
   _hotel = null
