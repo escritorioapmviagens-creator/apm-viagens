@@ -29,9 +29,8 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e;overflow-
 .region-section+.region-section{border-top:1px solid #f0f0f0}
 .region-title{font-size:11px;font-weight:700;color:#E8395A;text-transform:uppercase;letter-spacing:.15em;margin-bottom:16px;display:flex;align-items:center;gap:10px}
 .region-title::after{content:'';flex:1;height:1px;background:#f0f0f0}
-.cards-row{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-ms-overflow-style:none;scrollbar-width:none}
-.cards-row::-webkit-scrollbar{display:none}
-.dest-card{flex-shrink:0;width:200px;border:1px solid #f0f0f0;border-radius:10px;overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s;scroll-snap-align:start;background:#fff}
+.cards-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.dest-card{border:1px solid #f0f0f0;border-radius:10px;overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s;background:#fff}
 .dest-card:hover{box-shadow:0 6px 24px rgba(0,0,0,.1);transform:translateY(-2px)}
 .dest-card-img{width:100%;height:120px;object-fit:cover;display:block;background:#f5f5f5}
 .dest-card-body{padding:12px}
@@ -119,6 +118,12 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e;overflow-
   <button class="region-btn" onclick="filtrarRegiao('Caribe',this)">Caribe</button>
   <button class="region-btn" onclick="filtrarRegiao('América',this)">América</button>
   <button class="region-btn" onclick="filtrarRegiao('Ásia e Oceania',this)">Ásia e Oceania</button>
+</div>
+
+<div style="background:linear-gradient(90deg,#fff0f3,#f0f4ff);border-top:1px solid #fdd;border-bottom:1px solid #fdd;padding:10px 40px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <span style="font-size:1.1rem">🎟</span>
+  <span style="font-size:12px;color:#1a1a2e"><strong>Reserve connosco</strong> e saiba como ganhar um voucher até <strong style="color:#E8395A">300 €</strong> para a sua próxima reserva.</span>
+  <a href="#voucher-info" onclick="mostrarVoucher();return false" style="font-size:11px;font-weight:700;color:#E8395A;text-decoration:underline;white-space:nowrap">Saber mais →</a>
 </div>
 
 <div id="destinos-container">
@@ -769,6 +774,21 @@ body{background:#f5f5f5;font-family:'Poppins',sans-serif;color:#1a1a2e;overflow-
       <div class="estimativa-sub" id="estimativa-sub"></div>
       <div class="estimativa-disclaimer">⚠ Este valor é uma estimativa indicativa com base em preços médios de mercado. O preço real será confirmado pelo teu consultor APM Viagens após análise das disponibilidades e datas específicas. A reserva só fica garantida após confirmação e pagamento.</div>
     </div>
+    <!-- Voucher info -->
+    <div id="voucher-box" style="background:#fff9e6;border:1.5px solid #fde68a;border-radius:10px;padding:14px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:1.3rem">🎟</span>
+        <span style="font-size:12px;font-weight:700;color:#1a1a2e">Programa de Vouchers APM Viagens</span>
+      </div>
+      <div style="font-size:11px;color:#6b7280;line-height:1.6">
+        Reserve connosco e ganhe um <strong style="color:#E8395A">voucher até 300 €</strong> para a sua próxima viagem.<br><br>
+        <strong>Como funciona:</strong><br>
+        🔹 Reserve qualquer destino através da APM Viagens<br>
+        🔹 Após conclusão da viagem, recebe o seu voucher por email<br>
+        🔹 Use o voucher na próxima reserva (válido 12 meses)<br><br>
+        <span style="font-size:10px;color:#9ca3af">* Voucher aplicável em reservas de valor igual ou superior a 1.000 €. Não acumulável com outras promoções.</span>
+      </div>
+    </div>
     <button class="reservar-btn" id="reservar-btn" onclick="enviarReserva()" disabled>Pedir confirmação de disponibilidade</button>
   </div>
 </div>
@@ -983,6 +1003,23 @@ function aplicar() {
 }
 
 document.addEventListener('keydown', e => { if(e.key==='Escape') fecharDrawer() })
+
+function mostrarVoucher() {
+  // Abre o drawer com foco na secção de voucher
+  const vbox = document.getElementById('voucher-box')
+  if(vbox) {
+    if(!document.getElementById('drawer').classList.contains('open')) {
+      // Se não há destino seleccionado, mostra um drawer informativo
+      document.getElementById('drawer-nome').textContent = 'Programa de Vouchers'
+      document.getElementById('drawer-regiao').textContent = 'APM Viagens'
+      document.getElementById('drawer-img').src = ''
+      document.getElementById('drawer-overlay').classList.add('open')
+      document.getElementById('drawer').classList.add('open')
+      document.body.style.overflow = 'hidden'
+    }
+    setTimeout(() => vbox.scrollIntoView({behavior:'smooth', block:'center'}), 300)
+  }
+}
 </script>
 </body>
 </html>
