@@ -821,68 +821,31 @@ const HOTEIS = {"Abu Dhabi": {"3": ["Beach Rotana Abu Dhabi", "Centro Capital Ce
 const PRECOS = {"Abu Dhabi": {"3": 620, "4": 880, "5": 1600}, "Açores": {"3": 320, "4": 480, "5": 820}, "Antígua e Barbuda": {"3": 1000, "4": 1450, "5": 2350}, "Aruba": {"3": 950, "4": 1380, "5": 2200}, "Bahamas": {"3": 1100, "4": 1600, "5": 2600}, "Barbados": {"3": 1000, "4": 1450, "5": 2350}, "Brasil": {"3": 800, "4": 1150, "5": 2050}, "Cabo Verde": {"3": 520, "4": 730, "5": 1200}, "Camboja": {"3": 1000, "4": 1380, "5": 2200}, "China": {"3": 880, "4": 1250, "5": 2050}, "Cuba": {"3": 880, "4": 1250, "5": 2050}, "Curaçao": {"3": 950, "4": 1380, "5": 2200}, "Dubai": {"3": 660, "4": 1020, "5": 1900}, "Espanha": {"3": 290, "4": 440, "5": 820}, "Estados Unidos": {"3": 800, "4": 1150, "5": 2050}, "Formentera": {"3": 440, "4": 660, "5": 1150}, "França": {"3": 330, "4": 510, "5": 950}, "Fuerteventura": {"3": 400, "4": 580, "5": 1020}, "Gâmbia": {"3": 510, "4": 730, "5": 1150}, "Gran Canária": {"3": 400, "4": 580, "5": 1020}, "Grécia": {"3": 440, "4": 660, "5": 1250}, "Grenada": {"3": 1100, "4": 1530, "5": 2500}, "Havaí": {"3": 1450, "4": 2050, "5": 3300}, "Ibiza": {"3": 440, "4": 660, "5": 1250}, "Indonésia": {"3": 950, "4": 1380, "5": 2350}, "Japão": {"3": 1150, "4": 1600, "5": 2800}, "Lanzarote": {"3": 400, "4": 580, "5": 1020}, "Madeira": {"3": 290, "4": 440, "5": 820}, "Madagáscar": {"3": 1020, "4": 1450, "5": 2350}, "Maiorca": {"3": 400, "4": 580, "5": 1100}, "Malásia": {"3": 950, "4": 1300, "5": 2200}, "Maldivas": {"3": 1450, "4": 2050, "5": 3650}, "Malta": {"3": 360, "4": 550, "5": 1020}, "Marrocos": {"3": 290, "4": 470, "5": 880}, "Maurícia": {"3": 1020, "4": 1450, "5": 2600}, "Menorca": {"3": 400, "4": 580, "5": 1100}, "Moçambique": {"3": 950, "4": 1380, "5": 2350}, "Omã": {"3": 660, "4": 950, "5": 1750}, "Polinésia Francesa": {"3": 2200, "4": 3050, "5": 5100}, "Porto Rico": {"3": 880, "4": 1250, "5": 2100}, "Porto Santo": {"3": 290, "4": 440, "5": 730}, "Portugal": {"3": 220, "4": 360, "5": 660}, "Qatar": {"3": 660, "4": 950, "5": 1750}, "Quénia": {"3": 1020, "4": 1450, "5": 2500}, "Ras Al Khaimah": {"3": 660, "4": 950, "5": 1680}, "República Dominicana": {"3": 660, "4": 950, "5": 1600}, "Santa Lúcia": {"3": 1150, "4": 1600, "5": 2650}, "São Tomé e Príncipe": {"3": 800, "4": 1150, "5": 1820}, "São Vicente e Granadinas": {"3": 1150, "4": 1600, "5": 2650}, "Seicheles": {"3": 1300, "4": 1900, "5": 3300}, "Senegal": {"3": 510, "4": 730, "5": 1250}, "Singapura": {"3": 1100, "4": 1530, "5": 2650}, "Sri Lanka": {"3": 880, "4": 1250, "5": 2050}, "Tailândia": {"3": 800, "4": 1150, "5": 2050}, "Tanzânia": {"3": 950, "4": 1380, "5": 2350}, "Tenerife": {"3": 400, "4": 580, "5": 1100}, "Tunísia": {"3": 440, "4": 660, "5": 1150}, "Turquia": {"3": 510, "4": 730, "5": 1380}, "Vietname": {"3": 950, "4": 1300, "5": 2200}}
 const MESES_MULT = {"Janeiro": 0.82, "Fevereiro": 0.85, "Março": 0.9, "Abril": 1.0, "Maio": 0.92, "Junho": 1.05, "Julho": 1.2, "Agosto": 1.25, "Setembro": 1.02, "Outubro": 0.92, "Novembro": 0.82, "Dezembro": 1.1}
 
-// Cache de imagens para não repetir chamadas
-const _imgCache = {}
+// URLs directos do Supabase Storage
+const SUPA_IMGS = {"Açores": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/acores.jpg", "Espanha": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/espanha.jpg", "Formentera": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/formentera.jpg", "França": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/franca.jpg", "Fuerteventura": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/fuerteventura.jpg", "Gran Canária": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/gran-canaria.jpg", "Grécia": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/grecia.jpg", "Havaí": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/havai.jpg", "Ibiza": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/ibiza.jpg", "Lanzarote": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/lanzarote.jpg", "Madeira": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/madeira.jpg", "Maiorca": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/maiorca.jpg", "Malta": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/malta.jpg", "Menorca": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/menorca.jpg", "Porto Santo": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/porto-santo.jpg", "Portugal": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/portugal.jpg", "Tenerife": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/tenerife.jpg", "Abu Dhabi": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/abu-dhabi.jpg", "Dubai": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/dubai.jpg", "Marrocos": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/marrocos.jpg", "Omã": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/oma.jpg", "Qatar": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/qatar.jpg", "Ras Al Khaimah": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/ras-al-khaimah.jpg", "Tunísia": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/tunisia.jpg", "Gâmbia": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/gambia.jpg", "Madagáscar": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/madagascar.jpg", "Maurícia": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/mauricia.jpg", "São Tomé e Príncipe": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/sao-tome-e-principe.jpg", "Senegal": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/senegal.jpg", "Seicheles": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/seicheles.jpg", "Tanzânia": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/tanzania.jpg", "Quénia": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/quenia.jpg", "Antígua e Barbuda": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/antigua-e-barbuda.jpg", "Aruba": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/aruba.jpg", "Bahamas": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/bahamas.jpg", "Barbados": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/barbados.jpg", "Cuba": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/cuba.jpg", "Curaçao": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/curacao.jpg", "Grenada": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/grenada.jpg", "Porto Rico": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/porto-rico.jpg", "República Dominicana": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/republica-dominicana.jpg", "Brasil": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/brasil.jpg", "Estados Unidos": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/estados-unidos.jpg", "Camboja": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/camboja.jpg", "China": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/china.jpg", "Indonésia": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/indonesia.jpg", "Japão": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/japao.jpg", "Malásia": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/malasia.jpg", "Maldivas": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/maldivas.jpg", "Polinésia Francesa": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/polinesia-francesa.jpg", "Singapura": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/singapura.jpg", "Sri Lanka": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/sri-lanka.jpg", "Tailândia": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/tailandia.jpg", "Turquia": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/turquia.jpg", "São Vicente e Granadinas": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/sao-vicente-granadinas.jpg", "Cabo Verde": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/cabo-verde.jpg", "Moçambique": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/mocambique.jpg", "Santa Lúcia": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/santa-lucia.jpg", "Vietname": "https://uiaorfcgvqwxjezgisps.supabase.co/storage/v1/object/public/destinos/vietname.jpg"}
+const UNSPLASH_KEY = 'lvuZ06ZCQKhkrbsWK2AGELUA_fKdZiXYYVcH1MUp6TQ'
 
-// Fila de chamadas para respeitar rate limit
-const _imgQueue = []
-let _imgRunning = 0
-const MAX_CONCURRENT = 3
-const DELAY_MS = 300
+// Carregar imagens directamente do Supabase
+document.querySelectorAll('.dest-card-img').forEach(img => {
+  const destNome = img.closest('.dest-card')?.querySelector('.dest-card-name')?.textContent
+  if(destNome && SUPA_IMGS[destNome]) {
+    img.src = SUPA_IMGS[destNome]
+    img.onerror = () => carregarUnsplash(img)
+  } else {
+    carregarUnsplash(img)
+  }
+})
 
-function queueImg(img, q, small=false) {
-  if(_imgCache[q]) { img.src = _imgCache[q]; return }
-  _imgQueue.push({img, q, small})
-  processQueue()
-}
-
-async function processQueue() {
-  if(_imgRunning >= MAX_CONCURRENT || !_imgQueue.length) return
-  _imgRunning++
-  const {img, q, small} = _imgQueue.shift()
+async function carregarUnsplash(img) {
+  const q = img.dataset.query
+  if(!q) return
   try {
-    await new Promise(r => setTimeout(r, DELAY_MS * _imgRunning))
-    const r = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=1&orientation=landscape`,
-      { headers: { Authorization: 'Client-ID ' + UNSPLASH } }
-    )
+    const r = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=1&orientation=landscape`,
+      { headers: { Authorization: 'Client-ID ' + UNSPLASH_KEY } })
     const d = await r.json()
-    const url = small ? d.results?.[0]?.urls?.small : d.results?.[0]?.urls?.regular
-    if(url) { img.src = url; _imgCache[q] = url }
-    else if(q.split(' ').length > 2) {
-      // Tentar query mais simples
-      const qSimple = q.split(' ').slice(0,2).join(' ')
-      queueImg(img, qSimple, small)
-    }
+    if(d.results?.[0]) img.src = d.results[0].urls.regular
   } catch(e) {}
-  _imgRunning--
-  processQueue()
 }
-
-const IMG_FALLBACKS = {}  // Sem fallbacks hardcoded — usar API
-
-async function carregarImg(img, q) {
-  queueImg(img, q, false)
-}
-async function carregarImgHotel(img, hotelNome, destino) {
-  // Query específica: só nome do hotel + 'hotel exterior'
-  const q = hotelNome + ' hotel'
-  queueImg(img, q, true)
-}
-
-// Lazy load com IntersectionObserver
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(e.isIntersecting) {
-      const img = e.target
-      if(!img.src || img.src === location.href) {
-        carregarImg(img, img.dataset.query)
-        obs.unobserve(img)
-      }
-    }
-  })
-}, { rootMargin: '400px' })
-document.querySelectorAll('.dest-card-img').forEach(img => obs.observe(img))
 
 // Abrir drawer automaticamente se ?dest= presente no URL
 if(_destParam) {
