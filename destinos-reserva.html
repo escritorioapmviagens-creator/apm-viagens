@@ -812,6 +812,7 @@ nav{position:sticky;top:0;left:0;right:0;z-index:200;background:rgba(248,248,248
 const UNSPLASH = 'lvuZ06ZCQKhkrbsWK2AGELUA_fKdZiXYYVcH1MUp6TQ'
 const CHAT_BASE = 'https://escritorioapmviagens-creator.github.io/apm-viagens/chat.html'
 const ref = new URLSearchParams(location.search).get('ref') || ''
+const _destParam = new URLSearchParams(location.search).get('dest') || ''
 const s = ref ? '?ref=' + ref : ''
 if(ref) document.getElementById('nav-inscricao').href = 'https://escritorioapmviagens-creator.github.io/apm-viagens/inscricao?ref=' + ref
 
@@ -883,6 +884,13 @@ const obs = new IntersectionObserver(entries => {
 }, { rootMargin: '400px' })
 document.querySelectorAll('.dest-card-img').forEach(img => obs.observe(img))
 
+// Abrir drawer automaticamente se ?dest= presente no URL
+if(_destParam) {
+  const destNome = decodeURIComponent(_destParam)
+  // Aguardar DOM estar pronto
+  setTimeout(() => abrirDrawer(destNome), 300)
+}
+
 // Estado do drawer
 let _destino = null
 let _stars = '4'
@@ -909,7 +917,6 @@ function abrirDrawer(nome) {
   document.getElementById('reservar-btn').disabled = true
   // Stars - activar 4★ por defeito
   document.querySelectorAll('.star-btn').forEach((b,i) => b.classList.toggle('active', i===1))
-  renderHoteis()
   // Limpar campos cliente
   const cliNome = document.getElementById('cli-nome')
   const cliTel = document.getElementById('cli-tel')
@@ -929,43 +936,7 @@ function fecharDrawer() {
   document.body.style.overflow = ''
 }
 
-function selecionarStars(stars, btn) {
-  _stars = stars
-  _hotel = null
-  document.querySelectorAll('.star-btn').forEach(b => b.classList.remove('active'))
-  btn.classList.add('active')
-  renderHoteis()
-  calcularPreco()
-}
 
-function renderHoteis() {
-  const grid = document.getElementById('hotel-grid')
-  const lista = HOTEIS[_destino]?.[_stars] || []
-  if(!lista.length) {
-    grid.innerHTML = '<div style="color:#9ca3af;font-size:12px;grid-column:1/-1;text-align:center;padding:20px">Sem hotéis disponíveis para esta categoria</div>'
-    return
-  }
-  grid.innerHTML = lista.map(h => `
-    <div class="hotel-card${_hotel===h?' selected':''}" onclick="selecionarHotel('${h.replace(/'/g, "\'")}')" id="hcard-${encodeURIComponent(h)}">
-      <img class="hotel-img" src="" data-hotel="${h}" alt="${h}">
-      <div class="hotel-info">
-        <div class="hotel-name">${h}</div>
-        <div class="hotel-stars">${'★'.repeat(parseInt(_stars))}</div>
-      </div>
-    </div>`).join('')
-  // Lazy load hotel images
-  grid.querySelectorAll('.hotel-img').forEach(img => {
-    carregarImgHotel(img, img.dataset.hotel, _destino)
-  })
-}
-
-function selecionarHotel(nome) {
-  _hotel = nome
-  document.querySelectorAll('.hotel-card').forEach(c => c.classList.remove('selected'))
-  const card = document.getElementById('hcard-' + encodeURIComponent(nome))
-  if(card) card.classList.add('selected')
-  calcularPreco()
-}
 
 function calcularPreco() {
   const mes = document.getElementById('mes-select').value
