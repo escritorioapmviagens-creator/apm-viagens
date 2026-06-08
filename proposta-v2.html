@@ -419,21 +419,30 @@ async function aceitarProposta() {
 
       // 2. Gerar RNAVT e criar reserva em "Aceite Pendente"
       const ano = new Date().getFullYear()
-      const { data: lastRsv } = await sb.from('reservas').select('rnavt').ilike('rnavt', 'APM' + ano + '%').order('rnavt', { ascending: false }).limit(1)
-      let seq = 1
-      if(lastRsv?.length) { const n = parseInt((lastRsv[0].rnavt||'').replace('APM'+ano,''))||0; seq = n+1 }
-      const rnavt = 'APM' + ano + String(seq).padStart(3,'0')
+      let rnavt, rnavtOk = false, tentativas = 0
+      while(!rnavtOk && tentativas < 10) {
+        const { data: lastRsv } = await sb.from('reservas').select('rnavt').ilike('rnavt', 'APM' + ano + '%').order('rnavt', { ascending: false }).limit(1)
+        let seq = 1
+        if(lastRsv?.length) { const n = parseInt((lastRsv[0].rnavt||'').replace('APM'+ano,''))||0; seq = n+1+tentativas }
+        rnavt = 'APM' + ano + String(seq).padStart(3,'0')
+        // Verificar se já existe
+        const { data: exists } = await sb.from('reservas').select('id').eq('rnavt', rnavt).maybeSingle()
+        if(!exists) rnavtOk = true
+        tentativas++
+      }
 
       // Encontrar ou criar cliente
       let clienteId = null
       const telLimpo = (D.cli_tel||D.ctel||'').replace(/\D/g,'')
       if(telLimpo) {
-        const { data: cli } = await sb.from('clientes').select('id').eq('telefone', telLimpo).maybeSingle()
-        if(cli) { clienteId = cli.id }
-        else {
-          const { data: newCli } = await sb.from('clientes').insert({ nome: D.cli_nome||D.cli||'—', telefone: telLimpo||null, nif: D.cli_nif||null }).select('id').single()
+        try {
+          // Tentar inserir cliente (upsert por telefone)
+          const { data: newCli } = await sb.from('clientes').upsert(
+            { nome: D.cli_nome||D.cli||'—', telefone: telLimpo, nif: D.cli_nif||null },
+            { onConflict: 'telefone', ignoreDuplicates: false }
+          ).select('id').single()
           if(newCli) clienteId = newCli.id
-        }
+        } catch(e) { console.warn('Cliente não criado:', e.message) }
       }
 
       const total = D.prices?.reduce((s,p) => s+(parseFloat(p.val)||0), 0) || null
