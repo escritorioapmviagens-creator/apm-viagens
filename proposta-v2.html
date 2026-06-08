@@ -80,6 +80,18 @@ canvas#sig-canvas { display: block; width: 100%; height: 120px; cursor: crosshai
 .footer-btn { background: var(--coral); color: #fff; border: none; border-radius: 50px; padding: 11px 24px; font-family: var(--font); font-size: .9rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
 @media (min-width: 680px) { .sticky-footer { display: none } }
 @media (max-width: 680px) { .topbar { padding: 10px 16px } .logo-wrap img { height: 44px } .hero { margin: 68px 10px 0; height: 45vw; min-height: 220px; border-radius: 14px } .section { padding: 16px 12px } .card { padding: 16px } }
+
+.edit-consul-btn { position:absolute; top:12px; right:12px; background:#E8395A; color:#fff; border:none; border-radius:6px; padding:6px 12px; font-size:.75rem; font-weight:700; cursor:pointer; font-family:var(--font); display:none }
+.modal-edit { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:500; display:none; align-items:center; justify-content:center }
+.modal-edit.open { display:flex }
+.modal-edit-box { background:#fff; border-radius:14px; padding:28px; width:90%; max-width:420px }
+.modal-edit-title { font-size:1rem; font-weight:800; margin-bottom:20px; color:#1a1a2e }
+.modal-edit input { width:100%; padding:10px 14px; border:1.5px solid #e5e7eb; border-radius:8px; font-family:var(--font); font-size:13px; margin-bottom:12px; outline:none }
+.modal-edit input:focus { border-color:#E8395A }
+.modal-edit-btns { display:flex; gap:10px; margin-top:8px }
+.modal-edit-btns button { flex:1; padding:11px; border:none; border-radius:8px; font-family:var(--font); font-size:13px; font-weight:700; cursor:pointer }
+.modal-edit-save { background:#E8395A; color:#fff }
+.modal-edit-cancel { background:#f5f5f5; color:#6b7280 }
 </style>
 </head>
 <body>
@@ -153,7 +165,8 @@ canvas#sig-canvas { display: block; width: 100%; height: 120px; cursor: crosshai
   </div>
 
   <div class="section" id="section-consul">
-    <div class="consultant-card">
+    <div class="consultant-card" style="position:relative">
+      <button class="edit-consul-btn" id="btn-edit-consul" onclick="abrirEditConsul()">✏️ Editar</button>
       <div class="consul-avatar" id="consul-avatar">A</div>
       <div>
         <div class="consul-name" id="consul-name">—</div>
@@ -463,6 +476,92 @@ async function aceitarProposta() {
 
 function showError(msg) { document.body.innerHTML = `<div style="padding:40px;text-align:center;font-family:sans-serif;color:#6b7280"><div style="font-size:3rem;margin-bottom:16px">⚠️</div><div style="font-size:1.1rem;font-weight:600">${msg}</div></div>` }
 function toast(msg, type='ok') { const el=document.getElementById('toast'); el.textContent=msg; el.className='toast '+type+' show'; setTimeout(()=>el.classList.remove('show'),3500) }
+</script>
+<!-- Modal editar consultor -->
+<div class="modal-edit" id="modal-edit-consul">
+  <div class="modal-edit-box">
+    <div class="modal-edit-title">✏️ Editar consultor na proposta</div>
+    <label style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px">Nome</label>
+    <input id="edit-consul-nome" placeholder="Nome do consultor">
+    <label style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px">WhatsApp (351912...)</label>
+    <input id="edit-consul-tel" placeholder="351912345678">
+    <label style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px">URL da foto (opcional)</label>
+    <input id="edit-consul-foto" placeholder="https://...">
+    <div class="modal-edit-btns">
+      <button class="modal-edit-cancel" onclick="fecharEditConsul()">Cancelar</button>
+      <button class="modal-edit-save" onclick="guardarEditConsul()">Guardar ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Verificar se é admin ao carregar
+;(async function() {
+  try {
+    const { data: { session } } = await sb.auth.getSession()
+    if(!session) return
+    const { data: perfil } = await sb.from('perfis').select('nivel_acesso').eq('id', session.user.id).single()
+    if(perfil?.nivel_acesso === 'admin') {
+      const btn = document.getElementById('btn-edit-consul')
+      if(btn) btn.style.display = 'block'
+    }
+  } catch(e) {}
+})()
+
+function abrirEditConsul() {
+  document.getElementById('edit-consul-nome').value = D.cnome || ''
+  document.getElementById('edit-consul-tel').value = D.ctel || ''
+  document.getElementById('edit-consul-foto').value = D.consul_foto || ''
+  document.getElementById('modal-edit-consul').classList.add('open')
+}
+
+function fecharEditConsul() {
+  document.getElementById('modal-edit-consul').classList.remove('open')
+}
+
+async function guardarEditConsul() {
+  const nome = document.getElementById('edit-consul-nome').value.trim()
+  const tel = document.getElementById('edit-consul-tel').value.trim()
+  const foto = document.getElementById('edit-consul-foto').value.trim()
+  if(!nome) { alert('Indique o nome do consultor'); return }
+
+  // Actualizar D localmente
+  D.cnome = nome
+  D.ctel = tel
+  D.consul_foto = foto || null
+
+  // Actualizar no Supabase
+  const params = new URLSearchParams(location.search)
+  const pid = params.get('proposta')
+  if(pid) {
+    try {
+      const { data: prop } = await sb.from('propostas_viagem').select('dados').eq('id', pid).single()
+      if(prop) {
+        const novosDados = { ...prop.dados, cnome: nome, ctel: tel, consul_foto: foto || null }
+        await sb.from('propostas_viagem').update({ dados: novosDados }).eq('id', pid)
+      }
+    } catch(e) { console.error(e) }
+  }
+
+  // Actualizar visualmente
+  const cname = nome || 'APM Viagens'
+  document.getElementById('consul-name').textContent = cname
+  const avatarEl = document.getElementById('consul-avatar')
+  if(foto) {
+    avatarEl.innerHTML = `<img src="${foto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+  } else {
+    avatarEl.innerHTML = cname.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase()
+    avatarEl.style.removeProperty('background-image')
+  }
+  const waBtn = document.getElementById('consul-wa')
+  if(waBtn && tel) waBtn.href = 'https://wa.me/' + tel.replace(/\D/g,'')
+
+  fecharEditConsul()
+  // Mostrar confirmação
+  const btn = document.getElementById('btn-edit-consul')
+  btn.textContent = '✓ Guardado'
+  setTimeout(() => { btn.textContent = '✏️ Editar' }, 2000)
+}
 </script>
 </body>
 </html>
