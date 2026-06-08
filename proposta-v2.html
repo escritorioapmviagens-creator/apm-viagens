@@ -107,7 +107,7 @@ canvas#sig-canvas { display: block; width: 100%; height: 120px; cursor: crosshai
 </div>
 
 <div id="main-content" style="padding-bottom:100px">
-  <div id="section-gallery" style="display:none;padding:24px 20px 0">
+  <div id="section-gallery" style="display:none;padding:24px 20px 0;max-width:860px;margin:0 auto;width:calc(100% - 40px)">
     <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px">🏨 Galeria do hotel</div>
     <div id="hotel-gallery" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px"></div>
   </div>
@@ -289,8 +289,16 @@ function renderProposta() {
     document.getElementById('section-days').style.display = 'block'
   }
   const emojis = ['✈️','🏨','🚤','🛡️','⭐','🚗','☕','🍽️','🎭','🏊']
-  if(D.incls?.filter(i=>i).length) {
-    document.getElementById('incls-list').innerHTML = D.incls.filter(i=>i).map((inc,i) => `<div class="incl-item"><span class="incl-icon">${emojis[i%emojis.length]}</span><span>${inc}</span></div>`).join('')
+  // Construir lista completa de incluídos
+  const allIncls = []
+  if(D.voos?.length) D.voos.filter(v=>v).forEach(v => allIncls.push('Voo: ' + v))
+  else if(D.voo) allIncls.push('Voo: ' + D.voo)
+  if(D.noites) allIncls.push('Duração: ' + D.noites + ' noite(s)')
+  if(D.pax) allIncls.push('Passageiros: ' + D.pax)
+  if(D.reg) allIncls.push('Regime: ' + D.reg)
+  if(D.incls?.filter(i=>i).length) D.incls.filter(i=>i).forEach(i => allIncls.push(i))
+  if(allIncls.length) {
+    document.getElementById('incls-list').innerHTML = allIncls.map(inc => `<div class="incl-item"><span class="incl-icon" style="color:var(--coral)">—</span><span>${inc}</span></div>`).join('')
     document.getElementById('section-incls').style.display = 'block'
   }
   if(D.prices?.length) {
