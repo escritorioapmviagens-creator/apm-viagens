@@ -26,7 +26,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
 .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 12px 40px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,.97); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
 .logo-wrap { display: flex; align-items: center; gap: 10px }
 .logo-wrap img { height: 64px; width: auto }
-.section { padding: 28px 20px; max-width: 680px; margin: 0 auto }
+.section { padding: 28px 20px; max-width: 860px; margin: 0 auto; width: calc(100% - 40px) }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow); }
 .card-title { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 .card-title::before { content: ''; display: block; width: 3px; height: 14px; background: var(--coral); border-radius: 2px; }
@@ -68,7 +68,7 @@ canvas#sig-canvas { display: block; width: 100%; height: 120px; cursor: crosshai
 .success-sub { font-size: .95rem; color: var(--muted); line-height: 1.7 }
 .video-wrap { border-radius: 14px; overflow: hidden; aspect-ratio: 16/9; box-shadow: var(--shadow); }
 .video-wrap iframe, .video-wrap video { width: 100%; height: 100%; border: none; display: block }
-.hotel-img { border-radius: 14px; overflow: hidden; aspect-ratio: 4/3; box-shadow: var(--shadow); min-width: 0; }
+.hotel-img { border-radius: 14px; overflow: hidden; aspect-ratio: 4/3; box-shadow: var(--shadow); min-width: 0; max-width: 100%; }
 .hotel-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
 .hotel-img:hover img { transform: scale(1.03) }
 .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(40px); background: var(--text); color: #fff; border-radius: 50px; padding: 10px 20px; font-size: .85rem; font-weight: 500; opacity: 0; transition: all .3s; z-index: 9999; white-space: nowrap; }
@@ -299,13 +299,24 @@ function renderProposta() {
   }
   if(D.condpag?.length || D.sval) {
     let html = D.sval ? `<div class="payment-box"><div class="amt">€${D.sval}</div><div class="lbl">Sinal</div><div style="font-size:.8rem;font-weight:600">A pagar agora</div></div>` : ''
-    if(D.condpag?.length) html += D.condpag.map(c => `<div class="payment-box"><div class="amt" style="font-size:1rem">${c.desc||c}</div><div class="lbl">${c.data||''}</div></div>`).join('')
+    const condpagArr = Array.isArray(D.condpag) ? D.condpag : (typeof D.condpag === 'string' && D.condpag ? [D.condpag] : [])
+    if(condpagArr.length) html += condpagArr.map(c => `<div class="payment-box"><div class="amt" style="font-size:1rem">${(typeof c === 'object' ? c.desc : c)||c}</div><div class="lbl">${(typeof c === 'object' ? c.data : '')||''}</div></div>`).join('')
     if(html) {
       document.getElementById('payment-grid').innerHTML = html
       if(D.metodo_pag?.tipo === 'entidade') {
         document.getElementById('metodo-pag-info').innerHTML = `<div style="background:#f0f4ff;border:1px solid #c7d7fd;border-radius:10px;padding:14px;font-size:.85rem"><div style="font-weight:700;color:var(--blue);margin-bottom:8px">🏧 Dados para pagamento Multibanco</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"><div><div style="font-size:.7rem;color:var(--muted);margin-bottom:2px">Entidade</div><strong>${D.metodo_pag.entidade||'12378'}</strong></div><div><div style="font-size:.7rem;color:var(--muted);margin-bottom:2px">Referência</div><strong style="color:var(--blue)">${D.metodo_pag.ref||'—'}</strong></div><div><div style="font-size:.7rem;color:var(--muted);margin-bottom:2px">Montante</div><strong>€${D.metodo_pag.valor||'—'}</strong></div></div></div>`
       } else if(D.metodo_pag?.tipo === 'transferencia') {
-        document.getElementById('metodo-pag-info').innerHTML = `<div style="background:#f0f4ff;border:1px solid #c7d7fd;border-radius:10px;padding:14px;font-size:.85rem;line-height:1.8"><div style="font-weight:700;color:var(--blue);margin-bottom:6px">🏦 Transferência bancária</div><strong>APM Viagens</strong><br>IBAN: PT50 0018 0003 6396 3219 0202 7<br>BIC/SWIFT: TOTAPTPL</div>`
+        document.getElementById('metodo-pag-info').innerHTML = `<div style="background:#f0f4ff;border:1px solid #c7d7fd;border-radius:12px;padding:18px;font-size:.875rem;line-height:2;margin-bottom:16px">
+          <div style="font-weight:800;color:var(--blue);margin-bottom:10px;font-size:.9rem">🏦 Dados para Transferência Bancária</div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:center">
+            <span style="color:var(--muted);font-size:.8rem">Beneficiário</span><strong>APM Viagens — Andar nas Praias do Mundo Lda</strong>
+            <span style="color:var(--muted);font-size:.8rem">NIF</span><span>518 357 490</span>
+            <span style="color:var(--muted);font-size:.8rem">IBAN</span><strong style="letter-spacing:.05em">PT50 0018 0003 6396 3219 0202 7</strong>
+            <span style="color:var(--muted);font-size:.8rem">BIC/SWIFT</span><span>TOTAPTPL</span>
+            <span style="color:var(--muted);font-size:.8rem">Banco</span><span>Santander Totta</span>
+          </div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid #c7d7fd;font-size:.8rem;color:#4b5563">⚠️ Indique o nome do cliente e destino na descrição da transferência. Envie o comprovativo ao seu consultor.</div>
+        </div>`
       }
       document.getElementById('section-payment').style.display = 'block'
     }
