@@ -34,7 +34,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .app{display:flex;min-height:100vh}
 .sidebar{width:240px;min-width:240px;background:var(--surface);display:flex;flex-direction:column;border-right:1px solid var(--border);box-shadow:2px 0 8px rgba(0,0,0,0.04);transition:width .2s ease,min-width .2s ease}
 .sidebar.collapsed{width:0;min-width:0;overflow:hidden;border-right:none;box-shadow:none}
-.main{flex:1;overflow-y:auto}
+.main{flex:1;overflow:auto;display:flex;flex-direction:column}
 
 /* ── SIDEBAR ── */
 .sidebar-logo{padding:1.5rem 1.25rem 1rem;border-bottom:1px solid var(--border)}
@@ -79,7 +79,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .topbar-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:var(--text)}
 .topbar-sub{font-size:12px;color:var(--muted);margin-top:1px}
 .topbar-actions{display:flex;gap:8px;align-items:center}
-.content{padding:1.5rem}
+.content{padding:1.5rem;flex:1}
 .page{display:none}
 .page.active{display:block}
 
@@ -3467,6 +3467,29 @@ function enterApp() {
   document.getElementById('loading').style.display = 'none'
   hideAllAuth()
   document.getElementById('app').style.display = 'flex'
+
+  // Verificar se vem de aceitação de proposta
+  const _novaRsv = new URLSearchParams(location.search).get('nova_reserva')
+  if(_novaRsv) {
+    // Navegar para nova reserva e pré-preencher com dados da proposta
+    setTimeout(async () => {
+      navTo('nova', document.querySelector('[onclick*="nova"]'))
+      try {
+        const { data: prop } = await sb.from('propostas_viagem').select('*').eq('id', _novaRsv).single()
+        if(prop) {
+          const d = prop.dados || {}
+          const setField = (id, val) => { const el = document.getElementById(id); if(el && val) el.value = val }
+          setField('nc-nome', d['f-cli-nome'] || '')
+          setField('nc-destino', d['f-dest'] || '')
+          setField('nc-pessoas', d['f-pax'] || '')
+          setField('nc-orcamento', d['f-sval'] || '')
+          setField('nc-data', d['f-drest'] || '')
+          toast('✅ Proposta aceite — dados pré-preenchidos!', 'ok')
+        }
+      } catch(e) {}
+    }, 500)
+  }
+
   // fill user info
   const initials = currentPerfil.nome.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase()
   document.getElementById('sb-av-initials').textContent = initials
@@ -6252,9 +6275,8 @@ async function moverPedidoParaPipeline(id) {
   await sb.from('pedidos_orcamento').update({ estado: 'convertido' }).eq('id', id)
 
   toast('✅ Movido para o pipeline!', 'ok')
-  setTimeout(() => { navTo('pipeline', document.getElementById('nav-pipeline') || document.querySelector('[onclick*=\'pipeline\']')); }, 800)
+  loadPedidosOrcamento()
 }
-
 
 async function loadPedidosOrcBadge() {
   const { data } = await sb.from('pedidos_orcamento').select('id').eq('estado','novo')
@@ -6319,7 +6341,6 @@ async function loadPedidosOrcamento() {
       + '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">'
       + (telLink ? '<a href="' + telLink + '" target="_blank" style="background:#25d366;color:#fff;border-radius:8px;padding:6px 12px;font-size:.75rem;font-weight:600;text-decoration:none;text-align:center">💬 WhatsApp</a>' : '')
       + '<button onclick="moverPedidoParaPipeline(\'' + p.id + '\')" style="background:var(--blue-light);border:1px solid #c7d7fd;color:var(--blue);border-radius:8px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:var(--font)">→ Pipeline</button>'
-      + '<button onclick="abrirOrcamentoComDados(\'' + p.id + '\')" style="background:#fff0f3;border:1px solid #fdd;color:var(--coral);border-radius:8px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:var(--font)">💶 Criar orçamento</button>'
       + '<select onchange="atualizarEstadoPedidoOrc(\'' + p.id + '\',this.value)" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:.72rem;font-family:var(--font);cursor:pointer;color:var(--text)">'
       + ['novo','contactado','proposta_enviada','convertido','sem_interesse'].map(s =>
           '<option value="' + s + '" ' + (p.estado===s?'selected':'') + '>' + (estadoColors[s]?.label||s) + '</option>'
@@ -6329,24 +6350,6 @@ async function loadPedidosOrcamento() {
       + '</div>'
       + '</div>'
   }).join('')
-}
-
-async function abrirOrcamentoComDados(id) {
-  const { data: p } = await sb.from('pedidos_orcamento').select('*').eq('id', id).single()
-  if(!p) return
-  // Construir URL com dados pré-preenchidos
-  const base = window.location.href.replace('index.html','').replace(/\?.*$/,'')
-  const params = new URLSearchParams({
-    dest: p.destino || '',
-    cli_nome: p.nome || '',
-    cli_tel: p.telefone || '',
-    cli_email: p.email || '',
-    pax: p.num_pax || '',
-    mes: p.data_aproximada || '',
-    notas: p.notas || '',
-    pedido_id: p.id
-  })
-  window.open(base + 'orcamento.html?' + params.toString(), '_blank')
 }
 
 async function atualizarEstadoPedidoOrc(id, estado) {
@@ -14899,7 +14902,9 @@ function orcGerarHTML(d) {
     '}',
     'function orcPubAceitar(ctel,dest,cnome,cliNome,sval){',
     '  var btn=document.getElementById("orc-pub-btn");btn.disabled=true;btn.innerHTML="A enviar...";',
-    '  var msg=encodeURIComponent("ORCAMENTO ACEITE!\\nDestino: "+dest+(cliNome?"\\nCliente: "+cliNome:"")+(sval?"\\nSinal: \\u20ac"+sval:"")+"\\nEntra em contacto para confirmar a reserva.");',
+    '  var pid=new URLSearchParams(location.search).get("proposta");',
+    '  var linkRsv="https://escritorioapmviagens-creator.github.io/apm-viagens/index.html?nova_reserva="+(pid||"");'.replace("https://escritorioapmviagens-creator.github.io/apm-viagens","https://escritorioapmviagens-creator.github.io/apm-viagens"),
+    '  var msg=encodeURIComponent("✅ ORÇAMENTO ACEITE!\\n\\nDestino: "+dest+(cliNome?"\\nCliente: "+cliNome:"")+(sval?"\\nSinal: \\u20ac"+sval:"")+"\\n\\nCria a reserva aqui:\\n"+linkRsv);',
     '  if(ctel)window.open("https://wa.me/351"+ctel.replace(/\\D/g,"")+"?text="+msg,"_blank");',
     '  document.getElementById("orc-pub-accept").style.display="none";',
     '  document.getElementById("orc-pub-ok").style.display="block";',
