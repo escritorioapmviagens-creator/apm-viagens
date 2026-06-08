@@ -34,7 +34,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .app{display:flex;min-height:100vh}
 .sidebar{width:240px;min-width:240px;background:var(--surface);display:flex;flex-direction:column;border-right:1px solid var(--border);box-shadow:2px 0 8px rgba(0,0,0,0.04);transition:width .2s ease,min-width .2s ease}
 .sidebar.collapsed{width:0;min-width:0;overflow:hidden;border-right:none;box-shadow:none}
-.main{flex:1;overflow:auto;display:flex;flex-direction:column}
+.main{flex:1;overflow-y:auto}
 
 /* ── SIDEBAR ── */
 .sidebar-logo{padding:1.5rem 1.25rem 1rem;border-bottom:1px solid var(--border)}
@@ -79,7 +79,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .topbar-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:var(--text)}
 .topbar-sub{font-size:12px;color:var(--muted);margin-top:1px}
 .topbar-actions{display:flex;gap:8px;align-items:center}
-.content{padding:1.5rem;flex:1}
+.content{padding:1.5rem}
 .page{display:none}
 .page.active{display:block}
 
@@ -4485,6 +4485,7 @@ async function aprovarPedido(id) {
       rnavt, consultor_id: perfil?.id||currentPerfil.id, cliente_id: nc?.id,
       passageiro_titular: p.nome_cliente||null,
       destino: p.destino, tipo_servico: 'Pacote completo',
+      condicao_reserva: 'Normal', data_reserva: new Date().toISOString().split('T')[0],
       data_partida: p.data_partida||null, data_regresso: p.data_regresso||null,
       num_passageiros: p.num_passageiros||1, valor_total: p.valor_total||0,
       valor_pago_cliente: p.valor_a_pagar||0,
@@ -4918,7 +4919,7 @@ async function registarPagDirecto() {
     const novoTotal = (editRsvData.valor_pago_cliente||0) + valor
     await sb.from('reservas').update({ valor_pago_cliente: novoTotal }).eq('id', editId)
     // Registar na tabela documentos sem ficheiro
-    await sb.from('documentos').insert({ reserva_id:editId, nome:'Pagamento manual €'+valor, storage_path:null, mime_type:null, tamanho:0, uploaded_by:currentPerfil.id, tipo:'pagamento_cliente', valor_extraido:valor })
+    await sb.from('documentos').insert({ reserva_id:editId, nome:'Pagamento manual €'+valor, storage_path:'manual', mime_type:null, tamanho:0, uploaded_by:currentPerfil.id, tipo:'pagamento_cliente', valor_extraido:valor })
     editRsvData.valor_pago_cliente = novoTotal
     const pvp = editRsvData.valor_total || 0
     document.getElementById('e-total-cliente').textContent = '€'+novoTotal.toLocaleString('pt-PT',{minimumFractionDigits:2})
@@ -13164,7 +13165,7 @@ async function guardarDocCliente(clienteId) {
   if(!nome) { toast('Indica o nome', 'err'); return }
   const { data: rsv } = await sb.from('reservas').select('id').eq('cliente_id', clienteId).limit(1).maybeSingle()
   if(!rsv) { toast('Sem reservas para associar', 'err'); return }
-  await sb.from('documentos').insert({ reserva_id: rsv.id, nome, url: document.getElementById('doc-cli-url').value.trim()||null, tipo: 'documento_cliente' })
+  await sb.from('documentos').insert({ reserva_id: rsv.id, nome, storage_path: document.getElementById('doc-cli-url').value.trim()||'manual', url: document.getElementById('doc-cli-url').value.trim()||null, tipo: 'documento_cliente' })
   closeModal('modal-generic'); toast('Documento adicionado!', 'ok')
   carregarVistaCliente(clienteId)
 }
@@ -15854,6 +15855,7 @@ window.crustaceoAPM={open:openP,close:closeP};
           lead_nome: r.cliente_nome,
           passageiro_titular: r.cliente_nome,
           fornecedor: r.fornecedor, tipo_servico: r.fornecedor,
+          condicao_reserva: 'Normal', data_reserva: r.data_partida || new Date().toISOString().split('T')[0],
           data_partida: r.data_partida,
           preco_net: r.preco_net, valor_pago_cliente: r.valor_pago_cliente,
           valor_pago_fornecedor: r.valor_pago_fornecedor, valor_total: r.valor_total || 0,
