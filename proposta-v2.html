@@ -289,14 +289,22 @@ function renderProposta() {
     document.getElementById('section-days').style.display = 'block'
   }
   const emojis = ['✈️','🏨','🚤','🛡️','⭐','🚗','☕','🍽️','🎭','🏊']
-  // Construir lista completa de incluídos
+  // Mostrar incluídos manuais + voos com regime formatado
+  const regimesMap = {
+    'so alojamento':'Só Alojamento','so-alojamento':'Só Alojamento','alojamento e pequeno almoco':'Pequeno Almoço',
+    'pequeno almoco':'Pequeno Almoço','pequeno-almoco':'Pequeno Almoço','bb':'Pequeno Almoço',
+    'meia pensao':'Meia Pensão','meia-pensao':'Meia Pensão','hb':'Meia Pensão',
+    'pensao completa':'Pensão Completa','pensao-completa':'Pensão Completa','fb':'Pensão Completa',
+    'tudo incluido':'Tudo Incluído','tudo-incluido':'Tudo Incluído','all inclusive':'Tudo Incluído','ai':'Tudo Incluído'
+  }
   const allIncls = []
   if(D.voos?.length) D.voos.filter(v=>v).forEach(v => allIncls.push('Voo: ' + v))
   else if(D.voo) allIncls.push('Voo: ' + D.voo)
-  if(D.noites) allIncls.push('Duração: ' + D.noites + ' noite(s)')
-  if(D.pax) allIncls.push('Passageiros: ' + D.pax)
-  if(D.reg) allIncls.push('Regime: ' + D.reg)
-  if(D.incls?.filter(i=>i).length) D.incls.filter(i=>i).forEach(i => allIncls.push(i))
+  if(D.incls?.filter(i=>i).length) D.incls.filter(i=>i).forEach(i => {
+    const key = i.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim()
+    const regime = Object.entries(regimesMap).find(([k]) => key === k || key.includes(k))
+    allIncls.push(regime ? 'Regime: ' + regime[1] : i)
+  })
   if(allIncls.length) {
     document.getElementById('incls-list').innerHTML = allIncls.map(inc => `<div class="incl-item"><span class="incl-icon" style="color:var(--coral)">—</span><span>${inc}</span></div>`).join('')
     document.getElementById('section-incls').style.display = 'block'
