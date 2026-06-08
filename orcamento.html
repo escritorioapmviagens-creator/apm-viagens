@@ -651,9 +651,23 @@ async function initApp() {
     if(el) el.value = _urlParams.get('pax')
   }
   if(_urlParams.get('notas')) {
-    // Mostrar notas do pedido como referência
-    const notasEl = document.getElementById('f-sub')
-    if(notasEl && !notasEl.value) notasEl.value = _urlParams.get('notas')
+    // Extrair hotel preferido das notas
+    const notas = _urlParams.get('notas')
+    const hotelMatch = notas.match(/Hotel preferido:\s*([^·]+)/)
+    if(hotelMatch) {
+      const hotelEl = document.getElementById('f-hotel')
+      if(hotelEl && !hotelEl.value) hotelEl.value = hotelMatch[1].trim()
+    }
+  }
+  if(_urlParams.get('mes') || _urlParams.get('pax')) {
+    const subEl = document.getElementById('f-sub')
+    if(subEl && !subEl.value) {
+      const partes = []
+      if(_urlParams.get('mes')) partes.push(_urlParams.get('mes'))
+      if(_urlParams.get('pax')) partes.push(_urlParams.get('pax') + ' pessoa(s)')
+      subEl.value = partes.join(' · ')
+      updatePreview && updatePreview()
+    }
   }
   // Guardar pedido_id para marcar como convertido quando gerar orçamento
   if(_urlParams.get('pedido_id')) {
