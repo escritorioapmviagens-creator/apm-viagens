@@ -257,10 +257,10 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 
 // ── SOAP ──
 function credXML() {
-  return `<Credentials><System>${CREDS.System}</System><Client>${CREDS.Client}</Client><Username>${CREDS.Username}</Username><Password>${CREDS.Password}</Password></Credentials>`
+  return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">${CREDS.System}</System><Client xsi:type="xsd:int">${CREDS.Client}</Client><Username xsi:type="xsd:string">${CREDS.Username}</Username><Password xsi:type="xsd:string">${CREDS.Password}</Password></Credentials>`
 }
 function wrap(body) {
-  return `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
+  return `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
 }
 
 async function soapCall(action, body) {
@@ -487,7 +487,7 @@ async function getProductParams() {
 
   try {
     const doc = await soapCall('DynGetProductParameters',
-      `<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<ProductCode>${code}</ProductCode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+      `<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<ProductCode xsi:type="xsd:int">${code}</ProductCode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
 
     const productName = txt(doc,'Name')
     if (!productName) throw new Error(`Produto ${code} não encontrado ou sem nome na resposta`)
@@ -576,7 +576,7 @@ async function searchAvailableServices() {
 
   try {
     const doc = await soapCall('DynSearchProductAvailableServices',
-      `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode>${state.selectedProduct.code}</ProductCode><DepartureDate>${depDate}</DepartureDate><DepartureLocal>${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights>${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+      `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate>${depDate}</DepartureDate><DepartureLocal>${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights>${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
 
     state.sessionHash = txt(doc,'SessionHash')
     log(`✅ SessionHash: ${state.sessionHash}`, 'success')
@@ -669,10 +669,10 @@ async function setServicesAndSimulate() {
 
   try {
     await soapCall('DynSetServicesSelected',
-      `<ns1:DynSetServicesSelected><DynServicesSelectedRequest>${credXML()}<SessionHash>${state.sessionHash}</SessionHash>${flightsXML}${hotelsXML}</DynServicesSelectedRequest></ns1:DynSetServicesSelected>`)
+      `<ns1:DynSetServicesSelected><DynServicesSelectedRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash>${flightsXML}${hotelsXML}</DynServicesSelectedRequest></ns1:DynSetServicesSelected>`)
 
     const simDoc = await soapCall('DynGetSimulation',
-      `<ns1:DynGetSimulation><DynGetSimulationRequest>${credXML()}<SessionHash>${state.sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
+      `<ns1:DynGetSimulation><DynGetSimulationRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
 
     state.simulationData = simDoc
     renderSimulation(simDoc)
@@ -777,7 +777,7 @@ async function createReservation() {
 
   try {
     const doc = await soapCall('DynCreateReserve',
-      `<ns1:DynCreateReserve><DynCreateReserveRequest>${credXML()}<SessionHash>${state.sessionHash}</SessionHash><PaxsStruct>${paxXML}</PaxsStruct>${ref?`<ClientRef>${ref}</ClientRef>`:''}${obs?`<ClientObs>${obs}</ClientObs>`:''}</DynCreateReserveRequest></ns1:DynCreateReserve>`)
+      `<ns1:DynCreateReserve><DynCreateReserveRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><PaxsStruct>${paxXML}</PaxsStruct>${ref?`<ClientRef>${ref}</ClientRef>`:''}${obs?`<ClientObs>${obs}</ClientObs>`:''}</DynCreateReserveRequest></ns1:DynCreateReserve>`)
 
     const reserve   = txt(doc,'Reserve')
     const sysStatus = txt(doc,'SystemStatus')
@@ -848,7 +848,7 @@ async function listReserves() {
 async function viewReserve(num) {
   try {
     const doc = await soapCall('RetrieveReserve',
-      `<ns1:RetrieveReserve><RetrieveReserveRequest>${credXML()}<Reserve>${num}</Reserve></RetrieveReserveRequest></ns1:RetrieveReserve>`)
+      `<ns1:RetrieveReserve><RetrieveReserveRequest>${credXML()}<Reserve xsi:type="xsd:int">${num}</Reserve></RetrieveReserveRequest></ns1:RetrieveReserve>`)
     const head  = doc.querySelector('Head') || doc.querySelector('ResHead')
     const prod  = head ? txt(head,'Product') : ''
     const dep   = head ? txt(head,'DepDate') : ''
