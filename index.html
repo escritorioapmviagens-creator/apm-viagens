@@ -3832,6 +3832,9 @@ function nomeCliente(r, fallback='—') {
 async function renderDash() {
   const { data, error } = await sb.from('reservas').select(`*, cliente:clientes(nome), consultor:perfis(nome,telefone)`).order('created_at',{ascending:false})
   if(error){toast('Erro ao carregar dados','err');return}
+  // Carregar reservas que já têm documentos
+  const { data: docsData } = await sb.from('documentos').select('reserva_id')
+  const reservasComDocs = new Set((docsData||[]).map(d => d.reserva_id))
   const isAdmin = currentPerfil.role==='admin'
   const mine = isAdmin ? data : data.filter(r=>r.consultor_id===currentPerfil.id)
   allReservas = mine
@@ -4081,14 +4084,14 @@ async function renderDash() {
           style="display:flex;align-items:center;gap:4px;background:#25D366;color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;text-decoration:none;white-space:nowrap">
           📋 Efetuar reserva
         </a>
-        <a href="${waBase}?text=${msgDocs}" target="_blank"
+        ${!reservasComDocs.has(r.id) ? `<a href="${waBase}?text=${msgDocs}" target="_blank"
           style="display:flex;align-items:center;gap:4px;background:#25D366;color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;text-decoration:none;white-space:nowrap">
           📎 Pedir docs
-        </a>
-        <a href="${waBase}?text=${msgPagamento}" target="_blank"
+        </a>` : ''}
+        ${r.valor_pago_cliente < r.valor_total ? `<a href="${waBase}?text=${msgPagamento}" target="_blank"
           style="display:flex;align-items:center;gap:4px;background:#25D366;color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;text-decoration:none;white-space:nowrap">
           💰 Pedir pagamento
-        </a>
+        </a>` : ''}
       </div>` : '<span style="color:var(--muted2);font-size:11px">Sem tel.</span>'}
     </td>
   </tr>`}).join('') || '<tr><td colspan="10"><div class="empty">Sem reservas ainda</div></td></tr>'
