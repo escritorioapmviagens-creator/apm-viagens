@@ -4676,8 +4676,8 @@ async function renderTable() {
         onblur="rsvInlineEdit('${r.id}','localizador_principal',this.value)" title="Editar localizador">
     </td>
     <td style="${tdStyle}">
-      <input style="${editStyleMuted}" value="${r.tipo_servico||''}" placeholder="—"
-        onblur="rsvInlineEdit('${r.id}','tipo_servico',this.value)" title="Editar fornecedor/tipo">
+      <input style="${editStyleMuted}" value="${r.fornecedor||''}" placeholder="—"
+        onblur="rsvInlineEdit('${r.id}','fornecedor',this.value)" title="Editar fornecedor">
     </td>
     <td style="${tdStyle};font-weight:600">
       <input style="${editStyle};font-weight:600" value="${nomeCliente(r,'')}" placeholder="—"
@@ -4825,8 +4825,12 @@ async function openEdit(id) {
     locList.innerHTML = ''
     if(data.localizadores_extra?.length) {
       data.localizadores_extra.forEach(l => {
-        if(typeof l === 'object') adicionarLocalizador(l.fornecedor||'', l.localizador||'')
-        else adicionarLocalizador(data.fornecedor||'', l)
+        try {
+          const obj = typeof l === 'object' ? l : JSON.parse(l)
+          adicionarLocalizador(obj.fornecedor||'', obj.localizador||'')
+        } catch(e) {
+          adicionarLocalizador(data.fornecedor||'', l)
+        }
       })
     } else if(data.localizador_principal || data.fornecedor) {
       adicionarLocalizador(data.fornecedor||'', data.localizador_principal||'')
@@ -5052,10 +5056,12 @@ async function saveEdit() {
     fornecedor: document.getElementById('e-localizadores-list')?.querySelector('.loc-fornecedor')?.value||null,
     localizador_principal: document.getElementById('e-localizadores-list')?.querySelector('.loc-localizador')?.value||null,
     localizador: document.getElementById('e-localizadores-list')?.querySelector('.loc-localizador')?.value||null,
-    localizadores_extra: Array.from(document.getElementById('e-localizadores-list')?.querySelectorAll('div')||[]).map(row => ({
-      fornecedor: row.querySelector('.loc-fornecedor')?.value?.trim()||'',
-      localizador: row.querySelector('.loc-localizador')?.value?.trim()||''
-    })).filter(r => r.fornecedor || r.localizador),
+    localizadores_extra: Array.from(document.getElementById('e-localizadores-list')?.querySelectorAll('div')||[]).reduce((acc, row) => {
+      const f = row.querySelector('.loc-fornecedor')?.value?.trim()||''
+      const l = row.querySelector('.loc-localizador')?.value?.trim()||''
+      if(f || l) acc.push(JSON.stringify({fornecedor:f, localizador:l}))
+      return acc
+    }, []),
   }
   if(currentPerfil?.role==='admin') {
     updates.valor_pago_fornecedor = parseFloat(document.getElementById('e-pago-op').value)||0
