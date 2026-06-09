@@ -58,9 +58,16 @@ header span{font-size:12px;color:var(--muted)}
 .status-bar.ok{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
 .status-bar.err{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2}
 
+/* Seções de produtos */
+.section-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;margin:24px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--blue);color:var(--navy)}
+.section-title:first-of-type{margin-top:0}
+.section-title .count{font-size:13px;font-weight:400;color:var(--muted);margin-left:8px}
+
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:8px}
 .product-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:all .2s;border:2px solid transparent}
 .product-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.12);transform:translateY(-2px);border-color:var(--blue)}
+.product-card.disabled{opacity:0.6;cursor:not-allowed}
+.product-card.disabled:hover{transform:none;border-color:transparent}
 .product-img{width:100%;height:140px;object-fit:cover;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:40px}
 .product-img img{width:100%;height:100%;object-fit:cover}
 .product-info{padding:14px}
@@ -71,8 +78,11 @@ header span{font-size:12px;color:var(--muted)}
 .badge-dyn{background:#EEF2FF;color:#3B5BDB}
 .badge-sta{background:#F3E5F5;color:#6A1B9A}
 .badge-flight{background:#E8F5E9;color:#2E7D32}
+.badge-combo{background:#FFF3E0;color:#E65100}
 .badge-ok{background:#E8F5E9;color:#2E7D32}
 .badge-wl{background:#FFF3E0;color:#E65100}
+.badge-unavailable{background:#FFEBEE;color:#C62828}
+.badge-outseason{background:#F5F5F5;color:#9E9E9E}
 
 .log-panel{background:#1e1e2e;color:#a6e3a1;font-family:monospace;font-size:12px;padding:16px;border-radius:8px;max-height:400px;overflow-y:auto;white-space:pre-wrap}
 .log-entry{margin:4px 0;border-bottom:1px solid #334155;padding:4px 0}
@@ -139,7 +149,7 @@ header span{font-size:12px;color:var(--muted)}
     <div id="search-results"></div>
   </div>
 
-  <!-- PAINEL RESERVA -->
+  <!-- PAINEL RESERVA (mesmo do código anterior) -->
   <div id="panel-reserva" class="panel">
     <div class="steps">
       <div class="step done" id="step1"><span class="step-num">1</span>Produto</div>
@@ -292,7 +302,7 @@ function backStep(n) {
 function escapeHtml(str) { if (!str) return ''; return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') }
 
 // ═══════════════════════════════════════════════════════════════
-// SOAP HELPERS (com suporte a namespaces)
+// SOAP HELPERS
 // ═══════════════════════════════════════════════════════════════
 function credXML() { return `<Credentials><System>${CREDS.System}</System><Client>${CREDS.Client}</Client><Username>${CREDS.Username}</Username><Password>${CREDS.Password}</Password></Credentials>` }
 
@@ -369,7 +379,7 @@ async function testProductTypes() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PESQUISA DE PRODUTOS (VERSÃO CORRIGIDA)
+// PESQUISA DE PRODUTOS (VERSÃO CORRIGIDA COM ORGANIZAÇÃO)
 // ═══════════════════════════════════════════════════════════════
 async function searchProducts() {
   const name = document.getElementById('s-name').value
@@ -399,84 +409,146 @@ async function searchProducts() {
       addLog(`🔍 Encontrados ${products.length} produtos via ProductArray/item`, 'info')
     }
     
-    // Fallback: buscar qualquer elemento que pareça ser um produto
     if (products.length === 0) {
-      const allElements = doc.getElementsByTagName('*')
-      for (let i = 0; i < allElements.length; i++) {
-        const el = allElements[i]
-        const localName = el.localName || el.tagName.split(':').pop()
-        if (localName === 'Product' || (localName === 'item' && (el.querySelector('Code') || el.querySelector('Name')))) {
-          products.push(el)
-        }
-      }
-      addLog(`🔍 Método alternativo: ${products.length} produtos encontrados`, 'info')
-    }
-    
-    const total = getXMLText(doc, 'TotalProducts') || products.length
-    addLog(`📊 Total: ${total} produto(s)`, products.length ? 'success' : 'error')
-    
-    if (products.length === 0) {
-      setStatus('search-status', 'err', '⚠️ Nenhum produto encontrado. Tente outros critérios.')
-      document.getElementById('search-results').innerHTML = '<div class="empty"><big>🔍</big>Nenhum produto encontrado.<br>Tente pesquisar por "DIS", "MAL", "PARIS" ou deixe o nome vazio.</div>'
+      setStatus('search-status', 'err', '⚠️ Nenhum produto encontrado.')
+      document.getElementById('search-results').innerHTML = '<div class="empty"><big>🔍</big>Nenhum produto encontrado.<br>Tente outros critérios de busca.</div>'
       return
     }
     
-    let html = '<div class="product-grid">'
-    products.forEach((p, idx) => {
-      let code = getXMLText(p, 'Code')
-      if (!code) code = getXMLText(p, 'ProdCode') || `temp_${idx}`
-      
-      let nameP = getXMLText(p, 'Name')
-      if (!nameP) nameP = getXMLText(p, 'ProdName') || 'Produto sem nome'
-      
-      let priceFrom = getXMLText(p, 'PriceFrom')
-      if (!priceFrom) priceFrom = getXMLText(p, 'PriceFromMin') || '0'
-      
-      // Campo correto: ProdType (não Pkt_type)
-      let pktType = getXMLText(p, 'ProdType')
-      if (!pktType) pktType = getXMLText(p, 'Pkt_type') || 'STATIC'
-      
-      let hasFlights = getXMLText(p, 'HasFlights')
-      if (!hasFlights) hasFlights = getXMLText(p, 'Flight') || 'NO'
-      
-      let countryCode = getXMLText(p, 'Country')
-      if (!countryCode) countryCode = getXMLText(p, 'Destination') || ''
-      
-      let imageUrl = getXMLText(p, 'ImageUrl')
-      let canReserve = getXMLText(p, 'CanReserve')
-      
-      const priceVal = priceFrom ? parseFloat(priceFrom) : 0
-      const hasFlightsValue = hasFlights === 'YES' || hasFlights === '1'
-      
-      html += `<div class="product-card" onclick="selectProduct(${code}, '${escapeHtml(nameP)}')">
-        <div class="product-img">
-          ${imageUrl ? `<img src="${imageUrl}" onerror="this.parentElement.innerHTML='🌍'">` : '🌍'}
-        </div>
-        <div class="product-info">
-          <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
-            ${pktType === 'DYNAMIC' ? '<span class="badge badge-dyn">Dinâmico</span>' : 
-              pktType === 'STATIC' ? '<span class="badge badge-sta">Estático</span>' : 
-              '<span class="badge">' + pktType + '</span>'}
-            ${hasFlightsValue ? '<span class="badge badge-flight">✈️ Voo</span>' : ''}
-            ${canReserve === 'YES' ? '<span class="badge" style="background:#E8F5E9;color:#2E7D32">✅ Disponível</span>' : ''}
-          </div>
-          <div class="product-name">${escapeHtml(nameP)}</div>
-          <div class="product-meta">Código: ${code} ${countryCode ? `· ${countryCode}` : ''}</div>
-          <div class="product-price">${priceVal > 0 ? `€${priceVal.toLocaleString('pt-PT', {minimumFractionDigits: 2})}` : 'Sob consulta'}</div>
-          <button class="btn btn-blue btn-sm" style="width:100%;justify-content:center" onclick="event.stopPropagation();selectProduct(${code}, '${escapeHtml(nameP)}')">Reservar →</button>
-        </div>
-      </div>`
+    // FILTRAR produtos válidos (ignorar produtos de teste/com código inválido)
+    const validProducts = products.filter(p => {
+      const code = getXMLText(p, 'Code')
+      const nameP = getXMLText(p, 'Name')
+      // Filtrar produtos com código inválido, código 0, ou nome vazio
+      const isValid = code && !isNaN(parseInt(code)) && parseInt(code) > 0 && nameP && nameP.trim() !== '' && nameP !== 'TESTE OMNIBEES'
+      if (!isValid) {
+        addLog(`⚠️ Produto ignorado (inválido): code="${code}", name="${nameP}"`, 'info')
+      }
+      return isValid
     })
-    html += '</div>'
+    
+    addLog(`📊 Total de produtos válidos: ${validProducts.length} de ${products.length}`, validProducts.length ? 'success' : 'error')
+    
+    if (validProducts.length === 0) {
+      setStatus('search-status', 'err', '⚠️ Nenhum produto válido encontrado.')
+      document.getElementById('search-results').innerHTML = '<div class="empty"><big>🔍</big>Nenhum produto válido encontrado.</div>'
+      return
+    }
+    
+    // ORGANIZAR produtos por tipo: Simples vs Combinados
+    const simpleProducts = validProducts.filter(p => {
+      const itineraryQTY = parseInt(getXMLText(p, 'ItineraryQTY') || '1')
+      return itineraryQTY === 1
+    })
+    
+    const comboProducts = validProducts.filter(p => {
+      const itineraryQTY = parseInt(getXMLText(p, 'ItineraryQTY') || '1')
+      return itineraryQTY > 1
+    })
+    
+    addLog(`📊 Organização: ${simpleProducts.length} pacotes simples | ${comboProducts.length} combinados`, 'success')
+    
+    let html = ''
+    
+    // Seção de Pacotes Simples
+    if (simpleProducts.length > 0) {
+      html += `<div class="section-title">🏖️ Pacotes Simples <span class="count">(${simpleProducts.length})</span></div>`
+      html += '<div class="product-grid">'
+      simpleProducts.forEach((p, idx) => {
+        html += renderProductCard(p, idx)
+      })
+      html += '</div>'
+    }
+    
+    // Seção de Pacotes Combinados
+    if (comboProducts.length > 0) {
+      html += `<div class="section-title">🔗 Pacotes Combinados <span class="count">(${comboProducts.length})</span></div>`
+      html += '<div class="product-grid">'
+      comboProducts.forEach((p, idx) => {
+        html += renderProductCard(p, idx, true)
+      })
+      html += '</div>'
+    }
     
     document.getElementById('search-results').innerHTML = html
-    setStatus('search-status', 'ok', `✓ ${products.length} produto(s) encontrado(s)`)
+    setStatus('search-status', 'ok', `✓ ${validProducts.length} produto(s) encontrados (${simpleProducts.length} simples, ${comboProducts.length} combinados)`)
     
   } catch (e) { 
-    setStatus('search-status', 'err', `❌ ${e.message}`)
-    addLog(`❌ Erro: ${e.message}`, 'error')
-    document.getElementById('search-results').innerHTML = `<div class="empty"><big>⚠️</big>Erro ao pesquisar: ${e.message}</div>`
+    setStatus('search-status', 'err', `❌ Erro na pesquisa: ${e.message}`)
+    addLog(`❌ Erro detalhado: ${e.message}`, 'error')
+    if (e.message.includes('checkIFProductIsRestricted')) {
+      addLog('⚠️ A API reportou um erro de validação de produto.', 'info')
+      document.getElementById('search-results').innerHTML = `<div class="empty">
+        <big>⚠️</big>
+        <p>Erro na pesquisa. Tente usar critérios mais específicos.</p>
+        <button class="btn btn-outline" style="margin-top:15px;" onclick="searchProducts()">Tentar novamente</button>
+      </div>`
+    } else {
+      document.getElementById('search-results').innerHTML = `<div class="empty"><big>⚠️</big>Erro ao pesquisar: ${e.message}</div>`
+    }
   }
+}
+
+function renderProductCard(p, idx, isCombo = false) {
+  let code = getXMLText(p, 'Code')
+  if (!code || code === '0') code = getXMLText(p, 'ProdCode') || `temp_${idx}`
+  
+  let nameP = getXMLText(p, 'Name')
+  if (!nameP) nameP = getXMLText(p, 'ProdName') || getXMLText(p, 'Description') || 'Produto sem nome'
+  
+  let priceFrom = getXMLText(p, 'PriceFrom')
+  if (!priceFrom || priceFrom === '0') priceFrom = getXMLText(p, 'PriceFromMin') || '0'
+  
+  let pktType = getXMLText(p, 'ProdType')
+  if (!pktType) pktType = getXMLText(p, 'Pkt_type') || 'STATIC'
+  
+  let hasFlights = getXMLText(p, 'HasFlights')
+  if (!hasFlights) hasFlights = getXMLText(p, 'Flight') || 'NO'
+  
+  let countryCode = getXMLText(p, 'Country')
+  if (!countryCode) countryCode = getXMLText(p, 'Destination') || ''
+  
+  let imageUrl = getXMLText(p, 'ImageUrl')
+  let canReserve = getXMLText(p, 'CanReserve')
+  let operationFrom = getXMLText(p, 'OperationFrom')
+  let operationTo = getXMLText(p, 'OperationTo')
+  let itineraryQTY = parseInt(getXMLText(p, 'ItineraryQTY') || '1')
+  
+  const priceVal = priceFrom ? parseFloat(priceFrom) : 0
+  const hasFlightsValue = hasFlights === 'YES' || hasFlights === '1'
+  const isAvailable = canReserve === 'YES'
+  
+  // Verificar se o produto está dentro do período de operação
+  const today = new Date().toISOString().split('T')[0]
+  const isOperational = (!operationFrom || operationFrom <= today) && (!operationTo || operationTo >= today)
+  const isDisabled = !isAvailable || !isOperational
+  
+  return `<div class="product-card ${isDisabled ? 'disabled' : ''}" onclick="${!isDisabled ? `selectProduct(${code}, '${escapeHtml(nameP)}')` : ''}">
+    <div class="product-img">
+      ${imageUrl ? `<img src="${imageUrl}" onerror="this.parentElement.innerHTML='🌍'">` : '🌍'}
+    </div>
+    <div class="product-info">
+      <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+        ${pktType === 'DYNAMIC' ? '<span class="badge badge-dyn">Dinâmico</span>' : 
+          pktType === 'STATIC' ? '<span class="badge badge-sta">Estático</span>' : 
+          '<span class="badge">' + pktType + '</span>'}
+        ${isCombo || itineraryQTY > 1 ? '<span class="badge badge-combo">🎯 Combinado</span>' : ''}
+        ${hasFlightsValue ? '<span class="badge badge-flight">✈️ Voo</span>' : ''}
+        ${!isAvailable ? '<span class="badge badge-unavailable">⚠️ Indisponível</span>' : ''}
+        ${!isOperational && operationFrom ? '<span class="badge badge-outseason">📅 Fora de época</span>' : ''}
+      </div>
+      <div class="product-name">${escapeHtml(nameP)}</div>
+      <div class="product-meta">Código: ${code} ${countryCode ? `· ${countryCode}` : ''}</div>
+      ${operationFrom && operationTo ? `<div class="product-meta">📅 ${operationFrom} até ${operationTo}</div>` : ''}
+      ${itineraryQTY > 1 ? `<div class="product-meta">🔗 ${itineraryQTY} destinos</div>` : ''}
+      <div class="product-price">${priceVal > 0 ? `€${priceVal.toLocaleString('pt-PT', {minimumFractionDigits: 2})}` : 'Sob consulta'}</div>
+      <button class="btn btn-blue btn-sm" style="width:100%;justify-content:center" 
+        onclick="event.stopPropagation();${!isDisabled ? `selectProduct(${code}, '${escapeHtml(nameP)}')` : ''}"
+        ${isDisabled ? 'disabled style="opacity:0.5"' : ''}>
+        ${isDisabled ? 'Indisponível' : 'Reservar →'}
+      </button>
+    </div>
+  </div>`
 }
 
 function selectProduct(code, name) {
@@ -579,7 +651,9 @@ function renderServicesStep(doc) {
   if (flightOpts.length) {
     let html = '<div style="font-weight:700;margin-bottom:12px">✈️ Opções de Voo</div><table class="product-grid" style="display:table;width:100%"><thead><tr><th></th><th>Opção</th><th>Suplemento</th></tr></thead><tbody>'
     flightOpts.forEach((f, i) => { const optCode = getXMLText(f, 'OptionCode') || i; const supVal = getXMLText(f, 'SuplementsTotalVal') || '0'
-      html += `<tr><td><input type="radio" name="flight-opt" value="${optCode}" ${i === 0 ? 'checked' : ''}></td><td>Opção ${optCode}</td><td>+€${parseFloat(supVal).toFixed(2)}</td></tr>` })
+      html += `<tr><td><input type="radio" name="flight-opt" value="${optCode}" ${i === 0 ? 'checked' : ''}></td>
+      <td>Opção ${optCode}</td>
+      <td>+€${parseFloat(supVal).toFixed(2)}</td></tr>` })
     html += '</tbody></table>'
     flightSection.innerHTML = html
   } else flightSection.innerHTML = ''
