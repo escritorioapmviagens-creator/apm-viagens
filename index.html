@@ -12998,7 +12998,7 @@ async function uploadFotoPerfil(file) {
   // Upload para Supabase Storage
   const ext = file.name.split('.').pop()
   const path = currentPerfil.id + '.' + ext
-  const { error: upErr } = await sb.storage.from('avatars').upload(path, file, { upsert: true })
+  const { error: upErr } = await sb.storage.from('avatars').upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' })
   if(upErr) { toast('Erro ao carregar foto', 'err'); return }
 
   const { data: urlData } = sb.storage.from('avatars').getPublicUrl(path)
