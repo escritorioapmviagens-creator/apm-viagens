@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operadores - Promotor APM Viagens</title>
+    <link rel="shortcut icon" href="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: #F5F6FA;
+            color: #1a1a2e;
+            min-height: 100vh;
+        }
+
+        /* ── HEADER ── */
+        header {
+            background: #fff;
+            border-bottom: 3px solid #E8395A;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        header img {
+            height: 48px;
+            object-fit: contain;
+        }
+        header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a2e;
+            letter-spacing: 0.3px;
+        }
+        header span {
+            font-size: 13px;
+            color: #888;
+            font-weight: 500;
+        }
+
+        /* ── MAIN ── */
+        main {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 36px 24px 60px;
+        }
+
+        /* ── SECTION TITLE ── */
+        .section-title {
+            background: #3B5BDB;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            margin-top: 36px;
+        }
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        /* ── GRID ── */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 8px;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.13);
+            transform: translateY(-2px);
+        }
+
+        .card img {
+            width: 140px;
+            height: 140px;
+            object-fit: cover;
+            border: 2px solid #0073e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .card-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a1a2e;
+            text-align: center;
+            letter-spacing: 0.2px;
+        }
+
+        /* hidden forms */
+        form { display: none; }
+        iframe.hidden-frame { display: none; }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM Viagens">
+    <div>
+        <h1>Área de Operadores</h1>
+        <span>Promotor APM Viagens</span>
+    </div>
+</header>
+
+<main>
+
+    <!-- ═══════════════════════════════════
+         PACOTES TURÍSTICOS
+    ═══════════════════════════════════ -->
+    <div class="section-title">Pacotes Turísticos</div>
+    <div class="grid">
+
+        <!-- Newblue PT -->
+        <div class="card">
+            <form id="form-newblue-pt"
+                  action="https://www.newblue.pt/external/auth/auth_return.php?"
+                  method="post"
+                  target="win-newblue-pt">
+                <input type="hidden" name="username" value="APMRDWEB">
+                <input type="hidden" name="password" value="APMViajante2026$">
+            </form>
+            <img src="https://letcheck.b-cdn.net/3064/clxged1t2030pic8z6pf1ft3f.png"
+                 alt="Newblue PT"
+                 onclick="openForm('form-newblue-pt','win-newblue-pt')">
+            <span class="card-label">Newblue PT</span>
+        </div>
+
+        <!-- Newblue ES -->
+        <div class="card">
+            <form id="form-newblue-es"
+                  action="https://www.newblue.es/external/auth/auth_return.php"
+                  method="post"
+                  target="hidden-frame">
+                <input type="hidden" name="username" value="APMRDWEB">
+                <input type="hidden" name="password" value="APMViajante2026$">
+            </form>
+            <iframe class="hidden-frame" name="hidden-frame"></iframe>
+            <img src="https://letcheck.b-cdn.net/3064/clxgecqk102vve78zcq98h7br.png"
+                 alt="Newblue ES"
+                 id="img-newblue-es">
+            <span class="card-label">Newblue ES</span>
+        </div>
+
+        <!-- Icarion -->
+        <div class="card">
+            <form id="form-icarion"
+                  action="https://auth.w2m.com/auth/realms/agency/protocol/openid-connect/auth"
+                  method="POST"
+                  target="win-icarion">
+                <input type="hidden" name="response_type" value="code">
+                <input type="hidden" name="client_id" value="third-agency-autologin">
+                <input type="hidden" name="redirect_uri" value="https://www.icarion.pt/login">
+                <input type="hidden" name="username" value="APMRDWEB">
+                <input type="hidden" name="password" value="APMViajante2026$">
+            </form>
+            <img src="https://letcheck.b-cdn.net/3064/clxg73y7n00rme78zedbq36zq.png"
+                 alt="Icarion"
+                 onclick="openForm('form-icarion','win-icarion')">
+            <span class="card-label">Icarion</span>
+        </div>
+
+        <!-- Kannak -->
+        <div class="card">
+            <form id="form-kannak"
+                  action="https://auth.w2m.com/auth/realms/agency/protocol/openid-connect/auth"
+                  method="POST"
+                  target="win-kannak">
+                <input type="hidden" name="response_type" value="code">
+                <input type="hidden" name="client_id" value="autologin-kannak-pt">
+                <input type="hidden" name="redirect_uri" value="https://www.kannak.pt/sso/v1/process?redirect=/">
+                <input type="hidden" name="username" value="APMRDWEB">
+                <input type="hidden" name="password" value="APMViajante2026$">
+            </form>
+            <img src="https://f.ezycourse.net/3064/cm6wa9ir201jip28zgdqd2klx.png"
+                 alt="Kannak"
+                 onclick="openForm('form-kannak','win-kannak')">
+            <span class="card-label">Kannak</span>
+        </div>
+
+        <!-- GBN Travel -->
+        <div class="card">
+            <form id="form-gbn"
+                  action="https://b2b.gbntravel.com/home"
+                  method="post"
+                  target="win-gbn">
+                <input type="hidden" name="microsite" value="gbntravel">
+                <input type="hidden" name="user" value="APMCONSULTORES">
+                <input type="hidden" name="password" value="GBNPlanoViajante2026$">
+            </form>
+            <img src="https://f.ezycourse.net/3064/cm6w452bh06fa018zapji4hne.png"
+                 alt="GBN Travel"
+                 onclick="openForm('form-gbn','win-gbn')">
+            <span class="card-label">GBN Travel</span>
+        </div>
+
+        <!-- Soltour -->
+        <div class="card">
+            <img src="https://letcheck.b-cdn.net/3064/clwcgcfco03xir38zbt0vgazy.png"
+                 alt="Soltour"
+                 onclick="openUrl('https://b2b.soltour.pt/b2b/slt/home/Home2019?p_usuario=APMVIAEXT&p_password=APM751248')">
+            <span class="card-label">Soltour</span>
+        </div>
+
+        <!-- Solférias -->
+        <div class="card">
+            <img src="https://f.ezycourse.net/3064/cm6w0pqbu08mzsd9n06hmepxh.png"
+                 alt="Solférias"
+                 onclick="openUrl('http://www.solferias.pt/login/login/?login=19697/Viajante&password=378FF8B6EE')">
+            <span class="card-label">Solférias</span>
+        </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════
+         MOTORES HOTELEIROS
+    ═══════════════════════════════════ -->
+    <div class="section-title">Motores Hoteleiros</div>
+    <div class="grid">
+
+        <!-- W2M Next -->
+        <div class="card">
+            <form id="form-w2m"
+                  action="https://auth.w2m.com/auth/realms/agency/protocol/openid-connect/auth"
+                  method="post"
+                  target="win-w2m">
+                <input type="hidden" name="response_type" value="code">
+                <input type="hidden" name="client_id" value="autologin-next-com">
+                <input type="hidden" name="redirect_uri" value="https://next.w2m.com/booking/autologin?redirect=/booking/hotels">
+                <input type="hidden" name="username" value="APMRDWEB">
+                <input type="hidden" name="password" value="APMViajante2026$">
+            </form>
+            <img src="https://letcheck.b-cdn.net/3064/w2m-next-1729851488775.png"
+                 alt="W2M Next"
+                 onclick="openForm('form-w2m','win-w2m')">
+            <span class="card-label">W2M Next</span>
+        </div>
+
+        <!-- Booking.com -->
+        <div class="card">
+            <form id="form-booking"
+                  action="https://www.booking.com/index.html"
+                  method="get"
+                  target="win-booking">
+                <input type="hidden" name="aid" value="2035954">
+                <input type="hidden" name="label" value="apmviagens">
+            </form>
+            <img src="https://ezycourse.b-cdn.net/3064/cmbj586e000y39e9n80466czy.png"
+                 alt="Booking.com"
+                 onclick="openForm('form-booking','win-booking')">
+            <span class="card-label">Booking.com</span>
+        </div>
+
+    </div>
+
+</main>
+
+<script>
+    function openForm(formId, windowName) {
+        var w = window.open('', windowName);
+        if (w) {
+            document.getElementById(formId).submit();
+        } else {
+            var f = document.getElementById(formId);
+            f.target = '_self';
+            f.submit();
+        }
+    }
+
+    function openUrl(url) {
+        window.open(url, '_blank');
+    }
+
+    // Newblue ES — POST + redireciona após 2s
+    document.getElementById('img-newblue-es').addEventListener('click', function () {
+        document.getElementById('form-newblue-es').submit();
+        setTimeout(function () {
+            window.open('https://www.newblue.es/', '_blank');
+        }, 2000);
+    });
+</script>
+
+</body>
+</html>
