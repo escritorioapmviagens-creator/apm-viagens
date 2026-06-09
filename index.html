@@ -441,6 +441,7 @@ textarea.finput{resize:vertical;min-height:72px}
         <div class="nav-group-items">
           <div class="nav-item" id="nav-operadores" onclick="abrirOperadores()"><span class="nav-icon">🌍</span> Lista de Operadores</div>
           <div class="nav-item" id="nav-treino" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/treino','_blank')"><span class="nav-icon">🎓</span> Área de Treino</div>
+          <div class="nav-item" id="nav-operadores-promotor" style="display:none" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/operadores-promotor.html','_blank')"><span class="nav-icon">📣</span> Operadores Promotor</div>
         </div>
       </div>
 
@@ -3437,9 +3438,10 @@ function enterApp() {
   const savedNavEl = document.querySelector(`[onclick*="navTo('${savedPage}"]`) || document.querySelector('.nav-item')
   navTo(savedPage, savedNavEl)
   // Show extra nav items based on access
-  const hasExtras = currentPerfil.acesso_treino || currentPerfil.acesso_operadores
+  const hasExtras = currentPerfil.acesso_treino || currentPerfil.acesso_operadores || currentPerfil.acesso_promotor
   if(currentPerfil.acesso_treino) document.getElementById('group-operadores').style.display = 'block'
   if(currentPerfil.acesso_operadores) document.getElementById('group-operadores').style.display = 'block'
+  if(currentPerfil.acesso_promotor) { document.getElementById('group-operadores').style.display = 'block'; document.getElementById('nav-operadores-promotor').style.display = 'flex' }
   const na=document.getElementById('nav-avaliacoes'); if(na) na.style.display='flex'
   if(currentPerfil.role==='admin') { const nperf=document.getElementById('nav-performance'); if(nperf) nperf.style.display='flex' }
   if(currentPerfil.role==='admin') { const el=document.getElementById('nav-mensalidades'); if(el) el.style.display='flex' }
@@ -6414,6 +6416,9 @@ async function renderAprovacoes() {
       <button class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 10px" onclick="toggleAcesso('${p.id}','operadores',${!!p.acesso_operadores})">
         ${p.acesso_operadores?'✓':'○'} Operadores
       </button>
+      <button class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 10px" onclick="toggleAcesso('${p.id}','promotor',${!!p.acesso_promotor})">
+        ${p.acesso_promotor?'✓':'○'} Op. Promotor
+      </button>
     </div>
   </div>`).join('') : '<div class="empty" style="padding:1.5rem">✓ Sem contas pendentes</div>'
 
@@ -6436,6 +6441,9 @@ async function renderAprovacoes() {
       <button class="btn btn-sm" style="font-size:11px;padding:3px 10px;background:${p.acesso_operadores?'#E8F5E9':'#f8f8fb'};color:${p.acesso_operadores?'#2E7D32':'#6b6b80'};border:1px solid ${p.acesso_operadores?'#A5D6A7':'#e4e4f0'}" onclick="toggleAcesso('${p.id}','operadores',${!!p.acesso_operadores})">
         ${p.acesso_operadores?'✓':'○'} Operadores
       </button>
+      <button class="btn btn-sm" style="font-size:11px;padding:3px 10px;background:${p.acesso_promotor?'#E8F5E9':'#f8f8fb'};color:${p.acesso_promotor?'#2E7D32':'#6b6b80'};border:1px solid ${p.acesso_promotor?'#A5D6A7':'#e4e4f0'}" onclick="toggleAcesso('${p.id}','promotor',${!!p.acesso_promotor})">
+        ${p.acesso_promotor?'✓':'○'} Op. Promotor
+      </button>
       ${p.id !== currentPerfil.id && p.role !== 'admin' ? '<button class="btn btn-sm" style="font-size:11px;padding:3px 10px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d" onclick="tornarPromotor(\'' + p.id + '\',\'' + p.nome.replace(/'/g,"\\'") + '\',\'' + p.email + '\',\'' + (p.telefone||'') + '\')">📣 → Promotor</button>' : ''}
       ${p.id !== currentPerfil.id ? `<button class="btn btn-danger btn-sm" style="font-size:11px;padding:3px 10px" onclick="appr('${p.id}',false)">Revogar acesso</button>` : ''}
     </div>
@@ -6443,7 +6451,7 @@ async function renderAprovacoes() {
 }
 
 async function toggleAcesso(id, tipo, currentVal) {
-  const fieldMap = { treino: 'acesso_treino', operadores: 'acesso_operadores' }
+  const fieldMap = { treino: 'acesso_treino', operadores: 'acesso_operadores', promotor: 'acesso_promotor' }
   const field = fieldMap[tipo] || ('acesso_'+tipo)
   const newVal = !currentVal
   const { error } = await sb.from('perfis').update({ [field]: newVal }).eq('id', id)
@@ -15876,8 +15884,6 @@ window.crustaceoAPM={open:openP,close:closeP};
     toast('Devolução eliminada', 'ok')
     loadDevolucoes()
   }
-  
-─────
 </script>
 </body>
 </html>
