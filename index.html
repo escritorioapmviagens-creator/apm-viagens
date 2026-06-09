@@ -3140,6 +3140,12 @@ textarea.finput{resize:vertical;min-height:72px}
           <div class="fgroup admin-edit-only" style="display:none"><label class="flabel">Valor pago ao operador (€)</label><input class="finput" id="e-pago-op" placeholder="0.00" type="number" step="0.01"></div>
           <div class="fgroup"><label class="flabel">Estado</label><select class="finput" id="e-est"><option>Pendente</option><option>Confirmada</option><option>Cancelada</option></select></div>
           <div class="fgroup full"><label class="flabel">Observações</label><textarea class="finput" id="e-obs"></textarea></div>
+          <div class="fgroup"><label class="flabel">Fornecedor / Operador</label><input class="finput" id="e-fornecedor" placeholder="ex: Soltropico, GBN..."></div>
+          <div class="fgroup full">
+            <label class="flabel">Localizadores</label>
+            <div id="e-localizadores-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
+            <button type="button" onclick="adicionarLocalizador()" style="background:none;border:1px dashed var(--border);border-radius:6px;padding:6px 12px;font-size:12px;color:var(--muted);cursor:pointer;width:100%;font-family:var(--font)">+ Adicionar localizador</button>
+          </div>
           <div class="fgroup"><label class="flabel">Canal de aquisição</label>
             <select class="finput" id="e-canal-aquisicao">
               <option value="">— Não definido —</option>
@@ -4813,6 +4819,15 @@ async function openEdit(id) {
   document.getElementById('e-pago-op').value = data.valor_pago_fornecedor||''
   document.getElementById('e-est').value = data.estado
   document.getElementById('e-obs').value = data.observacoes||''
+  if(document.getElementById('e-fornecedor')) document.getElementById('e-fornecedor').value = data.fornecedor||''
+  // Preencher localizadores dinâmicos
+  const locList = document.getElementById('e-localizadores-list')
+  if(locList) {
+    locList.innerHTML = ''
+    const locs = data.localizadores_extra?.length ? data.localizadores_extra : (data.localizador_principal ? [data.localizador_principal] : [''])
+    locs.forEach(l => adicionarLocalizador(l))
+    if(!locs.length) adicionarLocalizador()
+  }
   // Show admin-only fields
   document.querySelectorAll('.admin-edit-only').forEach(el => {
     el.style.display = currentPerfil?.role==='admin' ? 'flex' : 'none'
@@ -4992,6 +5007,16 @@ async function confirmarPagForn() {
   finally { if(btn){ btn.disabled=false; btn.innerHTML='Confirmar e guardar' } }
 }
 
+function adicionarLocalizador(valor='') {
+  const list = document.getElementById('e-localizadores-list')
+  if(!list) return
+  const row = document.createElement('div')
+  row.style.cssText = 'display:flex;gap:6px;align-items:center'
+  row.innerHTML = `<input class="finput" style="flex:1" placeholder="ex: ABC123" value="${valor}">
+    <button type="button" onclick="this.closest('div').remove()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px">×</button>`
+  list.appendChild(row)
+}
+
 async function saveEdit() {
   // Localizador — se preenchido, marca automaticamente como RE
   const localVal = (editRsvData?.localizador_principal || '').trim()
@@ -5017,6 +5042,10 @@ async function saveEdit() {
     estado: document.getElementById('e-est').value,
     observacoes: document.getElementById('e-obs').value,
     reserva_efetuada: autoRE,
+    fornecedor: document.getElementById('e-fornecedor')?.value||null,
+    localizador_principal: document.getElementById('e-localizadores-list')?.querySelector('input')?.value||null,
+    localizador: document.getElementById('e-localizadores-list')?.querySelector('input')?.value||null,
+    localizadores_extra: Array.from(document.getElementById('e-localizadores-list')?.querySelectorAll('input')||[]).map(i=>i.value.trim()).filter(Boolean),
   }
   if(currentPerfil?.role==='admin') {
     updates.valor_pago_fornecedor = parseFloat(document.getElementById('e-pago-op').value)||0
