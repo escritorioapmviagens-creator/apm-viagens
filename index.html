@@ -4080,10 +4080,10 @@ async function renderDash() {
     </td>
     <td>
       ${waBase ? `<div style="display:flex;flex-direction:column;gap:3px">
-        <a href="${waBase}?text=${msgFaltaEfetuar}" target="_blank" 
+        ${!r.reserva_efetuada && !r.localizador_principal ? `<a href="${waBase}?text=${msgFaltaEfetuar}" target="_blank" 
           style="display:flex;align-items:center;gap:4px;background:#25D366;color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;text-decoration:none;white-space:nowrap">
           📋 Efetuar reserva
-        </a>
+        </a>` : ''}
         ${!reservasComDocs.has(r.id) ? `<a href="${waBase}?text=${msgDocs}" target="_blank"
           style="display:flex;align-items:center;gap:4px;background:#25D366;color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;text-decoration:none;white-space:nowrap">
           📎 Pedir docs
