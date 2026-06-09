@@ -441,6 +441,7 @@ textarea.finput{resize:vertical;min-height:72px}
         <div class="nav-group-items">
           <div class="nav-item" id="nav-operadores" onclick="abrirOperadores()"><span class="nav-icon">🌍</span> Lista de Operadores</div>
           <div class="nav-item" id="nav-treino" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/treino','_blank')"><span class="nav-icon">🎓</span> Área de Treino</div>
+          <div class="nav-item" id="nav-soltropico" style="display:none" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/soltropico.html','_blank')"><span class="nav-icon">🏝</span> Soltropico</div>
           <div class="nav-item" id="nav-operadores-promotor" style="display:none" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/operadores-promotor.html','_blank')"><span class="nav-icon">📣</span> Operadores Promotor</div>
         </div>
       </div>
@@ -3441,7 +3442,8 @@ function enterApp() {
   if(currentPerfil.acesso_treino) document.getElementById('group-operadores').style.display = 'block'
   if(currentPerfil.acesso_operadores) document.getElementById('group-operadores').style.display = 'block'
   if(currentPerfil.acesso_promotor) { document.getElementById('group-operadores').style.display = 'block'; document.getElementById('nav-operadores-promotor').style.display = 'flex'; const no=document.getElementById('nav-operadores'); if(no) no.style.display='none' }
-  if(currentPerfil.role==='admin') { document.getElementById('group-operadores').style.display = 'block'; document.getElementById('nav-operadores-promotor').style.display = 'flex' }
+  if(currentPerfil.role==='admin') { document.getElementById('group-operadores').style.display = 'block'; document.getElementById('nav-operadores-promotor').style.display = 'flex'; document.getElementById('nav-soltropico').style.display = 'flex' }
+  if(currentPerfil.acesso_operadores) { const ns=document.getElementById('nav-soltropico'); if(ns) ns.style.display='flex' }
   const na=document.getElementById('nav-avaliacoes'); if(na) na.style.display='flex'
   if(currentPerfil.role==='admin') { const nperf=document.getElementById('nav-performance'); if(nperf) nperf.style.display='flex' }
   if(currentPerfil.role==='admin') { const el=document.getElementById('nav-mensalidades'); if(el) el.style.display='flex' }
