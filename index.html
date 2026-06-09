@@ -3438,10 +3438,10 @@ function enterApp() {
   const savedNavEl = document.querySelector(`[onclick*="navTo('${savedPage}"]`) || document.querySelector('.nav-item')
   navTo(savedPage, savedNavEl)
   // Show extra nav items based on access
-  const hasExtras = currentPerfil.acesso_treino || currentPerfil.acesso_operadores || currentPerfil.acesso_promotor
   if(currentPerfil.acesso_treino) document.getElementById('group-operadores').style.display = 'block'
   if(currentPerfil.acesso_operadores) document.getElementById('group-operadores').style.display = 'block'
-  if(currentPerfil.acesso_promotor) { document.getElementById('group-operadores').style.display = 'block'; document.getElementById('nav-operadores-promotor').style.display = 'flex' }
+  if(currentPerfil.acesso_promotor) { document.getElementById('group-operadores').style.display = 'block'; document.getElementById('nav-operadores-promotor').style.display = 'flex'; const no=document.getElementById('nav-operadores'); if(no) no.style.display='none' }
+  if(currentPerfil.role==='admin') { document.getElementById('group-operadores').style.display = 'block'; document.getElementById('nav-operadores-promotor').style.display = 'flex' }
   const na=document.getElementById('nav-avaliacoes'); if(na) na.style.display='flex'
   if(currentPerfil.role==='admin') { const nperf=document.getElementById('nav-performance'); if(nperf) nperf.style.display='flex' }
   if(currentPerfil.role==='admin') { const el=document.getElementById('nav-mensalidades'); if(el) el.style.display='flex' }
