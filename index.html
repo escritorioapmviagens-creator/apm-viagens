@@ -470,7 +470,7 @@ textarea.finput{resize:vertical;min-height:72px}
         <div class="nav-item" onclick="navTo('recibos',this)"><span class="nav-icon">🧾</span> Recibos Verdes</div>
         <div class="nav-item" onclick="navTo('importacao',this)"><span class="nav-icon">📥</span> Importar Reservas</div>
         <div class="nav-item" onclick="navTo('devolucoes',this)"><span class="nav-icon">↩️</span> Devoluções</div>
-        <div class="nav-item" id="nav-performance" style="display:none" onclick="navTo('performance',this)"><span class="nav-icon">📈</span> Performance</div>
+        <div class="nav-item" id="nav-performance" style="display:none" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/estatisticas.html','_blank')"><span class="nav-icon">📊</span> Estatísticas</div>
         <div class="nav-item" id="nav-templates" style="display:none" onclick="navTo('templates',this)"><span class="nav-icon">📝</span> Templates</div>
         <div class="nav-item" onclick="navTo('aprovacoes',this)"><span class="nav-icon">✓</span> Aprovações <span class="nav-badge" id="appr-badge">0</span></div>
         <div class="nav-item" onclick="window.open('mensalidades.html','_blank')" id="nav-mensalidades" style="display:none"><span class="nav-icon">💳</span> Mensalidades</div>
@@ -2247,82 +2247,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <!-- ═══ FIM FOLLOW-UPS ════════════════════════════════════ -->
 
       <!-- ═══ PERFORMANCE ══════════════════════════════════════ -->
-      <div class="page" id="page-performance">
-        <div style="max-width:900px">
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
-            <div class="card" style="text-align:center">
-              <div style="font-size:26px;font-weight:800;color:var(--coral)" id="perf-total-rsv">—</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px">Reservas este ano</div>
-            </div>
-            <div class="card" style="text-align:center">
-              <div style="font-size:26px;font-weight:800;color:var(--blue)" id="perf-total-vol">—</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px">Volume total</div>
-            </div>
-            <div class="card" style="text-align:center">
-              <div style="font-size:26px;font-weight:800;color:#10b981" id="perf-conv">—</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px">Taxa conversão</div>
-            </div>
-          </div>
-          <div class="card" style="margin-bottom:16px">
-            <div class="card-title">🏆 Ranking de consultores</div>
-            <div id="perf-ranking"></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
-            <div class="card">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-                <div class="card-title" style="margin:0">🌍 Top destinos</div>
-                <select id="perf-dest-ano" onchange="renderTopDestinos()" style="font-size:12px;border:1px solid var(--border);border-radius:6px;padding:4px 8px;background:var(--bg2)">
-                  <option value="2025">2025</option>
-                  <option value="2026" selected>2026</option>
-                </select>
-              </div>
-              <div id="perf-top-destinos"></div>
-            </div>
-            <div class="card">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-                <div class="card-title" style="margin:0">🏢 Top operadores</div>
-                <select id="perf-op-ano" onchange="renderTopOperadores()" style="font-size:12px;border:1px solid var(--border);border-radius:6px;padding:4px 8px;background:var(--bg2)">
-                  <option value="2025">2025</option>
-                  <option value="2026" selected>2026</option>
-                </select>
-              </div>
-              <div id="perf-top-operadores"></div>
-            </div>
-            <div class="card">
-              <div class="card-title">📈 Evolução mensal</div>
-              <canvas id="perf-chart" height="120"></canvas>
-            </div>
-          </div>
-
-          <!-- Métricas chave -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-            <div class="card">
-              <div class="card-title">💶 Ticket médio</div>
-              <div id="perf-ticket-medio"></div>
-            </div>
-            <div class="card">
-              <div class="card-title">📡 Canal de aquisição</div>
-              <div id="perf-canal-aquisicao"></div>
-            </div>
-          </div>
-
-          <!-- Análise de Nicho -->
-          <div class="card" style="margin-bottom:16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-              <div class="card-title" style="margin:0">🎯 Público-alvo</div>
-              <span style="font-size:11px;color:var(--muted)" id="perf-nicho-sub"></span>
-            </div>
-            <div id="perf-nicho-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px"></div>
-            <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-              <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">DETALHE POR NICHO</div>
-              <div id="perf-nicho-detalhe"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- ═══ FIM PERFORMANCE ═══════════════════════════════════ -->
-
-      <!-- ═══ TEMPLATES ══════════════════════════════════════ -->
+      <div class
       <div class="page" id="page-templates">
         <div style="max-width:800px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
@@ -3651,7 +3576,7 @@ function navTo(page, el) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
   sessionStorage.setItem('apm_page', page)
-  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Performance',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
+  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
   document.getElementById('tb-title').textContent = titles[page]||page
   document.getElementById('tb-sub').textContent = page==='dashboard'?(currentPerfil?.role==='admin'?'Visão global da agência':'Visão geral das tuas reservas'):''
   if(page==='dashboard') renderDash()
@@ -3660,7 +3585,7 @@ function navTo(page, el) {
   if(page==='importacao') resetarImportacao()
   if(page==='devolucoes') loadDevolucoes()
   if(page==='followups') loadFollowups()
-  if(page==='performance') loadPerformance()
+  if(page==='performance') window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/estatisticas.html', '_blank')
   if(page==='recrutamento') loadRecrutamento()
   if(page==='templates') loadTemplates()
   if(page==='avaliacoes') loadAvaliacoes()
@@ -14289,127 +14214,6 @@ async function atualizarFollowupBadge() {
 // ════════════════════════════════════════════════════════════
 // PERFORMANCE
 // ════════════════════════════════════════════════════════════
-async function loadPerformance() {
-  const ano = new Date().getFullYear()
-  const { data: reservas } = await sb.from('reservas')
-    .select('id,valor_total,preco_net,consultor_id,estado,pipeline_stage,created_at,data_partida')
-    .gte('created_at', ano + '-01-01')
-    .neq('estado', 'Cancelada')
-
-  if(!reservas) return
-
-  // Fetch pedidos de orçamento por consultor
-  const { data: pedidos } = await sb.from('pedidos_orcamento')
-    .select('consultor_id,estado').gte('created_at', ano + '-01-01')
-
-  // Fetch CST enviados (orcamentos com pipeline_stage != Lead)
-  const { data: orcamentos } = await sb.from('orcamentos')
-    .select('consultor_id,pipeline_stage').gte('created_at', ano + '-01-01')
-
-  // Fetch consultor names
-  const pIds = [...new Set(reservas.map(r => r.consultor_id).filter(Boolean))]
-  let pMap = {}
-  if(pIds.length) {
-    const { data: perfis } = await sb.from('perfis').select('id,nome').in('id', pIds)
-    if(perfis) perfis.forEach(p => { pMap[p.id] = p.nome })
-  }
-  const reservasNamed = reservas.map(r => ({ ...r, _consultor_nome: pMap[r.consultor_id] || r.consultor_id }))
-
-  const confirmadas = reservasNamed.filter(r => r.estado === 'Confirmada' || r.pipeline_stage === 'Pago')
-  const totalVol = confirmadas.reduce((s,r) => s + (r.valor_total||0), 0)
-  const totalLeads = reservas.length
-  const conv = totalLeads ? Math.round(confirmadas.length / totalLeads * 100) : 0
-
-  document.getElementById('perf-total-rsv').textContent = confirmadas.length
-  document.getElementById('perf-total-vol').textContent = '€' + totalVol.toLocaleString('pt-PT')
-  document.getElementById('perf-conv').textContent = conv + '%'
-
-  // Ranking por consultor
-  const byConsultor = {}
-  confirmadas.forEach(r => {
-    const k = r.consultor_id
-    if(!k) return
-    if(!byConsultor[k]) byConsultor[k] = { nome: r._consultor_nome || r.consultor_id, total: 0, count: 0, margem: 0, pedidos: 0, cst: 0 }
-    byConsultor[k].total += r.valor_total || 0
-    byConsultor[k].count++
-    byConsultor[k].margem += (r.valor_total||0) - (r.preco_net||0)
-  })
-
-  // Add pedidos count per consultor
-  ;(pedidos||[]).forEach(p => {
-    if(!p.consultor_id) return
-    if(!byConsultor[p.consultor_id]) byConsultor[p.consultor_id] = { nome: pMap[p.consultor_id]||p.consultor_id, total:0, count:0, margem:0, pedidos:0, cst:0 }
-    byConsultor[p.consultor_id].pedidos++
-  })
-
-  // Add CST count per consultor
-  ;(orcamentos||[]).forEach(o => {
-    if(!o.consultor_id || o.pipeline_stage === 'Lead') return
-    if(!byConsultor[o.consultor_id]) byConsultor[o.consultor_id] = { nome: pMap[o.consultor_id]||o.consultor_id, total:0, count:0, margem:0, pedidos:0, cst:0 }
-    byConsultor[o.consultor_id].cst++
-  })
-
-  const ranking = Object.values(byConsultor).sort((a,b) => b.total - a.total)
-  const maxTotal = ranking[0]?.total || 1
-
-  const rankColors = ['#f59e0b','#94a3b8','#cd7c3f']
-  const rankEmojis = ['🥇','🥈','🥉']
-  document.getElementById('perf-ranking').innerHTML = ranking.length
-    ? ranking.map((c,i) => {
-        const comissao = calcComissaoValores(c.total, c.total - c.margem)
-        const barW = Math.round(c.total / maxTotal * 100)
-        return '<div style="padding:14px 0;border-bottom:1px solid var(--border)">'
-          + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">'
-          + '<div class="perf-rank" style="background:' + (rankColors[i]||'var(--bg2)') + ';color:' + (i<3?'#fff':'var(--muted)') + '">' + (rankEmojis[i]||i+1) + '</div>'
-          + '<div style="flex:1">'
-          + '<div style="font-weight:700;font-size:14px">' + c.nome + '</div>'
-          + '<div style="font-size:12px;color:var(--muted)">' + c.count + ' reserva' + (c.count!==1?'s':'') + ' · '
-          + '📋 ' + (c.pedidos||0) + ' pedidos · 📄 ' + (c.cst||0) + ' contratos'
-          + '</div>'
-          + '</div>'
-          + '<div style="text-align:right">'
-          + '<div style="font-weight:800;font-size:15px;color:var(--blue)">€' + c.total.toLocaleString('pt-PT') + '</div>'
-          + '<div style="font-size:10px;color:var(--muted)">volume</div>'
-          + '</div></div>'
-          + '<div style="display:flex;gap:16px;padding-left:40px;margin-bottom:8px">'
-          + '<div style="font-size:12px"><span style="color:var(--muted)">Lucro bruto: </span><span style="font-weight:700;color:#15803d">€' + Math.round(c.margem).toLocaleString('pt-PT') + '</span></div>'
-          + '<div style="font-size:12px"><span style="color:var(--muted)">Comissão: </span><span style="font-weight:700;color:var(--blue)">€' + Math.round(comissao.consultor).toLocaleString('pt-PT') + '</span></div>'
-          + '<div style="font-size:12px"><span style="color:var(--muted)">APM: </span><span style="font-weight:700;color:var(--coral)">€' + Math.round(comissao.apm).toLocaleString('pt-PT') + '</span></div>'
-          + '</div>'
-          + '<div style="padding-left:40px">'
-          + '<div style="height:6px;background:var(--bg2);border-radius:3px;overflow:hidden">'
-          + '<div style="height:100%;width:' + barW + '%;background:linear-gradient(90deg,var(--blue),var(--coral));border-radius:3px;transition:width .4s ease"></div>'
-          + '</div></div>'
-          + '</div>'
-      }).join('')
-    : '<div style="text-align:center;padding:20px;color:var(--muted)">Sem dados este ano.</div>'
-
-  // Monthly chart
-  const meses = Array.from({length:12},(_,i) => i)
-  const volMes = meses.map(m => confirmadas.filter(r => new Date(r.created_at).getMonth()===m).reduce((s,r)=>s+(r.valor_total||0),0))
-  const cntMes = meses.map(m => confirmadas.filter(r => new Date(r.created_at).getMonth()===m).length)
-  const nomeMes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
-
-  const canvas = document.getElementById('perf-chart')
-  if(!canvas) return
-  const ctx = canvas.getContext('2d')
-  if(window._perfChart) window._perfChart.destroy()
-  window._perfChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: nomeMes,
-      datasets: [
-        { label: 'Volume (€)', data: volMes, backgroundColor: '#3B5BDB22', borderColor: '#3B5BDB', borderWidth:2, yAxisID:'y' },
-        { label: 'Reservas', data: cntMes, type:'line', backgroundColor:'#E8395A', borderColor:'#E8395A', borderWidth:2, pointRadius:4, yAxisID:'y1' }
-      ]
-    },
-    options: { responsive:true, plugins:{legend:{position:'top'}}, scales:{y:{beginAtZero:true},y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false}}} }
-  })
-  renderTopDestinos()
-  renderTopOperadores()
-  renderNichoAnalysis()
-  renderMetricas()
-}
 
 async function renderMetricas() {
   const isAdmin = currentPerfil?.role === 'admin'
@@ -16072,6 +15876,8 @@ window.crustaceoAPM={open:openP,close:closeP};
     toast('Devolução eliminada', 'ok')
     loadDevolucoes()
   }
-  </script>
+  
+─────
+</script>
 </body>
 </html>
