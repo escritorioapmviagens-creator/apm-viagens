@@ -12998,8 +12998,11 @@ async function uploadFotoPerfil(file) {
   // Upload para Supabase Storage
   const ext = file.name.split('.').pop()
   const path = currentPerfil.id + '.' + ext
-  const { error: upErr } = await sb.storage.from('avatars').upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' })
-  if(upErr) { toast('Erro ao carregar foto', 'err'); return }
+  // Apagar versão anterior se existir
+  await sb.storage.from('avatars').remove([path])
+  // Upload novo
+  const { error: upErr } = await sb.storage.from('avatars').upload(path, file, { contentType: file.type || 'image/jpeg' })
+  if(upErr) { toast('Erro ao carregar foto: ' + upErr.message, 'err'); return }
 
   const { data: urlData } = sb.storage.from('avatars').getPublicUrl(path)
   const url = urlData.publicUrl + '?t=' + Date.now()
