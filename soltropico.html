@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soltropico — APM Viagens</title>
+<link rel="shortcut icon" href="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;
+  --bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;
+  --border:rgba(0,0,0,0.07);--radius:12px;--radius-sm:8px;
+  --shadow:0 2px 8px rgba(0,0,0,0.06);--shadow-md:0 4px 16px rgba(0,0,0,0.09);
+}
+body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:var(--bg);min-height:100vh}
+
+/* HEADER */
+header{background:var(--surface);border-bottom:3px solid var(--coral);padding:14px 28px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow)}
+header img{height:44px;object-fit:contain}
+header h1{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700}
+header span{font-size:12px;color:var(--muted)}
+
+/* LAYOUT */
+.container{max-width:1100px;margin:0 auto;padding:28px 20px 60px}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:6px;box-shadow:var(--shadow);margin-bottom:24px;flex-wrap:wrap}
+.tab{flex:1;min-width:140px;padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s;text-align:center}
+.tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,91,219,0.3)}
+.tab:hover:not(.active){background:var(--bg);color:var(--navy)}
+
+/* PANEL */
+.panel{display:none}.panel.active{display:block}
+
+/* CARD */
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
+.card-title{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:16px;color:var(--navy);display:flex;align-items:center;gap:8px}
+.card-title span{font-size:18px}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.form-group input, .form-group select{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;transition:border-color .15s;background:#fff}
+.form-group input:focus, .form-group select:focus{border-color:var(--blue)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .18s}
+.btn-blue{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,91,219,0.25)}
+.btn-blue:hover{background:#3251c4;transform:translateY(-1px)}
+.btn-blue:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-coral{background:var(--coral);color:#fff}
+.btn-coral:hover{background:#d02f4e}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--navy)}
+.btn-outline:hover{background:var(--bg)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+
+/* STATUS */
+.status-bar{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;margin-bottom:16px;display:none}
+.status-bar.show{display:block}
+.status-bar.loading{background:#EEF2FF;color:#3251c4;border:1px solid #c7d2fe}
+.status-bar.ok{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
+.status-bar.err{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2}
+
+/* RESULTS TABLE */
+.results-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+.results-table th{background:var(--bg);padding:9px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1.5px solid var(--border)}
+.results-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.results-table tr:hover td{background:#f8f9fd}
+.results-table .clickable{cursor:pointer;color:var(--blue);font-weight:600}
+.results-table .clickable:hover{text-decoration:underline}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-ok{background:#E8F5E9;color:#2E7D32}
+.badge-wl{background:#FFF3E0;color:#E65100}
+.badge-ko{background:#FFEBEE;color:#C62828}
+.badge-dyn{background:#EEF2FF;color:#3B5BDB}
+.badge-sta{background:#F3E5F5;color:#6A1B9A}
+
+/* PRODUCT CARD */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:8px}
+.product-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s;border:2px solid transparent}
+.product-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--blue)}
+.product-card.selected{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,91,219,0.15)}
+.product-img{width:100%;height:140px;object-fit:cover;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:40px}
+.product-info{padding:14px}
+.product-name{font-weight:700;font-size:14px;margin-bottom:4px}
+.product-meta{font-size:12px;color:var(--muted);margin-bottom:8px}
+.product-price{font-size:16px;font-weight:700;color:var(--coral)}
+
+/* STEP INDICATOR */
+.steps{display:flex;gap:0;margin-bottom:24px;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.step{flex:1;padding:12px 8px;text-align:center;font-size:12px;font-weight:600;color:var(--muted);border-right:1px solid var(--border);position:relative}
+.step:last-child{border-right:none}
+.step.done{background:#EEF2FF;color:var(--blue)}
+.step.active{background:var(--blue);color:#fff}
+.step-num{display:block;font-size:18px;font-weight:700;margin-bottom:2px}
+
+/* XML VIEWER */
+.xml-block{background:#1e1e2e;color:#a6e3a1;font-family:monospace;font-size:11.5px;padding:14px;border-radius:var(--radius-sm);overflow-x:auto;max-height:300px;overflow-y:auto;white-space:pre;margin-top:8px}
+
+/* LOADER */
+.loader{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ROOM SELECTOR */
+.rooms-section{margin-top:12px}
+.room-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.room-row:last-child{border-bottom:none}
+.room-row label{font-size:13px;font-weight:600;min-width:70px}
+
+/* RESERVATION FORM */
+.pax-grid{display:grid;gap:12px;margin-top:8px}
+.pax-row{background:var(--bg);border-radius:var(--radius-sm);padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.pax-row-title{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;grid-column:1/-1}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+.empty big{display:block;font-size:36px;margin-bottom:8px}
+
+/* RESERVATION RESULT */
+.res-success{background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:1.5px solid #A5D6A7;border-radius:var(--radius);padding:24px;text-align:center}
+.res-number{font-family:'Poppins',sans-serif;font-size:36px;font-weight:700;color:#2E7D32}
+.res-label{font-size:13px;color:var(--muted);margin-top:4px}
+</style>
+</head>
+<body>
+
+<header>
+  <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM">
+  <div>
+    <h1>Soltropico — Motor de Reservas</h1>
+    <span>Integração Optigest SOAP · APM Viagens</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('pesquisa')">🔍 Pesquisar Produtos</button>
+    <button class="tab" onclick="switchTab('reserva')">📋 Fazer Reserva</button>
+    <button class="tab" onclick="switchTab('minhas-reservas')">📁 As Minhas Reservas</button>
+    <button class="tab" onclick="switchTab('debug')">🛠 Debug SOAP</button>
+  </div>
+
+  <!-- ══════════════════════════════════
+       PAINEL 1: PESQUISA
+  ══════════════════════════════════ -->
+  <div id="panel-pesquisa" class="panel active">
+
+    <div class="card">
+      <div class="card-title"><span>🔍</span> Pesquisa de Produtos</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nome do Produto</label>
+          <input type="text" id="s-name" placeholder="ex: Disney, Maldivas…">
+        </div>
+        <div class="form-group">
+          <label>Data de Partida</label>
+          <input type="date" id="s-depdate">
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="s-pkttype">
+            <option value="">Todos</option>
+            <option value="DYNAMIC">Dinâmico</option>
+            <option value="STATIC">Estático</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Preço desde (€)</label>
+          <input type="number" id="s-pricefrom" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Preço até (€)</label>
+          <input type="number" id="s-priceto" placeholder="9999">
+        </div>
+        <div class="form-group">
+          <label>País (ISO)</label>
+          <input type="text" id="s-country" placeholder="PT, ES, FR…" maxlength="2">
+        </div>
+      </div>
+      <div class="btn-actions">
+        <button class="btn btn-blue" onclick="searchProducts()" id="btn-search">🔍 Pesquisar</button>
+        <button class="btn btn-outline" onclick="clearSearch()">Limpar</button>
+      </div>
+    </div>
+
+    <div id="search-status" class="status-bar"></div>
+
+    <div id="search-results"></div>
+
+  </div>
+
+  <!-- ══════════════════════════════════
+       PAINEL 2: RESERVA
+  ══════════════════════════════════ -->
+  <div id="panel-reserva" class="panel">
+
+    <!-- STEPS -->
+    <div class="steps">
+      <div class="step done" id="step1"><span class="step-num">1</span>Produto</div>
+      <div class="step" id="step2"><span class="step-num">2</span>Parâmetros</div>
+      <div class="step" id="step3"><span class="step-num">3</span>Serviços</div>
+      <div class="step" id="step4"><span class="step-num">4</span>Simulação</div>
+      <div class="step" id="step5"><span class="step-num">5</span>Confirmar</div>
+    </div>
+
+    <div id="reserva-status" class="status-bar"></div>
+
+    <!-- STEP 1: Escolha produto -->
+    <div id="r-step1" class="card">
+      <div class="card-title"><span>📦</span> Selecionar Produto</div>
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Código do Produto (ou selecione da pesquisa)</label>
+          <input type="number" id="r-product-code" placeholder="ex: 105">
+        </div>
+      </div>
+      <div class="btn-actions">
+        <button class="btn btn-blue" onclick="getProductParams()" id="btn-params">Obter Parâmetros →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Parâmetros -->
+    <div id="r-step2" class="card" style="display:none">
+      <div class="card-title"><span>⚙️</span> Definição dos Parâmetros</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Data de Partida</label>
+          <select id="r-depdate"></select>
+        </div>
+        <div class="form-group">
+          <label>Local de Partida</label>
+          <select id="r-deplocal"></select>
+        </div>
+        <div class="form-group">
+          <label>Noites Extra</label>
+          <input type="number" id="r-extranights" value="0" min="0">
+        </div>
+      </div>
+
+      <!-- Quartos -->
+      <div class="rooms-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700">Quartos</div>
+          <button class="btn btn-outline btn-sm" onclick="addRoom()">+ Quarto</button>
+        </div>
+        <div id="rooms-list"></div>
+      </div>
+
+      <!-- Locais base -->
+      <div id="base-locals-section" style="margin-top:16px;display:none">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px">Noites por Local</div>
+        <div id="base-locals-list"></div>
+      </div>
+
+      <div class="btn-actions">
+        <button class="btn btn-outline" onclick="backStep(1)">← Voltar</button>
+        <button class="btn btn-blue" onclick="searchAvailableServices()" id="btn-avail">Pesquisar Disponibilidade →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Serviços -->
+    <div id="r-step3" class="card" style="display:none">
+      <div class="card-title"><span>✈️</span> Selecionar Serviços</div>
+      <div id="flight-options-section"></div>
+      <div id="hotel-options-section"></div>
+      <div class="btn-actions">
+        <button class="btn btn-outline" onclick="backStep(2)">← Voltar</button>
+        <button class="btn btn-blue" onclick="setServicesAndSimulate()" id="btn-simulate">Simular Reserva →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Simulação -->
+    <div id="r-step4" class="card" style="display:none">
+      <div class="card-title"><span>💶</span> Simulação de Reserva</div>
+      <div id="simulation-result"></div>
+      <div class="btn-actions" id="btn-step4-actions" style="display:none">
+        <button class="btn btn-outline" onclick="backStep(3)">← Alterar Seleção</button>
+        <button class="btn btn-coral" onclick="goToConfirm()">Prosseguir para Confirmação →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: Confirmação -->
+    <div id="r-step5" class="card" style="display:none">
+      <div class="card-title"><span>👤</span> Dados dos Passageiros</div>
+      <div id="pax-form"></div>
+      <div class="form-grid" style="margin-top:16px">
+        <div class="form-group">
+          <label>Referência Cliente</label>
+          <input type="text" id="r-clientref" placeholder="Ref. interna APM">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Observações</label>
+          <input type="text" id="r-clientobs" placeholder="Pedidos especiais, mobilidade reduzida…">
+        </div>
+      </div>
+      <div class="btn-actions">
+        <button class="btn btn-outline" onclick="backStep(4)">← Voltar</button>
+        <button class="btn btn-coral" onclick="createReservation()" id="btn-create">✓ Confirmar Reserva</button>
+      </div>
+    </div>
+
+    <!-- Resultado final -->
+    <div id="r-final" style="display:none"></div>
+
+  </div>
+
+  <!-- ══════════════════════════════════
+       PAINEL 3: MINHAS RESERVAS
+  ══════════════════════════════════ -->
+  <div id="panel-minhas-reservas" class="panel">
+    <div class="card">
+      <div class="card-title"><span>📁</span> Pesquisar Reservas</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nº de Reserva</label>
+          <input type="number" id="rl-reserve" placeholder="3028445">
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select id="rl-status">
+            <option value="">Todos</option>
+            <option value="OK">OK — Confirmada</option>
+            <option value="WL">WL — Em lista</option>
+            <option value="CL">CL — Cancelada</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Partida desde</label>
+          <input type="date" id="rl-depfrom">
+        </div>
+        <div class="form-group">
+          <label>Partida até</label>
+          <input type="date" id="rl-depto">
+        </div>
+      </div>
+      <div class="btn-actions">
+        <button class="btn btn-blue" onclick="listReserves()">🔍 Pesquisar Reservas</button>
+      </div>
+    </div>
+    <div id="reserves-status" class="status-bar"></div>
+    <div id="reserves-results"></div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       PAINEL 4: DEBUG
+  ══════════════════════════════════ -->
+  <div id="panel-debug" class="panel">
+    <div class="card">
+      <div class="card-title"><span>🛠</span> Teste de Conectividade SOAP</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
+        Testa a ligação ao endpoint Optigest com as credenciais APM e tenta listar os tipos de produto disponíveis.
+      </p>
+      <div class="btn-actions">
+        <button class="btn btn-blue" onclick="testConnection()">▶ Testar Ligação</button>
+        <button class="btn btn-outline" onclick="testProductTypes()">📦 SearchProductTypes</button>
+      </div>
+      <div id="debug-status" class="status-bar" style="margin-top:16px"></div>
+      <div id="debug-output"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>⚙️</span> Configuração</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.8">
+        <div><b>Endpoint produção:</b> https://www3.optitravel.net/optitravel/export/wbs/pkt/wbs_server.php</div>
+        <div><b>System (Office ID):</b> 808</div>
+        <div><b>Client (Agency ID):</b> 289363</div>
+        <div><b>Username:</b> admin@apmviagens.pt</div>
+        <div><b>Proxy:</b> Edge Function Supabase (soltropico-proxy)</div>
+        <div style="margin-top:12px;padding:10px;background:#FFF3E0;border-radius:8px;color:#E65100;font-size:12px">
+          ⚠️ As chamadas SOAP não podem ser feitas diretamente do browser por restrições de CORS. 
+          É necessário uma Edge Function no Supabase como proxy. Consulte a secção de configuração abaixo.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>📋</span> Edge Function Supabase (soltropico-proxy)</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Crie esta Edge Function no Supabase para servir de proxy SOAP:</p>
+      <div class="xml-block">// supabase/functions/soltropico-proxy/index.ts
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+
+const ENDPOINT = "https://www3.optitravel.net/optitravel/export/wbs/pkt/wbs_server.php"
+
+serve(async (req) => {
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  }
+
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders })
+  }
+
+  try {
+    const { soapAction, soapBody } = await req.json()
+
+    const res = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/xml; charset=utf-8",
+        "SOAPAction": soapAction || "",
+      },
+      body: soapBody,
+    })
+
+    const xml = await res.text()
+    return new Response(JSON.stringify({ xml }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    })
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    })
+  }
+})</div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ── CONFIGURAÇÃO ──────────────────────────────────────
+const SUPABASE_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const PROXY_URL = `${SUPABASE_URL}/functions/v1/soltropico-proxy`
+
+const CREDS = {
+  System: 808,
+  Client: 289363,
+  Username: 'admin@apmviagens.pt',
+  Password: 'JA622875'
+}
+
+// State
+let state = {
+  sessionHash: null,
+  selectedProduct: null,
+  productParams: null,
+  availableServices: null,
+  simulationData: null,
+  rooms: [{ num: 1, code: 1, childAges: '' }],
+  selectedFlightOption: null,
+  selectedHotels: []
+}
+
+// ── SOAP HELPERS ──────────────────────────────────────
+function credXML() {
+  return `<Credentials>
+    <System>${CREDS.System}</System>
+    <Client>${CREDS.Client}</Client>
+    <Username>${CREDS.Username}</Username>
+    <Password>${CREDS.Password}</Password>
+  </Credentials>`
+}
+
+function soapEnvelope(body) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+                  xmlns:wbs="http://wbs.optigest.net/">
+  <soapenv:Header/>
+  <soapenv:Body>
+    ${body}
+  </soapenv:Body>
+</soapenv:Envelope>`
+}
+
+async function soapCall(action, bodyXML) {
+  const envelope = soapEnvelope(bodyXML)
+  try {
+    const res = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON}`
+      },
+      body: JSON.stringify({ soapAction: action, soapBody: envelope })
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+    const data = await res.json()
+    if (data.error) throw new Error(data.error)
+    return parseXML(data.xml)
+  } catch (e) {
+    throw e
+  }
+}
+
+function parseXML(xmlStr) {
+  const parser = new DOMParser()
+  return parser.parseFromString(xmlStr, 'text/xml')
+}
+
+function getXMLText(doc, tag) {
+  const el = doc.querySelector(tag) || doc.getElementsByTagName(tag)[0]
+  return el ? el.textContent.trim() : ''
+}
+
+function getXMLAll(doc, tag) {
+  return Array.from(doc.getElementsByTagName(tag))
+}
+
+// ── UI HELPERS ──────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  document.getElementById('panel-' + tab).classList.add('active')
+  event.target.classList.add('active')
+}
+
+function setStatus(id, type, msg) {
+  const el = document.getElementById(id)
+  el.className = 'status-bar show ' + type
+  el.innerHTML = type === 'loading' ? `<span class="loader"></span> ${msg}` : msg
+}
+
+function clearStatus(id) {
+  const el = document.getElementById(id)
+  el.className = 'status-bar'
+  el.textContent = ''
+}
+
+function setStep(n) {
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('step' + i)
+    el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '')
+  }
+}
+
+// ── PESQUISA DE PRODUTOS ──────────────────────────────────────
+async function searchProducts() {
+  const name = document.getElementById('s-name').value
+  const depdate = document.getElementById('s-depdate').value
+  const pkttype = document.getElementById('s-pkttype').value
+  const pricefrom = document.getElementById('s-pricefrom').value
+  const priceto = document.getElementById('s-priceto').value
+  const country = document.getElementById('s-country').value
+
+  setStatus('search-status', 'loading', 'A pesquisar produtos Soltropico…')
+  document.getElementById('search-results').innerHTML = ''
+  document.getElementById('btn-search').disabled = true
+
+  const bodyXML = `<wbs:SearchProducts>
+    <SearchProductsRequest>
+      ${credXML()}
+      ${name ? `<Name>${name}</Name>` : ''}
+      ${country ? `<Country>${country}</Country>` : ''}
+      ${depdate ? `<DepDate>${depdate}</DepDate>` : ''}
+      ${pkttype ? `<Pkt_type>${pkttype}</Pkt_type>` : ''}
+      ${pricefrom ? `<PriceFrom>${pricefrom}</PriceFrom>` : ''}
+      ${priceto ? `<PriceTo>${priceto}</PriceTo>` : ''}
+    </SearchProductsRequest>
+  </wbs:SearchProducts>`
+
+  try {
+    const doc = await soapCall('SearchProducts', bodyXML)
+    const products = getXMLAll(doc, 'Product')
+    if (!products.length) {
+      setStatus('search-status', 'err', '⚠️ Nenhum produto encontrado.')
+      document.getElementById('btn-search').disabled = false
+      return
+    }
+    const total = getXMLText(doc, 'TotalProducts')
+    setStatus('search-status', 'ok', `✓ ${total || products.length} produto(s) encontrado(s)`)
+    renderProducts(products)
+  } catch (e) {
+    setStatus('search-status', 'err', `❌ Erro: ${e.message}. Verifique se a Edge Function soltropico-proxy está activa.`)
+  }
+  document.getElementById('btn-search').disabled = false
+}
+
+function renderProducts(products) {
+  const container = document.getElementById('search-results')
+  if (!products.length) { container.innerHTML = '<div class="empty"><big>🔍</big>Sem resultados para esta pesquisa.</div>'; return }
+
+  let html = '<div class="product-grid">'
+  products.forEach(p => {
+    const code = p.querySelector('Code')?.textContent || '—'
+    const name = p.querySelector('Name')?.textContent || '—'
+    const price = p.querySelector('PriceFrom')?.textContent || ''
+    const img = p.querySelector('ImageUrl')?.textContent || ''
+    const hasFlight = p.querySelector('HasFlights')?.textContent || 'NO'
+    const pkttype = p.querySelector('Pkt_type')?.textContent || ''
+    const typeBadge = pkttype === 'DYNAMIC'
+      ? '<span class="badge badge-dyn">Dinâmico</span>'
+      : pkttype === 'STATIC' ? '<span class="badge badge-sta">Estático</span>' : ''
+
+    html += `<div class="product-card" onclick="selectProduct(${code}, '${name.replace(/'/g,"\\'")}')">
+      <div class="product-img">${img ? `<img src="${img}" style="width:100%;height:140px;object-fit:cover">` : '🌍'}</div>
+      <div class="product-info">
+        <div style="display:flex;gap:6px;margin-bottom:6px">${typeBadge}${hasFlight==='YES' ? '<span class="badge badge-ok">✈ Voo</span>' : ''}</div>
+        <div class="product-name">${name}</div>
+        <div class="product-meta">Código: ${code}</div>
+        ${price ? `<div class="product-price">desde €${parseFloat(price).toFixed(2)}</div>` : ''}
+        <div style="margin-top:10px"><button class="btn btn-blue btn-sm" onclick="event.stopPropagation();selectProduct(${code},'${name.replace(/'/g,"\\'")}')">Reservar →</button></div>
+      </div>
+    </div>`
+  })
+  html += '</div>'
+  container.innerHTML = html
+}
+
+function selectProduct(code, name) {
+  state.selectedProduct = { code, name }
+  document.getElementById('r-product-code').value = code
+  // Mudar para painel de reserva
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  document.getElementById('panel-reserva').classList.add('active')
+  document.querySelectorAll('.tab')[1].classList.add('active')
+  setStep(1)
+  getProductParams()
+}
+
+function clearSearch() {
+  document.getElementById('s-name').value = ''
+  document.getElementById('s-depdate').value = ''
+  document.getElementById('s-pkttype').value = ''
+  document.getElementById('s-pricefrom').value = ''
+  document.getElementById('s-priceto').value = ''
+  document.getElementById('s-country').value = ''
+  document.getElementById('search-results').innerHTML = ''
+  clearStatus('search-status')
+}
+
+// ── OBTER PARÂMETROS ──────────────────────────────────────
+async function getProductParams() {
+  const code = document.getElementById('r-product-code').value
+  if (!code) { setStatus('reserva-status','err','Introduza o código do produto.'); return }
+
+  setStatus('reserva-status','loading','A obter parâmetros do produto…')
+  document.getElementById('btn-params').disabled = true
+
+  const bodyXML = `<wbs:DynGetProductParameters>
+    <DynProductParametersRequest>
+      ${credXML()}
+      <ProductCode>${code}</ProductCode>
+    </DynProductParametersRequest>
+  </wbs:DynGetProductParameters>`
+
+  try {
+    const doc = await soapCall('DynGetProductParameters', bodyXML)
+    state.productParams = doc
+    state.selectedProduct = { code: parseInt(code), name: getXMLText(doc,'Name') }
+
+    // Popular datas de partida
+    const dates = getXMLAll(doc, 'DynDepartureDate').concat(getXMLAll(doc, 'Date'))
+    const depSelect = document.getElementById('r-depdate')
+    depSelect.innerHTML = dates.map(d => `<option value="${d.textContent.trim()}">${d.textContent.trim()}</option>`).join('')
+
+    // Popular locais de partida
+    const locals = getXMLAll(doc, 'DynDepartureLocal')
+    const locSelect = document.getElementById('r-deplocal')
+    locSelect.innerHTML = locals.map(l => {
+      const lcode = l.querySelector('Code')?.textContent || ''
+      const lname = l.querySelector('Name')?.textContent || lcode
+      return `<option value="${lcode}">${lname} (${lcode})</option>`
+    }).join('')
+
+    // Quartos
+    const roomTypes = getXMLAll(doc, 'DynRoomType')
+    state.roomTypes = roomTypes.map(r => ({
+      code: r.querySelector('Code')?.textContent || '',
+      name: r.querySelector('Name')?.textContent || ''
+    }))
+
+    // Locais base
+    const baseLocals = getXMLAll(doc, 'DynBaseLocal')
+    state.baseLocals = baseLocals.map(b => ({
+      code: b.querySelector('Code')?.textContent || '',
+      name: b.querySelector('Name')?.textContent || '',
+      minNights: b.querySelector('MinNights')?.textContent || '1',
+      maxNights: b.querySelector('Maxnights')?.textContent || '7'
+    }))
+
+    renderRooms()
+    renderBaseLocals()
+
+    document.getElementById('r-step1').style.display = 'none'
+    document.getElementById('r-step2').style.display = 'block'
+    setStep(2)
+    clearStatus('reserva-status')
+  } catch(e) {
+    setStatus('reserva-status','err',`❌ ${e.message}`)
+  }
+  document.getElementById('btn-params').disabled = false
+}
+
+function renderRooms() {
+  const container = document.getElementById('rooms-list')
+  const types = state.roomTypes || []
+  container.innerHTML = state.rooms.map((r, i) => `
+    <div class="room-row">
+      <label>Quarto ${r.num}</label>
+      <select id="room-code-${i}" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px">
+        ${types.map(t => `<option value="${t.code}" ${t.code==r.code?'selected':''}>${t.name}</option>`).join('')}
+      </select>
+      <input type="text" id="room-childages-${i}" placeholder="idades crianças (3,7)" value="${r.childAges}"
+             style="width:160px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px">
+      ${state.rooms.length > 1 ? `<button class="btn btn-outline btn-sm" onclick="removeRoom(${i})">✕</button>` : ''}
+    </div>
+  `).join('')
+}
+
+function addRoom() {
+  state.rooms.push({ num: state.rooms.length + 1, code: state.roomTypes?.[0]?.code || 1, childAges: '' })
+  renderRooms()
+}
+
+function removeRoom(i) {
+  state.rooms.splice(i, 1)
+  state.rooms.forEach((r, idx) => r.num = idx + 1)
+  renderRooms()
+}
+
+function renderBaseLocals() {
+  const container = document.getElementById('base-locals-list')
+  const sec = document.getElementById('base-locals-section')
+  if (!state.baseLocals?.length) { sec.style.display='none'; return }
+  sec.style.display = 'block'
+  container.innerHTML = state.baseLocals.map((b, i) => `
+    <div class="room-row">
+      <label style="min-width:120px">${b.name || 'Local ' + b.code}</label>
+      <input type="number" id="base-nights-${i}" value="${b.minNights}" min="${b.minNights}" max="${b.maxNights}"
+             style="width:80px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px">
+      <span style="font-size:12px;color:var(--muted)">&nbsp;noites (${b.minNights}–${b.maxNights})</span>
+    </div>
+  `).join('')
+}
+
+// ── PESQUISAR DISPONIBILIDADE ──────────────────────────────────────
+async function searchAvailableServices() {
+  setStatus('reserva-status','loading','A pesquisar disponibilidade…')
+  document.getElementById('btn-avail').disabled = true
+
+  // Recolher dados do formulário
+  state.rooms.forEach((r, i) => {
+    r.code = parseInt(document.getElementById(`room-code-${i}`)?.value || r.code)
+    r.childAges = document.getElementById(`room-childages-${i}`)?.value || ''
+  })
+  const depDate = document.getElementById('r-depdate').value
+  const depLocal = document.getElementById('r-deplocal').value
+  const extraNights = document.getElementById('r-extranights').value || '0'
+
+  const roomsXML = state.rooms.map(r =>
+    `<RoomTypeOption><RoomNum>${r.num}</RoomNum><Code>${r.code}</Code><ChildAges>${r.childAges}</ChildAges></RoomTypeOption>`
+  ).join('')
+
+  const baseLocalsXML = (state.baseLocals || []).map((b, i) => {
+    const nights = document.getElementById(`base-nights-${i}`)?.value || b.minNights
+    return `<Local><Code>${b.code}</Code><Nights>${nights}</Nights></Local>`
+  }).join('')
+
+  const bodyXML = `<wbs:DynSearchProductAvailableServices>
+    <DynProductAvailableServicesRequest>
+      ${credXML()}
+      <ProductCode>${state.selectedProduct.code}</ProductCode>
+      <DepartureDate>${depDate}</DepartureDate>
+      <DepartureLocal>${depLocal}</DepartureLocal>
+      <RoomTypes>${roomsXML}</RoomTypes>
+      <BaseLocals>${baseLocalsXML || '<Local><Code>1</Code><Nights>3</Nights></Local>'}</BaseLocals>
+      <ExtraNights>${extraNights}</ExtraNights>
+    </DynProductAvailableServicesRequest>
+  </wbs:DynSearchProductAvailableServices>`
+
+  try {
+    const doc = await soapCall('DynSearchProductAvailableServices', bodyXML)
+    state.sessionHash = getXMLText(doc, 'SessionHash')
+    state.availableServices = doc
+
+    renderServicesStep(doc)
+    document.getElementById('r-step2').style.display = 'none'
+    document.getElementById('r-step3').style.display = 'block'
+    setStep(3)
+    clearStatus('reserva-status')
+  } catch(e) {
+    setStatus('reserva-status','err',`❌ ${e.message}`)
+  }
+  document.getElementById('btn-avail').disabled = false
+}
+
+function renderServicesStep(doc) {
+  // Voos
+  const flightSection = document.getElementById('flight-options-section')
+  const flightOpts = getXMLAll(doc, 'DynFlightOption')
+  if (flightOpts.length) {
+    let html = '<div style="font-size:14px;font-weight:700;margin-bottom:12px">✈️ Opções de Voo</div>'
+    html += '<table class="results-table"><thead><tr><th></th><th>Opção</th><th>Suplemento Total</th><th>Taxas</th><th>Diferencial</th></tr></thead><tbody>'
+    flightOpts.forEach((f, i) => {
+      const optCode = f.querySelector('OptionCode')?.textContent || i
+      const supVal = f.querySelector('SuplementsTotalVal')?.textContent || '0'
+      const tax = f.querySelector('Tax')?.textContent || '0'
+      const dif = f.querySelector('CheapestDifPax')?.textContent || '0'
+      html += `<tr><td><input type="radio" name="flight-opt" value="${optCode}" ${i===0?'checked':''}></td>
+        <td>Opção ${optCode}</td>
+        <td>+€${parseFloat(supVal).toFixed(2)}</td>
+        <td>€${parseFloat(tax).toFixed(2)}</td>
+        <td>+€${parseFloat(dif).toFixed(2)} /pax</td></tr>`
+    })
+    html += '</tbody></table>'
+    flightSection.innerHTML = html
+  } else {
+    flightSection.innerHTML = ''
+  }
+
+  // Hotéis
+  const hotelSection = document.getElementById('hotel-options-section')
+  const itineraries = getXMLAll(doc, 'DynItinerary')
+  if (itineraries.length) {
+    let html = '<div style="font-size:14px;font-weight:700;margin:16px 0 12px">🏨 Opções de Alojamento</div>'
+    itineraries.forEach(itin => {
+      const itinCode = itin.querySelector('Code')?.textContent || '0'
+      const itinName = itin.querySelector('Name')?.textContent || 'Destino'
+      html += `<div style="font-size:13px;font-weight:700;color:var(--blue);margin:12px 0 8px">${itinName}</div>`
+      const hotels = getXMLAll(itin, 'DynHotelOption')
+      hotels.forEach((h, hi) => {
+        const hCode = h.querySelector('Code')?.textContent || ''
+        const hName = h.querySelector('Name')?.textContent || '—'
+        const hRating = h.querySelector('Rating')?.textContent || ''
+        const hPrice = h.querySelector('PriceFrom')?.textContent || ''
+        const hLocal = h.querySelector('Local')?.textContent || ''
+        const boards = getXMLAll(h, 'DynBoards')
+        const boardsHTML = boards.length ? boards.map(b => {
+          const bCode = b.querySelector('Code')?.textContent || ''
+          const bName = b.querySelector('Name')?.textContent || ''
+          return `<option value="${bCode}">${bName}</option>`
+        }).join('') : '<option value="1">Alojamento e Pequeno-almoço</option>'
+
+        html += `<div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:8px;border:2px solid transparent" id="hotel-card-${itinCode}-${hi}">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <input type="radio" name="hotel-itin-${itinCode}" value="${hCode}" data-itin="${itinCode}" ${hi===0?'checked':''}
+                   onchange="updateHotelSelection(this,'${itinCode}','${hCode}',${hi})">
+            <div style="flex:1">
+              <div style="font-weight:700">${hName} ${hRating ? '★'.repeat(Math.min(parseInt(hRating),5)) : ''}</div>
+              <div style="font-size:12px;color:var(--muted)">${hLocal} · ${hPrice ? 'desde €'+parseFloat(hPrice).toFixed(2) : ''}</div>
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block">Regime</label>
+              <select id="board-${itinCode}-${hCode}" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:'Inter',sans-serif">${boardsHTML}</select>
+            </div>
+          </div>
+        </div>`
+      })
+    })
+    hotelSection.innerHTML = html
+  } else {
+    hotelSection.innerHTML = '<div class="empty"><big>🏨</big>Sem hotéis disponíveis para estes parâmetros.</div>'
+  }
+}
+
+function updateHotelSelection(radio, itinCode, hCode, idx) {
+  // highlight visual
+  document.querySelectorAll(`[id^="hotel-card-${itinCode}-"]`).forEach(c => c.style.borderColor='transparent')
+  document.getElementById(`hotel-card-${itinCode}-${idx}`).style.borderColor='var(--blue)'
+}
+
+// ── SIMULAR ──────────────────────────────────────
+async function setServicesAndSimulate() {
+  setStatus('reserva-status','loading','A registar seleções e simular reserva…')
+  document.getElementById('btn-simulate').disabled = true
+
+  // Recolher voo selecionado
+  const flightRadio = document.querySelector('input[name="flight-opt"]:checked')
+  const flightsXML = flightRadio ? `<FlightsSelected><OptionCode>${flightRadio.value}</OptionCode></FlightsSelected>` : ''
+
+  // Recolher hotéis selecionados
+  let hotelsXML = ''
+  document.querySelectorAll('input[type=radio][data-itin]:checked').forEach(r => {
+    const itinCode = r.dataset.itin
+    const hCode = r.value
+    const board = document.getElementById(`board-${itinCode}-${hCode}`)?.value || '1'
+    const roomsXML = state.rooms.map(rm =>
+      `<DynRoomsSelect><RoomNum>${rm.num}</RoomNum><RoomCode>${rm.code}</RoomCode></DynRoomsSelect>`
+    ).join('')
+    hotelsXML += `<DynHotelsSelect>
+      <ItineraryCode>${itinCode}</ItineraryCode>
+      <HotelSelected>${hCode}</HotelSelected>
+      <RoomsSelected>${roomsXML}</RoomsSelected>
+      <BoardSelected>${board}</BoardSelected>
+    </DynHotelsSelect>`
+  })
+
+  const bodyXML = `<wbs:DynSetServicesSelected>
+    <DynServicesSelectedRequest>
+      ${credXML()}
+      <SessionHash>${state.sessionHash}</SessionHash>
+      ${flightsXML}
+      ${hotelsXML ? `<HotelsSelected>${hotelsXML}</HotelsSelected>` : ''}
+    </DynServicesSelectedRequest>
+  </wbs:DynSetServicesSelected>`
+
+  try {
+    await soapCall('DynSetServicesSelected', bodyXML)
+
+    // Agora simular
+    const simBodyXML = `<wbs:DynGetSimulation>
+      <DynGetSimulationRequest>
+        ${credXML()}
+        <SessionHash>${state.sessionHash}</SessionHash>
+      </DynGetSimulationRequest>
+    </wbs:DynGetSimulation>`
+
+    const simDoc = await soapCall('DynGetSimulation', simBodyXML)
+    state.simulationData = simDoc
+
+    renderSimulation(simDoc)
+    document.getElementById('r-step3').style.display = 'none'
+    document.getElementById('r-step4').style.display = 'block'
+    setStep(4)
+    clearStatus('reserva-status')
+  } catch(e) {
+    setStatus('reserva-status','err',`❌ ${e.message}`)
+  }
+  document.getElementById('btn-simulate').disabled = false
+}
+
+function renderSimulation(doc) {
+  const status = getXMLText(doc, 'AvailableStatus')
+  const price = getXMLText(doc, 'TotalPrice')
+  const conditions = getXMLText(doc, 'Conditions')
+  const services = getXMLAll(doc, 'DynResService')
+  const calcs = getXMLAll(doc, 'DynResCalc') || getXMLAll(doc, 'DynResCalcs')
+
+  const statusBadge = status === 'OK'
+    ? '<span class="badge badge-ok">OK — Confirmação Imediata</span>'
+    : '<span class="badge badge-wl">WL — Sujeito a Confirmação</span>'
+
+  let html = `<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap">
+    <div>${statusBadge}</div>
+    <div style="font-size:28px;font-weight:800;color:var(--coral);font-family:'Poppins',sans-serif">€${parseFloat(price||0).toFixed(2)}</div>
+    <div style="font-size:13px;color:var(--muted)">Total da reserva</div>
+  </div>`
+
+  if (services.length) {
+    html += `<div style="font-size:13px;font-weight:700;margin-bottom:8px">Serviços Incluídos</div>
+    <table class="results-table"><thead><tr><th>Tipo</th><th>Descrição</th><th>Qtd</th><th>Check-in</th><th>Check-out</th><th>Estado</th></tr></thead><tbody>`
+    services.forEach(s => {
+      const type = s.querySelector('Type')?.textContent || ''
+      const desc = s.querySelector('Description')?.textContent || ''
+      const quant = s.querySelector('Quant')?.textContent || '1'
+      const dfrom = s.querySelector('DateFrom')?.textContent || ''
+      const dto = s.querySelector('DateTo')?.textContent || ''
+      const st = s.querySelector('Status')?.textContent || ''
+      html += `<tr><td><span class="badge ${st==='OK'?'badge-ok':'badge-wl'}">${type}</span></td>
+        <td>${desc}</td><td>${quant}</td><td>${dfrom}</td><td>${dto}</td>
+        <td><span class="badge ${st==='OK'?'badge-ok':'badge-wl'}">${st}</span></td></tr>`
+    })
+    html += '</tbody></table>'
+  }
+
+  if (conditions) {
+    html += `<div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:8px;font-size:12px;color:var(--muted)">
+      <b>Condições Gerais:</b> ${conditions}</div>`
+  }
+
+  document.getElementById('simulation-result').innerHTML = html
+  document.getElementById('btn-step4-actions').style.display = 'flex'
+}
+
+function goToConfirm() {
+  const paxStruct = state.simulationData ? getXMLAll(state.simulationData, 'DynResPax') : []
+  renderPaxForm(paxStruct)
+  document.getElementById('r-step4').style.display = 'none'
+  document.getElementById('r-step5').style.display = 'block'
+  setStep(5)
+}
+
+function renderPaxForm(paxList) {
+  const container = document.getElementById('pax-form')
+  let html = '<div class="pax-grid">'
+  if (paxList.length) {
+    paxList.forEach((p, i) => {
+      const room = p.querySelector('Room')?.textContent || 'DBL1'
+      const type = p.querySelector('Type')?.textContent || 'ADT'
+      const roomNum = p.querySelector('RoomNumber')?.textContent || '1'
+      const reqBD = p.querySelector('RequireBirthDate')?.textContent || 'NO'
+      html += `<div class="pax-row">
+        <div class="pax-row-title">Passageiro ${i+1} — ${room} · ${type==='ADT'?'Adulto':'Criança'}</div>
+        <div class="form-group">
+          <label>Tratamento</label>
+          <select id="pax-title-${i}">
+            <option value="MR">MR</option><option value="MRS">MRS</option>
+            <option value="MISS">MISS</option><option value="MSTR">MSTR</option>
+            ${type==='CHD'?'<option value="CHD" selected>CHD</option>':''}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" id="pax-name-${i}" placeholder="Nome">
+        </div>
+        <div class="form-group">
+          <label>Apelido</label>
+          <input type="text" id="pax-surname-${i}" placeholder="Apelido">
+        </div>
+        <div class="form-group">
+          <label>Data Nasc.</label>
+          <input type="date" id="pax-dob-${i}">
+        </div>
+        <input type="hidden" id="pax-roomnum-${i}" value="${roomNum}">
+        <input type="hidden" id="pax-room-${i}" value="${room}">
+        ${type==='CHD' ? `<div class="form-group"><label>Idade Criança</label><input type="number" id="pax-childage-${i}" min="0" max="17" placeholder="ex: 7"></div>` : ''}
+      </div>`
+    })
+  } else {
+    // Sem estrutura de pax da simulação — criar 1 pax por defeito por quarto
+    state.rooms.forEach((r, i) => {
+      html += `<div class="pax-row">
+        <div class="pax-row-title">Quarto ${r.num} — Adulto ${i+1}</div>
+        <div class="form-group">
+          <label>Tratamento</label>
+          <select id="pax-title-${i}"><option>MR</option><option>MRS</option><option>MISS</option></select>
+        </div>
+        <div class="form-group"><label>Nome</label><input type="text" id="pax-name-${i}" placeholder="Nome"></div>
+        <div class="form-group"><label>Apelido</label><input type="text" id="pax-surname-${i}" placeholder="Apelido"></div>
+        <div class="form-group"><label>Data Nasc.</label><input type="date" id="pax-dob-${i}"></div>
+        <input type="hidden" id="pax-roomnum-${i}" value="${r.num}">
+        <input type="hidden" id="pax-room-${i}" value="DBL${r.num}">
+      </div>`
+    })
+  }
+  html += '</div>'
+  container.innerHTML = html
+  // guardar count
+  state.paxCount = paxList.length || state.rooms.length
+}
+
+// ── CRIAR RESERVA ──────────────────────────────────────
+async function createReservation() {
+  setStatus('reserva-status','loading','A confirmar reserva…')
+  document.getElementById('btn-create').disabled = true
+
+  let paxXML = ''
+  for (let i = 0; i < state.paxCount; i++) {
+    const title = document.getElementById(`pax-title-${i}`)?.value || 'MR'
+    const name = document.getElementById(`pax-name-${i}`)?.value || ''
+    const surname = document.getElementById(`pax-surname-${i}`)?.value || ''
+    const dob = document.getElementById(`pax-dob-${i}`)?.value || '1990-01-01'
+    const roomNum = document.getElementById(`pax-roomnum-${i}`)?.value || '1'
+    const room = document.getElementById(`pax-room-${i}`)?.value || 'DBL1'
+    const childAge = document.getElementById(`pax-childage-${i}`)?.value || '0'
+    paxXML += `<DynPax>
+      <RoomNum>${roomNum}</RoomNum>
+      <Title>${title}</Title>
+      <Name>${name}</Name>
+      <Surname>${surname}</Surname>
+      <DateBirth>${dob}</DateBirth>
+      <Room>${room}</Room>
+      ${title==='CHD' ? `<ChildAge>${childAge}</ChildAge>` : ''}
+    </DynPax>`
+  }
+
+  const clientRef = document.getElementById('r-clientref').value || ''
+  const clientObs = document.getElementById('r-clientobs').value || ''
+
+  const bodyXML = `<wbs:DynCreateReserve>
+    <DynCreateReserveRequest>
+      ${credXML()}
+      <SessionHash>${state.sessionHash}</SessionHash>
+      <PaxsStruct>${paxXML}</PaxsStruct>
+      ${clientRef ? `<ClientRef>${clientRef}</ClientRef>` : ''}
+      ${clientObs ? `<ClientObs>${clientObs}</ClientObs>` : ''}
+    </DynCreateReserveRequest>
+  </wbs:DynCreateReserve>`
+
+  try {
+    const doc = await soapCall('DynCreateReserve', bodyXML)
+    const reserve = getXMLText(doc, 'Reserve')
+    const sysStatus = getXMLText(doc, 'SystemStatus')
+    const statusAll = getXMLText(doc, 'StatusAll')
+
+    document.getElementById('r-step5').style.display = 'none'
+    document.getElementById('r-final').style.display = 'block'
+    document.getElementById('r-final').innerHTML = `
+      <div class="res-success">
+        <div style="font-size:40px;margin-bottom:8px">✅</div>
+        <div class="res-number">${reserve}</div>
+        <div class="res-label">Número de Reserva Optigest</div>
+        <div style="margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <span class="badge ${sysStatus==='OK'?'badge-ok':'badge-wl'}">Sistema: ${sysStatus}</span>
+          <span class="badge ${statusAll==='OK'?'badge-ok':'badge-wl'}">Serviços: ${statusAll}</span>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-blue" onclick="viewReserve(${reserve})">Ver Detalhes</button>
+          <button class="btn btn-outline" onclick="location.reload()">Nova Reserva</button>
+        </div>
+      </div>`
+    clearStatus('reserva-status')
+    setStep(5)
+  } catch(e) {
+    setStatus('reserva-status','err',`❌ ${e.message}`)
+  }
+  document.getElementById('btn-create').disabled = false
+}
+
+function backStep(n) {
+  const steps = ['r-step1','r-step2','r-step3','r-step4','r-step5','r-final']
+  steps.forEach(s => { const el = document.getElementById(s); if(el) el.style.display='none' })
+  document.getElementById('r-step1').style.display = 'none'
+  if (n === 1) { document.getElementById('r-step1').style.display='block'; setStep(1) }
+  if (n === 2) { document.getElementById('r-step2').style.display='block'; setStep(2) }
+  if (n === 3) { document.getElementById('r-step3').style.display='block'; setStep(3) }
+  if (n === 4) { document.getElementById('r-step4').style.display='block'; setStep(4) }
+}
+
+// ── LISTA DE RESERVAS ──────────────────────────────────────
+async function listReserves() {
+  setStatus('reserves-status','loading','A pesquisar reservas…')
+  const reserve = document.getElementById('rl-reserve').value
+  const status = document.getElementById('rl-status').value
+  const depFrom = document.getElementById('rl-depfrom').value
+  const depTo = document.getElementById('rl-depto').value
+
+  const bodyXML = `<wbs:ReserveList>
+    <ReserveListRequest>
+      ${credXML()}
+      ${reserve ? `<Reserve>${reserve}</Reserve>` : ''}
+      ${status ? `<Status>${status}</Status>` : ''}
+      ${depFrom ? `<DepDateFrom>${depFrom}</DepDateFrom>` : ''}
+      ${depTo ? `<DepDateTo>${depTo}</DepDateTo>` : ''}
+    </ReserveListRequest>
+  </wbs:ReserveList>`
+
+  try {
+    const doc = await soapCall('ReserveList', bodyXML)
+    const list = getXMLAll(doc, 'ResList')
+    if (!list.length) {
+      setStatus('reserves-status','err','Nenhuma reserva encontrada.')
+      document.getElementById('reserves-results').innerHTML = ''
+      return
+    }
+    setStatus('reserves-status','ok',`✓ ${list.length} reserva(s) encontrada(s)`)
+    renderReserveList(list)
+  } catch(e) {
+    setStatus('reserves-status','err',`❌ ${e.message}`)
+  }
+}
+
+function renderReserveList(list) {
+  let html = '<div class="card"><table class="results-table"><thead><tr><th>Nº Reserva</th><th>Cliente</th><th>Produto</th><th>Partida</th><th>Chegada</th><th>1º Pax</th><th>Ações</th></tr></thead><tbody>'
+  list.forEach(r => {
+    const num = r.querySelector('Reserve')?.textContent || ''
+    const client = r.querySelector('ClientName')?.textContent || ''
+    const dep = r.querySelector('DepDate')?.textContent || ''
+    const arr = r.querySelector('ArrDate')?.textContent || ''
+    const pax = r.querySelector('FirstPax')?.textContent || ''
+    html += `<tr>
+      <td><strong>${num}</strong></td>
+      <td>${client}</td><td></td>
+      <td>${dep}</td><td>${arr}</td>
+      <td>${pax}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="viewReserve(${num})">Ver</button></td>
+    </tr>`
+  })
+  html += '</tbody></table></div>'
+  document.getElementById('reserves-results').innerHTML = html
+}
+
+async function viewReserve(reserveNum) {
+  const bodyXML = `<wbs:RetrieveReserve>
+    <RetrieveReserveRequest>
+      ${credXML()}
+      <Reserve>${reserveNum}</Reserve>
+    </RetrieveReserveRequest>
+  </wbs:RetrieveReserve>`
+
+  try {
+    const doc = await soapCall('RetrieveReserve', bodyXML)
+    const head = doc.querySelector('Head') || doc.querySelector('ResHead')
+    if (!head) { alert('Não foi possível obter o detalhe.'); return }
+
+    const product = head.querySelector('Product')?.textContent || ''
+    const dep = head.querySelector('DepDate')?.textContent || ''
+    const arr = head.querySelector('ArrDate')?.textContent || ''
+    const total = head.querySelector('TotalGrossVal')?.textContent || ''
+
+    alert(`Reserva ${reserveNum}\nProduto: ${product}\nPartida: ${dep}\nRegresso: ${arr}\nTotal: €${parseFloat(total||0).toFixed(2)}`)
+  } catch(e) {
+    alert('Erro: ' + e.message)
+  }
+}
+
+// ── DEBUG ──────────────────────────────────────
+async function testConnection() {
+  setStatus('debug-status','loading','A testar ligação ao endpoint Optigest…')
+  document.getElementById('debug-output').innerHTML = ''
+
+  const bodyXML = `<wbs:SearchProductTypes>
+    <SearchProductTypesRequest>
+      ${credXML()}
+    </SearchProductTypesRequest>
+  </wbs:SearchProductTypes>`
+
+  try {
+    const res = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON}` },
+      body: JSON.stringify({ soapAction: 'SearchProductTypes', soapBody: soapEnvelope(bodyXML) })
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    if (data.error) throw new Error(data.error)
+    setStatus('debug-status','ok','✓ Ligação ao proxy Supabase bem-sucedida. Resposta Optigest recebida.')
+    document.getElementById('debug-output').innerHTML = `<div class="xml-block">${escapeXML(data.xml)}</div>`
+  } catch(e) {
+    setStatus('debug-status','err',`❌ ${e.message} — Verifique se a Edge Function soltropico-proxy está deployada no Supabase.`)
+  }
+}
+
+async function testProductTypes() {
+  setStatus('debug-status','loading','A chamar SearchProductTypes…')
+  const bodyXML = `<wbs:SearchProductTypes>
+    <SearchProductTypesRequest>${credXML()}</SearchProductTypesRequest>
+  </wbs:SearchProductTypes>`
+  try {
+    const doc = await soapCall('SearchProductTypes', bodyXML)
+    const types = getXMLAll(doc, 'ProductType')
+    if (types.length) {
+      setStatus('debug-status','ok',`✓ ${types.length} tipo(s) de produto disponível(eis)`)
+      let html = '<table class="results-table" style="margin-top:12px"><thead><tr><th>Código</th><th>Descrição</th></tr></thead><tbody>'
+      types.forEach(t => {
+        html += `<tr><td>${t.querySelector('Code')?.textContent||''}</td><td>${t.querySelector('Description')?.textContent||''}</td></tr>`
+      })
+      html += '</tbody></table>'
+      document.getElementById('debug-output').innerHTML = html
+    } else {
+      setStatus('debug-status','err','Sem tipos de produto na resposta.')
+    }
+  } catch(e) {
+    setStatus('debug-status','err',`❌ ${e.message}`)
+  }
+}
+
+function escapeXML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+}
+
+// ── INIT ──────────────────────────────────────
+// Pré-preencher data de hoje
+document.getElementById('s-depdate').value = new Date().toISOString().split('T')[0]
+document.getElementById('r-product-code').value = ''
+
+// Inicializar quartos
+state.rooms = [{ num: 1, code: 1, childAges: '' }]
+</script>
+</body>
+</html>
