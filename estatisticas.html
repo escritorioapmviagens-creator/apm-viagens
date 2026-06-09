@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APM Viagens · Estatísticas</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --coral:#E8395A;--coral-light:#fef0f3;--blue:#3B5BDB;--blue-light:#eef2ff;
+  --text:#1a1a2e;--muted:#6b7280;--border:#e5e7eb;--bg:#f8f9fa;--bg2:#f1f3f5;
+  --surface:#ffffff;--font:'Inter',sans-serif;--heading:'Poppins',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;-webkit-font-smoothing:antialiased}
+nav{background:#fff;border-bottom:2px solid var(--coral);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-logo img{height:38px}
+.nav-title{font-family:var(--heading);font-size:15px;font-weight:700;color:var(--text)}
+.nav-back{font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:6px}
+.nav-back:hover{color:var(--coral)}
+.content{max-width:1200px;margin:0 auto;padding:24px 20px 60px}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card-title{font-family:var(--heading);font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.finput{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--text);outline:none;background:#fff;transition:border-color .2s}
+.finput:focus{border-color:var(--coral)}
+.login-wall{display:flex;align-items:center;justify-content:center;min-height:80vh}
+.login-box{background:#fff;border:1px solid var(--border);border-radius:14px;padding:32px;width:100%;max-width:360px;text-align:center}
+.login-box h2{font-family:var(--heading);font-size:1.3rem;font-weight:700;margin-bottom:6px}
+.login-box p{color:var(--muted);font-size:13px;margin-bottom:20px}
+.btn-coral{background:var(--coral);color:#fff;border:none;border-radius:8px;padding:11px 24px;font-family:var(--heading);font-size:13px;font-weight:600;cursor:pointer;width:100%}
+.btn-coral:hover{background:#d42e4f}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--text);color:#fff;border-radius:50px;padding:10px 20px;font-size:13px;opacity:0;transition:all .3s;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:#991b1b}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-wall" class="login-wall">
+  <div class="login-box">
+    <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM" style="height:48px;margin-bottom:16px">
+    <h2>Estatísticas APM</h2>
+    <p>Acesso restrito a consultores APM Viagens</p>
+    <input class="finput" id="login-email" type="email" placeholder="Email" style="margin-bottom:10px">
+    <input class="finput" id="login-pass" type="password" placeholder="Password" style="margin-bottom:14px">
+    <button class="btn-coral" onclick="doLogin()">Entrar</button>
+    <div id="login-err" style="color:var(--coral);font-size:12px;margin-top:10px;display:none"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <nav>
+    <div class="nav-logo">
+      <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM Viagens">
+      <span class="nav-title">Estatísticas</span>
+    </div>
+    <a href="https://escritorioapmviagens-creator.github.io/apm-viagens/index.html" class="nav-back">← Voltar ao sistema</a>
+  </nav>
+
+  <div class="content">
+    <!-- Selectores -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:flex-end">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Dimensão</div>
+        <select id="stat-dim" onchange="renderEstatisticas()" class="finput" style="min-width:180px">
+          <option value="global">🌐 Agência (global)</option>
+          <option value="consultor">👤 Por consultor</option>
+          <option value="operador">🏢 Por operador</option>
+          <option value="destino">🌍 Por destino</option>
+          <option value="nicho">👨‍👩‍👧 Por nicho</option>
+          <option value="faixa_etaria">🎂 Por faixa etária</option>
+          <option value="pvp">💶 Por faixa de PVP</option>
+        </select>
+      </div>
+      <div id="stat-sub-wrap" style="display:none">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Filtro</div>
+        <select id="stat-sub" onchange="renderEstatisticas()" class="finput" style="min-width:200px">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Ano</div>
+        <select id="stat-ano" onchange="renderEstatisticas()" class="finput">
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026" selected>2026</option>
+          <option value="todos">Todos</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div id="stat-kpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px"></div>
+
+    <!-- Blocos estatísticos PVP e Comissão -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card">
+        <div class="card-title">💶 PVP por pessoa</div>
+        <div id="stat-pvp-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">💰 Comissão do consultor</div>
+        <div id="stat-comissao-content"></div>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card">
+        <div class="card-title">🌍 Top destinos</div>
+        <div id="stat-destinos"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏢 Top operadores</div>
+        <div id="stat-operadores"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">👨‍👩‍👧 Nichos</div>
+        <div id="stat-nichos"></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card">
+        <div class="card-title">🎂 Faixas etárias</div>
+        <div id="stat-faixas"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 Sazonalidade</div>
+        <div id="stat-sazonalidade"></div>
+      </div>
+    </div>
+
+    <!-- Ranking -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">🏆 Ranking consultores</div>
+      <div id="stat-ranking" style="overflow-x:auto"></div>
+    </div>
+
+    <!-- Performance original -->
+    <div class="card">
+      <div class="card-title">📈 Performance anual</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+        <div style="text-align:center;padding:14px;background:var(--bg);border-radius:8px">
+          <div style="font-size:26px;font-weight:800;color:var(--coral)" id="perf-total-rsv">—</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Reservas este ano</div>
+        </div>
+        <div style="text-align:center;padding:14px;background:var(--bg);border-radius:8px">
+          <div style="font-size:26px;font-weight:800;color:var(--blue)" id="perf-total-vol">—</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Volume total</div>
+        </div>
+        <div style="text-align:center;padding:14px;background:var(--bg);border-radius:8px">
+          <div style="font-size:26px;font-weight:800;color:#10b981" id="perf-conv">—</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Taxa conversão</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">🏆 Top destinos</div>
+          <div id="perf-top-destinos"></div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">🏢 Top operadores</div>
+          <div id="perf-top-operadores"></div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">👤 Ranking consultores</div>
+          <div id="perf-ranking"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPA_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const { createClient } = supabase
+const sb = createClient(SUPA_URL, SUPA_KEY)
+let currentPerfil = null
+
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast')
+  el.textContent = msg; el.className = 'toast ' + type + ' show'
+  setTimeout(() => el.className = 'toast', 3000)
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim()
+  const pass = document.getElementById('login-pass').value
+  const err = document.getElementById('login-err')
+  err.style.display = 'none'
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass })
+  if(error) { err.textContent = 'Email ou password incorrectos'; err.style.display = 'block'; return }
+  await initApp(data.user)
+}
+
+async function initApp(user) {
+  const { data: perfil } = await sb.from('perfis').select('*').eq('id', user.id).single()
+  if(!perfil) { toast('Perfil não encontrado', 'err'); return }
+  currentPerfil = perfil
+  document.getElementById('login-wall').style.display = 'none'
+  document.getElementById('app').style.display = 'block'
+  renderEstatisticas()
+  loadPerformance()
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await sb.auth.getSession()
+  if(session) await initApp(session.user)
+})
+
+function nomeCliente(r, fallback='—') {
+  return r.cliente?.nome || r.passageiro_titular || r.lead_nome || fallback
+}
+
+function calcFaixaEtaria(dataNasc) {
+  if(!dataNasc) return null
+  const hoje = new Date()
+  const nasc = new Date(dataNasc)
+  const idade = hoje.getFullYear() - nasc.getFullYear() - (hoje < new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate()) ? 1 : 0)
+  if(idade < 18) return null
+  if(idade <= 24) return '18-24'
+  if(idade <= 34) return '25-34'
+  if(idade <= 44) return '35-44'
+  if(idade <= 54) return '45-54'
+  if(idade <= 64) return '55-64'
+  return '65+'
+}
+
+function dataPagamento(r) {
+  const d = r.data_partida || r.created_at
+  return d ? new Date(d) : null
+}
+
+function calcStats(arr) {
+  if(!arr.length) return { n:0, media:0, mediana:0, moda:null, dp:0, min:0, max:0 }
+  const n = arr.length
+  const sorted = [...arr].sort((a,b)=>a-b)
+  const media = arr.reduce((s,v)=>s+v,0) / n
+  const mediana = n%2===0 ? (sorted[n/2-1]+sorted[n/2])/2 : sorted[Math.floor(n/2)]
+  const dp = Math.sqrt(arr.reduce((s,v)=>s+(v-media)**2,0)/n)
+  const freq = {}; arr.forEach(v=>{ const k=Math.round(v); freq[k]=(freq[k]||0)+1 })
+  const maxFreq = Math.max(...Object.values(freq))
+  const moda = maxFreq > 1 ? parseFloat(Object.keys(freq).find(k=>freq[k]===maxFreq)) : null
+  return { n, media, mediana, moda, dp, min:sorted[0], max:sorted[n-1] }
+}
+
+function fmtEur(v) { return '€'+Number(v).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0}) }
+function fmtNum(v,d=1) { return Number(v).toLocaleString('pt-PT',{minimumFractionDigits:d,maximumFractionDigits:d}) }
+
+function renderStatCard(label, val) {
+  return `<div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px">
+    <div style="font-size:18px;font-weight:800;color:var(--coral)">${val}</div>
+    <div style="font-size:10px;color:var(--muted);margin-top:2px">${label}</div>
+  </div>`
+}
+
+function renderStatBlock(stats, prefix='€') {
+  const fmt = prefix==='€' ? fmtEur : (v=>fmtNum(v,1))
+  return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
+    ${renderStatCard('Média', fmt(stats.media))}
+    ${renderStatCard('Mediana', fmt(stats.mediana))}
+    ${renderStatCard('Desvio padrão', fmt(stats.dp))}
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+    ${renderStatCard('Mínimo', fmt(stats.min))}
+    ${renderStatCard('Máximo', fmt(stats.max))}
+    ${renderStatCard('N', stats.n+' reservas')}
+  </div>`
+}
+
+function renderBarras(dados, total, cor='var(--coral)') {
+  if(!dados.length) return '<div style="color:var(--muted);font-size:12px;padding:10px">Sem dados</div>'
+  return dados.slice(0,8).map(d => {
+    const pct = total > 0 ? Math.round(d.n/total*100) : 0
+    return `<div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">
+        <span style="font-weight:600;color:var(--text)">${d.label}</span>
+        <span style="color:var(--muted)">${d.n} (${pct}%)${d.media?' · '+fmtEur(d.media)+'/pax':''}</span>
+      </div>
+      <div style="background:var(--border);border-radius:4px;height:6px">
+        <div style="background:${cor};width:${pct}%;height:6px;border-radius:4px;transition:width .5s"></div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+async function renderEstatisticas() {
+  const dim = document.getElementById('stat-dim').value
+  const ano = document.getElementById('stat-ano').value
+  const subSel = document.getElementById('stat-sub')
+
+  let query = sb.from('reservas').select('*,consultor:perfis(nome,plano)').neq('estado','Cancelada')
+  if(ano !== 'todos') query = query.gte('created_at', ano+'-01-01').lte('created_at', ano+'-12-31')
+  if(currentPerfil?.role !== 'admin') query = query.eq('consultor_id', currentPerfil.id)
+  const { data: reservas } = await query
+  if(!reservas) return
+
+  // Preencher selector
+  const subWrap = document.getElementById('stat-sub-wrap')
+  if(['consultor','operador','destino','nicho','faixa_etaria','pvp'].includes(dim)) {
+    subWrap.style.display = 'block'
+    let opcoes = []
+    if(dim==='consultor') opcoes = [...new Set(reservas.map(r=>r.consultor?.nome||'').filter(Boolean))].sort()
+    if(dim==='operador') opcoes = [...new Set(reservas.map(r=>r.fornecedor||'').filter(Boolean))].sort()
+    if(dim==='destino') opcoes = [...new Set(reservas.map(r=>r.destino||'').filter(Boolean))].sort()
+    if(dim==='nicho') opcoes = ['Família','Casal','Individual','Lua-de-mel','Grupo de amigos','Grupo escolar','Sénior','Negócios']
+    if(dim==='faixa_etaria') opcoes = ['18-24','25-34','35-44','45-54','55-64','65+']
+    if(dim==='pvp') opcoes = ['<1.000€','1.000-2.500€','2.500-5.000€','5.000-10.000€','>10.000€']
+    const curVal = subSel.value
+    subSel.innerHTML = '<option value="">Todos</option>' + opcoes.map(o=>`<option value="${o}" ${o===curVal?'selected':''}>${o}</option>`).join('')
+  } else {
+    subWrap.style.display = 'none'
+  }
+
+  // Filtrar
+  let dados = reservas
+  const sub = subSel.value
+  if(sub) {
+    if(dim==='consultor') dados = dados.filter(r=>r.consultor?.nome===sub)
+    if(dim==='operador') dados = dados.filter(r=>r.fornecedor===sub)
+    if(dim==='destino') dados = dados.filter(r=>r.destino===sub)
+    if(dim==='nicho') dados = dados.filter(r=>r.tipo_viagem===sub)
+    if(dim==='faixa_etaria') dados = dados.filter(r=>r.faixa_etaria_titular===sub)
+    if(dim==='pvp') {
+      if(sub==='<1.000€') dados = dados.filter(r=>r.valor_total<1000)
+      else if(sub==='1.000-2.500€') dados = dados.filter(r=>r.valor_total>=1000&&r.valor_total<2500)
+      else if(sub==='2.500-5.000€') dados = dados.filter(r=>r.valor_total>=2500&&r.valor_total<5000)
+      else if(sub==='5.000-10.000€') dados = dados.filter(r=>r.valor_total>=5000&&r.valor_total<10000)
+      else if(sub==='>10.000€') dados = dados.filter(r=>r.valor_total>=10000)
+    }
+  }
+
+  // Calcular estatísticas
+  const pvpPorPessoa = dados.filter(r=>r.num_passageiros>0&&r.valor_total>0).map(r=>r.valor_total/r.num_passageiros)
+  const statsPvp = calcStats(pvpPorPessoa)
+  const comissoes = dados.filter(r=>r.comissao_consultor>0).map(r=>r.comissao_consultor)
+  const statsComissao = calcStats(comissoes)
+  const paxArr = dados.filter(r=>r.num_passageiros>0).map(r=>r.num_passageiros)
+  const statsPax = calcStats(paxArr)
+  const totalPvp = dados.reduce((s,r)=>s+(r.valor_total||0),0)
+  const totalComissao = dados.reduce((s,r)=>s+(r.comissao_consultor||0),0)
+
+  // KPIs
+  document.getElementById('stat-kpis').innerHTML = [
+    renderStatCard('Reservas', dados.length),
+    renderStatCard('Volume total', fmtEur(totalPvp)),
+    renderStatCard('Comissão total', fmtEur(totalComissao)),
+    renderStatCard('Média passageiros', fmtNum(statsPax.media)),
+    renderStatCard('PVP médio/pax', fmtEur(statsPvp.media)),
+    renderStatCard('Comissão média', fmtEur(statsComissao.media)),
+  ].join('')
+
+  document.getElementById('stat-pvp-content').innerHTML = renderStatBlock(statsPvp)
+  document.getElementById('stat-comissao-content').innerHTML = renderStatBlock(statsComissao)
+
+  // Top destinos
+  const destMap = {}
+  dados.forEach(r => {
+    if(!r.destino) return
+    if(!destMap[r.destino]) destMap[r.destino] = { n:0, pvps:[] }
+    destMap[r.destino].n++
+    if(r.valor_total && r.num_passageiros) destMap[r.destino].pvps.push(r.valor_total/r.num_passageiros)
+  })
+  const destList = Object.entries(destMap).map(([k,v])=>({
+    label:k, n:v.n, media:v.pvps.length?v.pvps.reduce((s,x)=>s+x,0)/v.pvps.length:0
+  })).sort((a,b)=>b.n-a.n)
+  document.getElementById('stat-destinos').innerHTML = renderBarras(destList, dados.length, 'var(--coral)')
+
+  // Top operadores
+  const opMap = {}
+  dados.forEach(r => {
+    const op = r.fornecedor||'Não definido'
+    if(!opMap[op]) opMap[op] = { n:0, pvps:[] }
+    opMap[op].n++
+    if(r.valor_total && r.num_passageiros) opMap[op].pvps.push(r.valor_total/r.num_passageiros)
+  })
+  const opList = Object.entries(opMap).map(([k,v])=>({
+    label:k, n:v.n, media:v.pvps.length?v.pvps.reduce((s,x)=>s+x,0)/v.pvps.length:0
+  })).sort((a,b)=>b.n-a.n)
+  document.getElementById('stat-operadores').innerHTML = renderBarras(opList, dados.length, 'var(--blue)')
+
+  // Nichos
+  const nichoMap = {}
+  dados.forEach(r => {
+    const n = r.tipo_viagem||'Não definido'
+    if(!nichoMap[n]) nichoMap[n] = { n:0 }
+    nichoMap[n].n++
+  })
+  const nichoList = Object.entries(nichoMap).map(([k,v])=>({label:k,n:v.n})).sort((a,b)=>b.n-a.n)
+  document.getElementById('stat-nichos').innerHTML = renderBarras(nichoList, dados.length, '#10b981')
+
+  // Faixas etárias
+  const faixaMap = {}
+  dados.forEach(r => {
+    const f = r.faixa_etaria_titular||'Não definido'
+    if(!faixaMap[f]) faixaMap[f] = { n:0 }
+    faixaMap[f].n++
+  })
+  const faixaOrder = ['18-24','25-34','35-44','45-54','55-64','65+','Não definido']
+  const faixaList = faixaOrder.map(k=>({label:k,n:faixaMap[k]?.n||0})).filter(x=>x.n>0)
+  document.getElementById('stat-faixas').innerHTML = renderBarras(faixaList, dados.length, '#f59e0b')
+
+  // Sazonalidade
+  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+  const mesMap = {}
+  dados.forEach(r => {
+    if(!r.data_partida) return
+    const m = new Date(r.data_partida).getMonth()
+    if(!mesMap[m]) mesMap[m] = { n:0 }
+    mesMap[m].n++
+  })
+  const mesList = meses.map((m,i)=>({label:m,n:mesMap[i]?.n||0}))
+  document.getElementById('stat-sazonalidade').innerHTML = renderBarras(mesList, dados.length, '#8b5cf6')
+
+  // Ranking consultores (só admin)
+  if(currentPerfil?.role === 'admin') {
+    const rankMap = {}
+    reservas.forEach(r => {
+      const nome = r.consultor?.nome||'Sem nome'
+      if(!rankMap[nome]) rankMap[nome] = { n:0, vol:0, comissao:0, pvpPax:[] }
+      rankMap[nome].n++
+      rankMap[nome].vol += r.valor_total||0
+      rankMap[nome].comissao += r.comissao_consultor||0
+      if(r.valor_total && r.num_passageiros) rankMap[nome].pvpPax.push(r.valor_total/r.num_passageiros)
+    })
+    const rankList = Object.entries(rankMap).map(([k,v])=>({
+      nome:k, n:v.n, vol:v.vol, comissao:v.comissao,
+      pvpMedio:v.pvpPax.length?v.pvpPax.reduce((s,x)=>s+x,0)/v.pvpPax.length:0,
+      comissaoMedia:v.n>0?v.comissao/v.n:0
+    })).sort((a,b)=>b.vol-a.vol)
+    document.getElementById('stat-ranking').innerHTML = `
+      <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:600px">
+        <thead><tr style="background:var(--bg)">
+          <th style="padding:8px;text-align:left;color:var(--muted);font-size:11px">#</th>
+          <th style="padding:8px;text-align:left;color:var(--muted);font-size:11px">CONSULTOR</th>
+          <th style="padding:8px;text-align:right;color:var(--muted);font-size:11px">RESERVAS</th>
+          <th style="padding:8px;text-align:right;color:var(--muted);font-size:11px">VOLUME</th>
+          <th style="padding:8px;text-align:right;color:var(--muted);font-size:11px">PVP MÉDIO/PAX</th>
+          <th style="padding:8px;text-align:right;color:var(--muted);font-size:11px">COMISSÃO TOTAL</th>
+          <th style="padding:8px;text-align:right;color:var(--muted);font-size:11px">COMISSÃO MÉDIA</th>
+        </tr></thead>
+        <tbody>${rankList.map((c,i)=>`
+          <tr style="border-top:1px solid var(--border)">
+            <td style="padding:8px;color:var(--muted);font-size:11px">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+            <td style="padding:8px;font-weight:600">${c.nome}</td>
+            <td style="padding:8px;text-align:right">${c.n}</td>
+            <td style="padding:8px;text-align:right;font-weight:700;color:var(--blue)">${fmtEur(c.vol)}</td>
+            <td style="padding:8px;text-align:right">${fmtEur(c.pvpMedio)}</td>
+            <td style="padding:8px;text-align:right;color:#10b981;font-weight:700">${fmtEur(c.comissao)}</td>
+            <td style="padding:8px;text-align:right">${fmtEur(c.comissaoMedia)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>`
+  } else {
+    document.getElementById('stat-ranking').style.display = 'none'
+  }
+}
+
+async function loadPerformance() {
+  const ano = new Date().getFullYear()
+  let query = sb.from('reservas').select('id,valor_total,preco_net,consultor_id,estado,tipo_viagem,destino,fornecedor,data_partida,created_at,consultor:perfis(nome)').gte('created_at', ano+'-01-01').neq('estado','Cancelada')
+  if(currentPerfil?.role !== 'admin') query = query.eq('consultor_id', currentPerfil.id)
+  const { data: reservas } = await query
+  if(!reservas) return
+
+  const fmt = v => '€'+Number(v).toLocaleString('pt-PT',{minimumFractionDigits:0})
+  const total = reservas.length
+  const vol = reservas.reduce((s,r)=>s+(r.valor_total||0),0)
+
+  const { data: leads } = await sb.from('pedidos_orcamento').select('id').gte('created_at', ano+'-01-01')
+  const conv = leads?.length ? Math.round(total/(leads.length)*100) : 0
+
+  document.getElementById('perf-total-rsv').textContent = total
+  document.getElementById('perf-total-vol').textContent = fmt(vol)
+  document.getElementById('perf-conv').textContent = conv+'%'
+
+  // Top destinos
+  const destMap = {}
+  reservas.forEach(r => { if(r.destino) destMap[r.destino]=(destMap[r.destino]||0)+1 })
+  const destList = Object.entries(destMap).sort((a,b)=>b[1]-a[1]).slice(0,6)
+  document.getElementById('perf-top-destinos').innerHTML = destList.map(([d,n])=>`
+    <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span>${d}</span><span style="font-weight:700;color:var(--coral)">${n}</span>
+    </div>`).join('')
+
+  // Top operadores
+  const opMap = {}
+  reservas.forEach(r => { if(r.fornecedor) opMap[r.fornecedor]=(opMap[r.fornecedor]||0)+1 })
+  const opList = Object.entries(opMap).sort((a,b)=>b[1]-a[1]).slice(0,6)
+  document.getElementById('perf-top-operadores').innerHTML = opList.map(([o,n])=>`
+    <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span>${o}</span><span style="font-weight:700;color:var(--blue)">${n}</span>
+    </div>`).join('')
+
+  // Ranking consultores (só admin)
+  if(currentPerfil?.role === 'admin') {
+    const rankMap = {}
+    reservas.forEach(r => {
+      const n = r.consultor?.nome||'—'
+      if(!rankMap[n]) rankMap[n] = { n:0, vol:0 }
+      rankMap[n].n++; rankMap[n].vol += r.valor_total||0
+    })
+    const rankList = Object.entries(rankMap).sort((a,b)=>b[1].vol-a[1].vol).slice(0,8)
+    document.getElementById('perf-ranking').innerHTML = rankList.map(([n,v],i)=>`
+      <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span>${i===0?'🥇':i===1?'🥈':i===2?'🥉':'  '} ${n}</span>
+        <span style="font-weight:700;color:#10b981">${fmt(v.vol)}</span>
+      </div>`).join('')
+  }
+}
+</script>
+</body>
+</html>
