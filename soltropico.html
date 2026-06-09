@@ -291,12 +291,20 @@ async function soapCall(action, body) {
 // Encontrar texto de qualquer tag, ignorando namespace
 function txt(el, tag) {
   if (!el) return ''
+  // 1. Procurar apenas nos filhos directos (evita apanhar Code de níveis superiores)
+  for (let i = 0; i < el.children.length; i++) {
+    const child = el.children[i]
+    const local = child.localName || child.tagName.split(':').pop()
+    if (local === tag) return child.textContent.trim()
+  }
+  // 2. querySelector (pode falhar com namespaces)
   const direct = el.querySelector(tag)
   if (direct) return direct.textContent.trim()
-  const all = el.getElementsByTagName('*')
-  for (let i = 0; i < all.length; i++) {
-    const local = all[i].localName || all[i].tagName.split(':').pop()
-    if (local === tag) return all[i].textContent.trim()
+  // 3. Fallback: percorrer todos os descendentes
+  const nodes = el.getElementsByTagName('*')
+  for (let i = 0; i < nodes.length; i++) {
+    const local = nodes[i].localName || nodes[i].tagName.split(':').pop()
+    if (local === tag) return nodes[i].textContent.trim()
   }
   return ''
 }
@@ -428,7 +436,7 @@ function renderCard(p) {
   const typeBadge = p.pkt === 'DYNAMIC' ? '<span class="badge badge-dyn">Dinâmico</span>'
     : p.pkt === 'STATIC' ? '<span class="badge badge-sta">Estático</span>' : ''
 
-  return `<div class="product-card" onclick="selectProduct(${p.codeInt}, '${esc(p.name)}')">
+  return `<div class="product-card" onclick="selectProduct(${p.codeInt}, '${esc(p.name)}', '${p.pkt}')">
     <div class="product-img">${p.img ? `<img src="${esc(p.img)}" onerror="this.parentElement.innerHTML='🌍'">` : '🌍'}</div>
     <div class="product-info">
       <div style="margin-bottom:6px">${typeBadge}${hasFlight ? '<span class="badge badge-flight">✈️ Voo</span>' : ''}</div>
@@ -437,12 +445,12 @@ function renderCard(p) {
       ${p.opFrom ? `<div class="product-meta">📅 ${p.opFrom} → ${p.opTo}</div>` : ''}
       <div class="product-price">${priceVal > 0 ? `€${priceVal.toLocaleString('pt-PT',{minimumFractionDigits:2})}` : 'Sob consulta'}</div>
       <button class="btn btn-blue btn-sm" style="width:100%;justify-content:center;margin-top:8px"
-        onclick="event.stopPropagation();selectProduct(${p.codeInt},'${esc(p.name)}')">Reservar →</button>
+        onclick="event.stopPropagation();selectProduct(${p.codeInt},'${esc(p.name)}','${p.pkt}')">Reservar →</button>
     </div>
   </div>`
 }
 
-function selectProduct(codeInt, name) {
+function selectProduct(codeInt, name, pkt) {
   // VALIDAÇÃO FINAL: garantir int positivo
   const code = parseInt(codeInt)
   if (!code || isNaN(code) || code <= 0) {
@@ -451,7 +459,7 @@ function selectProduct(codeInt, name) {
     return
   }
   log(`✅ Produto selecionado: ${name} (código ${code})`, 'success')
-  state.selectedProduct = { code, name }
+  state.selectedProduct = { code, name, pkt: pkt || 'DYNAMIC' }
   document.getElementById('r-product-code').value = code
   document.getElementById('r-product-info').innerHTML =
     `<strong>${esc(name)}</strong> <span style="color:var(--muted)">(código: ${code})</span>`
@@ -486,13 +494,24 @@ async function getProductParams() {
   setStatus('reserva-status','loading',`A obter parâmetros do produto ${code}…`)
 
   try {
-    const doc = await soapCall('DynGetProductParameters',
-      `<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<ProductCode xsi:type="xsd:int">${code}</ProductCode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+    const pkt = state.selectedProduct?.pkt || 'DYNAMIC'
+    const isDynamic = pkt === 'DYNAMIC'
+    log(`📦 Tipo: ${pkt}`)
+
+    let doc
+    if (isDynamic) {
+      doc = await soapCall('DynGetProductParameters',
+        `<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<ProductCode xsi:type="xsd:int">${code}</ProductCode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+    } else {
+      doc = await soapCall('StaticGetProductParameters',
+        `<ns1:StaticGetProductParameters><StaticProductParametersRequest>${credXML()}<ProductCode xsi:type="xsd:int">${code}</ProductCode></StaticProductParametersRequest></ns1:StaticGetProductParameters>`)
+    }
+    state.isDynamic = isDynamic
 
     const productName = txt(doc,'Name')
     if (!productName) throw new Error(`Produto ${code} não encontrado ou sem nome na resposta`)
 
-    state.selectedProduct = { code, name: productName }
+    state.selectedProduct = { code, name: productName, pkt }
     state.productParams = doc
 
     // Datas de partida
@@ -575,8 +594,14 @@ async function searchAvailableServices() {
     : '<Local><Code>1</Code><Nights>3</Nights></Local>'
 
   try {
-    const doc = await soapCall('DynSearchProductAvailableServices',
-      `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate>${depDate}</DepartureDate><DepartureLocal>${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights>${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+    let doc
+    if (state.isDynamic !== false) {
+      doc = await soapCall('DynSearchProductAvailableServices',
+        `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+    } else {
+      doc = await soapCall('StaticGetRoomsStruct',
+        `<ns1:StaticGetRoomsStruct><StaticGetRoomsStructRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes></StaticGetRoomsStructRequest></ns1:StaticGetRoomsStruct>`)
+    }
 
     state.sessionHash = txt(doc,'SessionHash')
     log(`✅ SessionHash: ${state.sessionHash}`, 'success')
