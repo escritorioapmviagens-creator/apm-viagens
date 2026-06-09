@@ -711,8 +711,8 @@ textarea.finput{resize:vertical;min-height:72px}
 </colgroup>
 <thead><tr style="background:#f8f9ff;border-bottom:2px solid var(--border)">
   <th id="th-consultor" style="padding:7px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Consultor</th>
-  <th id="th-localizador" style="padding:7px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Localizador</th>
-  <th id="th-fornecedor" style="padding:7px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Fornecedor</th>
+  <th id="th-localizador" style="padding:7px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Loc / Fornecedor</th>
+  <th id="th-fornecedor" style="display:none;padding:7px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Fornecedor</th>
   <th style="padding:7px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Passageiro</th>
   <th style="padding:7px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Destino</th>
   <th style="padding:7px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Partida</th>
@@ -4683,10 +4683,7 @@ async function renderTable() {
         return `<input style="${editStyle};font-weight:600;color:var(--blue);font-family:'Poppins',sans-serif;font-size:11px" value="${r.localizador_principal||''}" placeholder="—" onblur="rsvInlineEdit('${r.id}','localizador_principal',this.value)" title="Editar localizador">`
       })()}
     </td>
-    <td style="${tdStyle}">
-      <input style="${editStyleMuted}" value="${r.fornecedor||''}" placeholder="—"
-        onblur="rsvInlineEdit('${r.id}','fornecedor',this.value)" title="Editar fornecedor">
-    </td>
+
     <td style="${tdStyle};font-weight:600">
       <input style="${editStyle};font-weight:600" value="${nomeCliente(r,'')}" placeholder="—"
         onblur="rsvInlineEditCliente('${r.id}','${r.cliente_id||''}',this.value)" title="Editar passageiro titular">
