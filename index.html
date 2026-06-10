@@ -451,7 +451,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-item" onclick="navTo('pedidos-orcamento',this)" id="nav-pedidos-orc"><span class="nav-icon">📋</span> Pedidos de Orçamento <span class="nav-badge" id="pedidos-orc-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="navTo('followups',this)"><span class="nav-icon">⏰</span> Follow-ups <span class="nav-badge" id="followup-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="navTo('aceites',this)"><span class="nav-icon">⏳</span> Contratos Pendentes <span class="nav-badge" id="aceites-badge" style="display:none">0</span></div>
-      <div class="nav-item" onclick="navTo('reservas',this)"><span class="nav-icon">✈</span> Reservas</div>
+      <div class="nav-item" onclick="navTo('reservas',this)"><span class="nav-icon">✈</span> Reservas <span class="nav-badge" id="complementar-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="navTo('comissoes',this)"><span class="nav-icon">💶</span> As Minhas Comissões</div>
       <div class="nav-item" onclick="navTo('nova',this)"><span class="nav-icon">＋</span> Nova Reserva</div>
       <div class="nav-item" onclick="navTo('clientes',this)"><span class="nav-icon">👥</span> Clientes</div>
@@ -9195,6 +9195,40 @@ async function verificarAceitesPendentes24h() {
     .select('id').eq('estado', 'Aceite Pendente').lt('aceite_em', limite)
   if (data?.length) {
     toast(`⚠️ ${data.length} contrato(s) aceite(s) há mais de 12h por efectuar!`, 'err')
+  }
+
+  verificarComplementaresPendentes()
+}
+async function verificarComplementaresPendentes() {
+  const isAdmin = currentPerfil?.role === 'admin'
+
+  // Badge: reservas com CST aceite mas complementar ainda não preenchido
+  let q = sb.from('reservas')
+    .select('id', { count: 'exact', head: true })
+    .eq('cst_aceite', true)
+    .eq('complementar_preenchido', false)
+    .eq('estado', 'Aceite Pendente')
+  if (!isAdmin) q = q.eq('consultor_id', currentPerfil.id)
+  const { count } = await q
+
+  const badge = document.getElementById('complementar-badge')
+  if (badge) {
+    if (count > 0) { badge.textContent = count; badge.style.display = 'inline-flex' }
+    else badge.style.display = 'none'
+  }
+
+  // Toasts para admin com notificações não lidas
+  if (!isAdmin) return
+  const { data: notifs } = await sb.from('notificacoes')
+    .select('id, titulo')
+    .eq('lida', false)
+    .eq('para_admin', true)
+    .order('created_at', { ascending: false })
+
+  if (notifs?.length) {
+    notifs.slice(0, 3).forEach(n => toast(`📋 ${n.titulo}`, 'ok'))
+    const ids = notifs.map(n => n.id)
+    await sb.from('notificacoes').update({ lida: true }).in('id', ids)
   }
 }
 
