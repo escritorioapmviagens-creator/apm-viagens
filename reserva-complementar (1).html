@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APM Viagens — Complemento de Reserva</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --coral:#E8395A;--coral-light:#fdedf0;--blue:#3B5BDB;--blue-light:#eef1fb;
+  --green:#10b981;--green-light:#ecfdf5;--amber:#f59e0b;--amber-light:#fef3c7;
+  --dark:#111318;--text:#1f2937;--mid:#4b5563;--muted:#9ca3af;
+  --border:#e5e7eb;--bg:#f5f6fa;--white:#fff;
+  --radius:16px;--radius-sm:10px;
+  --font:'Plus Jakarta Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);min-height:100vh;padding:2rem 1rem;color:var(--text)}
+.wrapper{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:1.25rem}
+.logo{display:flex;align-items:center;justify-content:center;margin-bottom:.25rem}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.card-title{font-size:1.05rem;font-weight:700;color:var(--dark);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}
+.badge{display:inline-flex;align-items:center;gap:6px;background:var(--coral-light);color:var(--coral);font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:1rem}
+/* seletor modo */
+.modo-selector{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem}
+.modo-btn{padding:.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white);font-family:var(--font);font-size:.85rem;font-weight:600;color:var(--mid);cursor:pointer;transition:all .15s;text-align:center}
+.modo-btn.active{border-color:var(--coral);background:var(--coral-light);color:var(--coral)}
+/* lista pendentes */
+.pendente-item{border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:.875rem 1rem;margin-bottom:.6rem;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.pendente-item:hover{border-color:var(--blue);background:var(--blue-light)}
+.pendente-item.selected{border-color:var(--coral);background:var(--coral-light)}
+.pendente-rnavt{font-size:.78rem;font-weight:700;color:var(--blue)}
+.pendente-dest{font-size:.9rem;font-weight:700;color:var(--dark)}
+.pendente-sub{font-size:.75rem;color:var(--muted);margin-top:2px}
+/* reserva identificada */
+.reserva-identificada{background:var(--green-light);border:1.5px solid var(--green);border-radius:var(--radius-sm);padding:.875rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.75rem}
+.reserva-pendente-box{background:var(--amber-light);border:1.5px solid var(--amber);border-radius:var(--radius-sm);padding:.875rem 1rem;margin-bottom:1rem}
+/* info box */
+.reserva-box{background:var(--blue-light);border:1px solid rgba(59,91,219,.18);border-radius:var(--radius-sm);padding:1rem 1.25rem;margin-bottom:1.25rem}
+.reserva-box .rnavt{font-size:1.2rem;font-weight:800;color:var(--blue)}
+.reserva-box .sub{font-size:.78rem;color:var(--mid);margin-top:.2rem}
+/* campos */
+.field{margin-bottom:1.1rem}
+.field label{display:block;font-size:.8rem;font-weight:600;color:var(--mid);margin-bottom:.4rem;letter-spacing:.02em}
+.field label .req{color:var(--coral)}
+.field input,.field select,.field textarea{width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:.65rem .9rem;font-family:var(--font);font-size:.875rem;color:var(--text);background:var(--white);transition:border-color .15s,box-shadow .15s;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,91,219,.1)}
+.field textarea{resize:vertical;min-height:80px}
+.field .hint{font-size:.72rem;color:var(--muted);margin-top:.3rem}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:520px){.field-row{grid-template-columns:1fr}}
+/* serviços adicionais */
+.servico-item{border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:1rem;margin-bottom:.75rem;position:relative}
+.servico-item .remove-btn{position:absolute;top:.6rem;right:.75rem;background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer}
+.servico-item .remove-btn:hover{color:var(--coral)}
+.servico-num{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem}
+/* upload */
+.upload-area{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:1.5rem;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;position:relative}
+.upload-area:hover,.upload-area.drag{border-color:var(--blue);background:var(--blue-light)}
+.upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:2rem;margin-bottom:.5rem}
+.upload-area p{font-size:.8rem;color:var(--mid);line-height:1.5}
+.file-list{margin-top:.75rem;display:flex;flex-direction:column;gap:.4rem}
+.file-chip{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.4rem .75rem;font-size:.78rem}
+.file-chip .nome{color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px}
+.file-chip .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;flex-shrink:0}
+.file-chip .rm:hover{color:var(--coral)}
+.file-chip .estado{font-size:.7rem;padding:2px 8px;border-radius:10px;flex-shrink:0}
+.file-chip .estado.ok{background:var(--green-light);color:var(--green)}
+.file-chip .estado.loading{background:#fef3c7;color:#d97706}
+.file-chip .estado.erro{background:var(--coral-light);color:var(--coral)}
+/* faturação */
+.toggle-row{display:flex;align-items:center;gap:.75rem;cursor:pointer;padding:.5rem 0}
+.toggle-row input[type=checkbox]{accent-color:var(--coral);width:17px;height:17px;flex-shrink:0;cursor:pointer}
+.toggle-row span{font-size:.875rem;font-weight:500}
+.sec-fatura{border-top:1px solid var(--border);margin-top:.75rem;padding-top:.75rem}
+/* btns */
+.btn{padding:.85rem 1.5rem;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:.9rem;font-weight:700;cursor:pointer;transition:all .15s;width:100%}
+.btn-coral{background:linear-gradient(135deg,var(--coral),#d42d4e);color:#fff;box-shadow:0 4px 14px rgba(232,57,90,.3)}
+.btn-coral:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,57,90,.4)}
+.btn-coral:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-outline{background:var(--white);border:1.5px solid var(--blue);color:var(--blue);font-family:var(--font);font-size:.8rem;font-weight:600;padding:.5rem 1rem;border-radius:8px;cursor:pointer;transition:background .15s}
+.btn-outline:hover{background:var(--blue-light)}
+.alert{font-size:.8rem;padding:.65rem 1rem;border-radius:8px;margin-bottom:.75rem}
+.alert-err{background:var(--coral-light);color:var(--coral)}
+.hidden{display:none!important}
+.sucesso-card{text-align:center;padding:2.5rem}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:up .3s ease both}
+#sec-loading{text-align:center;padding:3rem}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="logo">
+    <img src="logo_transparent.png" alt="APM Viagens" style="height:72px;width:auto;object-fit:contain">
+  </div>
+
+  <!-- LOADING -->
+  <div id="sec-loading" class="card">
+    <div style="font-size:2rem;margin-bottom:1rem">⏳</div>
+    <div style="font-weight:600;color:var(--mid)">A verificar sessão...</div>
+  </div>
+
+  <!-- SEM SESSÃO -->
+  <div id="sec-sem-sessao" class="card hidden" style="text-align:center;padding:2.5rem">
+    <div style="font-size:2.5rem;margin-bottom:1rem">🔒</div>
+    <div style="font-size:1rem;font-weight:700;margin-bottom:.5rem">Acesso restrito</div>
+    <p style="font-size:.85rem;color:var(--mid);margin-bottom:1.5rem;line-height:1.6">
+      Tem de estar autenticado no sistema APM para aceder a este formulário.
+    </p>
+    <a href="index.html" style="display:inline-block;background:var(--coral);color:#fff;padding:.75rem 1.5rem;border-radius:var(--radius-sm);font-weight:700;text-decoration:none;font-size:.9rem">
+      Ir para o sistema
+    </a>
+  </div>
+
+  <!-- SELETOR DE MODO -->
+  <div id="sec-modo" class="card hidden">
+    <div class="badge">📋 Formulário Complementar de Reserva</div>
+    <div class="card-title">O que pretende fazer?</div>
+
+    <div class="modo-selector">
+      <button class="modo-btn active" id="btn-modo-pendente" onclick="setModo('pendente')">
+        <div style="font-size:1.4rem;margin-bottom:.3rem">⏳</div>
+        <div>Completar reserva pendente</div>
+        <div style="font-size:.72rem;font-weight:400;margin-top:.2rem;opacity:.75">CST aceite, aguarda dados do fornecedor</div>
+      </button>
+      <button class="modo-btn" id="btn-modo-existente" onclick="setModo('existente')">
+        <div style="font-size:1.4rem;margin-bottom:.3rem">🔍</div>
+        <div>Atualizar reserva existente</div>
+        <div style="font-size:.72rem;font-weight:400;margin-top:.2rem;opacity:.75">Adicionar documentos, serviços ou informação</div>
+      </button>
+    </div>
+
+    <!-- MODO PENDENTE: lista de reservas -->
+    <div id="bloco-pendente">
+      <div style="font-size:.8rem;font-weight:600;color:var(--mid);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.04em">As suas reservas pendentes</div>
+      <div id="lista-pendentes">
+        <div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.85rem">⏳ A carregar...</div>
+      </div>
+      <div id="modo-pend-err" class="alert alert-err hidden"></div>
+      <button class="btn btn-coral" id="btn-continuar-pend" onclick="continuarPendente()" disabled style="margin-top:.5rem">
+        Continuar com a reserva selecionada →
+      </button>
+    </div>
+
+    <!-- MODO EXISTENTE: campo de localizador -->
+    <div id="bloco-existente" class="hidden">
+      <div class="field">
+        <label>Localizador / referência do operador <span class="req">*</span></label>
+        <input type="text" id="loc-existente" placeholder="ex: GBN-12345 ou 604223899"
+          style="text-transform:uppercase" oninput="pesquisarLocalizador(this.value)">
+        <div class="hint">Pode ser o localizador principal ou de um serviço adicional.</div>
+      </div>
+      <!-- Feedback de identificação -->
+      <div id="loc-identificada" class="reserva-identificada hidden">
+        <div style="font-size:1.3rem;flex-shrink:0">✅</div>
+        <div>
+          <div style="font-size:.8rem;font-weight:700;color:var(--green)">Reserva identificada</div>
+          <div style="font-size:.9rem;font-weight:700;color:var(--dark)" id="loc-id-nome">—</div>
+          <div style="font-size:.75rem;color:var(--mid)" id="loc-id-sub">—</div>
+        </div>
+      </div>
+      <div id="loc-nao-encontrada" class="alert alert-err hidden">Nenhuma reserva encontrada com este localizador.</div>
+      <button class="btn btn-coral" id="btn-continuar-exist" onclick="continuarExistente()" disabled style="margin-top:.5rem">
+        Continuar →
+      </button>
+    </div>
+  </div>
+
+  <!-- FORMULÁRIO PRINCIPAL -->
+  <div id="sec-form" class="hidden">
+
+    <!-- Info da reserva -->
+    <div class="card">
+      <div class="reserva-box">
+        <div class="rnavt" id="inf-rnavt">—</div>
+        <div class="sub" id="inf-sub">—</div>
+      </div>
+      <!-- Aviso pendente vs existente -->
+      <div id="aviso-pendente" class="reserva-pendente-box hidden">
+        <div style="font-size:.8rem;font-weight:700;color:#92400e;margin-bottom:.2rem">⚠️ Reserva pendente</div>
+        <div style="font-size:.78rem;color:#78350f;line-height:1.5">
+          Esta reserva ainda não tem localizador, fornecedor, net e PVP. Ao preencher estes campos a reserva passará automaticamente a <strong>Confirmada</strong>.
+        </div>
+      </div>
+      <p style="font-size:.75rem;color:var(--muted)">Preencha os campos necessários e clique em <strong>Guardar</strong>.</p>
+    </div>
+
+    <!-- OPERADOR E SERVIÇO PRINCIPAL -->
+    <div class="card">
+      <div class="card-title">🏢 Operador e serviço principal</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Fornecedor / Operador <span class="req" id="req-operador">*</span></label>
+          <input type="text" id="f-operador" placeholder="ex: NewBlue, GBN, Leplan...">
+        </div>
+        <div class="field">
+          <label>Localizador / referência <span class="req" id="req-localizador">*</span></label>
+          <input type="text" id="f-localizador" placeholder="ex: GBN-12345">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Tipo de serviço <span class="req" id="req-tipo">*</span></label>
+          <select id="f-tipo-servico">
+            <option value="">Selecionar...</option>
+            <option value="Pacote turístico">Pacote turístico</option>
+            <option value="Hotel">Hotel</option>
+            <option value="Voo">Voo</option>
+            <option value="Hotel, Voo">Hotel + Voo</option>
+            <option value="Hotel, Voo, Transfer">Hotel + Voo + Transfer</option>
+            <option value="Cruzeiro">Cruzeiro</option>
+            <option value="Rent-a-Car">Rent-a-Car</option>
+            <option value="Seguro">Seguro</option>
+            <option value="Excursão">Excursão</option>
+            <option value="Bilhetes/Tickets">Bilhetes / Tickets</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Valor net / custo <span class="req" id="req-net">*</span></label>
+          <input type="number" id="f-net" placeholder="0.00" step="0.01" min="0">
+          <div class="hint">Preço de custo para a APM, sem margem.</div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>PVP recomendado pelo operador <span class="req" id="req-pvp">*</span></label>
+          <input type="number" id="f-pvp" placeholder="0.00" step="0.01" min="0">
+        </div>
+        <div class="field">
+          <label>Autoconsumo?</label>
+          <select id="f-autoconsumo">
+            <option value="nao">Não</option>
+            <option value="sim">Sim — reserva em nome do consultor</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVIÇOS ADICIONAIS -->
+    <div class="card">
+      <div class="card-title">➕ Serviços adicionais</div>
+      <p style="font-size:.82rem;color:var(--mid);margin-bottom:1rem;line-height:1.5">
+        Adicione serviços complementares: transfer, seguro, bilhetes, rent-a-car, etc.
+      </p>
+      <div id="servicos-lista"></div>
+      <button class="btn-outline" onclick="adicionarServico()">+ Adicionar serviço</button>
+    </div>
+
+    <!-- DADOS DE FATURAÇÃO -->
+    <div class="card">
+      <div class="card-title">🧾 Dados de faturação</div>
+      <label class="toggle-row">
+        <input type="checkbox" id="chk-fat-diferente" onchange="toggleFaturacao()">
+        <span>Dados de faturação diferentes do passageiro titular</span>
+      </label>
+      <div class="sec-fatura hidden" id="sec-fatura">
+        <div class="field" style="margin-top:.75rem">
+          <label>Nome para fatura <span class="req">*</span></label>
+          <input type="text" id="f-fat-nome" placeholder="Nome completo ou razão social">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>NIF <span class="req">*</span></label>
+            <input type="text" id="f-fat-nif" placeholder="999999999">
+          </div>
+          <div class="field">
+            <label>Localidade</label>
+            <input type="text" id="f-fat-localidade" placeholder="Cidade">
+          </div>
+        </div>
+        <div class="field">
+          <label>Observações de faturação</label>
+          <textarea id="f-fat-obs" placeholder="ex: Fatura dividida por 2 NIFs, fatura em nome de empresa..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASSAGEIRO TITULAR -->
+    <div class="card">
+      <div class="card-title">👤 Passageiro titular</div>
+      <p style="font-size:.82rem;color:var(--mid);margin-bottom:1rem">Confirme ou complete os dados do passageiro.</p>
+      <div class="field-row">
+        <div class="field">
+          <label>Nome completo <span class="req">*</span></label>
+          <input type="text" id="f-pass-nome" placeholder="Nome completo">
+        </div>
+        <div class="field">
+          <label>Telefone</label>
+          <input type="tel" id="f-pass-tel" placeholder="9XXXXXXXX">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>E-mail</label>
+          <input type="email" id="f-pass-email" placeholder="email@exemplo.com">
+        </div>
+        <div class="field">
+          <label>NIF</label>
+          <input type="text" id="f-pass-nif" placeholder="999999999">
+        </div>
+      </div>
+      <div class="field">
+        <label>Morada / Localidade</label>
+        <input type="text" id="f-pass-morada" placeholder="Rua, código postal, localidade">
+      </div>
+    </div>
+
+    <!-- DOCUMENTOS -->
+    <div class="card">
+      <div class="card-title">📎 Documentos</div>
+      <p style="font-size:.82rem;color:var(--mid);margin-bottom:1rem;line-height:1.5">
+        Carregue comprovativos de pagamento, confirmações do operador ou qualquer documento relevante.
+      </p>
+      <div class="upload-area" id="upload-area"
+        ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFiles(event)">
+        <input type="file" id="file-input" multiple accept=".pdf,.jpg,.jpeg,.png,.webp"
+          onchange="handleFiles(this.files)">
+        <div class="upload-icon">📁</div>
+        <p><strong>Clique para selecionar</strong> ou arraste ficheiros aqui</p>
+        <p style="margin-top:.25rem;font-size:.7rem">PDF, JPG, PNG — máx. 10 MB por ficheiro</p>
+      </div>
+      <div class="file-list" id="file-list"></div>
+    </div>
+
+    <!-- OBSERVAÇÕES -->
+    <div class="card">
+      <div class="card-title">📝 Observações</div>
+      <div class="field">
+        <label>Notas operacionais</label>
+        <textarea id="f-obs-op" placeholder="Pedidos especiais, detalhes de quartos, informações para o operador..." style="min-height:90px"></textarea>
+      </div>
+      <div class="field">
+        <label>Notas de faturação</label>
+        <textarea id="f-obs-fat" placeholder="Instruções especiais para emissão de faturas, divisão por NIFs..." style="min-height:70px"></textarea>
+      </div>
+    </div>
+
+    <!-- SUBMETER -->
+    <div class="card">
+      <div id="form-err" class="alert alert-err hidden"></div>
+      <button class="btn btn-coral" id="btn-guardar" onclick="submeterFormulario()">
+        Guardar
+      </button>
+    </div>
+
+  </div><!-- /sec-form -->
+
+  <!-- SUCESSO -->
+  <div id="sec-sucesso" class="hidden">
+    <div class="card sucesso-card">
+      <div style="font-size:3.5rem;margin-bottom:1rem">✅</div>
+      <div style="font-size:1.2rem;font-weight:700;color:var(--dark);margin-bottom:.75rem" id="suc-titulo">Reserva completada!</div>
+      <p style="font-size:.875rem;color:var(--mid);line-height:1.7;margin-bottom:1rem">
+        A reserva <strong id="suc-rnavt" style="color:var(--coral)"></strong> foi atualizada com sucesso.<br>
+        <span id="suc-msg-extra"></span>
+      </p>
+      <button class="btn btn-coral" style="max-width:300px;margin:0 auto" onclick="location.reload()">
+        Voltar ao início
+      </button>
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:.7rem;color:var(--muted);margin-top:.5rem">
+    APM Viagens · RNAVT 12286 · NIPC 518357490
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPA_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY)
+
+let currentUser   = null
+let currentPerfil = null
+let reservaId     = null
+let reservaRnavt  = null
+let clienteId     = null
+let modoAtual     = 'pendente' // 'pendente' | 'existente'
+let reservaSelecionada = null  // para modo pendente
+let reservaExistente   = null  // para modo existente
+let servicosCount = 0
+let ficheiros     = []
+let locPesqTimer  = null
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const { data: { session } } = await sb.auth.getSession()
+  if (!session) { show('sec-sem-sessao'); return }
+  currentUser = session.user
+  const { data: perfil } = await sb.from('perfis').select('*').eq('id', currentUser.id).maybeSingle()
+  if (!perfil || !perfil.ativo) { show('sec-sem-sessao'); return }
+  currentPerfil = perfil
+  show('sec-modo')
+  carregarPendentes()
+}
+
+function show(id) {
+  ['sec-loading','sec-sem-sessao','sec-modo','sec-form','sec-sucesso']
+    .forEach(s => document.getElementById(s)?.classList.add('hidden'))
+  document.getElementById(id)?.classList.remove('hidden')
+}
+
+// ── SELETOR DE MODO ───────────────────────────────────────────────────────────
+function setModo(modo) {
+  modoAtual = modo
+  document.getElementById('btn-modo-pendente').classList.toggle('active', modo === 'pendente')
+  document.getElementById('btn-modo-existente').classList.toggle('active', modo === 'existente')
+  document.getElementById('bloco-pendente').classList.toggle('hidden', modo !== 'pendente')
+  document.getElementById('bloco-existente').classList.toggle('hidden', modo !== 'existente')
+}
+
+// ── MODO PENDENTE: carregar lista ─────────────────────────────────────────────
+async function carregarPendentes() {
+  const isAdmin = currentPerfil?.role === 'admin'
+  let q = sb.from('reservas')
+    .select('id,rnavt,destino,data_partida,cliente_id,lead_nome,created_at')
+    .eq('estado', 'Pendente')
+    .eq('cst_aceite', true)
+    .order('created_at', { ascending: false })
+  if (!isAdmin) q = q.eq('consultor_id', currentPerfil.id)
+  const { data: pendentes } = await q
+
+  const lista = document.getElementById('lista-pendentes')
+  if (!pendentes?.length) {
+    lista.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.85rem">Não há reservas pendentes de complementar.</div>'
+    return
+  }
+
+  // Buscar nomes de clientes
+  const cids = [...new Set(pendentes.filter(r=>r.cliente_id).map(r=>r.cliente_id))]
+  let cliMap = {}
+  if (cids.length) {
+    const { data: clis } = await sb.from('clientes').select('id,nome').in('id', cids)
+    ;(clis||[]).forEach(c => { cliMap[c.id] = c.nome })
+  }
+
+  lista.innerHTML = pendentes.map(r => {
+    const nome = cliMap[r.cliente_id] || r.lead_nome || '—'
+    const partida = r.data_partida ? new Date(r.data_partida+'T12:00:00').toLocaleDateString('pt-PT') : '—'
+    const criada  = new Date(r.created_at).toLocaleDateString('pt-PT')
+    return `
+    <div class="pendente-item" id="pend-${r.id}" onclick="selecionarPendente('${r.id}')">
+      <div style="flex:1;min-width:0">
+        <div class="pendente-rnavt">${r.rnavt}</div>
+        <div class="pendente-dest">${nome} · ${r.destino || '—'}</div>
+        <div class="pendente-sub">Partida ${partida} · Criada ${criada}</div>
+      </div>
+      <div style="font-size:1.1rem;flex-shrink:0;color:var(--muted)">→</div>
+    </div>`
+  }).join('')
+}
+
+function selecionarPendente(id) {
+  // Desselecionar anterior
+  document.querySelectorAll('.pendente-item').forEach(el => el.classList.remove('selected'))
+  document.getElementById(`pend-${id}`)?.classList.add('selected')
+  reservaSelecionada = id
+  document.getElementById('btn-continuar-pend').disabled = false
+}
+
+async function continuarPendente() {
+  if (!reservaSelecionada) return
+  const { data: r } = await sb.from('reservas')
+    .select('id,rnavt,destino,data_partida,cliente_id,lead_nome,lead_tel,operador,localizador_principal,tipo_servico,valor_net,pvp_operador')
+    .eq('id', reservaSelecionada).single()
+  await carregarFormulario(r, 'pendente')
+}
+
+// ── MODO EXISTENTE: pesquisa por localizador ──────────────────────────────────
+function pesquisarLocalizador(val) {
+  clearTimeout(locPesqTimer)
+  const v = val.trim().toUpperCase()
+  document.getElementById('loc-identificada').classList.add('hidden')
+  document.getElementById('loc-nao-encontrada').classList.add('hidden')
+  document.getElementById('btn-continuar-exist').disabled = true
+  reservaExistente = null
+  if (v.length < 3) return
+  locPesqTimer = setTimeout(() => _pesquisarLoc(v), 500)
+}
+
+async function _pesquisarLoc(loc) {
+  const isAdmin = currentPerfil?.role === 'admin'
+  let reserva = null
+
+  // Procura 1: localizador_principal
+  let q = sb.from('reservas')
+    .select('id,rnavt,destino,data_partida,cliente_id,lead_nome,operador,localizador_principal,tipo_servico,valor_net,pvp_operador')
+    .ilike('localizador_principal', loc)
+  if (!isAdmin) q = q.eq('consultor_id', currentPerfil.id)
+  const { data: rv1 } = await q.maybeSingle()
+  if (rv1) reserva = rv1
+
+  // Procura 2: localizadores_servicos
+  if (!reserva) {
+    const { data: ls } = await sb.from('localizadores_servicos')
+      .select('reserva_id').ilike('localizador', loc).maybeSingle()
+    if (ls) {
+      let q2 = sb.from('reservas')
+        .select('id,rnavt,destino,data_partida,cliente_id,lead_nome,operador,localizador_principal,tipo_servico,valor_net,pvp_operador')
+        .eq('id', ls.reserva_id)
+      if (!isAdmin) q2 = q2.eq('consultor_id', currentPerfil.id)
+      const { data: rv2 } = await q2.maybeSingle()
+      if (rv2) reserva = rv2
+    }
+  }
+
+  if (!reserva) {
+    document.getElementById('loc-nao-encontrada').classList.remove('hidden')
+    return
+  }
+
+  // Reserva identificada
+  reservaExistente = reserva
+  const partida = reserva.data_partida ? new Date(reserva.data_partida+'T12:00:00').toLocaleDateString('pt-PT') : '—'
+  document.getElementById('loc-id-nome').textContent = `${reserva.rnavt} · ${reserva.destino || '—'}`
+  document.getElementById('loc-id-sub').textContent = `Partida ${partida} · ${reserva.operador || 'Operador por confirmar'}`
+  document.getElementById('loc-identificada').classList.remove('hidden')
+  document.getElementById('btn-continuar-exist').disabled = false
+}
+
+async function continuarExistente() {
+  if (!reservaExistente) return
+  await carregarFormulario(reservaExistente, 'existente')
+}
+
+// ── CARREGAR FORMULÁRIO ───────────────────────────────────────────────────────
+async function carregarFormulario(r, modo) {
+  reservaId    = r.id
+  reservaRnavt = r.rnavt
+  clienteId    = r.cliente_id
+
+  // Info box
+  const partida = r.data_partida ? new Date(r.data_partida+'T12:00:00').toLocaleDateString('pt-PT') : '—'
+  document.getElementById('inf-rnavt').textContent = `Reserva ${r.rnavt}`
+  document.getElementById('inf-sub').textContent = `${r.destino || '—'} · Partida ${partida} · ${currentPerfil.nome}`
+
+  // Aviso pendente
+  document.getElementById('aviso-pendente').classList.toggle('hidden', modo !== 'pendente')
+
+  // Pré-preencher campos se já existirem dados
+  if (r.operador) document.getElementById('f-operador').value = r.operador
+  if (r.localizador_principal) document.getElementById('f-localizador').value = r.localizador_principal
+  if (r.tipo_servico) document.getElementById('f-tipo-servico').value = r.tipo_servico
+  if (r.valor_net) document.getElementById('f-net').value = r.valor_net
+  if (r.pvp_operador) document.getElementById('f-pvp').value = r.pvp_operador
+
+  // Pré-preencher cliente
+  if (clienteId) {
+    const { data: cli } = await sb.from('clientes').select('*').eq('id', clienteId).maybeSingle()
+    if (cli) {
+      document.getElementById('f-pass-nome').value   = cli.nome || ''
+      document.getElementById('f-pass-tel').value    = cli.telefone || ''
+      document.getElementById('f-pass-email').value  = cli.email || ''
+      document.getElementById('f-pass-nif').value    = cli.nif || ''
+      document.getElementById('f-pass-morada').value = cli.morada || ''
+    }
+  } else if (r.lead_nome) {
+    document.getElementById('f-pass-nome').value = r.lead_nome
+    document.getElementById('f-pass-tel').value  = r.lead_tel || ''
+  }
+
+  // Ajustar label do botão
+  document.getElementById('btn-guardar').textContent = modo === 'pendente'
+    ? 'Guardar e confirmar reserva'
+    : 'Guardar informação'
+
+  show('sec-form')
+}
+
+// ── SERVIÇOS ADICIONAIS ───────────────────────────────────────────────────────
+function adicionarServico() {
+  servicosCount++
+  const n = servicosCount
+  const lista = document.getElementById('servicos-lista')
+  const div = document.createElement('div')
+  div.className = 'servico-item'; div.id = `svc-${n}`
+  div.innerHTML = `
+    <button class="remove-btn" onclick="removerServico(${n})">✕</button>
+    <div class="servico-num">Serviço adicional #${n}</div>
+    <div class="field-row">
+      <div class="field"><label>Tipo</label>
+        <select id="svc-tipo-${n}">
+          <option value="">Selecionar...</option>
+          <option>Hotel</option><option>Voo</option><option>Transfer</option>
+          <option>Seguro</option><option>Rent-a-Car</option>
+          <option>Bilhetes/Tickets</option><option>Excursão</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="field"><label>Operador</label>
+        <input type="text" id="svc-op-${n}" placeholder="ex: GBN, Civitatis...">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Localizador</label>
+        <input type="text" id="svc-loc-${n}" placeholder="ex: GBN-12345">
+      </div>
+      <div class="field"><label>Preço ao cliente</label>
+        <input type="number" id="svc-pvp-${n}" placeholder="0.00" step="0.01">
+      </div>
+    </div>
+    <div class="field"><label>Valor net (custo)</label>
+      <input type="number" id="svc-net-${n}" placeholder="0.00" step="0.01">
+    </div>`
+  lista.appendChild(div)
+}
+
+function removerServico(n) { document.getElementById(`svc-${n}`)?.remove() }
+
+function toggleFaturacao() {
+  document.getElementById('sec-fatura').classList.toggle(
+    'hidden', !document.getElementById('chk-fat-diferente').checked)
+}
+
+// ── UPLOAD ────────────────────────────────────────────────────────────────────
+function dragOver(e)  { e.preventDefault(); document.getElementById('upload-area').classList.add('drag') }
+function dragLeave()  { document.getElementById('upload-area').classList.remove('drag') }
+function dropFiles(e) { e.preventDefault(); dragLeave(); handleFiles(e.dataTransfer.files) }
+
+function handleFiles(files) {
+  Array.from(files).forEach(f => {
+    if (f.size > 10*1024*1024) { alert(`${f.name}: máx. 10 MB.`); return }
+    if (ficheiros.find(x => x.nome === f.name)) return
+    ficheiros.push({ file: f, nome: f.name, estado: 'pendente', path: null })
+  })
+  renderFileList()
+}
+
+function renderFileList() {
+  const lista = document.getElementById('file-list')
+  lista.innerHTML = ''
+  ficheiros.forEach((f, i) => {
+    const chip = document.createElement('div'); chip.className = 'file-chip'
+    const estadoHtml = f.estado==='ok' ? '<span class="estado ok">✓ Carregado</span>'
+      : f.estado==='loading' ? '<span class="estado loading">A enviar...</span>'
+      : f.estado==='erro'   ? '<span class="estado erro">Erro</span>' : ''
+    chip.innerHTML = `
+      <span class="nome">📄 ${f.nome}</span>
+      <div style="display:flex;align-items:center;gap:.5rem">
+        ${estadoHtml}
+        ${f.estado!=='ok' ? `<button class="rm" onclick="removerFicheiro(${i})">✕</button>` : ''}
+      </div>`
+    lista.appendChild(chip)
+  })
+}
+
+function removerFicheiro(i) { ficheiros.splice(i,1); renderFileList() }
+
+async function uploadFicheiros() {
+  for (let i = 0; i < ficheiros.length; i++) {
+    const f = ficheiros[i]
+    if (f.estado==='ok') continue
+    f.estado='loading'; renderFileList()
+    try {
+      const path = `reservas/${reservaRnavt}/${Date.now()}_${f.nome}`
+      const { error } = await sb.storage.from('documentos').upload(path, f.file, { upsert:true })
+      if (error) throw error
+      f.path=path; f.estado='ok'
+      await sb.from('documentos').insert({
+        reserva_id: reservaId, nome: f.nome, path,
+        tipo: 'comprovativo', uploaded_by: currentPerfil.id
+      })
+    } catch(e) { f.estado='erro'; console.error('Upload:', e) }
+    renderFileList()
+  }
+}
+
+// ── SUBMETER ──────────────────────────────────────────────────────────────────
+async function submeterFormulario() {
+  const errEl = document.getElementById('form-err')
+  errEl.classList.add('hidden')
+
+  const operador    = document.getElementById('f-operador').value.trim()
+  const localizador = document.getElementById('f-localizador').value.trim()
+  const tipoServico = document.getElementById('f-tipo-servico').value
+  const net         = parseFloat(document.getElementById('f-net').value) || 0
+  const pvp         = parseFloat(document.getElementById('f-pvp').value) || 0
+  const passNome    = document.getElementById('f-pass-nome').value.trim()
+
+  // Validação: nome do passageiro sempre obrigatório
+  if (!passNome) {
+    errEl.textContent = 'O nome do passageiro titular é obrigatório.'
+    errEl.classList.remove('hidden')
+    window.scrollTo({ top: errEl.getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth' })
+    return
+  }
+
+  // Para reservas pendentes, operador + localizador + tipo + net + pvp são obrigatórios
+  const isPendente = modoAtual === 'pendente'
+  if (isPendente && (!operador || !localizador || !tipoServico || !net || !pvp)) {
+    errEl.textContent = 'Para confirmar a reserva preencha: fornecedor, localizador, tipo de serviço, net e PVP.'
+    errEl.classList.remove('hidden')
+    window.scrollTo({ top: errEl.getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth' })
+    return
+  }
+
+  const btn = document.getElementById('btn-guardar')
+  btn.disabled = true
+  btn.textContent = 'A guardar...'
+
+  try {
+    // 1. Atualizar cliente
+    if (clienteId) {
+      await sb.from('clientes').update({
+        nome:     passNome,
+        telefone: document.getElementById('f-pass-tel').value.trim()   || null,
+        email:    document.getElementById('f-pass-email').value.trim() || null,
+        nif:      document.getElementById('f-pass-nif').value.trim()   || null,
+        morada:   document.getElementById('f-pass-morada').value.trim() || null
+      }).eq('id', clienteId)
+    }
+
+    // 2. Dados de faturação
+    const fatDif = document.getElementById('chk-fat-diferente').checked
+    const dadosFaturacao = fatDif ? {
+      nome:       document.getElementById('f-fat-nome').value.trim(),
+      nif:        document.getElementById('f-fat-nif').value.trim(),
+      localidade: document.getElementById('f-fat-localidade').value.trim(),
+      obs:        document.getElementById('f-fat-obs').value.trim()
+    } : null
+
+    // 3. Observações
+    const obsOp  = document.getElementById('f-obs-op').value.trim()
+    const obsFat = document.getElementById('f-obs-fat').value.trim()
+    const obsTotal = [
+      obsOp  ? `[Operacional] ${obsOp}` : '',
+      obsFat ? `[Faturação] ${obsFat}`   : '',
+      dadosFaturacao?.obs ? `[Fat. extra] ${dadosFaturacao.obs}` : ''
+    ].filter(Boolean).join('\n')
+
+    // 4. Serviços adicionais
+    const servicosAdicionais = []
+    for (let n = 1; n <= servicosCount; n++) {
+      if (!document.getElementById(`svc-${n}`)) continue
+      const tipo = document.getElementById(`svc-tipo-${n}`)?.value
+      const op   = document.getElementById(`svc-op-${n}`)?.value.trim()
+      const loc2 = document.getElementById(`svc-loc-${n}`)?.value.trim()
+      const pvp2 = parseFloat(document.getElementById(`svc-pvp-${n}`)?.value) || 0
+      const net2 = parseFloat(document.getElementById(`svc-net-${n}`)?.value) || 0
+      if (tipo || op || loc2) servicosAdicionais.push({ tipo, operador: op, localizador: loc2, pvp: pvp2, net: net2 })
+    }
+
+    // 5. Determinar novo estado
+    // Passa a Confirmada se tiver todos os campos obrigatórios preenchidos
+    const autoconsumo = document.getElementById('f-autoconsumo').value === 'sim'
+    const temTudo = operador && localizador && tipoServico && net > 0 && pvp > 0
+    const novoEstado = temTudo ? 'Confirmada' : undefined
+
+    const updateData = {
+      complementar_em: new Date().toISOString(),
+      complementar_preenchido: true,
+      dados_faturacao: dadosFaturacao,
+      observacoes: obsTotal || null,
+      autoconsumo
+    }
+    if (operador)    updateData.operador = operador
+    if (localizador) updateData.localizador_principal = localizador
+    if (tipoServico) updateData.tipo_servico = tipoServico
+    if (net > 0)     updateData.valor_net = net
+    if (pvp > 0)     updateData.pvp_operador = pvp
+    if (novoEstado)  updateData.estado = novoEstado
+
+    const { error: errUp } = await sb.from('reservas').update(updateData).eq('id', reservaId)
+    if (errUp) throw errUp
+
+    // 6. Serviços adicionais
+    for (const svc of servicosAdicionais) {
+      await sb.from('localizadores_servicos').insert({
+        reserva_id: reservaId, operador: svc.operador,
+        localizador: svc.localizador, tipo_servico: svc.tipo,
+        pvp: svc.pvp || null, net: svc.net || null
+      })
+    }
+
+    // 7. Notificação ao admin
+    await sb.from('notificacoes').insert({
+      tipo: 'complementar_preenchido',
+      titulo: `Complementar preenchido — ${reservaRnavt}`,
+      mensagem: `O consultor ${currentPerfil.nome} preencheu o formulário complementar da reserva ${reservaRnavt}. Estado: ${novoEstado || 'Pendente'}.`,
+      reserva_id: reservaId,
+      para_admin: true,
+      lida: false
+    })
+
+    // 8. Upload de documentos
+    if (ficheiros.length > 0) {
+      btn.textContent = 'A carregar documentos...'
+      await uploadFicheiros()
+    }
+
+    // 9. Sucesso
+    document.getElementById('suc-rnavt').textContent = reservaRnavt
+    document.getElementById('suc-titulo').textContent = novoEstado === 'Confirmada'
+      ? '🎉 Reserva confirmada!' : 'Informação guardada!'
+    document.getElementById('suc-msg-extra').textContent = novoEstado === 'Confirmada'
+      ? 'A reserva passou a Confirmada com todos os dados necessários.'
+      : 'A reserva continua Pendente. Pode voltar a completar quando tiver mais informação.'
+    show('sec-sucesso')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+
+  } catch(e) {
+    console.error(e)
+    btn.disabled = false
+    btn.textContent = isPendente ? 'Guardar e confirmar reserva' : 'Guardar informação'
+    errEl.textContent = 'Erro ao guardar: ' + (e.message || JSON.stringify(e))
+    errEl.classList.remove('hidden')
+  }
+}
+
+init()
+</script>
+</body>
+</html>
