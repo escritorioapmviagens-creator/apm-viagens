@@ -257,7 +257,7 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 
 // ── SOAP ──
 function credXML() {
-  return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">${CREDS.System}</System><Client xsi:type="xsd:int">${CREDS.Client}</Client><Username xsi:type="xsd:string">${CREDS.Username}</Username><Password xsi:type="xsd:string">${CREDS.Password}</Password></Credentials>`
+  return `<Credentials><System>${CREDS.System}</System><Client>${CREDS.Client}</Client><Username>${CREDS.Username}</Username><Password>${CREDS.Password}</Password></Credentials>`
 }
 function wrap(body) {
   return `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
@@ -370,17 +370,10 @@ async function searchProducts() {
   try {
     const doc = await soapCall('SearchProducts', xml)
 
-    // Buscar items apenas dentro do ProductArray (não sub-arrays)
-    const productArray = all(doc, 'ProductArray')[0] || all(doc, 'ProductsList')[0]
-    let items = productArray
-      ? Array.from(productArray.children).filter(e => {
-          const local = e.localName || e.tagName.split(':').pop()
-          return local === 'item' || local === 'Product'
-        })
-      : all(doc, 'Product')
-    if (!items.length) items = all(doc, 'item').filter(e => {
-      return Array.from(e.children).some(c => (c.localName||c.tagName.split(':').pop()) === 'Name')
-    })
+    // Tentar vários paths de resposta
+    let items = all(doc, 'item')
+    if (!items.length) items = all(doc, 'Product')
+    if (!items.length) items = all(doc, 'ProductsList')
     log(`📦 ${items.length} item(ns) bruto(s) recebido(s)`)
 
     // ── EXTRACÇÃO ROBUSTA DO CÓDIGO ──
@@ -508,10 +501,10 @@ async function getProductParams() {
     let doc
     if (isDynamic) {
       doc = await soapCall('DynGetProductParameters',
-        `<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<ProductCode xsi:type="xsd:int">${code}</ProductCode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+        `<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<ProductCode>${code}</ProductCode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
     } else {
       doc = await soapCall('StaticGetProductParameters',
-        `<ns1:StaticGetProductParameters><StaticProductParametersRequest>${credXML()}<ProductCode xsi:type="xsd:int">${code}</ProductCode></StaticProductParametersRequest></ns1:StaticGetProductParameters>`)
+        `<ns1:StaticGetProductParameters><StaticProductParametersRequest>${credXML()}<ProductCode>${code}</ProductCode></StaticProductParametersRequest></ns1:StaticGetProductParameters>`)
     }
     state.isDynamic = isDynamic
 
@@ -604,10 +597,10 @@ async function searchAvailableServices() {
     let doc
     if (state.isDynamic !== false) {
       doc = await soapCall('DynSearchProductAvailableServices',
-        `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+        `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode>${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
     } else {
       doc = await soapCall('StaticGetRoomsStruct',
-        `<ns1:StaticGetRoomsStruct><StaticGetRoomsStructRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes></StaticGetRoomsStructRequest></ns1:StaticGetRoomsStruct>`)
+        `<ns1:StaticGetRoomsStruct><StaticGetRoomsStructRequest>${credXML()}<ProductCode>${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes></StaticGetRoomsStructRequest></ns1:StaticGetRoomsStruct>`)
     }
 
     state.sessionHash = txt(doc,'SessionHash')
