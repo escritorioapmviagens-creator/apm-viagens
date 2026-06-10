@@ -780,6 +780,56 @@ function fazerLogout() {
 function partilharLink() {}
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
+async function fazerLoginPorToken(tokenId) {
+  try {
+    // Validar token na tabela tokens_area_cliente
+    const { data: tk, error } = await sb.from('tokens_area_cliente')
+      .select('rnavt, cliente_id, expires_at, usado_em')
+      .eq('id', tokenId)
+      .single()
+
+    if (error || !tk) {
+      document.getElementById('sec-login').classList.remove('hidden')
+      document.getElementById('login-err').textContent = 'Link inválido ou expirado. Solicite um novo link ao seu consultor.'
+      document.getElementById('login-err').classList.remove('hidden')
+      return
+    }
+
+    if (new Date(tk.expires_at) < new Date()) {
+      document.getElementById('sec-login').classList.remove('hidden')
+      document.getElementById('login-err').textContent = 'Este link expirou. Solicite um novo link ao seu consultor.'
+      document.getElementById('login-err').classList.remove('hidden')
+      return
+    }
+
+    // Registar data de uso (mas não bloquear reutilização — cliente pode voltar)
+    if (!tk.usado_em) {
+      await sb.from('tokens_area_cliente').update({ usado_em: new Date().toISOString() }).eq('id', tokenId)
+    }
+
+    // Guardar sessão
+    const rnavt = tk.rnavt
+    sessionStorage.setItem('apm_cli_rnavt', rnavt)
+    sessionStorage.setItem('apm_cli_token', tokenId)
+
+    // Buscar telefone a partir do cliente_id para as buscas
+    let tel = ''
+    if (tk.cliente_id) {
+      const { data: cli } = await sb.from('clientes').select('telefone').eq('id', tk.cliente_id).maybeSingle()
+      if (cli?.telefone) tel = cli.telefone.replace(/\D/g,'')
+    }
+    clienteTel = tel
+
+    // Carregar reservas
+    await carregarTodasReservas(tel, tk.cliente_id)
+
+  } catch(e) {
+    document.getElementById('sec-login').classList.remove('hidden')
+    document.getElementById('login-err').textContent = 'Erro ao validar o link: ' + e.message
+    document.getElementById('login-err').classList.remove('hidden')
+  }
+}
+
 async function init() {
   // Verificar sessão guardada
   const tel   = sessionStorage.getItem('apm_cli_tel')
@@ -787,9 +837,17 @@ async function init() {
 
   // Verificar se vem com parâmetros na URL (link directo do consultor)
   const params = new URLSearchParams(window.location.search)
+  const urlToken = params.get('token')
   const urlRnavt = params.get('reserva')
   const urlTel   = params.get('tel')
 
+  // Login por token seguro (sem telefone no URL)
+  if (urlToken) {
+    await fazerLoginPorToken(urlToken)
+    return
+  }
+
+  // Login por rnavt + tel (legado ou fallback)
   if (urlRnavt && urlTel) {
     document.getElementById('login-rnavt').value = urlRnavt.toUpperCase()
     document.getElementById('login-tel').value = urlTel
@@ -797,6 +855,7 @@ async function init() {
     return
   }
 
+  // Sessão guardada
   if (tel && rnavt) {
     document.getElementById('login-rnavt').value = rnavt
     document.getElementById('login-tel').value = tel
