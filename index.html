@@ -3443,6 +3443,89 @@ function checkAlertasPagamento() {
   } catch(e) {}
 }
 
+async function checkAlertasCancelamento() {
+  try {
+    if (!allReservas) return
+    const hoje = new Date(); hoje.setHours(0,0,0,0)
+    const isAdmin = currentPerfil?.role === 'admin'
+
+    // Filtrar reservas activas com proposta associada
+    const comProposta = allReservas.filter(r =>
+      r.estado !== 'Cancelada' && r.proposta_id
+    )
+    if (!comProposta.length) return
+
+    // Buscar propostas para obter cancel_datas
+    const propostaIds = [...new Set(comProposta.map(r => r.proposta_id))]
+    const { data: propostas } = await sb.from('propostas_viagem')
+      .select('id, dados')
+      .in('id', propostaIds)
+    if (!propostas?.length) return
+
+    const propostaMap = {}
+    propostas.forEach(p => { propostaMap[p.id] = p.dados })
+
+    const alertas = []
+
+    comProposta.forEach(r => {
+      const dados = propostaMap[r.proposta_id]
+      if (!dados?.cancel_datas?.length) return
+
+      const valorPago = parseFloat(r.valor_pago_cliente) || 0
+
+      dados.cancel_datas.forEach(cd => {
+        if (!cd.data || cd.valor === undefined) return
+        const dataCancelamento = new Date(cd.data + 'T00:00:00')
+        const diffDias = Math.ceil((dataCancelamento - hoje) / (1000*60*60*24))
+
+        // Alerta 5 dias antes
+        if (diffDias >= 0 && diffDias <= 5) {
+          const valorNecessario = parseFloat(cd.valor) || 0
+          if (valorPago < valorNecessario) {
+            alertas.push({
+              reserva: r,
+              diffDias,
+              dataCancelamento: cd.data,
+              valorNecessario,
+              valorPago,
+              valorEmFalta: valorNecessario - valorPago
+            })
+          }
+        }
+      })
+    })
+
+    if (!alertas.length) return
+
+    // Ordenar por urgência
+    alertas.sort((a, b) => a.diffDias - b.diffDias)
+
+    alertas.forEach((a, idx) => {
+      const r = a.reserva
+      const destino = r.destino || 'reserva'
+      const nDias = a.diffDias === 0 ? 'HOJE' : `${a.diffDias} dia${a.diffDias !== 1 ? 's' : ''}`
+      const fmtData = new Date(a.dataCancelamento + 'T12:00:00').toLocaleDateString('pt-PT', {day:'2-digit', month:'short'})
+
+      // Mensagem para o consultor (sem valor)
+      const msgConsultor = `⚠️ Cancelamento ${destino} (${r.rnavt}) — gastos entram em ${nDias} (${fmtData}). Confirma pagamento do cliente?`
+
+      // Mensagem para o admin (com valor)
+      const msgAdmin = `⚠️ Cancelamento ${destino} (${r.rnavt}) — €${a.valorNecessario.toFixed(0)} em gastos em ${nDias}. Recebido: €${a.valorPago.toFixed(0)}. Em falta: €${a.valorEmFalta.toFixed(0)}.`
+
+      setTimeout(() => {
+        if (isAdmin) {
+          toast(msgAdmin, 'err')
+        } else {
+          // Só mostra se a reserva for do consultor
+          if (r.consultor_id === currentPerfil?.id) {
+            toast(msgConsultor, 'err')
+          }
+        }
+      }, 1500 + idx * 800)
+    })
+  } catch(e) { console.error('checkAlertasCancelamento:', e) }
+}
+
 function checkAlertasClientes() {
   try {
     if (!allReservas) return
@@ -3522,6 +3605,7 @@ function enterApp() {
   if(currentPerfil.role === 'admin') atualizarBadgeEliminacoes()
   if(currentPerfil.role !== 'admin') renderDashIndividual()
   checkAlertasClientes()
+  checkAlertasCancelamento()
   // Notificações push (admin)
   if(currentPerfil.role === 'admin') {
     requestNotificationPermission()
