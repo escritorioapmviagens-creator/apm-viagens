@@ -194,10 +194,10 @@ let pendentes = [], associados = []
 async function init() {
   const [{ data: pend }, { data: assoc }] = await Promise.all([
     sb.from('localizadores_servicos').select('*').order('created_at', { ascending: false }),
-    sb.from('reservas').select('id,localizador_principal,localizador,faixa_etaria_titular,num_adultos,num_criancas,tipo_viagem,profissao_titular,distrito_residencia').neq('faixa_etaria_titular','')
+    sb.from('reservas').select('id,localizador_principal,localizador,faixa_etaria_titular,num_adultos,num_criancas,tipo_viagem,profissao_titular,distrito_residencia').limit(500)
   ])
   pendentes = pend || []
-  associados = assoc || []
+  associados = (assoc || []).filter(r => r.faixa_etaria_titular)
 
   // Popular selects de nicho
   const nichos = [...new Set([...pendentes.map(r=>r.nicho), ...associados.map(r=>r.tipo_viagem)].filter(Boolean))]
