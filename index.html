@@ -5274,20 +5274,26 @@ async function atualizarBadgeEliminacoes() {
 async function openDocs(id) {
   const isAdmin = currentPerfil.role==='admin'
   const { data } = await sb.from('documentos').select('*').eq('reserva_id',id)
-  if(!data?.length) {
-    document.getElementById('docs-body').innerHTML = '<div class="empty">Sem documentos</div>'
-    document.getElementById('modal-docs').classList.add('open')
-    return
-  }
+  const docsFiltrados = (data||[])
   // Consultores não vêem comprovativos de pagamento ao fornecedor
-  const visible = isAdmin ? data : data.filter(d => d.tipo !== 'pagamento_fornecedor')
-  if(!visible.length) {
-    document.getElementById('docs-body').innerHTML = '<div class="empty">Sem documentos</div>'
-    document.getElementById('modal-docs').classList.add('open')
-    return
+  const visible = isAdmin ? docsFiltrados : docsFiltrados.filter(d => d.tipo !== 'pagamento_fornecedor')
+
+  // Buscar dados da reserva para envio de fatura
+  let reservaDocsData = null
+  if (isAdmin) {
+    const { data: rd } = await sb.from('reservas')
+      .select('id,rnavt,destino,lead_tel,cliente_id,consultor_id')
+      .eq('id', id).maybeSingle()
+    reservaDocsData = rd
+    // Buscar telefone do cliente
+    if (rd?.cliente_id) {
+      const { data: cli } = await sb.from('clientes').select('telefone').eq('id', rd.cliente_id).maybeSingle()
+      if (cli?.telefone) reservaDocsData._cli_tel = cli.telefone
+    }
+    if (!reservaDocsData?._cli_tel && rd?.lead_tel) reservaDocsData._cli_tel = rd.lead_tel
   }
-  // Generate signed URLs for each document
-  const items = await Promise.all(visible.map(async d => {
+
+  const items = await Promise.all((visible||[]).map(async d => {
     let url = null
     if(d.storage_path) {
       const { data: signed } = await sb.storage.from('documentos-reservas').createSignedUrl(d.storage_path, 604800)
@@ -5295,14 +5301,103 @@ async function openDocs(id) {
     }
     return { ...d, signedUrl: url }
   }))
-  document.getElementById('docs-body').innerHTML = items.map(d => `
+
+  const faturaTag = isAdmin ? `
+    <div style="border-top:2px solid var(--border);margin-top:12px;padding-top:14px">
+      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">📤 Enviar fatura ao cliente</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <input type="file" id="fatura-file-inp" accept=".pdf,.jpg,.png" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:.78rem;font-family:var(--font)">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="uploadFaturaCliente('${id}')" style="padding:8px 12px;background:var(--coral);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:.78rem;font-weight:700;cursor:pointer">
+          📎 Carregar fatura
+        </button>
+        <button onclick="notificarClienteFatura('${id}')" style="padding:8px 12px;background:#25d366;color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:.78rem;font-weight:700;cursor:pointer">
+          📲 Notificar por WhatsApp
+        </button>
+      </div>
+      <div id="fatura-upload-msg-${id}" style="font-size:.72rem;margin-top:6px;display:none"></div>
+    </div>` : ''
+
+  document.getElementById('docs-body').innerHTML = (items.length ? items.map(d => `
     <div class="docs-item" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:20px">📄</span>
-      <span class="docs-name" style="flex:1">${d.nome}</span>
-      <span class="docs-date" style="font-size:11px;color:var(--muted)">${new Date(d.created_at).toLocaleDateString('pt-PT')}</span>
+      <span style="font-size:20px">${d.tipo==='fatura'?'🧾':'📄'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.83rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.nome}</div>
+        <div style="font-size:.7rem;color:var(--muted)">${d.tipo||''} · ${new Date(d.created_at).toLocaleDateString('pt-PT')}</div>
+      </div>
       ${d.signedUrl ? `<a href="${d.signedUrl}" target="_blank" class="btn btn-outline btn-sm">Abrir</a>` : '<span style="font-size:11px;color:var(--muted)">Sem ficheiro</span>'}
-    </div>`).join('')
+    </div>`).join('') : '<div class="empty">Sem documentos</div>')
+  + faturaTag
+
+  // Guardar dados da reserva para uso nos botões
+  if (reservaDocsData) window._docsReserva = reservaDocsData
+
   document.getElementById('modal-docs').classList.add('open')
+}
+
+async function uploadFaturaCliente(reservaId) {
+  const inp = document.getElementById('fatura-file-inp')
+  const file = inp?.files?.[0]
+  const msgEl = document.getElementById('fatura-upload-msg-'+reservaId)
+  if (!file) { if(msgEl){msgEl.style.display='block';msgEl.style.color='var(--coral)';msgEl.textContent='Selecione um ficheiro primeiro.'} return }
+
+  msgEl.style.display='block'; msgEl.style.color='var(--muted)'; msgEl.textContent='A carregar...'
+
+  try {
+    const reserva = allReservas?.find(r=>r.id===reservaId) || window._docsReserva
+    const rnavt = reserva?.rnavt || reservaId
+    const path = `reservas/${rnavt}/fatura_${Date.now()}_${file.name}`
+    const { error: upErr } = await sb.storage.from('documentos-reservas').upload(path, file, {upsert:true})
+    if (upErr) throw upErr
+
+    await sb.from('documentos').insert({
+      reserva_id: reservaId, nome: file.name,
+      storage_path: path, tipo: 'fatura',
+      uploaded_by: currentPerfil.id,
+      mime_type: file.type, tamanho: file.size
+    })
+
+    // Notificação interna
+    await sb.from('notificacoes').insert({
+      tipo: 'fatura_disponivel',
+      titulo: `Fatura disponível — ${rnavt}`,
+      mensagem: `Fatura "${file.name}" adicionada à reserva ${rnavt}.`,
+      reserva_id: reservaId, para_admin: false, lida: false
+    })
+
+    msgEl.style.color='var(--green)'; msgEl.textContent='✅ Fatura carregada com sucesso!'
+    inp.value=''
+    // Reabrir modal com lista actualizada
+    setTimeout(() => openDocs(reservaId), 1000)
+  } catch(e) {
+    msgEl.style.color='var(--coral)'; msgEl.textContent='Erro: '+e.message
+  }
+}
+
+function notificarClienteFatura(reservaId) {
+  const reserva = allReservas?.find(r=>r.id===reservaId) || window._docsReserva
+  if (!reserva) { toast('Dados da reserva não encontrados.','err'); return }
+
+  const tel = (reserva._cli_tel||reserva.lead_tel||'').replace(/\D/g,'')
+  const rnavt = reserva.rnavt || ''
+  const destino = reserva.destino || ''
+  const linkAreaCliente = `https://escritorioapmviagens-creator.github.io/apm-viagens/area-cliente.html?reserva=${rnavt}&tel=${tel}`
+
+  const msg = `Olá! 👋
+
+A sua fatura referente à reserva ${rnavt}${destino?' ('+destino+')':''} está disponível na sua área de cliente.
+
+Aceda aqui para descarregar: ${linkAreaCliente}
+
+Qualquer questão estamos à disposição! 😊
+APM Viagens`
+
+  const waUrl = tel
+    ? `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`
+    : `https://wa.me/?text=${encodeURIComponent(msg)}`
+
+  window.open(waUrl, '_blank')
 }
 function abrirOperadores() {
   // Passa o token da sessão actual para o operadores.html evitar login duplo
@@ -9644,6 +9739,28 @@ async function verificarComplementaresPendentes() {
     notifs.slice(0, 3).forEach(n => toast(`📋 ${n.titulo}`, 'ok'))
     const ids = notifs.map(n => n.id)
     await sb.from('notificacoes').update({ lida: true }).in('id', ids)
+  }
+
+  // Verificar comprovativos enviados por clientes
+  const isAdmin2 = currentPerfil?.role === 'admin'
+  let qComp = sb.from('notificacoes')
+    .select('id,titulo,reserva_id')
+    .eq('tipo','comprovativo_cliente')
+    .eq('lida',false)
+  const { data: comps } = await qComp
+  if (comps?.length) {
+    // Para não-admin, filtrar só as suas reservas
+    let compsFiltrados = comps
+    if (!isAdmin2) {
+      const { data: minhasRes } = await sb.from('reservas').select('id').eq('consultor_id', currentPerfil.id)
+      const mIds = new Set((minhasRes||[]).map(r=>r.id))
+      compsFiltrados = comps.filter(c => mIds.has(c.reserva_id))
+    }
+    compsFiltrados.slice(0,3).forEach(n => toast(`📎 ${n.titulo}`, 'ok'))
+    if (isAdmin2) {
+      const ids = comps.map(n => n.id)
+      await sb.from('notificacoes').update({ lida: true }).in('id', ids)
+    }
   }
 }
 
