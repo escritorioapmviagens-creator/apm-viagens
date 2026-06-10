@@ -451,6 +451,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-item" onclick="navTo('pipeline',this)"><span class="nav-icon">🎯</span> Gestão de Orçamentos <span class="nav-badge" id="pipeline-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="navTo('pedidos-orcamento',this)" id="nav-pedidos-orc"><span class="nav-icon">📋</span> Pedidos de Orçamento <span class="nav-badge" id="pedidos-orc-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="navTo('followups',this)"><span class="nav-icon">⏰</span> Follow-ups <span class="nav-badge" id="followup-badge" style="display:none">0</span></div>
+      <div class="nav-item" onclick="navTo('lembretes',this)"><span class="nav-icon">🎂</span> Lembretes em Destaque <span class="nav-badge" id="lembretes-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="navTo('aceites',this)"><span class="nav-icon">⏳</span> Contratos Pendentes <span class="nav-badge" id="aceites-badge" style="display:none">0</span></div>
       <div class="nav-item" onclick="navTo('reservas',this)"><span class="nav-icon">✈</span> Reservas</div>
       <div class="nav-item" onclick="navTo('comissoes',this)"><span class="nav-icon">💶</span> As Minhas Comissões</div>
@@ -2473,6 +2474,69 @@ textarea.finput{resize:vertical;min-height:72px}
       <!-- ═══ FIM ORÇAMENTO ═══════════════════════════════════ -->
 
 
+      <!-- ── LEMBRETES ── -->
+      <div class="page" id="page-lembretes">
+        <div style="max-width:900px">
+          <div id="lembretes-loading" style="text-align:center;padding:3rem;color:var(--muted);font-size:.9rem">⏳ A carregar lembretes...</div>
+          <div id="lembretes-empty" style="display:none;text-align:center;padding:3rem">
+            <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
+            <div style="font-weight:700;font-size:1rem;margin-bottom:.5rem">Sem lembretes por agora</div>
+            <div style="font-size:.85rem;color:var(--muted)">Os lembretes aparecem 30 dias antes do aniversário de cada reserva.</div>
+          </div>
+          <div id="lembretes-lista" style="display:none;display:flex;flex-direction:column;gap:14px"></div>
+        </div>
+      </div>
+
+      <!-- ── MODAL LEMBRETE ── -->
+      <div class="overlay" id="modal-lembrete" style="display:none;align-items:center;justify-content:center">
+        <div style="background:var(--surface);border-radius:var(--radius);padding:0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+          <!-- Header -->
+          <div style="background:linear-gradient(135deg,var(--coral),#d42e4f);padding:20px 24px;border-radius:var(--radius) var(--radius) 0 0;color:#fff;position:relative">
+            <button onclick="fecharModalLembrete()" style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center">✕</button>
+            <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.8;margin-bottom:4px">🎂 Lembrete em destaque</div>
+            <div style="font-size:1.1rem;font-weight:800" id="lmb-titulo-modal">—</div>
+            <div style="font-size:.8rem;opacity:.85;margin-top:3px" id="lmb-sub-modal">—</div>
+          </div>
+
+          <div style="padding:20px 24px">
+
+            <!-- Foto -->
+            <div style="margin-bottom:18px">
+              <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Foto para partilhar</div>
+              <div id="lmb-foto-preview" style="display:none;position:relative;border-radius:12px;overflow:hidden;margin-bottom:8px;aspect-ratio:4/3;background:#f3f4f6">
+                <img id="lmb-foto-img" style="width:100%;height:100%;object-fit:cover">
+                <button onclick="removerFotoLembrete()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:.85rem">✕</button>
+              </div>
+              <div id="lmb-upload-area" style="border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;position:relative;transition:border-color .15s" onclick="document.getElementById('lmb-foto-inp').click()" ondragover="event.preventDefault();this.style.borderColor='var(--coral)'" ondragleave="this.style.borderColor='var(--border)'">
+                <input type="file" id="lmb-foto-inp" accept="image/*" style="display:none" onchange="handleFotoLembrete(this.files[0])">
+                <div style="font-size:1.5rem;margin-bottom:6px">📸</div>
+                <div style="font-size:.8rem;color:var(--muted)"><strong style="color:var(--text)">Clica para carregar</strong> uma foto das férias do cliente</div>
+                <div style="font-size:.7rem;color:var(--muted);margin-top:4px">JPG, PNG — se não tiveres, usa uma foto do destino</div>
+              </div>
+            </div>
+
+            <!-- Mensagem -->
+            <div style="margin-bottom:18px">
+              <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Mensagem WhatsApp</div>
+              <textarea id="lmb-mensagem" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-family:var(--font);font-size:.875rem;color:var(--text);resize:vertical;min-height:160px;outline:none;line-height:1.6" oninput="this.style.borderColor='var(--coral)'"></textarea>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Podes editar livremente. O nome do cliente e o link de destinos já estão incluídos.</div>
+            </div>
+
+            <!-- Botões -->
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <button id="lmb-btn-wa" onclick="enviarLembrete()" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;background:#25d366;color:#fff;border:none;border-radius:10px;font-family:var(--font);font-size:.9rem;font-weight:700;cursor:pointer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Enviar por WhatsApp
+              </button>
+              <button onclick="marcarLembreteEnviado()" style="width:100%;padding:11px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;font-family:var(--font);font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer">
+                ✓ Marcar como enviado sem abrir WhatsApp
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
       <div class="page" id="page-propostas">
         <div style="max-width:900px">
 
@@ -3348,6 +3412,7 @@ async function loadPerfil(user) {
   currentPerfil = data
   enterApp()
   setTimeout(verificarAceitesPendentes24h, 3000)
+  setTimeout(verificarLembretesBadge, 4000)
 }
 
 function checkAlertasPagamento() {
@@ -3581,7 +3646,7 @@ function navTo(page, el) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
   sessionStorage.setItem('apm_page', page)
-  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
+  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',lembretes:'Lembretes em Destaque',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
   document.getElementById('tb-title').textContent = titles[page]||page
   document.getElementById('tb-sub').textContent = page==='dashboard'?(currentPerfil?.role==='admin'?'Visão global da agência':'Visão geral das tuas reservas'):''
   if(page==='dashboard') renderDash()
@@ -3590,6 +3655,7 @@ function navTo(page, el) {
   if(page==='importacao') resetarImportacao()
   if(page==='devolucoes') loadDevolucoes()
   if(page==='followups') loadFollowups()
+  if(page==='lembretes') loadLembretes()
   if(page==='performance') window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/estatisticas.html', '_blank')
   if(page==='recrutamento') loadRecrutamento()
   if(page==='templates') loadTemplates()
@@ -9180,6 +9246,228 @@ async function efetuarReserva(id) {
 }
 
 // ── VERIFICAR NOTIFICAÇÕES 24H (admin) ───────────────────────
+// ── LEMBRETES EM DESTAQUE ────────────────────────────────────────────────────
+
+let lembreteAtual = null
+let lembreFotoBase64 = null
+
+async function loadLembretes() {
+  document.getElementById('lembretes-loading').style.display = 'block'
+  document.getElementById('lembretes-empty').style.display = 'none'
+  document.getElementById('lembretes-lista').style.display = 'none'
+
+  const hoje = new Date(); hoje.setHours(0,0,0,0)
+  // Janela: reservas cujo aniversário cai entre hoje e hoje+30 dias
+  // created_at com mês/dia entre hoje e hoje+30, qualquer ano
+  // Calculamos as datas alvo: ano atual ou próximo
+  const isAdmin = currentPerfil?.role === 'admin'
+
+  let q = sb.from('reservas')
+    .select('id,rnavt,destino,created_at,lead_nome,lead_tel,cliente_id,consultor_id,lembrete_enviado_em')
+    .neq('estado', 'Cancelada')
+  if (!isAdmin) q = q.eq('consultor_id', currentPerfil.id)
+
+  const { data: reservas } = await q
+
+  // Filtrar as que têm aniversário nos próximos 30 dias
+  const lembretes = (reservas || []).filter(r => {
+    if (!r.created_at) return false
+    const criado = new Date(r.created_at)
+    // Calcular próximo aniversário
+    const aniv = new Date(hoje.getFullYear(), criado.getMonth(), criado.getDate())
+    if (aniv < hoje) aniv.setFullYear(aniv.getFullYear() + 1)
+    const diffDias = Math.ceil((aniv - hoje) / 86400000)
+    return diffDias >= 0 && diffDias <= 30
+  })
+
+  // Atualizar badge
+  const badge = document.getElementById('lembretes-badge')
+  if (badge) {
+    const naoEnviados = lembretes.filter(r => !r.lembrete_enviado_em).length
+    if (naoEnviados > 0) { badge.textContent = naoEnviados; badge.style.display = 'inline-flex' }
+    else badge.style.display = 'none'
+  }
+
+  document.getElementById('lembretes-loading').style.display = 'none'
+
+  if (!lembretes.length) {
+    document.getElementById('lembretes-empty').style.display = 'block'
+    return
+  }
+
+  // Render dos cards
+  const lista = document.getElementById('lembretes-lista')
+  lista.style.display = 'flex'
+
+  // Buscar nomes dos clientes
+  const clienteIds = [...new Set(lembretes.filter(r => r.cliente_id).map(r => r.cliente_id))]
+  let clientesMap = {}
+  if (clienteIds.length) {
+    const { data: clis } = await sb.from('clientes').select('id,nome,telefone').in('id', clienteIds)
+    ;(clis || []).forEach(c => { clientesMap[c.id] = c })
+  }
+
+  lista.innerHTML = lembretes.map(r => {
+    const criado = new Date(r.created_at)
+    const aniv = new Date(hoje.getFullYear(), criado.getMonth(), criado.getDate())
+    if (aniv < hoje) aniv.setFullYear(aniv.getFullYear() + 1)
+    const diffDias = Math.ceil((aniv - hoje) / 86400000)
+    const cli = clientesMap[r.cliente_id]
+    const nomeCliente = cli?.nome || r.lead_nome || 'Cliente'
+    const enviado = !!r.lembrete_enviado_em
+    const dataAniv = aniv.toLocaleDateString('pt-PT', {day:'2-digit', month:'long'})
+
+    return `
+    <div style="background:var(--surface);border:1px solid ${enviado ? 'var(--border)' : 'rgba(232,57,90,.25)'};border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);opacity:${enviado ? '.65' : '1'}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:1.4rem">${diffDias === 0 ? '🎂' : diffDias <= 7 ? '⏰' : '📅'}</span>
+            <div>
+              <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${enviado ? 'var(--muted)' : 'var(--coral)'}">
+                ${enviado ? '✓ Enviado' : diffDias === 0 ? 'Hoje é o dia!' : `Faltam ${diffDias} dia${diffDias !== 1 ? 's' : ''}`}
+              </div>
+              <div style="font-size:1rem;font-weight:700;color:var(--text);margin-top:2px">${nomeCliente}</div>
+            </div>
+          </div>
+          <div style="font-size:.83rem;color:var(--muted);line-height:1.6">
+            ✈️ <strong style="color:var(--text)">${r.destino || '—'}</strong> &nbsp;·&nbsp;
+            📋 ${r.rnavt} &nbsp;·&nbsp;
+            🗓️ Aniversário a ${dataAniv}
+          </div>
+          ${r.lembrete_enviado_em ? `<div style="font-size:.72rem;color:var(--muted);margin-top:4px">Enviado em ${new Date(r.lembrete_enviado_em).toLocaleDateString('pt-PT')}</div>` : ''}
+        </div>
+        <button onclick="abrirModalLembrete('${r.id}')"
+          style="padding:9px 18px;background:${enviado ? 'var(--bg)' : 'var(--coral)'};color:${enviado ? 'var(--muted)' : '#fff'};border:${enviado ? '1.5px solid var(--border)' : 'none'};border-radius:50px;font-family:var(--font);font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">
+          ${enviado ? '↩ Reenviar' : '📲 Enviar mensagem'}
+        </button>
+      </div>
+    </div>`
+  }).join('')
+}
+
+async function abrirModalLembrete(reservaId) {
+  const { data: r } = await sb.from('reservas')
+    .select('id,rnavt,destino,created_at,lead_nome,lead_tel,cliente_id,consultor_id')
+    .eq('id', reservaId).single()
+  if (!r) return
+
+  // Buscar dados do cliente
+  let nomeCliente = r.lead_nome || 'Cliente'
+  let telCliente = r.lead_tel || ''
+  if (r.cliente_id) {
+    const { data: cli } = await sb.from('clientes').select('nome,telefone').eq('id', r.cliente_id).maybeSingle()
+    if (cli) { nomeCliente = cli.nome || nomeCliente; telCliente = cli.telefone || telCliente }
+  }
+
+  lembreteAtual = { ...r, nomeCliente, telCliente }
+  lembreFotoBase64 = null
+
+  // Preencher modal
+  document.getElementById('lmb-titulo-modal').textContent = nomeCliente + ' · ' + (r.destino || '—')
+  const criado = new Date(r.created_at)
+  document.getElementById('lmb-sub-modal').textContent =
+    `Reserva ${r.rnavt} · Criada em ${criado.toLocaleDateString('pt-PT', {day:'2-digit', month:'long', year:'numeric'})}`
+
+  // Limpar foto
+  document.getElementById('lmb-foto-preview').style.display = 'none'
+  document.getElementById('lmb-upload-area').style.display = 'block'
+  document.getElementById('lmb-foto-inp').value = ''
+
+  // Gerar mensagem
+  const linkDestinos = `https://escritorioapmviagens-creator.github.io/apm-viagens/destinos-reserva.html?ref=${currentPerfil.id}`
+  const msg = `Olá ${nomeCliente}! 🌍✨
+
+Há precisamente um ano foste a ${r.destino || 'aquele destino incrível'} e tenho a certeza de que guardas memórias únicas dessa viagem. 😊
+
+As melhores experiências merecem ser repetidas — e este ano pode ser ainda melhor!
+
+Para onde vais em 2025? Deixa-me ajudar-te a criar a próxima aventura inesquecível. 🏖️✈️
+
+👉 Descobre os nossos destinos e pede o teu orçamento gratuito aqui:
+${linkDestinos}
+
+Qualquer questão estou aqui! 😊`
+
+  document.getElementById('lmb-mensagem').value = msg
+
+  // Abrir modal
+  const modal = document.getElementById('modal-lembrete')
+  modal.style.display = 'flex'
+}
+
+function fecharModalLembrete() {
+  document.getElementById('modal-lembrete').style.display = 'none'
+  lembreteAtual = null
+  lembreFotoBase64 = null
+}
+
+function handleFotoLembrete(file) {
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = e => {
+    lembreFotoBase64 = e.target.result
+    document.getElementById('lmb-foto-img').src = e.target.result
+    document.getElementById('lmb-foto-preview').style.display = 'block'
+    document.getElementById('lmb-upload-area').style.display = 'none'
+  }
+  reader.readAsDataURL(file)
+}
+
+function removerFotoLembrete() {
+  lembreFotoBase64 = null
+  document.getElementById('lmb-foto-preview').style.display = 'none'
+  document.getElementById('lmb-upload-area').style.display = 'block'
+  document.getElementById('lmb-foto-inp').value = ''
+}
+
+async function enviarLembrete() {
+  if (!lembreteAtual) return
+  const tel = (lembreteAtual.telCliente || '').replace(/\D/g, '')
+  const msg = document.getElementById('lmb-mensagem').value.trim()
+  if (!msg) { toast('Escreve a mensagem antes de enviar.', 'err'); return }
+
+  const waUrl = tel
+    ? `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`
+    : `https://wa.me/?text=${encodeURIComponent(msg)}`
+
+  window.open(waUrl, '_blank')
+  await marcarLembreteEnviado()
+}
+
+async function marcarLembreteEnviado() {
+  if (!lembreteAtual) return
+  await sb.from('reservas').update({ lembrete_enviado_em: new Date().toISOString() }).eq('id', lembreteAtual.id)
+  toast('✅ Lembrete marcado como enviado!', 'ok')
+  fecharModalLembrete()
+  loadLembretes()
+}
+
+async function verificarLembretesBadge() {
+  const hoje = new Date(); hoje.setHours(0,0,0,0)
+  const isAdmin = currentPerfil?.role === 'admin'
+  let q = sb.from('reservas')
+    .select('id,created_at,lembrete_enviado_em')
+    .is('lembrete_enviado_em', null)
+    .neq('estado', 'Cancelada')
+  if (!isAdmin) q = q.eq('consultor_id', currentPerfil.id)
+  const { data } = await q
+
+  const count = (data || []).filter(r => {
+    const criado = new Date(r.created_at)
+    const aniv = new Date(hoje.getFullYear(), criado.getMonth(), criado.getDate())
+    if (aniv < hoje) aniv.setFullYear(aniv.getFullYear() + 1)
+    const diff = Math.ceil((aniv - hoje) / 86400000)
+    return diff >= 0 && diff <= 30
+  }).length
+
+  const badge = document.getElementById('lembretes-badge')
+  if (badge) {
+    if (count > 0) { badge.textContent = count; badge.style.display = 'inline-flex' }
+    else badge.style.display = 'none'
+  }
+}
+
 async function verificarAceitesPendentes24h() {
   // Badge para todos
   const isAdmin = currentPerfil?.role === 'admin'
