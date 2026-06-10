@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APM Viagens — A Minha Reserva</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --coral:#E8395A;--coral-light:#fdedf0;--blue:#3B5BDB;--blue-light:#eef1fb;
+  --green:#10b981;--green-light:#ecfdf5;--amber:#f59e0b;--amber-light:#fef3c7;
+  --dark:#111318;--text:#1f2937;--mid:#4b5563;--muted:#9ca3af;
+  --border:#e5e7eb;--bg:#f5f6fa;--white:#fff;
+  --radius:16px;--radius-sm:10px;
+  --font:'Plus Jakarta Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);min-height:100vh;color:var(--text)}
+
+/* HERO */
+.hero{position:relative;height:260px;background:linear-gradient(135deg,#1e3a8a,#3B5BDB);overflow:hidden;display:flex;align-items:flex-end}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35}
+.hero-content{position:relative;padding:24px;width:100%}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);color:#fff;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:8px}
+.hero-title{font-size:1.6rem;font-weight:800;color:#fff;line-height:1.2;margin-bottom:4px}
+.hero-sub{font-size:.85rem;color:rgba(255,255,255,.75)}
+.logo-top{position:absolute;top:16px;left:16px}
+.logo-top img{height:44px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:.9}
+
+/* COUNTDOWN */
+.countdown{background:var(--coral);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.countdown-label{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+.countdown-nums{display:flex;gap:12px}
+.cd-unit{text-align:center}
+.cd-num{font-size:1.4rem;font-weight:800;line-height:1}
+.cd-lbl{font-size:.6rem;opacity:.75;text-transform:uppercase;letter-spacing:.05em}
+
+/* LAYOUT */
+.wrapper{max-width:680px;margin:0 auto;padding:20px 16px 60px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.05);margin-bottom:14px}
+.card-title{font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:14px;display:flex;align-items:center;gap:.5rem}
+.section-label{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+
+/* INFO ROWS */
+.info-row{display:flex;gap:8px;margin-bottom:.5rem;font-size:.85rem}
+.info-label{font-weight:600;color:var(--mid);min-width:120px;flex-shrink:0}
+.info-value{color:var(--text);line-height:1.5}
+
+/* GALERIA */
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px}
+
+/* PILLS */
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.78rem;font-weight:500;margin:3px 3px 3px 0}
+
+/* PAGAMENTOS */
+.pag-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.pag-item:last-child{border-bottom:none}
+.pag-item .val{font-weight:700;color:var(--dark)}
+.pag-item .estado{font-size:.7rem;padding:2px 8px;border-radius:10px;font-weight:600}
+.estado-pago{background:var(--green-light);color:var(--green)}
+.estado-pendente{background:var(--amber-light);color:var(--amber)}
+.estado-urgente{background:var(--coral-light);color:var(--coral)}
+
+/* CANCELAMENTO */
+.cancel-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.83rem}
+.cancel-row:last-child{border-bottom:none}
+.cancel-row .gastos{font-weight:700;color:var(--coral)}
+
+/* UPLOAD */
+.upload-area{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;transition:all .15s;position:relative;background:var(--bg)}
+.upload-area:hover,.upload-area.drag{border-color:var(--blue);background:var(--blue-light)}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.file-chip{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.4rem .75rem;font-size:.78rem;margin-top:8px}
+.file-chip .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem}
+.file-chip .rm:hover{color:var(--coral)}
+
+/* REFERÊNCIAS */
+.ref-stat{text-align:center;padding:12px}
+.ref-num{font-size:2rem;font-weight:800;color:var(--coral)}
+.ref-lbl{font-size:.75rem;color:var(--muted);margin-top:2px}
+.ref-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* BTNS */
+.btn{padding:.8rem 1.25rem;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:.875rem;font-weight:700;cursor:pointer;transition:all .15s;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn-coral{background:linear-gradient(135deg,var(--coral),#d42d4e);color:#fff;box-shadow:0 4px 14px rgba(232,57,90,.25)}
+.btn-coral:hover{transform:translateY(-1px)}
+.btn-coral:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-green{background:#25d366;color:#fff;box-shadow:0 4px 14px rgba(37,211,102,.25)}
+.btn-outline{background:var(--white);border:1.5px solid var(--border);color:var(--mid);font-family:var(--font);font-size:.875rem;font-weight:600}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+
+/* DOCS */
+.doc-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:.83rem}
+.doc-item:last-child{border-bottom:none}
+.doc-icon{font-size:1.2rem;flex-shrink:0}
+.doc-nome{font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc-dl{background:var(--blue-light);color:var(--blue);border:none;border-radius:6px;padding:4px 10px;font-size:.72rem;font-weight:700;cursor:pointer;flex-shrink:0}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
+.login-card{background:var(--white);border-radius:var(--radius);padding:32px 28px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,.1)}
+
+/* ALERTS */
+.alert{font-size:.8rem;padding:.65rem 1rem;border-radius:8px;margin-bottom:.75rem}
+.alert-err{background:var(--coral-light);color:var(--coral)}
+.alert-ok{background:var(--green-light);color:var(--green)}
+.hidden{display:none!important}
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:.78rem;font-weight:600;color:var(--mid);margin-bottom:.4rem}
+.field input{width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:.7rem .9rem;font-family:var(--font);font-size:.9rem;outline:none;transition:border-color .15s}
+.field input:focus{border-color:var(--coral)}
+
+/* RESERVAS LIST */
+.rsv-item{border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rsv-item:hover{border-color:var(--coral);background:var(--coral-light)}
+.rsv-rnavt{font-size:.72rem;font-weight:700;color:var(--blue)}
+.rsv-dest{font-size:.9rem;font-weight:700;color:var(--dark)}
+.rsv-sub{font-size:.72rem;color:var(--muted)}
+
+/* CHECKLIST */
+.check-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:.85rem}
+.check-item:last-child{border-bottom:none}
+.check-item input[type=checkbox]{accent-color:var(--coral);width:17px;height:17px;flex-shrink:0;cursor:pointer}
+
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:up .3s ease both}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="sec-login" class="login-wrap">
+  <div class="login-card">
+    <div style="text-align:center;margin-bottom:24px">
+      <img src="logo_transparent.png" alt="APM Viagens" style="height:60px;object-fit:contain">
+      <div style="font-size:1rem;font-weight:700;margin-top:12px">A Minha Reserva</div>
+      <div style="font-size:.8rem;color:var(--muted);margin-top:4px">Aceda à sua área de cliente</div>
+    </div>
+    <div class="field">
+      <label>Código de reserva</label>
+      <input type="text" id="login-rnavt" placeholder="ex: APM2026310" style="text-transform:uppercase"
+        oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')fazerLogin()">
+    </div>
+    <div class="field">
+      <label>Telefone</label>
+      <input type="tel" id="login-tel" placeholder="9XXXXXXXX" onkeydown="if(event.key==='Enter')fazerLogin()">
+    </div>
+    <div id="login-err" class="alert alert-err hidden"></div>
+    <button class="btn btn-coral" onclick="fazerLogin()" id="btn-login">Entrar</button>
+    <div style="font-size:.72rem;color:var(--muted);text-align:center;margin-top:12px;line-height:1.5">
+      O código de reserva foi enviado pelo seu consultor.<br>Em caso de dúvida, contacte a APM Viagens.
+    </div>
+  </div>
+</div>
+
+<!-- LISTA DE RESERVAS (quando há mais de uma) -->
+<div id="sec-lista" class="hidden">
+  <div style="background:var(--white);padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
+    <img src="logo_transparent.png" alt="APM Viagens" style="height:36px;object-fit:contain">
+  </div>
+  <div style="max-width:480px;margin:32px auto;padding:0 16px">
+    <div style="font-size:1.1rem;font-weight:800;margin-bottom:4px">As suas reservas</div>
+    <div style="font-size:.82rem;color:var(--muted);margin-bottom:20px">Selecione a reserva que pretende consultar.</div>
+    <div id="lista-reservas"></div>
+    <button class="btn btn-outline" onclick="fazerLogout()" style="margin-top:12px">← Sair</button>
+  </div>
+</div>
+
+<!-- ÁREA PRINCIPAL -->
+<div id="sec-main" class="hidden">
+
+  <!-- HERO -->
+  <div class="hero" id="hero-wrap">
+    <div class="logo-top"><img src="logo_transparent.png" alt="APM Viagens"></div>
+    <img class="hero-img" id="hero-img" src="" alt="">
+    <div class="hero-content">
+      <div class="hero-badge">✈ A Minha Reserva</div>
+      <div class="hero-title" id="hero-title">—</div>
+      <div class="hero-sub" id="hero-sub">—</div>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div class="countdown" id="countdown-bar" style="display:none">
+    <div class="countdown-label" id="cd-label">Faltam para a sua viagem</div>
+    <div class="countdown-nums">
+      <div class="cd-unit"><div class="cd-num" id="cd-dias">—</div><div class="cd-lbl">dias</div></div>
+      <div class="cd-unit" style="opacity:.4"><div class="cd-num">·</div></div>
+      <div class="cd-unit"><div class="cd-num" id="cd-horas">—</div><div class="cd-lbl">horas</div></div>
+      <div class="cd-unit" style="opacity:.4"><div class="cd-num">·</div></div>
+      <div class="cd-unit"><div class="cd-num" id="cd-min">—</div><div class="cd-lbl">min</div></div>
+    </div>
+  </div>
+
+  <div class="wrapper">
+
+    <!-- DETALHES DA VIAGEM -->
+    <div class="card">
+      <div class="card-title">✈️ Detalhes da viagem</div>
+      <div id="viagem-pills" style="margin-bottom:12px"></div>
+      <div id="viagem-infos"></div>
+    </div>
+
+    <!-- GALERIA DO HOTEL -->
+    <div class="card" id="card-gallery" style="display:none">
+      <div class="card-title">🏨 Hotel</div>
+      <div id="hotel-nome" style="font-weight:700;font-size:.95rem;margin-bottom:10px"></div>
+      <div class="gallery" id="hotel-gallery"></div>
+    </div>
+
+    <!-- PROGRAMA / DIAS -->
+    <div class="card" id="card-dias" style="display:none">
+      <div class="card-title">📅 Programa</div>
+      <div id="dias-lista"></div>
+    </div>
+
+    <!-- INCLUÍDO -->
+    <div class="card" id="card-incls" style="display:none">
+      <div class="card-title">✅ Incluído</div>
+      <div id="incls-lista" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+    </div>
+
+    <!-- PAGAMENTOS -->
+    <div class="card" id="card-pagamentos">
+      <div class="card-title">💳 Pagamentos</div>
+      <div id="pagamentos-resumo" style="background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><div style="font-size:.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Total da reserva</div><div style="font-size:1.2rem;font-weight:800;color:var(--dark)" id="pag-total">—</div></div>
+        <div><div style="font-size:.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Já pago</div><div style="font-size:1.2rem;font-weight:800;color:var(--green)" id="pag-pago">—</div></div>
+        <div><div style="font-size:.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Por pagar</div><div style="font-size:1.2rem;font-weight:800;color:var(--coral)" id="pag-falta">—</div></div>
+      </div>
+      <div class="section-label">Condições de pagamento</div>
+      <div id="condpag-texto" style="font-size:.85rem;color:var(--mid);line-height:1.7;white-space:pre-line"></div>
+    </div>
+
+    <!-- CANCELAMENTO -->
+    <div class="card" id="card-cancel" style="display:none">
+      <div class="card-title">⚠️ Política de cancelamento</div>
+      <div id="cancel-texto" style="font-size:.85rem;color:var(--mid);line-height:1.7;white-space:pre-line;margin-bottom:14px"></div>
+      <div id="cancel-datas-lista" style="display:none">
+        <div class="section-label">Datas de entrada em gastos</div>
+        <div id="cancel-datas-rows"></div>
+      </div>
+    </div>
+
+    <!-- COMPROVATIVO DE PAGAMENTO -->
+    <div class="card">
+      <div class="card-title">📤 Enviar comprovativo de pagamento</div>
+      <p style="font-size:.82rem;color:var(--mid);margin-bottom:12px;line-height:1.5">Carregue o seu comprovativo de transferência ou referência Multibanco. O seu consultor será notificado automaticamente.</p>
+      <div class="upload-area" id="upload-area"
+        ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+        <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.webp" onchange="handleFile(this.files[0])">
+        <div style="font-size:1.5rem;margin-bottom:6px">📎</div>
+        <div style="font-size:.82rem;color:var(--mid)"><strong style="color:var(--text)">Clique para selecionar</strong> ou arraste aqui</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:4px">PDF, JPG, PNG — máx. 10 MB</div>
+      </div>
+      <div id="file-preview" class="hidden">
+        <div class="file-chip">
+          <span id="file-nome" style="font-weight:500;color:var(--text)">—</span>
+          <button class="rm" onclick="removerFile()">✕</button>
+        </div>
+      </div>
+      <div id="upload-err" class="alert alert-err hidden" style="margin-top:8px"></div>
+      <div id="upload-ok" class="alert alert-ok hidden" style="margin-top:8px">✅ Comprovativo enviado com sucesso! O seu consultor foi notificado.</div>
+      <button class="btn btn-coral" id="btn-upload" onclick="enviarComprovativo()" style="margin-top:10px" disabled>
+        Enviar comprovativo
+      </button>
+    </div>
+
+    <!-- DOCUMENTOS DO CONSULTOR -->
+    <div class="card" id="card-docs" style="display:none">
+      <div class="card-title">📁 Os seus documentos</div>
+      <div id="docs-lista"></div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="card" id="card-checklist">
+      <div class="card-title">✅ Checklist de viagem</div>
+      <div id="checklist-lista">
+        <div class="check-item"><input type="checkbox" id="chk-1" onchange="guardarChecklist()"><label for="chk-1" style="cursor:pointer">Passaporte válido (mín. 6 meses após regresso)</label></div>
+        <div class="check-item"><input type="checkbox" id="chk-2" onchange="guardarChecklist()"><label for="chk-2" style="cursor:pointer">Visto (se necessário)</label></div>
+        <div class="check-item"><input type="checkbox" id="chk-3" onchange="guardarChecklist()"><label for="chk-3" style="cursor:pointer">Seguro de viagem</label></div>
+        <div class="check-item"><input type="checkbox" id="chk-4" onchange="guardarChecklist()"><label for="chk-4" style="cursor:pointer">Vacinas / formalidades sanitárias</label></div>
+        <div class="check-item"><input type="checkbox" id="chk-5" onchange="guardarChecklist()"><label for="chk-5" style="cursor:pointer">Confirmar dados de voo (nome, data, hora)</label></div>
+        <div class="check-item"><input type="checkbox" id="chk-6" onchange="guardarChecklist()"><label for="chk-6" style="cursor:pointer">Check-in online (24-48h antes)</label></div>
+        <div class="check-item"><input type="checkbox" id="chk-7" onchange="guardarChecklist()"><label for="chk-7" style="cursor:pointer">Câmbio / cartão de débito internacional</label></div>
+        <div class="check-item"><input type="checkbox" id="chk-8" onchange="guardarChecklist()"><label for="chk-8" style="cursor:pointer">Adapatador de tomadas (se necessário)</label></div>
+      </div>
+    </div>
+
+    <!-- REFERÊNCIAS -->
+    <div class="card" id="card-referencias" style="display:none">
+      <div class="card-title">🎁 As minhas referências</div>
+      <div class="ref-grid" style="margin-bottom:14px">
+        <div class="ref-stat"><div class="ref-num" id="ref-total">0</div><div class="ref-lbl">Recomendações</div></div>
+        <div class="ref-stat"><div class="ref-num" id="ref-convertidas" style="color:var(--green)">0</div><div class="ref-lbl">Convertidas</div></div>
+        <div class="ref-stat"><div class="ref-num" id="ref-vouchers" style="color:var(--blue)">0€</div><div class="ref-lbl">Vouchers ganhos</div></div>
+      </div>
+      <p style="font-size:.78rem;color:var(--mid);line-height:1.5;margin-bottom:12px">Por cada amigo que reserve através do seu link, recebe um voucher de desconto na próxima viagem.</p>
+      <button class="btn btn-blue" id="btn-partilhar" onclick="partilharLink()">
+        🔗 Partilhar o meu link de recomendação
+      </button>
+    </div>
+
+    <!-- AÇÕES -->
+    <div class="card">
+      <div class="card-title">🌍 Próxima aventura</div>
+      <p style="font-size:.82rem;color:var(--mid);margin-bottom:14px;line-height:1.5">Gostou da sua experiência? Descubra os nossos destinos e peça um orçamento personalizado.</p>
+      <div class="btn-row">
+        <a id="btn-orcamento" href="#" class="btn btn-coral" target="_blank">✈️ Pedir orçamento</a>
+        <a id="btn-wa-consultor" href="#" class="btn btn-green" target="_blank">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Falar com consultor
+        </a>
+      </div>
+    </div>
+
+    <!-- VOLTAR (quando há múltiplas reservas) -->
+    <div id="btn-voltar-wrap" style="display:none;margin-top:4px">
+      <button class="btn btn-outline" onclick="voltarLista()">← Ver todas as reservas</button>
+    </div>
+    <button class="btn btn-outline" onclick="fazerLogout()" style="margin-top:8px">Sair</button>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPA_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY)
+
+let clienteTel = null
+let todasReservas = []
+let reservaActual = null
+let propostaDados = null
+let ficheiroUpload = null
+let consultorId = null
+let consultorTel = null
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+async function fazerLogin() {
+  const rnavt = document.getElementById('login-rnavt').value.trim().toUpperCase()
+  const tel   = document.getElementById('login-tel').value.trim().replace(/\s/g,'')
+  const errEl = document.getElementById('login-err')
+  errEl.classList.add('hidden')
+
+  if (!rnavt || !tel) {
+    errEl.textContent = 'Preencha o código de reserva e o telefone.'
+    errEl.classList.remove('hidden'); return
+  }
+
+  const btn = document.getElementById('btn-login')
+  btn.disabled = true; btn.textContent = 'A verificar...'
+
+  try {
+    // Verificar reserva + telefone
+    const { data: reserva } = await sb.from('reservas')
+      .select('*')
+      .eq('rnavt', rnavt)
+      .single()
+
+    if (!reserva) {
+      errEl.textContent = 'Código de reserva não encontrado.'
+      errEl.classList.remove('hidden')
+      btn.disabled = false; btn.textContent = 'Entrar'; return
+    }
+
+    // Verificar telefone — via cliente ou lead_tel
+    let telValido = false
+    if (reserva.lead_tel && normalTel(reserva.lead_tel) === normalTel(tel)) telValido = true
+    if (!telValido && reserva.cliente_id) {
+      const { data: cli } = await sb.from('clientes').select('telefone').eq('id', reserva.cliente_id).maybeSingle()
+      if (cli?.telefone && normalTel(cli.telefone) === normalTel(tel)) telValido = true
+    }
+
+    if (!telValido) {
+      errEl.textContent = 'Telefone não corresponde a esta reserva.'
+      errEl.classList.remove('hidden')
+      btn.disabled = false; btn.textContent = 'Entrar'; return
+    }
+
+    // Guardar sessão
+    clienteTel = tel
+    sessionStorage.setItem('apm_cli_tel', tel)
+    sessionStorage.setItem('apm_cli_rnavt', rnavt)
+
+    // Buscar todas as reservas do mesmo telefone
+    await carregarTodasReservas(tel, reserva.cliente_id)
+
+  } catch(e) {
+    errEl.textContent = 'Erro: ' + e.message
+    errEl.classList.remove('hidden')
+    btn.disabled = false; btn.textContent = 'Entrar'
+  }
+}
+
+function normalTel(t) {
+  return (t || '').replace(/\D/g,'').replace(/^351/,'').replace(/^00351/,'')
+}
+
+async function carregarTodasReservas(tel, clienteId) {
+  // Buscar por cliente_id e por lead_tel
+  let reservas = []
+  if (clienteId) {
+    const { data: r1 } = await sb.from('reservas').select('id,rnavt,destino,data_partida,estado,valor_total').eq('cliente_id', clienteId).neq('estado','Cancelada').order('created_at',{ascending:false})
+    if (r1) reservas = r1
+  }
+  // Também por lead_tel
+  const { data: r2 } = await sb.from('reservas').select('id,rnavt,destino,data_partida,estado,valor_total').eq('lead_tel', tel).neq('estado','Cancelada').order('created_at',{ascending:false})
+  if (r2) {
+    r2.forEach(r => { if (!reservas.find(x => x.id === r.id)) reservas.push(r) })
+  }
+
+  todasReservas = reservas
+
+  if (!reservas.length) {
+    document.getElementById('login-err').textContent = 'Nenhuma reserva encontrada.'
+    document.getElementById('login-err').classList.remove('hidden')
+    document.getElementById('btn-login').disabled = false
+    document.getElementById('btn-login').textContent = 'Entrar'
+    return
+  }
+
+  if (reservas.length === 1) {
+    await abrirReserva(reservas[0].rnavt)
+  } else {
+    mostrarLista(reservas)
+  }
+}
+
+function mostrarLista(reservas) {
+  document.getElementById('sec-login').classList.add('hidden')
+  document.getElementById('sec-main').classList.add('hidden')
+  document.getElementById('sec-lista').classList.remove('hidden')
+
+  document.getElementById('lista-reservas').innerHTML = reservas.map(r => {
+    const partida = r.data_partida ? new Date(r.data_partida+'T12:00:00').toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'}) : '—'
+    const total = r.valor_total ? '€'+parseFloat(r.valor_total).toLocaleString('pt-PT') : ''
+    return `<div class="rsv-item" onclick="abrirReserva('${r.rnavt}')">
+      <div>
+        <div class="rsv-rnavt">${r.rnavt}</div>
+        <div class="rsv-dest">${r.destino || '—'}</div>
+        <div class="rsv-sub">Partida ${partida} ${total ? '· '+total : ''}</div>
+      </div>
+      <div style="color:var(--muted);font-size:1.1rem">→</div>
+    </div>`
+  }).join('')
+}
+
+// ── ABRIR RESERVA ─────────────────────────────────────────────────────────────
+async function abrirReserva(rnavt) {
+  // Buscar reserva completa
+  const { data: r } = await sb.from('reservas').select('*').eq('rnavt', rnavt).single()
+  if (!r) return
+  reservaActual = r
+
+  // Buscar proposta se existir
+  propostaDados = null
+  if (r.proposta_id) {
+    const { data: prop } = await sb.from('propostas_viagem').select('dados').eq('id', r.proposta_id).single()
+    if (prop) propostaDados = prop.dados
+  }
+
+  // Buscar consultor
+  consultorId = r.consultor_id
+  if (consultorId) {
+    const { data: perf } = await sb.from('perfis').select('nome,telefone,whatsapp').eq('id', consultorId).maybeSingle()
+    consultorTel = perf?.whatsapp || perf?.telefone || null
+  }
+
+  renderReserva(r)
+
+  document.getElementById('sec-login').classList.add('hidden')
+  document.getElementById('sec-lista').classList.add('hidden')
+  document.getElementById('sec-main').classList.remove('hidden')
+
+  // Mostrar botão voltar se há múltiplas reservas
+  document.getElementById('btn-voltar-wrap').style.display = todasReservas.length > 1 ? 'block' : 'none'
+
+  // Carregar referências e documentos
+  carregarReferencias()
+  carregarDocumentos()
+  carregarChecklist()
+  window.scrollTo({top:0,behavior:'smooth'})
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function fmtDate(d) {
+  if (!d) return '—'
+  return new Date(d+'T12:00:00').toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'})
+}
+
+function renderReserva(r) {
+  const D = propostaDados || {}
+
+  // Hero
+  const heroImg = document.getElementById('hero-img')
+  if (D.foto) { heroImg.src = D.foto; heroImg.style.display = 'block' }
+  document.getElementById('hero-title').textContent = r.destino || D.dest || '—'
+  const partida = r.data_partida ? fmtDate(r.data_partida) : (D.part ? fmtDate(D.part) : '—')
+  const regresso = r.data_regresso ? fmtDate(r.data_regresso) : (D.reg ? fmtDate(D.reg) : null)
+  document.getElementById('hero-sub').textContent = `${partida}${regresso ? ' → '+regresso : ''} · ${r.rnavt}`
+
+  // Countdown
+  const dataPartida = r.data_partida || D.part
+  if (dataPartida) {
+    const target = new Date(dataPartida+'T00:00:00')
+    const agora  = new Date()
+    const diff   = target - agora
+    if (diff > 0) {
+      const dias  = Math.floor(diff / 86400000)
+      const horas = Math.floor((diff % 86400000) / 3600000)
+      const min   = Math.floor((diff % 3600000) / 60000)
+      document.getElementById('cd-dias').textContent  = dias
+      document.getElementById('cd-horas').textContent = horas
+      document.getElementById('cd-min').textContent   = min
+      document.getElementById('countdown-bar').style.display = 'flex'
+    }
+  }
+
+  // Pills de info
+  const pills = []
+  if (D.part || r.data_partida) pills.push(`📅 ${partida}${regresso ? ' → '+regresso:''}`)
+  if (D.noites || r.num_passageiros) {
+    if (D.noites) pills.push(`🌙 ${D.noites} noites`)
+    if (r.num_passageiros) pills.push(`👥 ${r.num_passageiros} pax`)
+  }
+  if (D.voos?.length) D.voos.filter(v=>v).forEach(v => pills.push('✈️ '+v))
+  else if (D.voo) pills.push('✈️ '+D.voo)
+  document.getElementById('viagem-pills').innerHTML = pills.map(p => `<span class="pill">${p}</span>`).join('')
+
+  // Infos adicionais
+  const infos = []
+  if (D.sub || r.destino_sub) infos.push({l:'Descrição', v: D.sub || r.destino_sub})
+  if (D.spct) infos.push({l:'Especial', v: D.spct})
+  document.getElementById('viagem-infos').innerHTML = infos.map(i =>
+    `<div class="info-row"><span class="info-label">${i.l}</span><span class="info-value">${i.v}</span></div>`
+  ).join('')
+
+  // Galeria hotel
+  const hotelFotos = D.hotel_fotos?.filter(f=>f) || []
+  if (D.hotel || hotelFotos.length) {
+    document.getElementById('card-gallery').style.display = 'block'
+    if (D.hotel) document.getElementById('hotel-nome').textContent = D.hotel
+    if (hotelFotos.length) {
+      document.getElementById('hotel-gallery').innerHTML = hotelFotos.slice(0,6).map(url =>
+        `<img src="${url}" alt="Hotel" loading="lazy" onerror="this.parentElement.style.display='none'">`
+      ).join('')
+    }
+  }
+
+  // Dias / programa
+  if (D.days?.filter(d=>d.titulo||d.desc).length) {
+    document.getElementById('card-dias').style.display = 'block'
+    document.getElementById('dias-lista').innerHTML = D.days.filter(d=>d.titulo||d.desc).map((d,i) =>
+      `<div style="display:flex;gap:12px;margin-bottom:12px">
+        <div style="background:var(--coral);color:#fff;font-size:.7rem;font-weight:800;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">${i+1}</div>
+        <div><div style="font-weight:700;font-size:.875rem;margin-bottom:2px">${d.titulo||'Dia '+(i+1)}</div><div style="font-size:.8rem;color:var(--mid);line-height:1.6">${d.desc||''}</div></div>
+      </div>`
+    ).join('')
+  }
+
+  // Incluído
+  const incls = []
+  if (D.voos?.length) D.voos.filter(v=>v).forEach(v => incls.push('✈️ Voo: '+v))
+  else if (D.voo) incls.push('✈️ Voo: '+D.voo)
+  if (D.incls?.filter(i=>i).length) D.incls.filter(i=>i).forEach(i => incls.push('✓ '+i))
+  if (incls.length) {
+    document.getElementById('card-incls').style.display = 'block'
+    document.getElementById('incls-lista').innerHTML = incls.map(i =>
+      `<span class="pill">${i}</span>`
+    ).join('')
+  }
+
+  // Pagamentos
+  const total  = parseFloat(r.valor_total) || 0
+  const pago   = parseFloat(r.valor_pago_cliente) || 0
+  const falta  = Math.max(0, total - pago)
+  document.getElementById('pag-total').textContent = '€'+total.toLocaleString('pt-PT',{minimumFractionDigits:2})
+  document.getElementById('pag-pago').textContent  = '€'+pago.toLocaleString('pt-PT',{minimumFractionDigits:2})
+  document.getElementById('pag-falta').textContent = '€'+falta.toLocaleString('pt-PT',{minimumFractionDigits:2})
+  const condpag = D.condpag || r.condicoes_pagamento || ''
+  if (condpag) document.getElementById('condpag-texto').textContent = condpag
+
+  // Cancelamento
+  const cancelTxt = D.cancel || ''
+  const cancelDatas = D.cancel_datas || []
+  if (cancelTxt || cancelDatas.length) {
+    document.getElementById('card-cancel').style.display = 'block'
+    if (cancelTxt) document.getElementById('cancel-texto').textContent = cancelTxt
+    if (cancelDatas.length) {
+      document.getElementById('cancel-datas-lista').style.display = 'block'
+      const hoje = new Date(); hoje.setHours(0,0,0,0)
+      document.getElementById('cancel-datas-rows').innerHTML = cancelDatas.map(cd => {
+        const dt = new Date(cd.data+'T12:00:00')
+        const diff = Math.ceil((dt - hoje) / 86400000)
+        const urgente = diff >= 0 && diff <= 5
+        const passado = diff < 0
+        return `<div class="cancel-row">
+          <div>
+            <div style="font-weight:600;font-size:.85rem">${dt.toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'})}</div>
+            <div style="font-size:.72rem;color:${urgente?'var(--coral)':passado?'var(--muted)':'var(--mid)'}">${passado?'Passou':'Faltam '+diff+' dia'+(diff!==1?'s':'')}</div>
+          </div>
+          <div class="gastos">€${parseFloat(cd.valor||0).toLocaleString('pt-PT',{minimumFractionDigits:0})}</div>
+        </div>`
+      }).join('')
+    }
+  }
+
+  // Link orçamento e WhatsApp consultor
+  const linkOrc = `https://escritorioapmviagens-creator.github.io/apm-viagens/destinos-reserva.html${consultorId?'?ref='+consultorId:''}`
+  document.getElementById('btn-orcamento').href = linkOrc
+  if (consultorTel) {
+    const telLimpo = consultorTel.replace(/\D/g,'')
+    document.getElementById('btn-wa-consultor').href = `https://wa.me/${telLimpo}?text=${encodeURIComponent('Olá! Tenho uma questão sobre a minha reserva '+r.rnavt+' ('+r.destino+').')}`
+  } else {
+    document.getElementById('btn-wa-consultor').style.display = 'none'
+  }
+}
+
+// ── UPLOAD COMPROVATIVO ───────────────────────────────────────────────────────
+function dragOver(e)  { e.preventDefault(); document.getElementById('upload-area').classList.add('drag') }
+function dragLeave()  { document.getElementById('upload-area').classList.remove('drag') }
+function dropFile(e)  { e.preventDefault(); dragLeave(); handleFile(e.dataTransfer.files[0]) }
+
+function handleFile(file) {
+  if (!file) return
+  if (file.size > 10*1024*1024) { alert('Ficheiro demasiado grande (máx. 10 MB).'); return }
+  ficheiroUpload = file
+  document.getElementById('file-nome').textContent = '📄 '+file.name
+  document.getElementById('file-preview').classList.remove('hidden')
+  document.getElementById('upload-area').style.display = 'none'
+  document.getElementById('btn-upload').disabled = false
+  document.getElementById('upload-err').classList.add('hidden')
+  document.getElementById('upload-ok').classList.add('hidden')
+}
+
+function removerFile() {
+  ficheiroUpload = null
+  document.getElementById('file-preview').classList.add('hidden')
+  document.getElementById('upload-area').style.display = 'block'
+  document.getElementById('btn-upload').disabled = true
+  document.getElementById('file-input').value = ''
+}
+
+async function enviarComprovativo() {
+  if (!ficheiroUpload || !reservaActual) return
+  const btn = document.getElementById('btn-upload')
+  btn.disabled = true; btn.textContent = 'A enviar...'
+
+  try {
+    const rnavt = reservaActual.rnavt
+    const path = `reservas/${rnavt}/comprovativo_${Date.now()}_${ficheiroUpload.name}`
+    const { error: upErr } = await sb.storage.from('documentos').upload(path, ficheiroUpload, {upsert:true})
+    if (upErr) throw upErr
+
+    await sb.from('documentos').insert({
+      reserva_id: reservaActual.id,
+      nome: ficheiroUpload.name,
+      path,
+      tipo: 'pagamento_cliente',
+      uploaded_by: null
+    })
+
+    // Notificação ao consultor e admin
+    await sb.from('notificacoes').insert({
+      tipo: 'comprovativo_cliente',
+      titulo: `Comprovativo recebido — ${rnavt}`,
+      mensagem: `O cliente da reserva ${rnavt} (${reservaActual.destino||'—'}) enviou um comprovativo de pagamento: ${ficheiroUpload.name}.`,
+      reserva_id: reservaActual.id,
+      para_admin: true,
+      lida: false
+    })
+
+    document.getElementById('upload-ok').classList.remove('hidden')
+    removerFile()
+  } catch(e) {
+    document.getElementById('upload-err').textContent = 'Erro ao enviar: '+e.message
+    document.getElementById('upload-err').classList.remove('hidden')
+    btn.disabled = false; btn.textContent = 'Enviar comprovativo'
+  }
+}
+
+// ── DOCUMENTOS DO CONSULTOR ───────────────────────────────────────────────────
+async function carregarDocumentos() {
+  if (!reservaActual?.id) return
+  const { data: docs } = await sb.from('documentos')
+    .select('*')
+    .eq('reserva_id', reservaActual.id)
+    .in('tipo', ['voucher','bilhete','seguro','documento','fatura'])
+    .order('created_at', {ascending:false})
+
+  if (!docs?.length) return
+  document.getElementById('card-docs').style.display = 'block'
+  document.getElementById('docs-lista').innerHTML = docs.map(d => `
+    <div class="doc-item">
+      <div class="doc-icon">📄</div>
+      <div class="doc-nome">${d.nome||'Documento'}</div>
+      <button class="doc-dl" onclick="downloadDoc('${d.path}','${d.nome||'documento'}')">⬇ Descarregar</button>
+    </div>`
+  ).join('')
+}
+
+async function downloadDoc(path, nome) {
+  const { data } = await sb.storage.from('documentos').createSignedUrl(path, 60)
+  if (data?.signedUrl) {
+    const a = document.createElement('a'); a.href = data.signedUrl
+    a.download = nome; a.target = '_blank'; a.click()
+  }
+}
+
+// ── REFERÊNCIAS ───────────────────────────────────────────────────────────────
+async function carregarReferencias() {
+  if (!reservaActual?.cliente_id && !clienteTel) return
+  try {
+    let q = sb.from('referrals').select('id,estado,voucher_valor').eq('referido_por_cliente_id', reservaActual.cliente_id)
+    const { data: refs } = await q
+    if (!refs?.length) return
+
+    document.getElementById('card-referencias').style.display = 'block'
+    const total = refs.length
+    const conv  = refs.filter(r => r.estado === 'convertida').length
+    const vouch = refs.reduce((s,r) => s + (parseFloat(r.voucher_valor)||0), 0)
+    document.getElementById('ref-total').textContent = total
+    document.getElementById('ref-convertidas').textContent = conv
+    document.getElementById('ref-vouchers').textContent = '€'+vouch.toFixed(0)
+
+    const linkRef = `https://escritorioapmviagens-creator.github.io/apm-viagens/destinos-reserva.html?ref_cliente=${reservaActual.cliente_id}`
+    document.getElementById('btn-partilhar').onclick = () => {
+      if (navigator.share) {
+        navigator.share({ title:'APM Viagens', text:'Descobre os melhores destinos!', url: linkRef })
+      } else {
+        navigator.clipboard.writeText(linkRef)
+        alert('Link copiado! Partilhe com os seus amigos.')
+      }
+    }
+  } catch(e) {}
+}
+
+// ── CHECKLIST ─────────────────────────────────────────────────────────────────
+function guardarChecklist() {
+  const estado = {}
+  for (let i=1; i<=8; i++) {
+    estado['chk-'+i] = document.getElementById('chk-'+i)?.checked || false
+  }
+  sessionStorage.setItem('apm_checklist_'+reservaActual?.rnavt, JSON.stringify(estado))
+}
+
+function carregarChecklist() {
+  const saved = sessionStorage.getItem('apm_checklist_'+reservaActual?.rnavt)
+  if (!saved) return
+  const estado = JSON.parse(saved)
+  for (let i=1; i<=8; i++) {
+    const el = document.getElementById('chk-'+i)
+    if (el) el.checked = estado['chk-'+i] || false
+  }
+}
+
+// ── NAVEGAÇÃO ─────────────────────────────────────────────────────────────────
+function voltarLista() {
+  document.getElementById('sec-main').classList.add('hidden')
+  mostrarLista(todasReservas)
+}
+
+function fazerLogout() {
+  sessionStorage.removeItem('apm_cli_tel')
+  sessionStorage.removeItem('apm_cli_rnavt')
+  todasReservas = []; reservaActual = null; propostaDados = null
+  document.getElementById('sec-main').classList.add('hidden')
+  document.getElementById('sec-lista').classList.add('hidden')
+  document.getElementById('sec-login').classList.remove('hidden')
+  document.getElementById('login-rnavt').value = ''
+  document.getElementById('login-tel').value = ''
+  document.getElementById('btn-login').disabled = false
+  document.getElementById('btn-login').textContent = 'Entrar'
+}
+
+function partilharLink() {}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  // Verificar sessão guardada
+  const tel   = sessionStorage.getItem('apm_cli_tel')
+  const rnavt = sessionStorage.getItem('apm_cli_rnavt')
+
+  // Verificar se vem com parâmetros na URL (link directo do consultor)
+  const params = new URLSearchParams(window.location.search)
+  const urlRnavt = params.get('reserva')
+  const urlTel   = params.get('tel')
+
+  if (urlRnavt && urlTel) {
+    document.getElementById('login-rnavt').value = urlRnavt.toUpperCase()
+    document.getElementById('login-tel').value = urlTel
+    await fazerLogin()
+    return
+  }
+
+  if (tel && rnavt) {
+    document.getElementById('login-rnavt').value = rnavt
+    document.getElementById('login-tel').value = tel
+    await fazerLogin()
+  }
+}
+
+init()
+</script>
+</body>
+</html>
