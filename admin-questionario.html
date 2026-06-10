@@ -168,7 +168,6 @@ header span{font-size:12px;color:var(--muted)}
             <th>Crianças</th>
             <th>Nicho</th>
             <th>Distrito</th>
-            <th>Profissão</th>
           </tr>
         </thead>
         <tbody id="tbody-assoc"><tr><td colspan="7" class="loading"><span class="spinner"></span>A carregar...</td></tr></tbody>
@@ -194,7 +193,7 @@ let pendentes = [], associados = []
 async function init() {
   const [{ data: pend }, { data: assoc }] = await Promise.all([
     sb.from('localizadores_servicos').select('*').order('created_at', { ascending: false }),
-    sb.from('reservas').select('id,localizador_principal,localizador,faixa_etaria_titular,num_adultos,num_criancas,tipo_viagem,profissao_titular,distrito_residencia').limit(500)
+    sb.from('reservas').select('id,localizador_principal,localizador,faixa_etaria_titular,num_adultos,num_criancas,tipo_viagem,distrito_residencia').limit(500)
   ])
   pendentes = pend || []
   associados = (assoc || []).filter(r => r.faixa_etaria_titular)
@@ -291,7 +290,6 @@ function renderAssociados() {
       <td>${r.num_criancas||'—'}</td>
       <td>${r.tipo_viagem||'—'}</td>
       <td>${r.distrito_residencia||'—'}</td>
-      <td>${r.profissao_titular||'—'}</td>
     </tr>`).join('')
 }
 
