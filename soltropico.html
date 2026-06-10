@@ -370,22 +370,19 @@ async function searchProducts() {
   try {
     const doc = await soapCall('SearchProducts', xml)
 
-    // Tentar vários paths de resposta
-    let items = all(doc, 'item')
-    if (!items.length) items = all(doc, 'Product')
-    if (!items.length) items = all(doc, 'ProductsList')
+    // Buscar items apenas dentro do ProductArray (não sub-arrays)
+    const productArray = all(doc, 'ProductArray')[0] || all(doc, 'ProductsList')[0]
+    let items = productArray
+      ? Array.from(productArray.children).filter(e => {
+          const local = e.localName || e.tagName.split(':').pop()
+          return local === 'item' || local === 'Product'
+        })
+      : all(doc, 'Product')
+    if (!items.length) items = all(doc, 'item').filter(e => {
+      // fallback: apenas items com campo Name directo
+      return Array.from(e.children).some(c => (c.localName||c.tagName.split(':').pop()) === 'Name')
+    })
     log(`📦 ${items.length} item(ns) bruto(s) recebido(s)`)
-    // ── DEBUG TEMPORÁRIO ──
-    if (items.length > 0) {
-      const item0 = items[0]
-      log(`🔎 children.length: ${item0.children.length}`)
-      const byTagName = item0.getElementsByTagName('Code')
-      log(`🔎 getElementsByTagName('Code'): ${byTagName.length} → "${byTagName[0]?.textContent}"`)
-      const allTags = Array.from(item0.getElementsByTagName('*')).map(e=>e.tagName).slice(0,10).join(', ')
-      log(`🔎 Tags dentro do item[0]: ${allTags}`)
-      log(`🔎 item[0] primeiros 400 chars: ${(item0.outerHTML||item0.innerHTML||'').substring(0,400)}`)
-    }
-    // ── FIM DEBUG ──
 
     // ── EXTRACÇÃO ROBUSTA DO CÓDIGO ──
     // Cada item pode ter o código em: Code, ProdCode, ProductCode
