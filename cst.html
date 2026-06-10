@@ -445,6 +445,14 @@ nav {
           <textarea id="f-cancel" rows="3" placeholder="ex: Até 45 dias: 25% de penalização..."></textarea>
         </div>
         <div class="field">
+          <label>Datas de alerta de cancelamento <span style="font-weight:400;color:var(--muted);font-size:.7rem;text-transform:none;letter-spacing:0">(datas absolutas em que entram gastos)</span></label>
+          <div id="cancel-datas-lista" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
+          <button type="button" onclick="adicionarCancelData()" style="display:flex;align-items:center;gap:6px;background:var(--surface);border:1.5px dashed var(--border);border-radius:8px;padding:7px 14px;font-size:.78rem;font-weight:600;color:var(--muted);cursor:pointer;width:100%;justify-content:center;transition:border-color .15s" onmouseover="this.style.borderColor='var(--coral)'" onmouseout="this.style.borderColor='var(--border)'">
+            + Adicionar data de cancelamento
+          </button>
+          <div style="font-size:.68rem;color:var(--muted);margin-top:4px">⚠️ O sistema alerta automaticamente 5 dias antes de cada data se o cliente não tiver pago o valor correspondente.</div>
+        </div>
+        <div class="field">
           <label>Método de pagamento</label>
           <select id="f-metodo" onchange="toggleMetodoPag()">
             <option value="">Selecionar...</option>
@@ -1534,7 +1542,7 @@ async function gerarLink() {
     cnome: v('f-cnome'), ctel,
     consul_foto: consulFotoUrl || null,
     val: '0',
-    condpag: v('f-condpag'), cancel: v('f-cancel'),
+    condpag: v('f-condpag'), cancel: v('f-cancel'), cancel_datas: getCancelDatas(),
     metodo_pag: v('f-metodo') ? {
       tipo: v('f-metodo'),
       entidade: IFT_ENTIDADE,
@@ -1584,6 +1592,43 @@ function toast(msg, type='ok') {
 }
 
 // ── CHECK SESSION ──
+// ── DATAS DE CANCELAMENTO ────────────────────────────────────────────────────
+let cancelDatasCount = 0
+
+function adicionarCancelData(data='', valor='') {
+  cancelDatasCount++
+  const n = cancelDatasCount
+  const lista = document.getElementById('cancel-datas-lista')
+  const row = document.createElement('div')
+  row.id = 'cancel-row-' + n
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center'
+  row.innerHTML = `
+    <input type="date" id="cancel-data-${n}" value="${data}"
+      style="border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-family:var(--font);font-size:.82rem;color:var(--text);background:var(--surface);outline:none"
+      onfocus="this.style.borderColor='var(--coral)'" onblur="this.style.borderColor='var(--border)'">
+    <div style="position:relative">
+      <input type="number" id="cancel-valor-${n}" value="${valor}" placeholder="Valor em gastos (€)"
+        style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-family:var(--font);font-size:.82rem;color:var(--text);background:var(--surface);outline:none"
+        onfocus="this.style.borderColor='var(--coral)'" onblur="this.style.borderColor='var(--border)'" min="0" step="0.01">
+      <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.75rem;color:var(--muted);pointer-events:none">€</span>
+    </div>
+    <button type="button" onclick="document.getElementById('cancel-row-${n}').remove()"
+      style="background:#fee2e2;border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:#991b1b;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
+  `
+  lista.appendChild(row)
+}
+
+function getCancelDatas() {
+  const result = []
+  document.querySelectorAll('[id^="cancel-row-"]').forEach(row => {
+    const n = row.id.replace('cancel-row-', '')
+    const data  = document.getElementById('cancel-data-' + n)?.value
+    const valor = parseFloat(document.getElementById('cancel-valor-' + n)?.value) || 0
+    if (data) result.push({ data, valor })
+  })
+  return result.sort((a, b) => new Date(a.data) - new Date(b.data))
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   const { data: { session } } = await sb.auth.getSession()
   if(session) {
