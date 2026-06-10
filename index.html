@@ -5395,14 +5395,18 @@ async function uploadFaturaCliente(reservaId) {
   }
 }
 
-function notificarClienteFatura(reservaId) {
+async function notificarClienteFatura(reservaId) {
   const reserva = allReservas?.find(r=>r.id===reservaId) || window._docsReserva
   if (!reserva) { toast('Dados da reserva não encontrados.','err'); return }
 
   const tel = (reserva._cli_tel||reserva.lead_tel||'').replace(/\D/g,'')
   const rnavt = reserva.rnavt || ''
   const destino = reserva.destino || ''
-  const linkAreaCliente = `https://escritorioapmviagens-creator.github.io/apm-viagens/area-cliente.html?reserva=${rnavt}&tel=${tel}`
+  let linkAreaCliente = `https://escritorioapmviagens-creator.github.io/apm-viagens/area-cliente.html?reserva=${rnavt}&tel=${tel}`
+  try {
+    const { data: tk } = await sb.from('tokens_area_cliente').insert({ rnavt, cliente_id: reserva?.cliente_id||null }).select('id').single()
+    if (tk?.id) linkAreaCliente = `https://escritorioapmviagens-creator.github.io/apm-viagens/area-cliente.html?token=${tk.id}`
+  } catch(e) {}
 
   const msg = `Olá! 👋
 
@@ -13659,7 +13663,11 @@ async function carregarVistaCliente(clienteId) {
 
   // Preencher link e iframe
   if (_mpClienteRnavt && telCliente) {
-    const link = `https://escritorioapmviagens-creator.github.io/apm-viagens/area-cliente.html?reserva=${_mpClienteRnavt}&tel=${telCliente}`
+    const token = await gerarTokenAreaCliente(_mpClienteRnavt, clienteId)
+    const link = token
+      ? `https://escritorioapmviagens-creator.github.io/apm-viagens/area-cliente.html?token=${token}`
+      : `https://escritorioapmviagens-creator.github.io/apm-viagens/area-cliente.html?reserva=${_mpClienteRnavt}&tel=${telCliente}`
+    window._mpLinkAreaCliente = link
     const linkEl = document.getElementById('mp-link-area-cliente')
     const iframeEl = document.getElementById('mp-iframe-cliente')
     if (linkEl) linkEl.href = link
@@ -13726,6 +13734,22 @@ async function carregarVistaCliente(clienteId) {
   } else {
     contactoEl.innerHTML = '<div style="font-size:12px;color:var(--muted)">Sem número de telefone registado.</div>'
   }
+}
+
+async function gerarTokenAreaCliente(rnavt, clienteId) {
+  try {
+    const { data, error } = await sb.from('tokens_area_cliente').insert({
+      rnavt, cliente_id: clienteId || null
+    }).select('id').single()
+    if (error) throw error
+    return data.id
+  } catch(e) { console.error('Erro token:', e); return null }
+}
+
+function copiarLinkCliente() {
+  const link = window._mpLinkAreaCliente
+  if (!link) { toast('Abra a Vista do cliente primeiro.','err'); return }
+  navigator.clipboard.writeText(link).then(() => toast('✅ Link copiado!','ok')).catch(() => prompt('Copie o link:', link))
 }
 
 function abrirAjustePontos() {
