@@ -386,8 +386,20 @@ async function fazerLogin() {
     sessionStorage.setItem('apm_cli_tel', tel)
     sessionStorage.setItem('apm_cli_rnavt', rnavt)
 
+    // Registar uso do token se veio de link
+    if (window._loginToken) {
+      try {
+        await sb.from('tokens_area_cliente')
+          .update({ usado_em: new Date().toISOString() })
+          .eq('id', window._loginToken)
+      } catch(e) {}
+      window._loginToken = null
+    }
+
     // Buscar todas as reservas do mesmo telefone
-    await carregarTodasReservas(tel, reserva.cliente_id)
+    const clienteIdParaBusca = window._loginClienteId || reserva.cliente_id
+    window._loginClienteId = null
+    await carregarTodasReservas(tel, clienteIdParaBusca)
 
   } catch(e) {
     errEl.textContent = 'Erro: ' + e.message
@@ -782,49 +794,38 @@ function partilharLink() {}
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function fazerLoginPorToken(tokenId) {
   try {
-    // Validar token na tabela tokens_area_cliente
+    // Validar token
     const { data: tk, error } = await sb.from('tokens_area_cliente')
-      .select('rnavt, cliente_id, expires_at, usado_em')
+      .select('rnavt, cliente_id, expires_at')
       .eq('id', tokenId)
       .single()
 
     if (error || !tk) {
-      document.getElementById('sec-login').classList.remove('hidden')
       document.getElementById('login-err').textContent = 'Link inválido ou expirado. Solicite um novo link ao seu consultor.'
       document.getElementById('login-err').classList.remove('hidden')
       return
     }
 
     if (new Date(tk.expires_at) < new Date()) {
-      document.getElementById('sec-login').classList.remove('hidden')
       document.getElementById('login-err').textContent = 'Este link expirou. Solicite um novo link ao seu consultor.'
       document.getElementById('login-err').classList.remove('hidden')
       return
     }
 
-    // Registar data de uso (mas não bloquear reutilização — cliente pode voltar)
-    if (!tk.usado_em) {
-      await sb.from('tokens_area_cliente').update({ usado_em: new Date().toISOString() }).eq('id', tokenId)
-    }
+    // Pré-preencher código de reserva e pedir telefone ao cliente
+    document.getElementById('login-rnavt').value = tk.rnavt
+    document.getElementById('login-rnavt').readOnly = true
+    document.getElementById('login-rnavt').style.background = '#f3f4f6'
+    document.getElementById('login-rnavt').style.color = 'var(--muted)'
 
-    // Guardar sessão
-    const rnavt = tk.rnavt
-    sessionStorage.setItem('apm_cli_rnavt', rnavt)
-    sessionStorage.setItem('apm_cli_token', tokenId)
+    // Guardar token para usar no login
+    window._loginToken = tokenId
+    window._loginClienteId = tk.cliente_id
 
-    // Buscar telefone a partir do cliente_id para as buscas
-    let tel = ''
-    if (tk.cliente_id) {
-      const { data: cli } = await sb.from('clientes').select('telefone').eq('id', tk.cliente_id).maybeSingle()
-      if (cli?.telefone) tel = cli.telefone.replace(/\D/g,'')
-    }
-    clienteTel = tel
-
-    // Carregar reservas
-    await carregarTodasReservas(tel, tk.cliente_id)
+    // Focar no campo do telefone
+    setTimeout(() => document.getElementById('login-tel').focus(), 100)
 
   } catch(e) {
-    document.getElementById('sec-login').classList.remove('hidden')
     document.getElementById('login-err').textContent = 'Erro ao validar o link: ' + e.message
     document.getElementById('login-err').classList.remove('hidden')
   }
@@ -863,7 +864,7 @@ async function init() {
   }
 }
 
-init()
+;(async () => { await init() })()
 </script>
 </body>
 </html>
