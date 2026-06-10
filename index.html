@@ -13642,7 +13642,7 @@ async function carregarVistaCliente(clienteId) {
 
   // Documentos
   const rsvIds = (await sb.from('reservas').select('id').eq('cliente_id', clienteId)).data?.map(r=>r.id) || []
-  const { data: docs } = rsvIds.length ? await sb.from('documentos').select('*').in('reserva_id', rsvIds).order('created_at', { ascending: false }) : { data: [] }
+  const { data: docs } = rsvIds.length ? await sb.from('documentos').select('*').in('reserva_id', rsvIds).in('tipo', ['voucher','bilhete','seguro','documento','fatura']).order('created_at', { ascending: false }) : { data: [] }
   const docsEl = document.getElementById('mp-docs-lista')
   docsEl.innerHTML = docs?.length ? docs.map(d =>
     '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">'
