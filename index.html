@@ -2483,7 +2483,7 @@ textarea.finput{resize:vertical;min-height:72px}
             <div style="font-weight:700;font-size:1rem;margin-bottom:.5rem">Sem lembretes por agora</div>
             <div style="font-size:.85rem;color:var(--muted)">Os lembretes aparecem 30 dias antes do aniversário de cada reserva.</div>
           </div>
-          <div id="lembretes-lista" style="display:none;display:flex;flex-direction:column;gap:14px"></div>
+          <div id="lembretes-lista" style="display:none;flex-direction:column;gap:14px"></div>
         </div>
       </div>
 
@@ -9290,11 +9290,19 @@ async function loadLembretes() {
   const isAdmin = currentPerfil?.role === 'admin'
 
   let q = sb.from('reservas')
-    .select('id,rnavt,destino,created_at,lead_nome,lead_tel,cliente_id,consultor_id,lembrete_enviado_em')
+    .select('id,rnavt,destino,created_at,lead_nome,lead_tel,cliente_id,consultor_id')
     .neq('estado', 'Cancelada')
   if (!isAdmin) q = q.eq('consultor_id', currentPerfil.id)
 
-  const { data: reservas } = await q
+  const { data: reservas, error: errQ } = await q
+  if (errQ) console.error('Erro loadLembretes:', errQ)
+
+  // Tentar carregar lembrete_enviado_em separadamente (coluna pode não existir ainda)
+  let lembreteEnviadoMap = {}
+  try {
+    const { data: le } = await sb.from('reservas').select('id,lembrete_enviado_em').neq('estado','Cancelada')
+    ;(le||[]).forEach(r => { if(r.lembrete_enviado_em) lembreteEnviadoMap[r.id] = r.lembrete_enviado_em })
+  } catch(e) { /* coluna ainda não existe, ignorar */ }
 
   // Filtrar as que têm aniversário nos próximos 30 dias
   const lembretes = (reservas || []).filter(r => {
@@ -9310,7 +9318,7 @@ async function loadLembretes() {
   // Atualizar badge
   const badge = document.getElementById('lembretes-badge')
   if (badge) {
-    const naoEnviados = lembretes.filter(r => !r.lembrete_enviado_em).length
+    const naoEnviados = lembretes.filter(r => !lembreteEnviadoMap[r.id]).length
     if (naoEnviados > 0) { badge.textContent = naoEnviados; badge.style.display = 'inline-flex' }
     else badge.style.display = 'none'
   }
@@ -9341,7 +9349,8 @@ async function loadLembretes() {
     const diffDias = Math.ceil((aniv - hoje) / 86400000)
     const cli = clientesMap[r.cliente_id]
     const nomeCliente = cli?.nome || r.lead_nome || 'Cliente'
-    const enviado = !!r.lembrete_enviado_em
+    const enviadoEm = lembreteEnviadoMap[r.id]
+    const enviado = !!enviadoEm
     const dataAniv = aniv.toLocaleDateString('pt-PT', {day:'2-digit', month:'long'})
 
     return `
@@ -9362,7 +9371,7 @@ async function loadLembretes() {
             📋 ${r.rnavt} &nbsp;·&nbsp;
             🗓️ Aniversário a ${dataAniv}
           </div>
-          ${r.lembrete_enviado_em ? `<div style="font-size:.72rem;color:var(--muted);margin-top:4px">Enviado em ${new Date(r.lembrete_enviado_em).toLocaleDateString('pt-PT')}</div>` : ''}
+          ${enviadoEm ? `<div style="font-size:.72rem;color:var(--muted);margin-top:4px">Enviado em ${new Date(enviadoEm).toLocaleDateString('pt-PT')}</div>` : ''}
         </div>
         <button onclick="abrirModalLembrete('${r.id}')"
           style="padding:9px 18px;background:${enviado ? 'var(--bg)' : 'var(--coral)'};color:${enviado ? 'var(--muted)' : '#fff'};border:${enviado ? '1.5px solid var(--border)' : 'none'};border-radius:50px;font-family:var(--font);font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">
@@ -9473,14 +9482,22 @@ async function marcarLembreteEnviado() {
 async function verificarLembretesBadge() {
   const hoje = new Date(); hoje.setHours(0,0,0,0)
   const isAdmin = currentPerfil?.role === 'admin'
+  // Buscar apenas created_at — não depender de lembrete_enviado_em
   let q = sb.from('reservas')
-    .select('id,created_at,lembrete_enviado_em')
-    .is('lembrete_enviado_em', null)
+    .select('id,created_at')
     .neq('estado', 'Cancelada')
   if (!isAdmin) q = q.eq('consultor_id', currentPerfil.id)
   const { data } = await q
 
+  // Verificar quais já foram enviados (coluna pode não existir)
+  let enviadosSet = new Set()
+  try {
+    const { data: le } = await sb.from('reservas').select('id,lembrete_enviado_em').not('lembrete_enviado_em','is',null)
+    ;(le||[]).forEach(r => enviadosSet.add(r.id))
+  } catch(e) { /* coluna ainda não existe */ }
+
   const count = (data || []).filter(r => {
+    if (enviadosSet.has(r.id)) return false
     const criado = new Date(r.created_at)
     const aniv = new Date(hoje.getFullYear(), criado.getMonth(), criado.getDate())
     if (aniv < hoje) aniv.setFullYear(aniv.getFullYear() + 1)
