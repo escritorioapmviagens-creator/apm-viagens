@@ -379,7 +379,6 @@ async function searchProducts() {
         })
       : all(doc, 'Product')
     if (!items.length) items = all(doc, 'item').filter(e => {
-      // fallback: apenas items com campo Name directo
       return Array.from(e.children).some(c => (c.localName||c.tagName.split(':').pop()) === 'Name')
     })
     log(`📦 ${items.length} item(ns) bruto(s) recebido(s)`)
