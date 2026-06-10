@@ -13663,15 +13663,18 @@ async function carregarVistaCliente(clienteId) {
 
   // Preencher link e iframe
   if (_mpClienteRnavt && telCliente) {
+    // Link interno para iframe (login automático — só visto pelo consultor/admin)
+    const linkInterno = `https://escritorioapmviagens-creator.github.io/apm-viagens/area-cliente.html?reserva=${_mpClienteRnavt}&tel=${telCliente}`
+    // Link para o cliente (com token — pede telefone)
     const token = await gerarTokenAreaCliente(_mpClienteRnavt, clienteId)
-    const link = token
+    const linkCliente = token
       ? `https://escritorioapmviagens-creator.github.io/apm-viagens/area-cliente.html?token=${token}`
-      : `https://escritorioapmviagens-creator.github.io/apm-viagens/area-cliente.html?reserva=${_mpClienteRnavt}&tel=${telCliente}`
-    window._mpLinkAreaCliente = link
+      : linkInterno
+    window._mpLinkAreaCliente = linkCliente
     const linkEl = document.getElementById('mp-link-area-cliente')
     const iframeEl = document.getElementById('mp-iframe-cliente')
-    if (linkEl) linkEl.href = link
-    if (iframeEl) iframeEl.src = link
+    if (linkEl) linkEl.href = linkCliente
+    if (iframeEl) iframeEl.src = linkInterno
   } else {
     const iframeEl = document.getElementById('mp-iframe-cliente')
     if (iframeEl) iframeEl.srcdoc = '<div style="font-family:sans-serif;text-align:center;padding:60px 20px;color:#9ca3af">Sem reservas ou telefone registado para este cliente.</div>'
