@@ -375,6 +375,17 @@ async function searchProducts() {
     if (!items.length) items = all(doc, 'Product')
     if (!items.length) items = all(doc, 'ProductsList')
     log(`📦 ${items.length} item(ns) bruto(s) recebido(s)`)
+    // ── DEBUG TEMPORÁRIO ──
+    if (items.length > 0) {
+      const item0 = items[0]
+      log(`🔎 children.length: ${item0.children.length}`)
+      const byTagName = item0.getElementsByTagName('Code')
+      log(`🔎 getElementsByTagName('Code'): ${byTagName.length} → "${byTagName[0]?.textContent}"`)
+      const allTags = Array.from(item0.getElementsByTagName('*')).map(e=>e.tagName).slice(0,10).join(', ')
+      log(`🔎 Tags dentro do item[0]: ${allTags}`)
+      log(`🔎 item[0] primeiros 400 chars: ${(item0.outerHTML||item0.innerHTML||'').substring(0,400)}`)
+    }
+    // ── FIM DEBUG ──
 
     // ── EXTRACÇÃO ROBUSTA DO CÓDIGO ──
     // Cada item pode ter o código em: Code, ProdCode, ProductCode
