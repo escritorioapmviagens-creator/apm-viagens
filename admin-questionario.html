@@ -194,7 +194,7 @@ let pendentes = [], associados = []
 async function init() {
   const [{ data: pend }, { data: assoc }] = await Promise.all([
     sb.from('localizadores_servicos').select('*').order('created_at', { ascending: false }),
-    sb.from('reservas').select('id,localizador_principal,localizador,faixa_etaria_titular,num_adultos,num_criancas,tipo_viagem,profissao_titular,distrito_residencia').not('faixa_etaria_titular','is',null)
+    sb.from('reservas').select('id,localizador_principal,localizador,faixa_etaria_titular,num_adultos,num_criancas,tipo_viagem,profissao_titular,distrito_residencia').neq('faixa_etaria_titular','')
   ])
   pendentes = pend || []
   associados = assoc || []
