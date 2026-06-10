@@ -88,6 +88,14 @@ canvas#sig-canvas { display: block; width: 100%; height: 120px; cursor: crosshai
 .modal-edit-title { font-size:1rem; font-weight:800; margin-bottom:20px; color:#1a1a2e }
 .modal-edit input { width:100%; padding:10px 14px; border:1.5px solid #e5e7eb; border-radius:8px; font-family:var(--font); font-size:13px; margin-bottom:12px; outline:none }
 .modal-edit input:focus { border-color:#E8395A }
+/* CONTRATO */
+.contrato-partes { background:var(--blue-light); border:1px solid rgba(59,91,219,.18); border-radius:12px; padding:16px 18px; margin-bottom:20px; font-size:.875rem; line-height:1.8; }
+.contrato-partes strong { color:var(--blue); }
+.artigo { margin-bottom:18px; }
+.artigo-titulo { font-size:.875rem; font-weight:800; color:var(--text); margin-bottom:6px; }
+.artigo p, .artigo li { font-size:.84rem; color:#374151; line-height:1.75; margin-bottom:4px; }
+.artigo ol { padding-left:1.2rem; margin:4px 0; }
+.contrato-data { text-align:right; font-size:.75rem; color:var(--muted); margin-top:16px; padding-top:12px; border-top:1px solid var(--border); }
 .modal-edit-btns { display:flex; gap:10px; margin-top:8px }
 .modal-edit-btns button { flex:1; padding:11px; border:none; border-radius:8px; font-family:var(--font); font-size:13px; font-weight:700; cursor:pointer }
 .modal-edit-save { background:#E8395A; color:#fff }
@@ -176,6 +184,74 @@ canvas#sig-canvas { display: block; width: 100%; height: 120px; cursor: crosshai
           Falar com o consultor
         </a>
       </div>
+    </div>
+  </div>
+
+  <!-- CONTRATO: Artigos 1-8 -->
+  <div class="section" id="section-contrato">
+    <div class="card">
+      <div class="card-title">Contrato de Serviço Turístico</div>
+
+      <div class="contrato-partes" id="contrato-partes">
+        <strong>Entre:</strong><br>
+        APM Viagens — ANDAR NAS PRAIAS DO MUNDO, LDA, pessoa coletiva n.º 518357490,
+        com sede na Rua Vasco Santana n.º 18, 3.º Dto, 2675-629 Odivelas,
+        detentora da marca "APM Viagens" e titular do RNAVT n.º 12286.<br><br>
+        <strong>E</strong><br>
+        <span id="contrato-cliente-id">—</span>
+      </div>
+
+      <div class="artigo">
+        <div class="artigo-titulo">Artigo 1.º — Objeto</div>
+        <p>1. Pelo presente contrato a Agência de Viagens prestará ao Cliente os Serviços de Viagem descritos nesta proposta.</p>
+        <p>2. O Cliente obriga-se a adquirir os Serviços de Viagem referidos no número anterior.</p>
+      </div>
+
+      <div class="artigo">
+        <div class="artigo-titulo">Artigo 2.º — Preço e condições de pagamento</div>
+        <p>1. O preço dos Serviços de Viagem é o constante do presente contrato, comunicado ao Cliente no momento da reserva.</p>
+        <p>2. Os preços e condições de pagamento são suscetíveis de alteração no momento em que a reserva venha a ser efetivada pelo agente de viagens.</p>
+        <p>3. Em caso de alteração, o Cliente será informado, sendo a reserva efetivada apenas com novo consentimento do mesmo.</p>
+        <p>4. Ao preço referido acresce o respetivo IVA, se devido, nos termos da legislação especial do IVA das agências de viagens.</p>
+        <p>5. O pagamento deverá estar liquidado até 30 dias antes do início da viagem.</p>
+        <p>6. O não cumprimento dos prazos de pagamento implica o cancelamento imediato da reserva.</p>
+      </div>
+
+      <div class="artigo">
+        <div class="artigo-titulo">Artigo 3.º — Documentação</div>
+        <p>Será da responsabilidade do Cliente a obtenção de toda a documentação necessária para a realização da viagem, nomeadamente passaporte, visto (se necessário) e eventuais formalidades sanitárias.</p>
+      </div>
+
+      <div class="artigo">
+        <div class="artigo-titulo">Artigo 4.º — Duração</div>
+        <p>O presente Acordo é válido pelo prazo de 30 dias a contar da data da sua assinatura, podendo renovar-se automaticamente por iguais períodos se nenhuma das partes o denunciar com 30 dias de antecedência.</p>
+      </div>
+
+      <div class="artigo">
+        <div class="artigo-titulo">Artigo 5.º — Cessão da posição contratual</div>
+        <ol>
+          <li>O Cliente pode ceder a sua reserva a outra pessoa que preencha todas as condições requeridas, desde que informe atempadamente o organizador.</li>
+          <li>A cessão está sujeita à aprovação dos diferentes prestadores de serviços e às regras vigentes no Estado de destino.</li>
+          <li>Tanto o Cliente como a pessoa a quem vai ser cedida a posição são solidariamente responsáveis pelo pagamento do preço ou da parte ainda por pagar, bem como dos encargos adicionais originados pela cessão.</li>
+        </ol>
+      </div>
+
+      <div class="artigo">
+        <div class="artigo-titulo">Artigo 6.º — Assistência a Clientes</div>
+        <p>Quando por razões que não lhe forem imputáveis os Clientes não possam terminar a viagem, a Agência de Viagens obriga-se a prestar toda a assistência possível até ao regresso daquele.</p>
+      </div>
+
+      <div class="artigo">
+        <div class="artigo-titulo">Artigo 7.º — Foro</div>
+        <p>Para qualquer questão emergente do presente contrato é competente o foro da Comarca de Lisboa, com expressa renúncia a qualquer outro.</p>
+      </div>
+
+      <div class="artigo">
+        <div class="artigo-titulo">Artigo 8.º — Entrada em vigor</div>
+        <p>O presente contrato entra em vigor à data da realização da reserva, formalmente constituída pela aceitação eletrónica do Cliente.</p>
+      </div>
+
+      <div class="contrato-data">Odivelas, <span id="contrato-data-hoje"></span></div>
     </div>
   </div>
 
@@ -351,6 +427,17 @@ function renderProposta() {
     }
   }
   if(D.cancel) { document.getElementById('cancel-text').textContent = D.cancel; document.getElementById('section-cancel').style.display = 'block' }
+
+  // Preencher secção contratual
+  const dataHoje = new Date().toLocaleDateString('pt-PT', {day:'2-digit', month:'long', year:'numeric'})
+  const dataHojeEl = document.getElementById('contrato-data-hoje')
+  if(dataHojeEl) dataHojeEl.textContent = dataHoje
+  const contratoCliEl = document.getElementById('contrato-cliente-id')
+  if(contratoCliEl) {
+    let parteHtml = `<strong>${D.cli_nome || D.cli || '—'}</strong>`
+    if(D.cli_nif) parteHtml += `<br>NIF: ${D.cli_nif}`
+    contratoCliEl.innerHTML = parteHtml
+  }
   const cname = D.cnome || 'APM Viagens'
   document.getElementById('consul-name').textContent = cname
 
@@ -462,10 +549,24 @@ async function aceitarProposta() {
         estado: 'Aceite Pendente',
         aceite_em: new Date().toISOString(),
         proposta_id: pid,
+        cst_aceite: true,
+        cst_aceite_em: new Date().toISOString(),
+        complementar_preenchido: false,
         observacoes: D.cancel || null
       })
       if(rsvErr) console.error('Erro ao criar reserva:', rsvErr.message)
-      else console.log('✅ Reserva criada:', rnavt)
+      else {
+        console.log('✅ Reserva criada:', rnavt)
+        // Notificação ao admin
+        await sb.from('notificacoes').insert({
+          tipo: 'cst_aceite',
+          titulo: `CST aceite — ${rnavt}`,
+          mensagem: `O cliente ${D.cli_nome || D.cli || '—'} aceitou o contrato para ${D.dest || '—'}. Reserva ${rnavt} criada. Aguarda complementar do consultor ${D.cnome || ''}.`,
+          reserva_id: null,
+          para_admin: true,
+          lida: false
+        })
+      }
     }
     // Notificar consultor
     const cname = D.cnome || 'consultor'
