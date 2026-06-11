@@ -158,8 +158,50 @@ tr:hover td{background:#fafbff}
 
   <div class="tabs">
     <button class="tab on" onclick="setTab('consultores',this)">👥 Consultores</button>
+    <button class="tab" onclick="setTab('importar',this)">📥 Importar CSV</button>
     <button class="tab" onclick="setTab('carregar',this)">📄 Carregar Extrato</button>
     <button class="tab" onclick="setTab('historico',this)">📅 Histórico</button>
+  </div>
+
+  <!-- IMPORTAR CSV -->
+  <div id="tab-importar" style="display:none">
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:14px">
+      <div style="font-family:var(--heading);font-size:1rem;font-weight:700;margin-bottom:6px">📥 Importar consultores do EzyCourse</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:18px;line-height:1.6">
+        Carregue o CSV exportado do EzyCourse (<em>students_export.csv</em>). O sistema detecta automaticamente o plano e ignora consultores já existentes (por email).
+      </div>
+
+      <!-- Upload zone -->
+      <div class="upload-zone" id="imp-zone" ondragover="impDrag(event)" ondragleave="impDragLeave(event)" ondrop="impDrop(event)">
+        <input type="file" accept=".csv" onchange="impLerCSV(this.files[0])">
+        <div class="uz-icon">📋</div>
+        <div class="uz-text"><strong>Clique para selecionar</strong> ou arraste o CSV aqui</div>
+        <div class="uz-formats">Apenas ficheiros .csv do EzyCourse</div>
+      </div>
+
+      <!-- Preview / resultados -->
+      <div id="imp-preview" style="display:none;margin-top:18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="font-family:var(--heading);font-size:.88rem;font-weight:600">Pré-visualização da importação</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span id="imp-count-new" style="background:var(--green-light);color:var(--green);font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:50px"></span>
+            <span id="imp-count-dup" style="background:var(--amber-light);color:var(--amber);font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:50px"></span>
+            <button class="btn btn-coral" onclick="impGuardar()" id="imp-btn-guardar">✅ Importar novos</button>
+          </div>
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr>
+              <th>Nome</th><th>Email</th><th>Telefone</th><th>Plano</th><th>Billing</th><th>Data registo</th><th>Estado</th>
+            </tr></thead>
+            <tbody id="imp-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Resultado da importação -->
+      <div id="imp-resultado" style="display:none;margin-top:14px;padding:14px 16px;border-radius:10px;font-size:.85rem;font-weight:600"></div>
+    </div>
   </div>
 
   <!-- CONSULTORES -->
@@ -428,7 +470,7 @@ function renderConsultores() {
           + '<td id="ultdata-'+c.id+'" style="color:var(--muted);font-size:.76rem">' + (c._ultData ? new Date(c._ultData+'T12:00:00').toLocaleDateString('pt-PT',{month:'short',year:'numeric'}) : '—') + '</td>'
           + '<td id="valor-'+c.id+'" style="font-weight:700;color:' + (c._ultValor ? 'var(--green)' : 'var(--muted)') + '">' + (c._ultValor ? '€'+parseFloat(c._ultValor).toLocaleString('pt-PT',{minimumFractionDigits:2}) : '—') + '</td>'
           + '<td id="desde-'+c.id+'" style="color:var(--muted);font-size:.76rem">' + (c.primeiro_pagamento ? new Date(c.primeiro_pagamento+'T12:00:00').toLocaleDateString('pt-PT') : '—') + '</td>'
-          + '<td id="phone-'+c.id+'" style="font-size:.72rem;color:var(--muted)">' + (c.phone || '—') + '</td>'
+          + '<td id="phone-'+c.id+'" style="font-size:.72rem;color:var(--muted)">' + (c.telefone || c.phone || '—') + '</td>'
           + '<td><select class="ssel" onchange="setEst(\''+c.id+'\',this.value)" style="border-color:' + (est==='ativo'?'var(--green)':'var(--coral)') + ';font-size:.72rem;padding:3px 6px">'
           + '<option value="ativo"'+(est==='ativo'?' selected':'')+'>✓ Ativo</option>'
           + '<option value="inativo"'+(est!=='ativo'?' selected':'')+'>✗ Inativo</option>'
@@ -616,7 +658,7 @@ function renderConsultores() {
           + '<td id="ultdata-'+c.id+'" style="color:var(--muted);font-size:.76rem">' + (c._ultData ? new Date(c._ultData+'T12:00:00').toLocaleDateString('pt-PT',{month:'short',year:'numeric'}) : '—') + '</td>'
           + '<td id="valor-'+c.id+'" style="font-weight:700;color:' + (c._ultValor ? 'var(--green)' : 'var(--muted)') + '">' + (c._ultValor ? '€'+parseFloat(c._ultValor).toLocaleString('pt-PT',{minimumFractionDigits:2}) : '—') + '</td>'
           + '<td id="desde-'+c.id+'" style="color:var(--muted);font-size:.76rem">' + (c.primeiro_pagamento ? new Date(c.primeiro_pagamento+'T12:00:00').toLocaleDateString('pt-PT') : '—') + '</td>'
-          + '<td id="phone-'+c.id+'" style="font-size:.72rem;color:var(--muted)">' + (c.phone || '—') + '</td>'
+          + '<td id="phone-'+c.id+'" style="font-size:.72rem;color:var(--muted)">' + (c.telefone || c.phone || '—') + '</td>'
           + '<td><select class="ssel" onchange="setEst(\''+c.id+'\',this.value)" style="border-color:' + (est==='ativo'?'var(--green)':'var(--coral)') + ';font-size:.72rem;padding:3px 6px">'
           + '<option value="ativo"'+(est==='ativo'?' selected':'')+'>✓ Ativo</option>'
           + '<option value="inativo"'+(est!=='ativo'?' selected':'')+'>✗ Inativo</option>'
@@ -759,7 +801,7 @@ function renderConsultores() {
           + '<td id="ultdata-'+c.id+'" style="color:var(--muted);font-size:.76rem">' + (c._ultData ? new Date(c._ultData+'T12:00:00').toLocaleDateString('pt-PT',{month:'short',year:'numeric'}) : '—') + '</td>'
           + '<td id="valor-'+c.id+'" style="font-weight:700;color:' + (c._ultValor ? 'var(--green)' : 'var(--muted)') + '">' + (c._ultValor ? '€'+parseFloat(c._ultValor).toLocaleString('pt-PT',{minimumFractionDigits:2}) : '—') + '</td>'
           + '<td id="desde-'+c.id+'" style="color:var(--muted);font-size:.76rem">' + (c.primeiro_pagamento ? new Date(c.primeiro_pagamento+'T12:00:00').toLocaleDateString('pt-PT') : '—') + '</td>'
-          + '<td id="phone-'+c.id+'" style="font-size:.72rem;color:var(--muted)">' + (c.phone || '—') + '</td>'
+          + '<td id="phone-'+c.id+'" style="font-size:.72rem;color:var(--muted)">' + (c.telefone || c.phone || '—') + '</td>'
           + '<td><select class="ssel" onchange="setEst(\''+c.id+'\',this.value)" style="border-color:' + (est==='ativo'?'var(--green)':'var(--coral)') + ';font-size:.72rem;padding:3px 6px">'
           + '<option value="ativo"'+(est==='ativo'?' selected':'')+'>✓ Ativo</option>'
           + '<option value="inativo"'+(est!=='ativo'?' selected':'')+'>✗ Inativo</option>'
@@ -1619,7 +1661,7 @@ async function loadHistorico() {
 
 // ── TABS ──────────────────────────────────────────
 function setTab(id, btn) {
-  ['consultores','carregar','historico'].forEach(t => {
+  ['consultores','importar','carregar','historico'].forEach(t => {
     document.getElementById('tab-'+t).style.display = t===id?'block':'none'
   })
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'))
@@ -1637,6 +1679,138 @@ function resetUploadOk() {
 function toast(msg,t='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+t+' show';setTimeout(()=>el.className='toast',3500)}
 
 init()
+// ── IMPORTAR CSV ──────────────────────────────────────────────────────────────
+
+let impDados = [] // todos os registos parsed
+let impNovos = [] // apenas os novos (sem duplicado)
+
+function impDrag(e) { e.preventDefault(); document.getElementById('imp-zone').classList.add('drag') }
+function impDragLeave() { document.getElementById('imp-zone').classList.remove('drag') }
+function impDrop(e) { e.preventDefault(); impDragLeave(); impLerCSV(e.dataTransfer.files[0]) }
+
+function impDetectarPlano(signupMethod) {
+  const s = (signupMethod||'').toUpperCase()
+  if (s.includes('MUNDO'))  return { plano: 'MUNDO',   billing: 'mensal' }
+  if (s.includes('AGENCY') && s.includes('ANUAL')) return { plano: 'AGENCY', billing: 'anual' }
+  if (s.includes('AGENCY')) return { plano: 'AGENCY',  billing: 'mensal' }
+  if (s.includes('OCEANO')) return { plano: 'OCEANO',  billing: 'mensal' }
+  if (s.includes('FORMAÇ') || s.includes('FORMAC')) return { plano: 'Formação', billing: 'mensal' }
+  return { plano: 'AGENCY', billing: 'mensal' }
+}
+
+async function impLerCSV(file) {
+  if (!file) return
+  const text = await file.text()
+  const lines = text.split('\n').filter(l => l.trim())
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''))
+
+  const idx = {
+    firstName: headers.findIndex(h => h.toLowerCase().includes('first name')),
+    lastName:  headers.findIndex(h => h.toLowerCase().includes('last name')),
+    email:     headers.findIndex(h => h.toLowerCase() === 'email'),
+    phone:     headers.findIndex(h => h.toLowerCase().includes('phone')),
+    joined:    headers.findIndex(h => h.toLowerCase().includes('joined')),
+    signup:    headers.findIndex(h => h.toLowerCase().includes('signup method')),
+  }
+
+  const parseRow = (line) => {
+    // Parse CSV respeitando aspas
+    const cols = []
+    let cur = '', inQ = false
+    for (const ch of line) {
+      if (ch === '"') { inQ = !inQ }
+      else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = '' }
+      else cur += ch
+    }
+    cols.push(cur.trim())
+    return cols
+  }
+
+  impDados = lines.slice(1).map(line => {
+    const cols = parseRow(line)
+    const firstName = cols[idx.firstName]?.replace(/^"|"$/g,'').trim() || ''
+    const lastName  = cols[idx.lastName]?.replace(/^"|"$/g,'').trim() || ''
+    const email     = cols[idx.email]?.replace(/^"|"$/g,'').trim().toLowerCase() || ''
+    const phone     = cols[idx.phone]?.replace(/^"|"$/g,'').replace(/\s/g,'').replace(/\t/g,'').trim() || ''
+    const joined    = cols[idx.joined]?.replace(/^"|"$/g,'').trim() || ''
+    const signup    = cols[idx.signup]?.replace(/^"|"$/g,'').trim() || ''
+    if (!email) return null
+    const { plano, billing } = impDetectarPlano(signup)
+    return { nome: (firstName + ' ' + lastName).trim(), email, telefone: phone, plano, billing, joined, signup }
+  }).filter(Boolean)
+
+  // Verificar duplicados contra mensalidades_consultores e perfis
+  const emails = impDados.map(d => d.email)
+  const { data: existentes } = await sb.from('mensalidades_consultores').select('email').in('email', emails)
+  const { data: existentesPerfis } = await sb.from('perfis').select('email').in('email', emails)
+  const emailsExistentes = new Set([
+    ...(existentes||[]).map(e => e.email?.toLowerCase()),
+    ...(existentesPerfis||[]).map(e => e.email?.toLowerCase())
+  ])
+
+  impNovos = impDados.filter(d => !emailsExistentes.has(d.email))
+  const duplicados = impDados.filter(d => emailsExistentes.has(d.email))
+
+  // Mostrar preview
+  document.getElementById('imp-count-new').textContent = `✅ ${impNovos.length} novos`
+  document.getElementById('imp-count-dup').textContent = `⚠️ ${duplicados.length} duplicados (ignorados)`
+  document.getElementById('imp-btn-guardar').disabled = impNovos.length === 0
+
+  const tbody = document.getElementById('imp-tbody')
+  tbody.innerHTML = impDados.map(d => {
+    const isDup = emailsExistentes.has(d.email)
+    return `<tr style="opacity:${isDup?'.45':'1'}">
+      <td style="font-weight:600">${d.nome}</td>
+      <td style="color:var(--muted)">${d.email}</td>
+      <td>${d.telefone}</td>
+      <td><span class="pill ${d.plano==='MUNDO'?'pg':d.plano==='OCEANO'?'pp':'pb'}">${d.plano}</span></td>
+      <td><span class="pill ${d.billing==='anual'?'pa':'bb'}">${d.billing==='anual'?'📅 Anual':'🔄 Mensal'}</span></td>
+      <td style="color:var(--muted);font-size:.72rem">${d.joined?new Date(d.joined).toLocaleDateString('pt-PT'):''}</td>
+      <td>${isDup?'<span class="pill pgr">Já existe</span>':'<span class="pill pg">Novo</span>'}</td>
+    </tr>`
+  }).join('')
+
+  document.getElementById('imp-preview').style.display = 'block'
+  document.getElementById('imp-resultado').style.display = 'none'
+}
+
+async function impGuardar() {
+  if (!impNovos.length) return
+  const btn = document.getElementById('imp-btn-guardar')
+  btn.disabled = true; btn.textContent = 'A importar...'
+
+  let ok = 0, erros = 0
+  for (const d of impNovos) {
+    try {
+      // Inserir em mensalidades_consultores
+      await sb.from('mensalidades_consultores').insert({
+        nome:     d.nome,
+        email:    d.email,
+        telefone: d.telefone,
+        plano:    d.plano,
+        billing:  d.billing,
+        estado:   'ativo',
+        data_registo: d.joined || new Date().toISOString()
+      })
+      ok++
+    } catch(e) { erros++; console.error('Erro ao importar', d.email, e) }
+  }
+
+  const res = document.getElementById('imp-resultado')
+  res.style.display = 'block'
+  res.style.background = ok > 0 ? 'var(--green-light)' : 'var(--red-light)'
+  res.style.color = ok > 0 ? 'var(--green)' : 'var(--red)'
+  res.textContent = ok > 0
+    ? `✅ ${ok} consultor${ok!==1?'es':''} importado${ok!==1?'s':''} com sucesso!${erros>0?' ('+erros+' erros)':''}`
+    : `❌ Erro na importação. Tenta novamente.`
+
+  btn.textContent = '✅ Importar novos'
+  if (ok > 0) {
+    // Recarregar lista de consultores
+    setTimeout(() => { loadConsultores(); }, 1000)
+  }
+}
+
 </script>
 </body>
 </html>
