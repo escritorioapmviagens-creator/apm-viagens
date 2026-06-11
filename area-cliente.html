@@ -478,8 +478,8 @@ async function abrirReserva(rnavt) {
   // Buscar consultor
   consultorId = r.consultor_id
   if (consultorId) {
-    const { data: perf } = await sb.from('perfis').select('nome,telefone,whatsapp').eq('id', consultorId).maybeSingle()
-    consultorTel = perf?.whatsapp || perf?.telefone || null
+    const { data: perf } = await sb.from('perfis').select('nome,telefone').eq('id', consultorId).maybeSingle()
+    consultorTel = perf?.telefone || null
   }
 
   renderReserva(r)
@@ -725,11 +725,12 @@ async function downloadDoc(path, nome) {
 
 // ── REFERÊNCIAS ───────────────────────────────────────────────────────────────
 async function carregarReferencias() {
-  if (!reservaActual?.cliente_id && !clienteTel) return
+  if (!reservaActual?.cliente_id) return
   try {
-    let q = sb.from('referrals').select('id,estado,voucher_valor').eq('referido_por_cliente_id', reservaActual.cliente_id)
-    const { data: refs } = await q
-    if (!refs?.length) return
+    const { data: refs, error } = await sb.from('referrals')
+      .select('id,estado,voucher_valor')
+      .eq('cliente_id', reservaActual.cliente_id)
+    if (error || !refs?.length) return
 
     document.getElementById('card-referencias').style.display = 'block'
     const total = refs.length
