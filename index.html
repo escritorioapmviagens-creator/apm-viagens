@@ -1402,11 +1402,14 @@ textarea.finput{resize:vertical;min-height:72px}
                 📋 Copiar link
               </button>
             </div>
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden">
-              <iframe id="mp-iframe-cliente" src="" style="width:100%;height:520px;border:none;display:block" loading="lazy"></iframe>
-            </div>
-            <div style="font-size:.7rem;color:var(--muted);text-align:center;margin-top:8px">
-              A pré-visualização usa a reserva mais recente do cliente.
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:32px 20px;text-align:center">
+              <div style="font-size:2.5rem;margin-bottom:12px">📱</div>
+              <div style="font-size:.9rem;font-weight:700;color:var(--dark);margin-bottom:6px">Área do cliente</div>
+              <div style="font-size:.8rem;color:var(--muted);margin-bottom:16px;line-height:1.5">
+                Clique em "Abrir área do cliente" para ver exactamente o que o cliente vê.<br>
+                Use "Copiar link" para enviar ao cliente por WhatsApp ou email.
+              </div>
+              <div id="mp-info-reserva-cliente" style="background:var(--blue-light);border:1px solid rgba(59,91,219,.15);border-radius:8px;padding:10px 14px;font-size:.8rem;color:var(--blue);font-weight:600;margin-bottom:4px"></div>
             </div>
           </div>
         </div>
@@ -13672,9 +13675,10 @@ async function carregarVistaCliente(clienteId) {
       : linkInterno
     window._mpLinkAreaCliente = linkCliente
     const linkEl = document.getElementById('mp-link-area-cliente')
-    const iframeEl = document.getElementById('mp-iframe-cliente')
     if (linkEl) linkEl.href = linkCliente
-    if (iframeEl) iframeEl.src = linkInterno
+    // Mostrar info da reserva no painel
+    const infoEl = document.getElementById('mp-info-reserva-cliente')
+    if (infoEl) infoEl.textContent = `✈ Reserva ${_mpClienteRnavt} · Link válido 30 dias`
   } else {
     const iframeEl = document.getElementById('mp-iframe-cliente')
     if (iframeEl) iframeEl.srcdoc = '<div style="font-family:sans-serif;text-align:center;padding:60px 20px;color:#9ca3af">Sem reservas ou telefone registado para este cliente.</div>'
@@ -13697,15 +13701,34 @@ async function carregarVistaCliente(clienteId) {
 
   // Documentos
   const rsvIds = (await sb.from('reservas').select('id').eq('cliente_id', clienteId)).data?.map(r=>r.id) || []
-  const { data: docs } = rsvIds.length ? await sb.from('documentos').select('*').in('reserva_id', rsvIds).in('tipo', ['voucher','bilhete','seguro','documento','fatura']).order('created_at', { ascending: false }) : { data: [] }
+  const { data: docsRaw } = rsvIds.length
+    ? await sb.from('documentos').select('*').in('reserva_id', rsvIds)
+        .in('tipo', ['voucher','bilhete','seguro','documento','fatura','documento_cliente'])
+        .order('created_at', { ascending: false })
+    : { data: [] }
+
+  // Gerar URLs assinados para documentos em storage
+  const docs = await Promise.all((docsRaw||[]).map(async d => {
+    let url = d.url || null
+    if (!url && (d.storage_path || d.path)) {
+      const p = d.storage_path || d.path
+      const bucket = p.startsWith('reservas/') ? 'documentos' : 'documentos-reservas'
+      try {
+        const { data: signed } = await sb.storage.from(bucket).createSignedUrl(p, 3600)
+        url = signed?.signedUrl || null
+      } catch(e) {}
+    }
+    return { ...d, _url: url }
+  }))
+
   const docsEl = document.getElementById('mp-docs-lista')
   docsEl.innerHTML = docs?.length ? docs.map(d =>
     '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">'
-    + '<span style="font-size:1.1rem">📄</span>'
+    + '<span style="font-size:1.1rem">' + (d.tipo==='fatura'?'🧾':'📄') + '</span>'
     + '<div style="flex:1"><div style="font-weight:600">' + (d.nome||d.tipo||'Documento') + '</div>'
-    + '<div style="color:var(--muted);font-size:11px">' + (d.created_at?new Date(d.created_at).toLocaleDateString('pt-PT'):'') + '</div></div>'
-    + (d.url ? '<a href="'+d.url+'" target="_blank" style="background:var(--blue-light);border:1px solid #c7d7fd;color:var(--blue);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;text-decoration:none">⬇️</a>' : '')
-    + '<button onclick="apagarDocCliente(\''+d.id+'\')" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:3px 6px;font-size:11px;cursor:pointer">🗑</button>'
+    + '<div style="color:var(--muted);font-size:11px">' + (d.tipo||'') + ' · ' + (d.created_at?new Date(d.created_at).toLocaleDateString('pt-PT'):'') + '</div></div>'
+    + (d._url ? '<a href="'+d._url+'" target="_blank" style="background:var(--blue-light);border:1px solid #c7d7fd;color:var(--blue);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;text-decoration:none">⬇️</a>' : '')
+    + '<button onclick="apagarDocCliente(\'' + d.id + '\')" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:3px 6px;font-size:11px;cursor:pointer">🗑</button>'
     + '</div>'
   ).join('') : '<div style="font-size:12px;color:var(--muted);padding:8px 0">Sem documentos.</div>'
 
