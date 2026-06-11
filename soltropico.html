@@ -209,7 +209,8 @@ let state = {
   baseLocals: [],
   simulationData: null,
   paxCount: 1,
-  isDynamic: true
+  isDynamic: true,
+  productKeyType: null  // IMPORTANTE: armazenar o ProductKeyType retornado
 }
 
 // ── LOGS ──
@@ -276,7 +277,6 @@ async function soapCall(action, body) {
   if (data.error) throw new Error(data.error)
   const xmlStr = (data.xml || '').replace(/^\uFEFF/, '').trim()
 
-  // Mostrar XML no diagnóstico
   const rawEl = document.getElementById('raw-xml')
   const xmlCard = document.getElementById('xml-card')
   if (rawEl) rawEl.textContent = xmlStr
@@ -379,11 +379,6 @@ async function searchProducts() {
     })
     log(`📦 ${items.length} item(ns) bruto(s) recebido(s)`)
 
-    if (items.length > 0) {
-      const firstTags = Array.from(items[0].children).map(c => c.tagName).join(', ')
-      log(`🔎 Tags do 1º produto: ${firstTags}`, 'info')
-    }
-
     const products = items.map(p => {
       let code = txt(p,'Code') || txt(p,'ProdCode') || txt(p,'ProductCode') || ''
       code = code.trim()
@@ -396,8 +391,6 @@ async function searchProducts() {
       const opFrom= txt(p,'OperationFrom') || ''
       const opTo  = txt(p,'OperationTo') || ''
 
-      log(`  → code="${code}" (int=${codeInt}) | name="${name.substring(0,40)}"`)
-
       return { code, codeInt, name, price, pkt, img, flight, opFrom, opTo, valid: !isNaN(codeInt) && codeInt > 0 && name !== '' }
     }).filter(p => p.name && p.name !== 'TESTE OMNIBEES')
 
@@ -405,10 +398,9 @@ async function searchProducts() {
     const invalid = products.filter(p => !p.valid)
 
     log(`📊 Válidos: ${valid.length} | Inválidos: ${invalid.length}`, valid.length ? 'success' : 'warn')
-    if (invalid.length) log(`⚠️ ${invalid.length} produto(s) sem código válido ignorados`, 'warn')
 
     if (!valid.length) {
-      setStatus('search-status','err','⚠️ Nenhum produto com código válido encontrado. Verifique o Diagnóstico → XML Bruto.')
+      setStatus('search-status','err','⚠️ Nenhum produto com código válido encontrado.')
       document.getElementById('search-results').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Sem resultados válidos. Consulte o painel Diagnóstico para ver o XML retornado.</div>'
       return
     }
@@ -450,10 +442,10 @@ function selectProduct(codeInt, name, pkt) {
   const code = parseInt(codeInt)
   if (!code || isNaN(code) || code <= 0) {
     log(`❌ Código inválido: "${codeInt}"`, 'error')
-    alert(`Não é possível reservar este produto.\nCódigo inválido: "${codeInt}"\n\nConsulte o painel Diagnóstico para verificar o XML retornado.`)
+    alert(`Não é possível reservar este produto.\nCódigo inválido: "${codeInt}"`)
     return
   }
-  log(`✅ Produto selecionado: ${name} (código ${code})`, 'success')
+  log(`✅ Produto selecionado: ${name} (código ${code}, tipo ${pkt})`, 'success')
   state.selectedProduct = { code, name, pkt: pkt || 'DYNAMIC' }
   document.getElementById('r-product-code').value = code
   document.getElementById('r-product-info').innerHTML =
@@ -474,13 +466,13 @@ function clearSearch() {
   setStatus('search-status','','')
 }
 
-// ── PARÂMETROS DO PRODUTO (CORRIGIDO: Productcode em minúsculo) ──
+// ── PARÂMETROS DO PRODUTO ──
 async function getProductParams() {
   const raw = document.getElementById('r-product-code').value
   const code = parseInt(raw)
 
   if (!code || isNaN(code) || code <= 0) {
-    setStatus('reserva-status','err',`❌ Código "${raw}" inválido. Use um número inteiro positivo.`)
+    setStatus('reserva-status','err',`❌ Código "${raw}" inválido.`)
     return
   }
 
@@ -494,7 +486,6 @@ async function getProductParams() {
 
     let doc
     if (state.isDynamic) {
-      // CORREÇÃO CRÍTICA: Productcode com "c" minúsculo
       doc = await soapCall('DynGetProductParameters',
         `<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${code}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
     } else {
@@ -502,24 +493,24 @@ async function getProductParams() {
         `<ns1:StaticGetProductParameters><StaticProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${code}</Productcode></StaticProductParametersRequest></ns1:StaticGetProductParameters>`)
     }
     
-    // Log da estrutura recebida para debug
-    log(`📄 Estrutura da resposta: ${doc.documentElement.tagName}`)
-
-    const productName = txt(doc,'Name')
-    if (!productName) {
-      // Tentar encontrar nome alternativo
-      const altName = txt(doc,'ProdName') || txt(doc,'Description')
-      if (altName) {
-        log(`⚠️ Nome encontrado em tag alternativa: "${altName}"`, 'warn')
-      } else {
-        throw new Error(`Produto ${code} não encontrado ou sem nome na resposta. Verifique XML no diagnóstico.`)
-      }
+    // EXTRAIR O ProductKeyType da resposta (CRÍTICO!)
+    const pktType = txt(doc, 'ProductKeyType') || txt(doc, 'Pkt_type')
+    if (pktType && !isNaN(parseInt(pktType))) {
+      state.productKeyType = parseInt(pktType)
+      log(`✅ ProductKeyType obtido: ${state.productKeyType}`, 'success')
+    } else {
+      // Fallback: se não veio na resposta, tentar determinar pelo tipo
+      state.productKeyType = state.isDynamic ? 1 : 2  // 1=dinâmico, 2=estático (valor comum)
+      log(`⚠️ ProductKeyType não encontrado, usando fallback: ${state.productKeyType}`, 'warn')
     }
 
-    state.selectedProduct = { ...state.selectedProduct, name: productName || txt(doc,'ProdName') }
+    const productName = txt(doc,'Name')
+    if (productName) {
+      state.selectedProduct = { ...state.selectedProduct, name: productName }
+    }
+
     state.productParams = doc
 
-    // Datas de partida (várias possibilidades de tag)
     let dates = all(doc,'DynDepartureDate')
     if (!dates.length) dates = all(doc,'Date')
     if (!dates.length) dates = all(doc,'DepartureDate')
@@ -533,7 +524,6 @@ async function getProductParams() {
       log(`📅 ${dates.length} data(s) de partida encontrada(s)`)
     }
 
-    // Locais de partida
     let locals = all(doc,'DynDepartureLocal')
     if (!locals.length) locals = all(doc,'DepartureLocal')
     
@@ -541,14 +531,12 @@ async function getProductParams() {
       ? locals.map(l => `<option value="${txt(l,'Code')}">${txt(l,'Name')||txt(l,'Code')}</option>`).join('')
       : '<option value="LIS">Lisboa (LIS)</option>'
 
-    // Tipos de quarto
     let roomTypesNodes = all(doc,'DynRoomType')
     if (!roomTypesNodes.length) roomTypesNodes = all(doc,'RoomType')
     
     state.roomTypes = roomTypesNodes.map(r => ({ code: txt(r,'Code'), name: txt(r,'Name') }))
     if (state.roomTypes.length) log(`🏨 ${state.roomTypes.length} tipo(s) de quarto encontrado(s)`)
 
-    // BaseLocals
     let baseLocalsNodes = all(doc,'DynBaseLocal')
     if (!baseLocalsNodes.length) baseLocalsNodes = all(doc,'BaseLocal')
     
@@ -606,7 +594,7 @@ function renderBaseLocals() {
     </div>`).join('')
 }
 
-// ── DISPONIBILIDADE ──
+// ── DISPONIBILIDADE (CORRIGIDO: adicionado ProductKeyType e Pkt_type) ──
 async function searchAvailableServices() {
   setStatus('reserva-status','loading','A pesquisar disponibilidade…')
   state.rooms.forEach((r,i)=>{
@@ -616,24 +604,49 @@ async function searchAvailableServices() {
   const depDate     = document.getElementById('r-depdate').value
   const depLocal    = document.getElementById('r-deplocal').value
   const extraNights = document.getElementById('r-extranights').value||'0'
+  
+  if (!depDate) {
+    setStatus('reserva-status','err','❌ Selecione uma data de partida')
+    return
+  }
+  
   const roomsXML    = state.rooms.map(r=>`<RoomTypeOption><RoomNum>${r.num}</RoomNum><Code>${r.code}</Code><ChildAges>${r.childAges}</ChildAges></RoomTypeOption>`).join('')
   const baseXML     = state.baseLocals.length
     ? state.baseLocals.map((b,i)=>`<Local><Code>${b.code}</Code><Nights>${document.getElementById(`base-nights-${i}`)?.value||b.minNights}</Nights></Local>`).join('')
     : '<Local><Code>1</Code><Nights>3</Nights></Local>'
 
+  // CRÍTICO: Adicionar ProductKeyType e Pkt_type conforme documentação
+  const pktTypeValue = state.productKeyType || (state.isDynamic ? 1 : 2)
+
   try {
     let doc
     if (state.isDynamic) {
       doc = await soapCall('DynSearchProductAvailableServices',
-        `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+        `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}
+          <Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode>
+          <ProductKeyType xsi:type="xsd:int">${pktTypeValue}</ProductKeyType>
+          <Pkt_type xsi:type="xsd:string">DYNAMIC</Pkt_type>
+          <DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate>
+          <DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal>
+          <RoomTypes>${roomsXML}</RoomTypes>
+          <BaseLocals>${baseXML}</BaseLocals>
+          <ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights>
+        </DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
     } else {
       doc = await soapCall('StaticGetRoomsStruct',
-        `<ns1:StaticGetRoomsStruct><StaticGetRoomsStructRequest>${credXML()}<Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes></StaticGetRoomsStructRequest></ns1:StaticGetRoomsStruct>`)
+        `<ns1:StaticGetRoomsStruct><StaticGetRoomsStructRequest>${credXML()}
+          <Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode>
+          <ProductKeyType xsi:type="xsd:int">${pktTypeValue}</ProductKeyType>
+          <Pkt_type xsi:type="xsd:string">STATIC</Pkt_type>
+          <DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate>
+          <DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal>
+          <RoomTypes>${roomsXML}</RoomTypes>
+        </StaticGetRoomsStructRequest></ns1:StaticGetRoomsStruct>`)
     }
 
     state.sessionHash = txt(doc,'SessionHash')
     if (state.sessionHash) {
-      log(`✅ SessionHash obtido: ${state.sessionHash.substring(0,20)}...`, 'success')
+      log(`✅ SessionHash obtido: ${state.sessionHash.substring(0,30)}...`, 'success')
     } else {
       log(`⚠️ SessionHash não encontrado na resposta`, 'warn')
     }
@@ -650,7 +663,6 @@ async function searchAvailableServices() {
 }
 
 function renderServicesStep(doc) {
-  // Voos
   const fs = document.getElementById('flight-options-section')
   const flights = all(doc,'DynFlightOption')
   if (flights.length) {
@@ -665,7 +677,6 @@ function renderServicesStep(doc) {
     fs.innerHTML = h
   } else fs.innerHTML = '<div style="padding:10px;color:var(--muted);text-align:center">✈️ Sem opções de voo disponíveis</div>'
 
-  // Hotéis
   const hs = document.getElementById('hotel-options-section')
   const itins = all(doc,'DynItinerary')
   if (itins.length) {
@@ -675,9 +686,6 @@ function renderServicesStep(doc) {
       const itinName = txt(itin,'Name')||`Destino ${ii+1}`
       h += `<div style="font-weight:600;color:var(--blue);margin:10px 0 6px">📍 ${esc(itinName)}</div>`
       const hotels = all(itin,'DynHotelOption')
-      if (!hotels.length) {
-        h += `<div style="color:var(--muted);padding-left:12px">🏨 Nenhum hotel disponível</div>`
-      }
       hotels.forEach((hotel,hi) => {
         const hCode   = txt(hotel,'Code')
         const hName   = txt(hotel,'Name')
@@ -892,7 +900,7 @@ async function listReserves() {
       return
     }
     setStatus('reserves-status','ok',`✓ ${list.length} reserva(s)`)
-    let h = '<table style="width:100%;border-collapse:collapse;margin-top:12px"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Nº</th><th style="padding:8px;text-align:left">Cliente</th><th style="padding:8px;text-align:left">Partida</th><th style="padding:8px">Ações</th></td></thead><tbody>'
+    let h = '<table style="width:100%;border-collapse:collapse;margin-top:12px"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Nº</th><th style="padding:8px;text-align:left">Cliente</th><th style="padding:8px;text-align:left">Partida</th><th style="padding:8px">Ações</th></tr></thead><tbody>'
     list.forEach(r => {
       const num    = txt(r,'Reserve')
       const client = txt(r,'ClientName')
@@ -920,7 +928,6 @@ async function viewReserve(num) {
   } catch(e) { alert('Erro: ' + e.message) }
 }
 
-// ── INIT ──
 document.getElementById('s-depdate').value = new Date().toISOString().split('T')[0]
 </script>
 </body>
