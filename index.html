@@ -44,18 +44,18 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .nav{padding:.75rem 0;flex:1;overflow-y:auto}
 .rec-tab{padding:8px 20px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s;border:none;background:transparent;font-family:var(--font);color:var(--muted);white-space:nowrap}
 .rec-tab.on{background:var(--white);color:var(--coral);font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-.rec-card{background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:24px 22px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;min-height:160px;display:flex;flex-direction:column;justify-content:space-between}
-.rec-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--rc-color,var(--coral));border-radius:20px 20px 0 0;opacity:0;transition:opacity .2s}
-.rec-card:hover{border-color:var(--rc-color,var(--coral));transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.1)}
-.rec-card:hover::before{opacity:1}
-.rec-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
-.rec-card-icon{font-size:2.2rem;line-height:1;background:var(--rc-bg,#fdedf0);width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center}
-.rec-card-title{font-size:.95rem;font-weight:800;color:var(--dark);margin-bottom:5px;line-height:1.3}
-.rec-card-desc{font-size:.76rem;color:var(--muted);line-height:1.5;flex:1}
-.rec-card-footer{margin-top:14px;display:flex;align-items:center;justify-content:space-between}
-.rec-card-metric{font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--rc-bg,#fdedf0);color:var(--rc-color,var(--coral))}
-.rec-card-arrow{color:var(--muted);font-size:.85rem;transition:transform .2s}
-.rec-card:hover .rec-card-arrow{transform:translateX(4px);color:var(--rc-color,var(--coral))}
+.rec-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:20px;padding:28px 24px 22px;cursor:pointer;transition:all .22s;position:relative;overflow:hidden;min-height:200px;display:flex;flex-direction:column;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.rec-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0;transition:opacity .2s;opacity:0}
+.rec-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.1)}
+.rec-card:hover::after{opacity:1}
+.rec-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.rec-card-icon-wrap{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
+.rec-card-title{font-size:1rem;font-weight:800;color:#111318;margin-bottom:6px;line-height:1.3}
+.rec-card-desc{font-size:.78rem;color:#6b7280;line-height:1.6;flex:1}
+.rec-card-footer{margin-top:16px;display:flex;align-items:center;justify-content:space-between}
+.rec-card-metric{font-size:.75rem;font-weight:700;padding:4px 12px;border-radius:20px;opacity:0;transition:opacity .3s}
+.rec-card-arrow{color:#d1d5db;font-size:1rem;font-weight:700;transition:all .2s}
+.rec-card:hover .rec-card-arrow{color:#111318;transform:translateX(4px)}
 .rec-card-badge{position:absolute;top:14px;right:14px;background:var(--coral);color:#fff;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:10px}
 .nav-section{padding:0 1rem;margin:1rem 0 .3rem;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:8px}
 .nav-section::before{content:'';height:1.5px;width:16px;border-radius:2px;flex-shrink:0}
@@ -719,20 +719,20 @@ textarea.finput{resize:vertical;min-height:72px}
           <!-- DOCUMENTOS -->
           <div id="rec-documentos" style="display:none">
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
-              <div class="rec-card" style="--rc-color:#3B5BDB;--rc-bg:#eef2ff" onclick="abrirModalPedidoOrcamento()">
-                <div class="rec-card-top"><div class="rec-card-icon">🔗</div></div>
+              <div class="rec-card" style="border-top:3px solid #3B5BDB" onmouseenter="this.style.borderColor='#3B5BDB'" onmouseleave="this.style.borderColor='#e5e7eb';this.style.borderTopColor='#3B5BDB'" onclick="abrirModalPedidoOrcamento()">
+                <div class="rec-card-top"><div class="rec-card-icon-wrap" style="background:#eef2ff"><span style="font-size:1.6rem">🔗</span></div></div>
                 <div class="rec-card-title">Link de Orçamento</div>
                 <div class="rec-card-desc">Partilhe o link de pedido de orçamento com clientes</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" style="--rc-color:#7c3aed;--rc-bg:#f5f3ff" onclick="navTo('atendimento',document.querySelector('.nav-item'))">
-                <div class="rec-card-top"><div class="rec-card-icon">💬</div></div>
+              <div class="rec-card" style="border-top:3px solid #7c3aed" onmouseenter="this.style.borderColor='#7c3aed'" onmouseleave="this.style.borderColor='#e5e7eb';this.style.borderTopColor='#7c3aed'" onclick="navTo('atendimento',document.querySelector('.nav-item'))">
+                <div class="rec-card-top"><div class="rec-card-icon-wrap" style="background:#f5f3ff"><span style="font-size:1.6rem">💬</span></div></div>
                 <div class="rec-card-title">Página de Atendimento</div>
                 <div class="rec-card-desc">Ferramenta de apoio ao atendimento personalizado</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" style="--rc-color:#10b981;--rc-bg:#ecfdf5" onclick="window.open('orcamento.html','_blank')">
-                <div class="rec-card-top"><div class="rec-card-icon">💶</div></div>
+              <div class="rec-card" style="border-top:3px solid #10b981" onmouseenter="this.style.borderColor='#10b981'" onmouseleave="this.style.borderColor='#e5e7eb';this.style.borderTopColor='#10b981'" onclick="window.open('orcamento.html','_blank')">
+                <div class="rec-card-top"><div class="rec-card-icon-wrap" style="background:#ecfdf5"><span style="font-size:1.6rem">💶</span></div></div>
                 <div class="rec-card-title">Construção de Orçamento</div>
                 <div class="rec-card-desc">Crie e envie propostas de viagem personalizadas</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
@@ -749,20 +749,20 @@ textarea.finput{resize:vertical;min-height:72px}
                 <div class="rec-card-desc">Complete a reserva após aceitação do CST pelo cliente</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" style="--rc-color:#f59e0b;--rc-bg:#fef3c7" onclick="abrirConsentimento()">
-                <div class="rec-card-top"><div class="rec-card-icon">🤝</div></div>
+              <div class="rec-card" style="border-top:3px solid #f59e0b" onmouseenter="this.style.borderColor='#f59e0b'" onmouseleave="this.style.borderColor='#e5e7eb';this.style.borderTopColor='#f59e0b'" onclick="abrirConsentimento()">
+                <div class="rec-card-top"><div class="rec-card-icon-wrap" style="background:#fef3c7"><span style="font-size:1.6rem">🤝</span></div></div>
                 <div class="rec-card-title">Consentimento RGPD</div>
                 <div class="rec-card-desc">Envie o formulário de consentimento de dados</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" style="--rc-color:#10b981;--rc-bg:#ecfdf5" onclick="abrirFerramentaReferencia('recomendar')">
-                <div class="rec-card-top"><div class="rec-card-icon">🎁</div></div>
+              <div class="rec-card" style="border-top:3px solid #10b981" onmouseenter="this.style.borderColor='#10b981'" onmouseleave="this.style.borderColor='#e5e7eb';this.style.borderTopColor='#10b981'" onclick="abrirFerramentaReferencia('recomendar')">
+                <div class="rec-card-top"><div class="rec-card-icon-wrap" style="background:#ecfdf5"><span style="font-size:1.6rem">🎁</span></div></div>
                 <div class="rec-card-title">Pedir Referência</div>
                 <div class="rec-card-desc">Envie o pedido de referência ao cliente após a viagem</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" style="--rc-color:#f59e0b;--rc-bg:#fef3c7" onclick="abrirFerramentaReferencia('satisfacao')">
-                <div class="rec-card-top"><div class="rec-card-icon">⭐</div></div>
+              <div class="rec-card" style="border-top:3px solid #f59e0b" onmouseenter="this.style.borderColor='#f59e0b'" onmouseleave="this.style.borderColor='#e5e7eb';this.style.borderTopColor='#f59e0b'" onclick="abrirFerramentaReferencia('satisfacao')">
+                <div class="rec-card-top"><div class="rec-card-icon-wrap" style="background:#fef3c7"><span style="font-size:1.6rem">⭐</span></div></div>
                 <div class="rec-card-title">Questionário de Satisfação</div>
                 <div class="rec-card-desc">Avalie a experiência do cliente após a viagem</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
@@ -785,20 +785,20 @@ textarea.finput{resize:vertical;min-height:72px}
                 <div class="rec-card-desc">Artigos personalizados com o seu link de consultor</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" style="--rc-color:#10b981;--rc-bg:#ecfdf5" onclick="abrirBlogPost('destinos')">
-                <div class="rec-card-top"><div class="rec-card-icon">✈️</div></div>
+              <div class="rec-card" style="border-top:3px solid #10b981" onmouseenter="this.style.borderColor='#10b981'" onmouseleave="this.style.borderColor='#e5e7eb';this.style.borderTopColor='#10b981'" onclick="abrirBlogPost('destinos')">
+                <div class="rec-card-top"><div class="rec-card-icon-wrap" style="background:#ecfdf5"><span style="font-size:1.6rem">✈️</span></div></div>
                 <div class="rec-card-title">Top Destinos 2026</div>
                 <div class="rec-card-desc">Artigo com os destinos em destaque para este ano</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" style="--rc-color:#f59e0b;--rc-bg:#fef3c7" onclick="abrirBlogPost('recrutamento')">
-                <div class="rec-card-top"><div class="rec-card-icon">💼</div></div>
+              <div class="rec-card" style="border-top:3px solid #f59e0b" onmouseenter="this.style.borderColor='#f59e0b'" onmouseleave="this.style.borderColor='#e5e7eb';this.style.borderTopColor='#f59e0b'" onclick="abrirBlogPost('recrutamento')">
+                <div class="rec-card-top"><div class="rec-card-icon-wrap" style="background:#fef3c7"><span style="font-size:1.6rem">💼</span></div></div>
                 <div class="rec-card-title">Oportunidade de Carreira</div>
                 <div class="rec-card-desc">Partilhe a oportunidade de recrutamento APM</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" style="--rc-color:#7c3aed;--rc-bg:#f5f3ff" onclick="copiarLinkBlog('index')">
-                <div class="rec-card-top"><div class="rec-card-icon">🔗</div></div>
+              <div class="rec-card" style="border-top:3px solid #7c3aed" onmouseenter="this.style.borderColor='#7c3aed'" onmouseleave="this.style.borderColor='#e5e7eb';this.style.borderTopColor='#7c3aed'" onclick="copiarLinkBlog('index')">
+                <div class="rec-card-top"><div class="rec-card-icon-wrap" style="background:#f5f3ff"><span style="font-size:1.6rem">🔗</span></div></div>
                 <div class="rec-card-title">Copiar link do blog</div>
                 <div class="rec-card-desc">Link personalizado do blog com o seu ID de consultor</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
@@ -833,8 +833,8 @@ textarea.finput{resize:vertical;min-height:72px}
                 <div class="rec-card-desc">Contactos, condições e links de todos os operadores parceiros</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" style="--rc-color:#10b981;--rc-bg:#ecfdf5" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/treino','_blank')">
-                <div class="rec-card-top"><div class="rec-card-icon">🎓</div></div>
+              <div class="rec-card" style="border-top:3px solid #10b981" onmouseenter="this.style.borderColor='#10b981'" onmouseleave="this.style.borderColor='#e5e7eb';this.style.borderTopColor='#10b981'" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/treino','_blank')">
+                <div class="rec-card-top"><div class="rec-card-icon-wrap" style="background:#ecfdf5"><span style="font-size:1.6rem">🎓</span></div></div>
                 <div class="rec-card-title">Área de Treino</div>
                 <div class="rec-card-desc">Simule reservas e aprenda a usar o sistema APM</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
@@ -4154,18 +4154,26 @@ async function loadRecursos() {
     const div = document.createElement('div')
     div.className = 'rec-card'
     div.onclick = c.action
-    div.style.setProperty('--rc-color', c.color)
-    div.style.setProperty('--rc-bg', c.bgcolor)
+    div.style.borderColor = '#e5e7eb'
+    div.style.cssText += `--rc-color:${c.color};--rc-bg:${c.bgcolor}`
+    // Aplicar cor de hover inline via mouseenter/leave
+    div.addEventListener('mouseenter', () => { div.style.borderColor = c.color })
+    div.addEventListener('mouseleave', () => { div.style.borderColor = '#e5e7eb' })
     div.innerHTML = `
       <div class="rec-card-top">
-        <div class="rec-card-icon">${c.icon}</div>
+        <div class="rec-card-icon-wrap" style="background:${c.bgcolor}">
+          <span style="font-size:1.6rem">${c.icon}</span>
+        </div>
       </div>
       <div class="rec-card-title">${c.title}</div>
       <div class="rec-card-desc">${c.desc}</div>
       <div class="rec-card-footer">
-        <span class="rec-card-metric" id="rc-metric-${c.title.replace(/[^a-z0-9]/gi,'-')}" style="opacity:0">—</span>
-        <span class="rec-card-arrow">→</span>
+        <span class="rec-card-metric" id="rc-metric-${c.title.replace(/[^a-zA-Z0-9]/g,'-')}"
+          style="background:${c.bgcolor};color:${c.color};opacity:0">—</span>
+        <span class="rec-card-arrow" style="color:#d1d5db">→</span>
       </div>`
+    // Linha de cor no topo via pseudo — injectada via border-top
+    div.style.borderTop = `3px solid ${c.color}`
     grid.appendChild(div)
 
     // Carregar métrica de forma assíncrona
