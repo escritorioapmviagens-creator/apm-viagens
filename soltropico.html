@@ -7,87 +7,72 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.07);--radius:12px;--radius-sm:8px;--shadow:0 2px 8px rgba(0,0,0,0.06)}
-body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:var(--bg);min-height:100vh}
-header{background:var(--surface);border-bottom:3px solid var(--coral);padding:14px 28px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);flex-wrap:wrap}
-header img{height:44px;object-fit:contain}
+:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.07);--radius:12px;--radius-sm:8px}
+body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:var(--bg)}
+header{background:var(--surface);border-bottom:3px solid var(--coral);padding:14px 28px;display:flex;align-items:center;gap:14px}
+header img{height:44px}
 header h1{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700}
-header span{font-size:12px;color:var(--muted)}
-.container{max-width:1200px;margin:0 auto;padding:28px 20px 60px}
-.tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:6px;box-shadow:var(--shadow);margin-bottom:24px;flex-wrap:wrap}
-.tab{flex:1;min-width:140px;padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s;text-align:center}
-.tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,91,219,0.3)}
-.tab:hover:not(.active){background:var(--bg);color:var(--navy)}
+.container{max-width:1200px;margin:0 auto;padding:28px 20px}
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:6px;margin-bottom:24px;flex-wrap:wrap}
+.tab{flex:1;min-width:140px;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);text-align:center}
+.tab.active{background:var(--blue);color:#fff}
 .panel{display:none}.panel.active{display:block}
-.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
-.card-title{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:16px;color:var(--navy);display:flex;align-items:center;gap:8px}
+.card{background:var(--surface);border-radius:var(--radius);padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.card-title{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:16px}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
 .form-group{display:flex;flex-direction:column;gap:4px}
-.form-group label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.form-group input,.form-group select{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;transition:border-color .15s;background:#fff}
-.form-group input:focus,.form-group select:focus{border-color:var(--blue)}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .18s}
-.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#3251c4}
-.btn-coral{background:var(--coral);color:#fff}.btn-coral:hover{background:#d02f4e}
-.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--navy)}.btn-outline:hover{background:var(--bg)}
-.btn-sm{padding:5px 12px;font-size:12px}
+.form-group label{font-size:12px;font-weight:600;color:var(--muted)}
+.form-group input,.form-group select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-coral{background:var(--coral);color:#fff}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--navy)}
 .btn-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
-.status-bar{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;margin-bottom:16px;display:none}
+.status-bar{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
 .status-bar.show{display:block}
-.status-bar.loading{background:#EEF2FF;color:#3251c4;border:1px solid #c7d2fe}
-.status-bar.ok{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
-.status-bar.err{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2}
-.section-title{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;margin:24px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--blue)}
+.status-bar.loading{background:#EEF2FF;color:#3251c4}
+.status-bar.ok{background:#E8F5E9;color:#2E7D32}
+.status-bar.err{background:#FFEBEE;color:#C62828}
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.product-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:all .2s;border:2px solid transparent}
-.product-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.12);transform:translateY(-2px);border-color:var(--blue)}
-.product-img{width:100%;height:130px;object-fit:cover;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:36px}
+.product-card{background:var(--surface);border-radius:var(--radius);cursor:pointer;border:2px solid transparent}
+.product-card:hover{border-color:var(--blue);box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+.product-img{height:130px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:36px}
 .product-info{padding:12px}
-.product-name{font-weight:700;font-size:14px;margin-bottom:4px}
-.product-meta{font-size:12px;color:var(--muted)}
+.product-name{font-weight:700;margin-bottom:4px}
 .product-price{font-size:17px;font-weight:700;color:var(--coral);margin:6px 0}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;margin:2px}
-.badge-dyn{background:#EEF2FF;color:#3B5BDB}.badge-sta{background:#F3E5F5;color:#6A1B9A}
-.badge-ok{background:#E8F5E9;color:#2E7D32}.badge-wl{background:#FFF3E0;color:#E65100}
-.badge-flight{background:#E8F5E9;color:#2E7D32}
-.log-panel{background:#1e1e2e;color:#a6e3a1;font-family:monospace;font-size:12px;padding:16px;border-radius:8px;max-height:400px;overflow-y:auto;white-space:pre-wrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-dyn{background:#EEF2FF;color:#3B5BDB}
+.log-panel{background:#1e1e2e;color:#a6e3a1;font-family:monospace;font-size:12px;padding:16px;border-radius:8px;max-height:400px;overflow-y:auto}
 .log-entry{margin:3px 0;padding:3px 0;border-bottom:1px solid #334155}
-.log-error{color:#f87171}.log-success{color:#4ade80}.log-info{color:#60a5fa}.log-warn{color:#fbbf24}
-.xml-block{background:#1e1e2e;color:#cdd6f4;font-family:monospace;font-size:11px;padding:14px;border-radius:8px;overflow-x:auto;max-height:350px;overflow-y:auto;white-space:pre-wrap;margin-top:8px}
-.steps{display:flex;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
-.step{flex:1;padding:10px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--muted);border-right:1px solid var(--border)}
-.step:last-child{border-right:none}.step.done{background:#EEF2FF;color:var(--blue)}.step.active{background:var(--blue);color:#fff}
-.step-num{display:block;font-size:16px;font-weight:700}
-.room-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
-.pax-row{background:var(--bg);border-radius:var(--radius-sm);padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:8px}
-.pax-row-title{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;grid-column:1/-1;margin-bottom:4px}
-.res-success{background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:1.5px solid #A5D6A7;border-radius:var(--radius);padding:24px;text-align:center}
+.log-error{color:#f87171}.log-success{color:#4ade80}.log-info{color:#60a5fa}
+.xml-block{background:#1e1e2e;color:#cdd6f4;font-family:monospace;font-size:11px;padding:14px;border-radius:8px;overflow-x:auto;max-height:350px;white-space:pre-wrap;margin-top:8px}
+.steps{display:flex;background:var(--surface);border-radius:var(--radius);margin-bottom:20px}
+.step{flex:1;padding:10px;text-align:center;font-size:11px;font-weight:600;color:var(--muted)}
+.step.active{background:var(--blue);color:#fff}
+.step.done{background:#EEF2FF;color:var(--blue)}
+.room-row{display:flex;align-items:center;gap:8px;padding:8px 0}
+.res-success{background:#E8F5E9;border:1.5px solid #A5D6A7;border-radius:var(--radius);padding:24px;text-align:center}
 .res-number{font-family:'Poppins',sans-serif;font-size:40px;font-weight:700;color:#2E7D32}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loader{display:inline-block;width:13px;height:13px;border:2px solid rgba(59,91,219,.3);border-top-color:#3B5BDB;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
 </style>
 </head>
 <body>
 <header>
   <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM">
-  <div><h1>Soltropico — Motor de Reservas</h1><span>Integração Optigest SOAP · APM Viagens</span></div>
+  <h1>Soltropico — Motor de Reservas</h1>
 </header>
 <div class="container">
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('pesquisa',this)">🔍 Pesquisar Produtos</button>
-    <button class="tab" onclick="switchTab('reserva',this)">📋 Fazer Reserva</button>
-    <button class="tab" onclick="switchTab('minhas-reservas',this)">📁 Minhas Reservas</button>
-    <button class="tab" onclick="switchTab('debug',this)">🛠 Diagnóstico</button>
+    <button class="tab active" onclick="switchTab('pesquisa')">🔍 Pesquisar</button>
+    <button class="tab" onclick="switchTab('reserva')">📋 Reserva</button>
+    <button class="tab" onclick="switchTab('debug')">🛠 Diagnóstico</button>
   </div>
 
   <div id="panel-pesquisa" class="panel active">
     <div class="card">
-      <div class="card-title"><span>🔍</span> Pesquisa de Produtos</div>
+      <div class="card-title">🔍 Pesquisa de Produtos</div>
       <div class="form-grid">
-        <div class="form-group"><label>Nome</label><input type="text" id="s-name" placeholder="DIS, MAL, PARIS…"></div>
+        <div class="form-group"><label>Nome</label><input type="text" id="s-name" placeholder="Ex: Dubai, Maldivas..."></div>
         <div class="form-group"><label>Data Partida</label><input type="date" id="s-depdate"></div>
-        <div class="form-group"><label>Tipo</label><select id="s-pkttype"><option value="">Todos</option><option value="DYNAMIC">Dinâmico</option><option value="STATIC">Estático</option></select></div>
-        <div class="form-group"><label>País (ISO)</label><input type="text" id="s-country" placeholder="PT, FR…" maxlength="2"></div>
       </div>
       <div class="btn-actions">
         <button class="btn btn-blue" onclick="searchProducts()">🔍 Pesquisar</button>
@@ -100,80 +85,59 @@ header span{font-size:12px;color:var(--muted)}
 
   <div id="panel-reserva" class="panel">
     <div class="steps">
-      <div class="step done" id="step1"><span class="step-num">1</span>Produto</div>
-      <div class="step" id="step2"><span class="step-num">2</span>Parâmetros</div>
-      <div class="step" id="step3"><span class="step-num">3</span>Serviços</div>
-      <div class="step" id="step4"><span class="step-num">4</span>Simulação</div>
-      <div class="step" id="step5"><span class="step-num">5</span>Confirmar</div>
+      <div class="step done" id="step1">1. Produto</div>
+      <div class="step" id="step2">2. Parâmetros</div>
+      <div class="step" id="step3">3. Confirmar</div>
     </div>
     <div id="reserva-status" class="status-bar"></div>
-    <div id="r-step1" class="card">
-      <div class="card-title"><span>📦</span> Produto Selecionado</div>
-      <div id="r-product-info" style="font-size:14px;margin-bottom:16px;color:var(--muted)">Nenhum produto selecionado.</div>
-      <div class="form-group" style="max-width:300px"><label>Código do Produto</label><input type="number" id="r-product-code" placeholder="ex: 105" min="1"></div>
-      <div class="btn-actions"><button class="btn btn-blue" onclick="getProductParams()">Obter Parâmetros →</button></div>
+    
+    <div id="step1-panel" class="card">
+      <div class="card-title">📦 Produto Selecionado</div>
+      <div id="r-product-info">Nenhum produto selecionado.</div>
+      <div class="btn-actions"><button class="btn btn-blue" onclick="goToStep2()">Continuar →</button></div>
     </div>
-    <div id="r-step2" class="card" style="display:none">
-      <div class="card-title"><span>⚙️</span> Parâmetros</div>
+
+    <div id="step2-panel" class="card" style="display:none">
+      <div class="card-title">⚙️ Parâmetros da Reserva</div>
       <div class="form-grid">
         <div class="form-group"><label>Data Partida</label><select id="r-depdate"></select></div>
         <div class="form-group"><label>Local Partida</label><select id="r-deplocal"></select></div>
         <div class="form-group"><label>Noites Extra</label><input type="number" id="r-extranights" value="0" min="0"></div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px"><span style="font-weight:700">Quartos</span><button class="btn btn-outline btn-sm" onclick="addRoom()">+ Quarto</button></div>
       <div id="rooms-list"></div>
-      <div id="base-locals-section" style="display:none"><div style="font-weight:700;margin:14px 0 8px">Noites por Local</div><div id="base-locals-list"></div></div>
-      <div class="btn-actions"><button class="btn btn-outline" onclick="backStep(1)">← Voltar</button><button class="btn btn-blue" onclick="searchAvailableServices()">Pesquisar Disponibilidade →</button></div>
-    </div>
-    <div id="r-step3" class="card" style="display:none">
-      <div class="card-title"><span>✈️</span> Selecionar Serviços</div>
-      <div id="flight-options-section"></div><div id="hotel-options-section"></div>
-      <div class="btn-actions"><button class="btn btn-outline" onclick="backStep(2)">← Voltar</button><button class="btn btn-blue" onclick="setServicesAndSimulate()">Simular Reserva →</button></div>
-    </div>
-    <div id="r-step4" class="card" style="display:none">
-      <div class="card-title"><span>💶</span> Simulação</div>
-      <div id="simulation-result"></div>
-      <div class="btn-actions" id="btn-step4-actions" style="display:none"><button class="btn btn-outline" onclick="backStep(3)">← Alterar</button><button class="btn btn-coral" onclick="goToConfirm()">Prosseguir →</button></div>
-    </div>
-    <div id="r-step5" class="card" style="display:none">
-      <div class="card-title"><span>👤</span> Dados dos Passageiros</div>
-      <div id="pax-form"></div>
-      <div class="form-grid" style="margin-top:14px">
-        <div class="form-group"><label>Referência Cliente</label><input type="text" id="r-clientref"></div>
-        <div class="form-group" style="grid-column:1/-1"><label>Observações</label><input type="text" id="r-clientobs"></div>
+      <div class="btn-actions">
+        <button class="btn btn-outline" onclick="backToStep1()">← Voltar</button>
+        <button class="btn btn-blue" onclick="checkAvailability()">Verificar Disponibilidade →</button>
       </div>
-      <div class="btn-actions"><button class="btn btn-outline" onclick="backStep(4)">← Voltar</button><button class="btn btn-coral" onclick="createReservation()">✓ Confirmar Reserva</button></div>
     </div>
-    <div id="r-final" style="display:none"></div>
-  </div>
 
-  <div id="panel-minhas-reservas" class="panel">
-    <div class="card">
-      <div class="card-title"><span>📁</span> Pesquisar Reservas</div>
-      <div class="form-grid">
-        <div class="form-group"><label>Nº Reserva</label><input type="number" id="rl-reserve"></div>
-        <div class="form-group"><label>Estado</label><select id="rl-status"><option value="">Todos</option><option value="OK">Confirmada</option><option value="WL">Lista Espera</option></select></div>
-        <div class="form-group"><label>Partida de</label><input type="date" id="rl-depfrom"></div>
-        <div class="form-group"><label>Partida até</label><input type="date" id="rl-depto"></div>
+    <div id="step3-panel" class="card" style="display:none">
+      <div class="card-title">💰 Simulação e Confirmação</div>
+      <div id="simulation-result"></div>
+      <div class="form-grid" style="margin-top:16px">
+        <div class="form-group"><label>Nome do Cliente</label><input type="text" id="client-name" placeholder="Nome completo"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="client-email" placeholder="email@exemplo.com"></div>
       </div>
-      <div class="btn-actions"><button class="btn btn-blue" onclick="listReserves()">🔍 Pesquisar</button></div>
+      <div class="btn-actions">
+        <button class="btn btn-outline" onclick="backToStep2()">← Voltar</button>
+        <button class="btn btn-coral" onclick="createReservation()">✓ Confirmar Reserva</button>
+      </div>
     </div>
-    <div id="reserves-status" class="status-bar"></div>
-    <div id="reserves-results"></div>
+
+    <div id="r-final" style="display:none"></div>
   </div>
 
   <div id="panel-debug" class="panel">
     <div class="card">
-      <div class="card-title"><span>🛠</span> Diagnóstico</div>
+      <div class="card-title">🛠 Diagnóstico</div>
       <div class="btn-actions">
-        <button class="btn btn-blue" onclick="testConnection()">📡 Testar Conexão</button>
-        <button class="btn btn-outline" onclick="clearLogs()">🗑 Limpar Logs</button>
+        <button class="btn btn-blue" onclick="testConnection()">Testar Conexão</button>
+        <button class="btn btn-outline" onclick="clearLogs()">Limpar Logs</button>
       </div>
-      <div id="debug-status" class="status-bar"></div>
-      <div id="log-panel" class="log-panel"><div class="log-entry log-info">Aguardando ação...</div></div>
+      <div id="log-panel" class="log-panel">[INFO] Aguardando ação...</div>
     </div>
     <div class="card" id="xml-card" style="display:none">
-      <div class="card-title"><span>📄</span> XML Bruto da Última Resposta</div>
+      <div class="card-title">📄 XML da Última Resposta</div>
       <div id="raw-xml" class="xml-block"></div>
     </div>
   </div>
@@ -188,32 +152,29 @@ const CREDS = { System: 808, Client: 289363, Username: 'admin@apmviagens.pt', Pa
 let state = {
   sessionHash: null,
   selectedProduct: null,
-  rooms: [{ num: 1, code: '', childAges: '' }],
-  roomTypes: [],
-  baseLocals: [],
-  simulationData: null,
-  productKeyType: 1
+  rooms: [{ num: 1, code: 'DBL', childAges: '' }],
+  simulationPrice: 0
 }
 
-function log(msg, type='info') {
-  const p = document.getElementById('log-panel')
-  if (!p) return
-  const t = new Date().toLocaleTimeString()
-  const cls = {error:'log-error',success:'log-success',warn:'log-warn'}[type] || 'log-info'
-  p.innerHTML += `<div class="log-entry ${cls}">[${t}] ${msg}</div>`
-  p.scrollTop = p.scrollHeight
+function log(msg, type = 'info') {
+  const panel = document.getElementById('log-panel')
+  if (!panel) return
+  const time = new Date().toLocaleTimeString()
+  const cls = { error: 'log-error', success: 'log-success' }[type] || 'log-info'
+  panel.innerHTML += `<div class="log-entry ${cls}">[${time}] ${msg}</div>`
+  panel.scrollTop = panel.scrollHeight
 }
 
 function clearLogs() {
-  document.getElementById('log-panel').innerHTML = '<div class="log-entry log-info">Logs limpos.</div>'
+  document.getElementById('log-panel').innerHTML = '<div class="log-entry log-info">[INFO] Logs limpos.</div>'
   document.getElementById('xml-card').style.display = 'none'
 }
 
-function switchTab(tab, btn) {
+function switchTab(tab) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
-  document.getElementById('panel-' + tab).classList.add('active')
-  if (btn) btn.classList.add('active')
+  document.getElementById(`panel-${tab}`).classList.add('active')
+  event.target.classList.add('active')
 }
 
 function setStatus(id, type, msg) {
@@ -221,28 +182,8 @@ function setStatus(id, type, msg) {
   if (!el) return
   if (!msg) { el.className = 'status-bar'; return }
   el.className = `status-bar show ${type}`
-  el.innerHTML = type === 'loading' ? `<span class="loader"></span>${msg}` : msg
+  el.innerHTML = type === 'loading' ? `⏳ ${msg}` : msg
 }
-
-function setStep(n) {
-  for (let i = 1; i <= 5; i++) {
-    const el = document.getElementById('step' + i)
-    if (el) el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '')
-  }
-}
-
-function backStep(n) {
-  document.getElementById('r-step1').style.display = 'none'
-  document.getElementById('r-step2').style.display = 'none'
-  document.getElementById('r-step3').style.display = 'none'
-  document.getElementById('r-step4').style.display = 'none'
-  document.getElementById('r-step5').style.display = 'none'
-  document.getElementById('r-final').style.display = 'none'
-  document.getElementById('r-step' + n).style.display = 'block'
-  setStep(n)
-}
-
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
 
 function credXML() {
   return `<Credentials xsi:type="ns1:CredentialsStruct">
@@ -275,42 +216,32 @@ async function soapCall(action, body) {
   const data = await res.json()
   if (data.error) throw new Error(data.error)
   
-  const xmlStr = (data.xml || '').replace(/^\uFEFF/, '').trim()
+  const xmlStr = (data.xml || '').trim()
   document.getElementById('raw-xml').textContent = xmlStr
   document.getElementById('xml-card').style.display = 'block'
   
   const doc = new DOMParser().parseFromString(xmlStr, 'text/xml')
-  if (doc.querySelector('parsererror')) throw new Error('XML inválido')
   const fault = doc.querySelector('faultstring')
   if (fault) throw new Error(fault.textContent)
   return doc
 }
 
-function txt(el, tag) {
+function getText(el, tag) {
   if (!el) return ''
   const found = el.getElementsByTagName(tag)
-  if (found.length) return found[0].textContent.trim()
-  const allNodes = el.getElementsByTagName('*')
-  for (let i = 0; i < allNodes.length; i++) {
-    if (allNodes[i].localName === tag || allNodes[i].tagName === tag || allNodes[i].tagName.endsWith(':' + tag)) {
-      return allNodes[i].textContent.trim()
-    }
-  }
-  return ''
+  return found.length ? found[0].textContent.trim() : ''
 }
 
-// PESQUISA
+// PESQUISA DE PRODUTOS
 async function searchProducts() {
   const name = document.getElementById('s-name').value
   const depdate = document.getElementById('s-depdate').value
-  const pkttype = document.getElementById('s-pkttype').value
   
-  setStatus('search-status','loading','A pesquisar…')
+  setStatus('search-status', 'loading', 'A pesquisar produtos...')
   
   let xml = `<ns1:SearchProducts><SearchProductsRequest>${credXML()}`
   if (name) xml += `<Name>${name}</Name>`
   if (depdate) xml += `<DepDate>${depdate}</DepDate>`
-  if (pkttype) xml += `<Pkt_type>${pkttype}</Pkt_type>`
   xml += `<PriceFrom>0</PriceFrom><PriceTo>99999</PriceTo></SearchProductsRequest></ns1:SearchProducts>`
 
   try {
@@ -318,27 +249,27 @@ async function searchProducts() {
     const products = doc.getElementsByTagName('Product')
     
     if (!products.length) {
-      setStatus('search-status','err','Nenhum produto encontrado')
+      setStatus('search-status', 'err', 'Nenhum produto encontrado')
       return
     }
     
     let html = '<div class="product-grid">'
-    for (let i = 0; i < products.length; i++) {
+    for (let i = 0; i < Math.min(products.length, 20); i++) {
       const p = products[i]
-      const code = txt(p, 'Code') || txt(p, 'ProductCode')
-      const name = txt(p, 'Name')
-      const pkt = txt(p, 'Pkt_type')
-      const price = txt(p, 'PriceFrom')
+      const code = getText(p, 'Code')
+      const name = getText(p, 'Name')
+      const price = getText(p, 'PriceFrom')
+      const pkt = getText(p, 'ProdType')
       
       if (code && name) {
         html += `
-          <div class="product-card" onclick="selectProduct(${code}, '${esc(name)}', '${pkt}')">
-            <div class="product-img">🌍</div>
+          <div class="product-card" onclick="selectProduct(${code}, '${escapeHtml(name)}', '${pkt}')">
+            <div class="product-img">🏝️</div>
             <div class="product-info">
-              <div class="product-name">${esc(name)}</div>
+              <div class="product-name">${escapeHtml(name)}</div>
               <div class="product-meta">Código: ${code}</div>
               <div class="product-price">${price ? '€' + parseFloat(price).toFixed(2) : 'Sob consulta'}</div>
-              <button class="btn btn-blue btn-sm" style="width:100%">Reservar →</button>
+              <span class="badge badge-dyn">${pkt === 'DYNAMIC' ? 'Dinâmico' : 'Estático'}</span>
             </div>
           </div>
         `
@@ -346,201 +277,165 @@ async function searchProducts() {
     }
     html += '</div>'
     document.getElementById('search-results').innerHTML = html
-    setStatus('search-status','ok',`✓ ${products.length} produtos encontrados`)
+    setStatus('search-status', 'ok', `✓ ${products.length} produtos encontrados`)
+    log(`✅ Pesquisa concluída: ${products.length} produtos`, 'success')
   } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('search-status','err',e.message)
+    log(`❌ Erro: ${e.message}`, 'error')
+    setStatus('search-status', 'err', e.message)
   }
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;'
+    if (m === '<') return '&lt;'
+    if (m === '>') return '&gt;'
+    return m
+  })
 }
 
 function selectProduct(code, name, pkt) {
   log(`✅ Produto selecionado: ${name} (${code})`, 'success')
-  state.selectedProduct = { code, name, pkt: pkt || 'DYNAMIC' }
-  document.getElementById('r-product-code').value = code
-  
+  state.selectedProduct = { code: parseInt(code), name, pkt }
+  document.getElementById('r-product-info').innerHTML = `<strong>${name}</strong> (código: ${code})`
   switchTab('reserva')
-  setStep(1)
-  getProductParams()
 }
 
 function clearSearch() {
   document.getElementById('s-name').value = ''
   document.getElementById('s-depdate').value = ''
-  document.getElementById('s-pkttype').value = ''
   document.getElementById('search-results').innerHTML = ''
-  setStatus('search-status','','')
+  setStatus('search-status', '', '')
 }
 
-// PARÂMETROS
-async function getProductParams() {
-  const code = parseInt(document.getElementById('r-product-code').value)
-  if (!code) {
-    setStatus('reserva-status','err','Código inválido')
+// STEP 1 → 2
+async function goToStep2() {
+  if (!state.selectedProduct) {
+    alert('Selecione um produto primeiro!')
     return
   }
   
-  setStatus('reserva-status','loading','A obter parâmetros...')
+  setStatus('reserva-status', 'loading', 'A carregar parâmetros do produto...')
   
   try {
+    // CORREÇÃO: Productcode com "c" minúsculo e adicionar Pkt_type
     const doc = await soapCall('DynGetProductParameters',
       `<ns1:DynGetProductParameters>
         <DynProductParametersRequest>
           ${credXML()}
-          <Productcode xsi:type="xsd:int">${code}</Productcode>
+          <Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode>
+          <Pkt_type xsi:type="xsd:string">DYNAMIC</Pkt_type>
         </DynProductParametersRequest>
       </ns1:DynGetProductParameters>`)
     
-    // Tentar extrair ProductKeyType
-    const pktType = txt(doc, 'ProductKeyType')
-    if (pktType) {
-      state.productKeyType = parseInt(pktType)
-      log(`✅ ProductKeyType: ${state.productKeyType}`, 'success')
-    }
-    
-    // Datas
+    // Datas de partida
     const dates = doc.getElementsByTagName('DynDepartureDate')
-    let dateHtml = ''
+    let dateHtml = '<option value="">Selecione uma data</option>'
     for (let i = 0; i < dates.length; i++) {
       dateHtml += `<option value="${dates[i].textContent}">${dates[i].textContent}</option>`
     }
     document.getElementById('r-depdate').innerHTML = dateHtml
     
-    // Locais
+    // Locais de partida
     const locals = doc.getElementsByTagName('DynDepartureLocal')
-    let localHtml = '<option value="LIS">Lisboa</option>'
+    let localHtml = '<option value="LIS">Lisboa (LIS)</option>'
     for (let i = 0; i < locals.length; i++) {
-      const code = txt(locals[i], 'Code')
-      const name = txt(locals[i], 'Name')
+      const code = getText(locals[i], 'Code')
+      const name = getText(locals[i], 'Name')
       localHtml += `<option value="${code}">${name || code}</option>`
     }
     document.getElementById('r-deplocal').innerHTML = localHtml
     
-    // Quartos
+    // Tipos de quarto
     const roomTypes = doc.getElementsByTagName('DynRoomType')
-    state.roomTypes = []
+    let roomsHtml = ''
     for (let i = 0; i < roomTypes.length; i++) {
-      state.roomTypes.push({
-        code: txt(roomTypes[i], 'Code'),
-        name: txt(roomTypes[i], 'Name')
-      })
+      const code = getText(roomTypes[i], 'Code')
+      const name = getText(roomTypes[i], 'Name')
+      roomsHtml += `<option value="${code}">${name}</option>`
     }
+    document.getElementById('rooms-list').innerHTML = `
+      <div style="margin-top:12px">
+        <label style="font-weight:700">Tipo de Quarto</label>
+        <select id="room-code" style="width:100%;padding:9px;margin-top:4px;border-radius:8px;border:1.5px solid var(--border)">
+          ${roomsHtml}
+        </select>
+      </div>
+    `
     
-    renderRooms()
-    
-    document.getElementById('r-step1').style.display = 'none'
-    document.getElementById('r-step2').style.display = 'block'
-    setStep(2)
-    setStatus('reserva-status','','')
+    document.getElementById('step1-panel').style.display = 'none'
+    document.getElementById('step2-panel').style.display = 'block'
+    document.getElementById('step1').classList.add('done')
+    document.getElementById('step2').classList.add('active')
+    document.getElementById('step3').classList.remove('active', 'done')
+    setStatus('reserva-status', '', '')
+    log(`✅ Parâmetros carregados: ${dates.length} datas disponíveis`, 'success')
     
   } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('reserva-status','err',e.message)
+    log(`❌ Erro ao carregar parâmetros: ${e.message}`, 'error')
+    setStatus('reserva-status', 'err', e.message)
   }
 }
 
-function renderRooms() {
-  const container = document.getElementById('rooms-list')
-  container.innerHTML = state.rooms.map((r, i) => `
-    <div class="room-row">
-      <label>Quarto ${r.num}</label>
-      <select id="room-code-${i}" style="flex:1">
-        ${state.roomTypes.map(t => `<option value="${t.code}">${t.name}</option>`).join('')}
-      </select>
-      <input type="text" id="room-childages-${i}" placeholder="idades crianças" style="width:120px">
-      ${state.rooms.length > 1 ? `<button class="btn btn-outline btn-sm" onclick="removeRoom(${i})">✕</button>` : ''}
-    </div>
-  `).join('')
+function backToStep1() {
+  document.getElementById('step2-panel').style.display = 'none'
+  document.getElementById('step1-panel').style.display = 'block'
+  document.getElementById('step2').classList.remove('active')
+  document.getElementById('step1').classList.remove('done')
+  setStatus('reserva-status', '', '')
 }
 
-function addRoom() {
-  state.rooms.push({ num: state.rooms.length + 1, code: '', childAges: '' })
-  renderRooms()
+function backToStep2() {
+  document.getElementById('step3-panel').style.display = 'none'
+  document.getElementById('step2-panel').style.display = 'block'
+  document.getElementById('step3').classList.remove('active')
+  document.getElementById('step2').classList.add('active')
+  setStatus('reserva-status', '', '')
 }
 
-function removeRoom(i) {
-  state.rooms.splice(i, 1)
-  state.rooms.forEach((r, idx) => r.num = idx + 1)
-  renderRooms()
-}
-
-// DISPONIBILIDADE
-async function searchAvailableServices() {
+// VERIFICAR DISPONIBILIDADE
+async function checkAvailability() {
   const depDate = document.getElementById('r-depdate').value
   if (!depDate) {
-    setStatus('reserva-status','err','Selecione uma data')
+    setStatus('reserva-status', 'err', 'Selecione uma data de partida')
     return
   }
   
-  setStatus('reserva-status','loading','A verificar disponibilidade...')
+  setStatus('reserva-status', 'loading', 'A verificar disponibilidade e preços...')
   
-  // Recolher dados dos quartos
-  state.rooms.forEach((r, i) => {
-    r.code = document.getElementById(`room-code-${i}`)?.value || ''
-    r.childAges = document.getElementById(`room-childages-${i}`)?.value || ''
-  })
-  
-  const roomsXML = state.rooms.map(r => `
-    <RoomTypeOption>
-      <RoomNum>${r.num}</RoomNum>
-      <Code>${r.code}</Code>
-      <ChildAges>${r.childAges}</ChildAges>
-    </RoomTypeOption>
-  `).join('')
-  
+  const roomCode = document.getElementById('room-code')?.value || 'DBL'
   const depLocal = document.getElementById('r-deplocal').value
+  const extraNights = document.getElementById('r-extranights').value || 0
   
+  // CORREÇÃO CRÍTICA: Adicionar ProductKeyType e garantir todos os parâmetros
   try {
     const doc = await soapCall('DynSearchProductAvailableServices',
       `<ns1:DynSearchProductAvailableServices>
         <DynProductAvailableServicesRequest>
           ${credXML()}
           <Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode>
-          <ProductKeyType xsi:type="xsd:int">${state.productKeyType}</ProductKeyType>
+          <ProductKeyType xsi:type="xsd:int">1</ProductKeyType>
+          <Pkt_type xsi:type="xsd:string">DYNAMIC</Pkt_type>
           <DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate>
           <DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal>
-          <RoomTypes>${roomsXML}</RoomTypes>
-          <ExtraNights xsi:type="xsd:int">0</ExtraNights>
+          <RoomTypes>
+            <RoomTypeOption>
+              <RoomNum>1</RoomNum>
+              <Code>${roomCode}</Code>
+              <ChildAges></ChildAges>
+            </RoomTypeOption>
+          </RoomTypes>
+          <ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights>
         </DynProductAvailableServicesRequest>
       </ns1:DynSearchProductAvailableServices>`)
     
-    const sessionHash = txt(doc, 'SessionHash')
+    const sessionHash = getText(doc, 'SessionHash')
     if (sessionHash) {
       state.sessionHash = sessionHash
-      log(`✅ SessionHash obtido`, 'success')
+      log(`✅ SessionHash obtido: ${sessionHash.substring(0,30)}...`, 'success')
     }
     
-    // Mostrar opções de hotel
-    const hotels = doc.getElementsByTagName('DynHotelOption')
-    if (hotels.length) {
-      let hotelHtml = '<div style="font-weight:700;margin:10px 0">🏨 Hotéis disponíveis:</div>'
-      for (let i = 0; i < hotels.length; i++) {
-        const name = txt(hotels[i], 'Name')
-        const price = txt(hotels[i], 'PriceFrom')
-        hotelHtml += `
-          <label style="display:block;padding:8px;background:var(--bg);margin:5px 0;border-radius:8px">
-            <input type="radio" name="hotel" value="${i}"> ${name} - ${price ? '€' + price : 'Sob consulta'}
-          </label>
-        `
-      }
-      document.getElementById('hotel-options-section').innerHTML = hotelHtml
-    }
-    
-    document.getElementById('r-step2').style.display = 'none'
-    document.getElementById('r-step3').style.display = 'block'
-    setStep(3)
-    setStatus('reserva-status','','')
-    
-  } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('reserva-status','err',e.message)
-  }
-}
-
-// SIMULAÇÃO
-async function setServicesAndSimulate() {
-  setStatus('reserva-status','loading','A simular...')
-  
-  try {
+    // Obter simulação de preço
     const simDoc = await soapCall('DynGetSimulation',
       `<ns1:DynGetSimulation>
         <DynGetSimulationRequest>
@@ -549,71 +444,54 @@ async function setServicesAndSimulate() {
         </DynGetSimulationRequest>
       </ns1:DynGetSimulation>`)
     
-    const totalPrice = txt(simDoc, 'TotalPrice')
-    const status = txt(simDoc, 'AvailableStatus')
+    const totalPrice = parseFloat(getText(simDoc, 'TotalPrice') || 0).toFixed(2)
+    const status = getText(simDoc, 'AvailableStatus')
+    state.simulationPrice = totalPrice
     
     document.getElementById('simulation-result').innerHTML = `
       <div style="text-align:center;padding:20px">
-        <div style="font-size:36px;color:var(--coral);font-weight:700">€${parseFloat(totalPrice||0).toFixed(2)}</div>
-        <div class="badge ${status==='OK'?'badge-ok':'badge-wl'}" style="margin-top:10px">
-          ${status==='OK' ? '✅ Disponível' : '⏳ Sujeito a confirmação'}
+        <div style="font-size:36px;color:var(--coral);font-weight:700">€${totalPrice}</div>
+        <div style="margin-top:10px;padding:8px;background:${status === 'OK' ? '#E8F5E9' : '#FFF3E0'};border-radius:8px">
+          ${status === 'OK' ? '✅ Disponível para reserva imediata' : '⏳ Sujeito a confirmação'}
+        </div>
+        <div style="margin-top:16px;font-size:12px;color:var(--muted)">
+          Preço inclui: Voos + Hotel + Transferes + Seguro
         </div>
       </div>
     `
     
-    document.getElementById('btn-step4-actions').style.display = 'flex'
-    document.getElementById('r-step3').style.display = 'none'
-    document.getElementById('r-step4').style.display = 'block'
-    setStep(4)
-    setStatus('reserva-status','','')
+    document.getElementById('step2-panel').style.display = 'none'
+    document.getElementById('step3-panel').style.display = 'block'
+    document.getElementById('step2').classList.remove('active')
+    document.getElementById('step2').classList.add('done')
+    document.getElementById('step3').classList.add('active')
+    setStatus('reserva-status', '', '')
+    log(`✅ Simulação concluída: €${totalPrice}`, 'success')
     
   } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('reserva-status','err',e.message)
+    log(`❌ Erro ao verificar disponibilidade: ${e.message}`, 'error')
+    setStatus('reserva-status', 'err', e.message)
   }
 }
 
-function goToConfirm() {
-  renderPaxForm()
-  document.getElementById('r-step4').style.display = 'none'
-  document.getElementById('r-step5').style.display = 'block'
-  setStep(5)
-}
-
-function renderPaxForm() {
-  const container = document.getElementById('pax-form')
-  let html = ''
-  state.rooms.forEach((room, roomIdx) => {
-    html += `
-      <div class="pax-row">
-        <div class="pax-row-title">Quarto ${room.num} - Adulto 1</div>
-        <div class="form-group"><label>Nome</label><input type="text" id="pax-name-${roomIdx}-0"></div>
-        <div class="form-group"><label>Apelido</label><input type="text" id="pax-surname-${roomIdx}-0"></div>
-      </div>
-    `
-  })
-  container.innerHTML = html
-}
-
-// CRIAÇÃO DA RESERVA
+// CRIAR RESERVA
 async function createReservation() {
-  setStatus('reserva-status','loading','A criar reserva...')
+  const clientName = document.getElementById('client-name').value
+  if (!clientName) {
+    setStatus('reserva-status', 'err', 'Informe o nome do cliente')
+    return
+  }
   
-  let paxXML = ''
-  let paxCount = 0
-  state.rooms.forEach((room, roomIdx) => {
-    const name = document.getElementById(`pax-name-${roomIdx}-0`)?.value || ''
-    const surname = document.getElementById(`pax-surname-${roomIdx}-0`)?.value || ''
-    paxXML += `<DynPax>
-      <RoomNum>${room.num}</RoomNum>
-      <Title>MR</Title>
-      <Name>${name}</Name>
-      <Surname>${surname}</Surname>
-      <DateBirth>1990-01-01</DateBirth>
-      <Room>DBL</Room>
-    </DynPax>`
-    paxCount++
-  })
+  setStatus('reserva-status', 'loading', 'A criar reserva...')
+  
+  const paxXML = `<DynPax>
+    <RoomNum>1</RoomNum>
+    <Title>MR</Title>
+    <Name>${clientName.split(' ')[0] || ''}</Name>
+    <Surname>${clientName.split(' ').slice(1).join(' ') || clientName}</Surname>
+    <DateBirth>1990-01-01</DateBirth>
+    <Room>DBL</Room>
+  </DynPax>`
   
   try {
     const doc = await soapCall('DynCreateReserve',
@@ -626,75 +504,45 @@ async function createReservation() {
         </DynCreateReserveRequest>
       </ns1:DynCreateReserve>`)
     
-    const reserve = txt(doc, 'Reserve')
+    const reserveNum = getText(doc, 'Reserve')
     
-    document.getElementById('r-step5').style.display = 'none'
+    document.getElementById('step3-panel').style.display = 'none'
     document.getElementById('r-final').innerHTML = `
       <div class="res-success">
         <div style="font-size:40px">✅</div>
-        <div class="res-number">${reserve}</div>
+        <div class="res-number">${reserveNum}</div>
         <div style="margin-top:10px">Reserva criada com sucesso!</div>
+        <div style="margin-top:8px;color:var(--muted)">Total: €${state.simulationPrice}</div>
         <button class="btn btn-blue" style="margin-top:20px" onclick="location.reload()">Nova Reserva</button>
       </div>
     `
     document.getElementById('r-final').style.display = 'block'
-    setStatus('reserva-status','','')
+    setStatus('reserva-status', '', '')
+    log(`✅ Reserva criada: ${reserveNum}`, 'success')
     
   } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('reserva-status','err',e.message)
+    log(`❌ Erro ao criar reserva: ${e.message}`, 'error')
+    setStatus('reserva-status', 'err', e.message)
   }
 }
 
-// LISTA DE RESERVAS
-async function listReserves() {
-  setStatus('reserves-status','loading','A pesquisar...')
-  
-  try {
-    const doc = await soapCall('ReserveList',
-      `<ns1:ReserveList>
-        <ReserveListRequest>
-          ${credXML()}
-          <MaxReg>20</MaxReg>
-        </ReserveListRequest>
-      </ns1:ReserveList>`)
-    
-    const reserves = doc.getElementsByTagName('ResList')
-    if (!reserves.length) {
-      setStatus('reserves-status','err','Nenhuma reserva encontrada')
-      return
-    }
-    
-    let html = '<table style="width:100%"><thead><tr><th>Nº</th><th>Data</th><th>Status</th></tr></thead><tbody>'
-    for (let i = 0; i < reserves.length; i++) {
-      const num = txt(reserves[i], 'Reserve')
-      const date = txt(reserves[i], 'DepDate')
-      html += `<tr><td>${num}</td><td>${date}</td><td>-</td></tr>`
-    }
-    html += '</tbody></table>'
-    document.getElementById('reserves-results').innerHTML = html
-    setStatus('reserves-status','ok',`✓ ${reserves.length} reservas encontradas`)
-    
-  } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('reserves-status','err',e.message)
-  }
-}
-
+// TESTE DE CONEXÃO
 async function testConnection() {
-  setStatus('debug-status','loading','A testar...')
+  setStatus('debug-status', 'loading', 'A testar...')
   try {
     const doc = await soapCall('SearchProductTypes',
       `<ns1:SearchProductTypes><SearchProductTypesRequest>${credXML()}</SearchProductTypesRequest></ns1:SearchProductTypes>`)
-    log('✅ Conexão OK!', 'success')
-    setStatus('debug-status','ok','Conexão estabelecida')
+    const types = doc.getElementsByTagName('ProductType')
+    log(`✅ Conexão OK! ${types.length} tipos de produto encontrados`, 'success')
+    setStatus('debug-status', 'ok', `Conectado com sucesso!`)
   } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('debug-status','err',e.message)
+    log(`❌ Erro de conexão: ${e.message}`, 'error')
+    setStatus('debug-status', 'err', e.message)
   }
 }
 
 document.getElementById('s-depdate').value = new Date().toISOString().split('T')[0]
+log('🚀 Sistema pronto. Pesquise um produto para começar.', 'success')
 </script>
 </body>
 </html>
