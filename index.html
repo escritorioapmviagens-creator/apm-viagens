@@ -6217,6 +6217,7 @@ async function renderEquipa() {
         </div>
         <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
           <span style="font-size:11px;color:var(--muted)">${p.role === 'admin' ? 'Admin' : 'Consultor/a'}</span>
+          ${p.telefone ? `<span style="font-size:11px;color:var(--muted)">· ${p.telefone}</span>` : ''}
           <div style="flex:1;max-width:120px">
             <div style="height:4px;background:var(--bg2);border-radius:2px;overflow:hidden">
               <div style="height:100%;width:${pct}%;background:${cor};border-radius:2px"></div>
