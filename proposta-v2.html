@@ -277,6 +277,33 @@ canvas#sig-canvas { display: block; width: 100%; height: 120px; cursor: crosshai
           <input type="checkbox" id="chk-fin" onchange="validarCheckboxes()" style="margin-top:2px;width:16px;height:16px;accent-color:var(--coral);flex-shrink:0">
           <span>A <a href="fin.html" target="_blank" style="color:var(--blue)">Ficha de Informação Normalizada (FIN)</a></span>
         </label>
+
+        <!-- Marketing — opcional, com balão explicativo -->
+        <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:.85rem;line-height:1.5">
+            <input type="checkbox" id="chk-marketing" onchange="guardarMarketing()" style="margin-top:2px;width:16px;height:16px;accent-color:var(--coral);flex-shrink:0">
+            <span>
+              Aceito receber propostas e comunicações de marketing da APM Viagens
+              <button type="button" onclick="toggleBalaoMarketing(event)"
+                style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:var(--blue-light);border:1px solid rgba(59,91,219,.3);border-radius:50%;color:var(--blue);font-size:.65rem;font-weight:800;cursor:pointer;margin-left:4px;vertical-align:middle;flex-shrink:0">?</button>
+              <span style="font-size:.72rem;color:var(--muted);display:block;margin-top:2px">Opcional — pode alterar a qualquer momento na sua área de cliente</span>
+            </span>
+          </label>
+
+          <!-- Balão explicativo -->
+          <div id="balao-marketing" style="display:none;background:var(--blue-light);border:1px solid rgba(59,91,219,.2);border-radius:12px;padding:14px 16px;margin-top:10px;font-size:.82rem;line-height:1.65;color:#1e3a8a;position:relative">
+            <button type="button" onclick="document.getElementById('balao-marketing').style.display='none'"
+              style="position:absolute;top:8px;right:10px;background:none;border:none;font-size:1rem;color:#93c5fd;cursor:pointer;line-height:1">✕</button>
+            <div style="font-weight:700;margin-bottom:6px">📣 O que inclui este consentimento?</div>
+            <p style="margin-bottom:6px">Ao aceitar, a APM Viagens poderá contactá-lo(a) através de:</p>
+            <ul style="padding-left:1.2rem;margin-bottom:8px">
+              <li>WhatsApp — propostas de viagem personalizadas, promoções e novidades</li>
+              <li>Área de cliente — notificações sobre destinos e ofertas especiais</li>
+            </ul>
+            <p style="margin-bottom:6px">Nunca partilharemos os seus dados com terceiros para fins comerciais.</p>
+            <p style="color:#3B5BDB;font-size:.76rem">Pode revogar este consentimento a qualquer momento na sua área de cliente ou contactando a APM Viagens.</p>
+          </div>
+        </div>
       </div>
       <div class="sig-wrap">
         <span class="sig-label">Assina aqui</span>
@@ -482,6 +509,16 @@ function initSig() {
 
 function clearSig() { const canvas=document.getElementById('sig-canvas'); canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height); sigHasMark=false }
 
+function toggleBalaoMarketing(e) {
+  e.preventDefault(); e.stopPropagation()
+  const balao = document.getElementById('balao-marketing')
+  balao.style.display = balao.style.display === 'none' ? 'block' : 'none'
+}
+
+function guardarMarketing() {
+  // Guardado apenas no momento da aceitação final — não obrigatório
+}
+
 function validarCheckboxes() {
   const todos = ['chk-contrato','chk-rgpd','chk-cgr','chk-fin'].every(id => document.getElementById(id)?.checked)
   const btn = document.getElementById('accept-cta')
@@ -525,7 +562,9 @@ async function aceitarProposta() {
         try {
           // Tentar inserir cliente (upsert por telefone)
           const { data: newCli } = await sb.from('clientes').upsert(
-            { nome: D.cli_nome||D.cli||'—', telefone: telLimpo, nif: D.cli_nif||null },
+            { nome: D.cli_nome||D.cli||'—', telefone: telLimpo, nif: D.cli_nif||null,
+              rgpd_aceite: true, rgpd_aceite_em: new Date().toISOString(),
+              marketing_aceite: document.getElementById('chk-marketing')?.checked || false },
             { onConflict: 'telefone', ignoreDuplicates: false }
           ).select('id').single()
           if(newCli) clienteId = newCli.id
