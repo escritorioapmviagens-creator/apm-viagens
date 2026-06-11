@@ -202,13 +202,14 @@ const CREDS = { System: 808, Client: 289363, Username: 'admin@apmviagens.pt', Pa
 
 let state = {
   sessionHash: null,
-  selectedProduct: null,  // { code: int, name: string }
+  selectedProduct: null,
   productParams: null,
   rooms: [{ num: 1, code: 1, childAges: '' }],
   roomTypes: [],
   baseLocals: [],
   simulationData: null,
-  paxCount: 1
+  paxCount: 1,
+  isDynamic: true
 }
 
 // ── LOGS ──
@@ -288,19 +289,15 @@ async function soapCall(action, body) {
   return doc
 }
 
-// Encontrar texto de qualquer tag, ignorando namespace
 function txt(el, tag) {
   if (!el) return ''
-  // 1. Procurar apenas nos filhos directos (evita apanhar Code de níveis superiores)
   for (let i = 0; i < el.children.length; i++) {
     const child = el.children[i]
     const local = child.localName || child.tagName.split(':').pop()
     if (local === tag) return child.textContent.trim()
   }
-  // 2. querySelector (pode falhar com namespaces)
   const direct = el.querySelector(tag)
   if (direct) return direct.textContent.trim()
-  // 3. Fallback: percorrer todos os descendentes
   const nodes = el.getElementsByTagName('*')
   for (let i = 0; i < nodes.length; i++) {
     const local = nodes[i].localName || nodes[i].tagName.split(':').pop()
@@ -370,7 +367,6 @@ async function searchProducts() {
   try {
     const doc = await soapCall('SearchProducts', xml)
 
-    // Buscar items apenas dentro do ProductArray (não sub-arrays)
     const productArray = all(doc, 'ProductArray')[0] || all(doc, 'ProductsList')[0]
     let items = productArray
       ? Array.from(productArray.children).filter(e => {
@@ -383,21 +379,15 @@ async function searchProducts() {
     })
     log(`📦 ${items.length} item(ns) bruto(s) recebido(s)`)
 
-    // ── EXTRACÇÃO ROBUSTA DO CÓDIGO ──
-    // Cada item pode ter o código em: Code, ProdCode, ProductCode
-    // Vamos inspeccionar o primeiro item para perceber a estrutura
     if (items.length > 0) {
       const firstTags = Array.from(items[0].children).map(c => c.tagName).join(', ')
       log(`🔎 Tags do 1º produto: ${firstTags}`, 'info')
     }
 
     const products = items.map(p => {
-      // Tentar todas as variantes de código
       let code = txt(p,'Code') || txt(p,'ProdCode') || txt(p,'ProductCode') || ''
-      // Remover espaços e garantir inteiro
       code = code.trim()
       const codeInt = parseInt(code)
-
       const name  = txt(p,'Name') || txt(p,'ProdName') || txt(p,'Description') || ''
       const price = txt(p,'PriceFrom') || txt(p,'PriceFromMin') || '0'
       const pkt   = txt(p,'ProdType') || txt(p,'Pkt_type') || txt(p,'PackType') || ''
@@ -423,7 +413,6 @@ async function searchProducts() {
       return
     }
 
-    const simples  = valid.filter(p => true) // por agora todos iguais até a API distinguir
     setStatus('search-status','ok',`✓ ${valid.length} produto(s) encontrado(s)`)
 
     let html = `<div class="section-title">🏖️ Produtos <span style="font-size:13px;font-weight:400;color:var(--muted)">(${valid.length})</span></div><div class="product-grid">`
@@ -458,7 +447,6 @@ function renderCard(p) {
 }
 
 function selectProduct(codeInt, name, pkt) {
-  // VALIDAÇÃO FINAL: garantir int positivo
   const code = parseInt(codeInt)
   if (!code || isNaN(code) || code <= 0) {
     log(`❌ Código inválido: "${codeInt}"`, 'error')
@@ -471,7 +459,6 @@ function selectProduct(codeInt, name, pkt) {
   document.getElementById('r-product-info').innerHTML =
     `<strong>${esc(name)}</strong> <span style="color:var(--muted)">(código: ${code})</span>`
 
-  // Mudar para tab de reserva
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
   document.getElementById('panel-reserva').classList.add('active')
@@ -487,7 +474,7 @@ function clearSearch() {
   setStatus('search-status','','')
 }
 
-// ── PARÂMETROS ──
+// ── PARÂMETROS DO PRODUTO (CORRIGIDO: Productcode em minúsculo) ──
 async function getProductParams() {
   const raw = document.getElementById('r-product-code').value
   const code = parseInt(raw)
@@ -502,45 +489,75 @@ async function getProductParams() {
 
   try {
     const pkt = state.selectedProduct?.pkt || 'DYNAMIC'
-    const isDynamic = pkt === 'DYNAMIC'
-    log(`📦 Tipo: ${pkt}`)
+    state.isDynamic = pkt === 'DYNAMIC'
+    log(`📦 Tipo: ${pkt} (${state.isDynamic ? 'Dinâmico' : 'Estático'})`)
 
     let doc
-    if (isDynamic) {
+    if (state.isDynamic) {
+      // CORREÇÃO CRÍTICA: Productcode com "c" minúsculo
       doc = await soapCall('DynGetProductParameters',
-        `<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<ProductCode xsi:type="xsd:int">${code}</ProductCode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+        `<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${code}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
     } else {
       doc = await soapCall('StaticGetProductParameters',
-        `<ns1:StaticGetProductParameters><StaticProductParametersRequest>${credXML()}<ProductCode xsi:type="xsd:int">${code}</ProductCode></StaticProductParametersRequest></ns1:StaticGetProductParameters>`)
+        `<ns1:StaticGetProductParameters><StaticProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${code}</Productcode></StaticProductParametersRequest></ns1:StaticGetProductParameters>`)
     }
-    state.isDynamic = isDynamic
+    
+    // Log da estrutura recebida para debug
+    log(`📄 Estrutura da resposta: ${doc.documentElement.tagName}`)
 
     const productName = txt(doc,'Name')
-    if (!productName) throw new Error(`Produto ${code} não encontrado ou sem nome na resposta`)
+    if (!productName) {
+      // Tentar encontrar nome alternativo
+      const altName = txt(doc,'ProdName') || txt(doc,'Description')
+      if (altName) {
+        log(`⚠️ Nome encontrado em tag alternativa: "${altName}"`, 'warn')
+      } else {
+        throw new Error(`Produto ${code} não encontrado ou sem nome na resposta. Verifique XML no diagnóstico.`)
+      }
+    }
 
-    state.selectedProduct = { code, name: productName, pkt }
+    state.selectedProduct = { ...state.selectedProduct, name: productName || txt(doc,'ProdName') }
     state.productParams = doc
 
-    // Datas de partida
-    const dates = all(doc,'DynDepartureDate').concat(all(doc,'Date'))
-    if (!dates.length) throw new Error(`Produto ${code} sem datas de partida disponíveis`)
-    document.getElementById('r-depdate').innerHTML =
-      dates.map(d => `<option value="${d.textContent.trim()}">${d.textContent.trim()}</option>`).join('')
+    // Datas de partida (várias possibilidades de tag)
+    let dates = all(doc,'DynDepartureDate')
+    if (!dates.length) dates = all(doc,'Date')
+    if (!dates.length) dates = all(doc,'DepartureDate')
+    
+    if (!dates.length) {
+      log(`⚠️ Produto ${code} sem datas de partida disponíveis`, 'warn')
+      document.getElementById('r-depdate').innerHTML = '<option value="">Nenhuma data disponível</option>'
+    } else {
+      document.getElementById('r-depdate').innerHTML =
+        dates.map(d => `<option value="${d.textContent.trim()}">${d.textContent.trim()}</option>`).join('')
+      log(`📅 ${dates.length} data(s) de partida encontrada(s)`)
+    }
 
     // Locais de partida
-    const locals = all(doc,'DynDepartureLocal')
+    let locals = all(doc,'DynDepartureLocal')
+    if (!locals.length) locals = all(doc,'DepartureLocal')
+    
     document.getElementById('r-deplocal').innerHTML = locals.length
       ? locals.map(l => `<option value="${txt(l,'Code')}">${txt(l,'Name')||txt(l,'Code')}</option>`).join('')
       : '<option value="LIS">Lisboa (LIS)</option>'
 
     // Tipos de quarto
-    state.roomTypes = all(doc,'DynRoomType').map(r => ({ code: txt(r,'Code'), name: txt(r,'Name') }))
-    state.baseLocals = all(doc,'DynBaseLocal').map(b => ({
+    let roomTypesNodes = all(doc,'DynRoomType')
+    if (!roomTypesNodes.length) roomTypesNodes = all(doc,'RoomType')
+    
+    state.roomTypes = roomTypesNodes.map(r => ({ code: txt(r,'Code'), name: txt(r,'Name') }))
+    if (state.roomTypes.length) log(`🏨 ${state.roomTypes.length} tipo(s) de quarto encontrado(s)`)
+
+    // BaseLocals
+    let baseLocalsNodes = all(doc,'DynBaseLocal')
+    if (!baseLocalsNodes.length) baseLocalsNodes = all(doc,'BaseLocal')
+    
+    state.baseLocals = baseLocalsNodes.map(b => ({
       code: txt(b,'Code'), name: txt(b,'Name'),
       minNights: txt(b,'MinNights')||'1', maxNights: txt(b,'Maxnights')||'7'
     }))
 
-    log(`✅ Parâmetros carregados: ${dates.length} data(s), ${locals.length} local(is), ${state.roomTypes.length} tipo(s) de quarto`, 'success')
+    log(`✅ Parâmetros carregados com sucesso!`, 'success')
 
     renderRooms()
     renderBaseLocals()
@@ -557,6 +574,10 @@ async function getProductParams() {
 
 function renderRooms() {
   const c = document.getElementById('rooms-list')
+  if (!state.roomTypes.length) {
+    c.innerHTML = '<div class="log-warn">⚠️ Nenhum tipo de quarto disponível para este produto.</div>'
+    return
+  }
   c.innerHTML = state.rooms.map((r,i) => `
     <div class="room-row">
       <label style="min-width:70px">Quarto ${r.num}</label>
@@ -602,16 +623,21 @@ async function searchAvailableServices() {
 
   try {
     let doc
-    if (state.isDynamic !== false) {
+    if (state.isDynamic) {
       doc = await soapCall('DynSearchProductAvailableServices',
-        `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+        `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
     } else {
       doc = await soapCall('StaticGetRoomsStruct',
-        `<ns1:StaticGetRoomsStruct><StaticGetRoomsStructRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes></StaticGetRoomsStructRequest></ns1:StaticGetRoomsStruct>`)
+        `<ns1:StaticGetRoomsStruct><StaticGetRoomsStructRequest>${credXML()}<Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes></StaticGetRoomsStructRequest></ns1:StaticGetRoomsStruct>`)
     }
 
     state.sessionHash = txt(doc,'SessionHash')
-    log(`✅ SessionHash: ${state.sessionHash}`, 'success')
+    if (state.sessionHash) {
+      log(`✅ SessionHash obtido: ${state.sessionHash.substring(0,20)}...`, 'success')
+    } else {
+      log(`⚠️ SessionHash não encontrado na resposta`, 'warn')
+    }
+    
     renderServicesStep(doc)
     document.getElementById('r-step2').style.display='none'
     document.getElementById('r-step3').style.display='block'
@@ -637,7 +663,7 @@ function renderServicesStep(doc) {
     })
     h += '</div>'
     fs.innerHTML = h
-  } else fs.innerHTML = ''
+  } else fs.innerHTML = '<div style="padding:10px;color:var(--muted);text-align:center">✈️ Sem opções de voo disponíveis</div>'
 
   // Hotéis
   const hs = document.getElementById('hotel-options-section')
@@ -647,8 +673,12 @@ function renderServicesStep(doc) {
     itins.forEach((itin,ii) => {
       const itinCode = txt(itin,'Code')||ii
       const itinName = txt(itin,'Name')||`Destino ${ii+1}`
-      h += `<div style="font-weight:600;color:var(--blue);margin:10px 0 6px">${esc(itinName)}</div>`
-      all(itin,'DynHotelOption').forEach((hotel,hi) => {
+      h += `<div style="font-weight:600;color:var(--blue);margin:10px 0 6px">📍 ${esc(itinName)}</div>`
+      const hotels = all(itin,'DynHotelOption')
+      if (!hotels.length) {
+        h += `<div style="color:var(--muted);padding-left:12px">🏨 Nenhum hotel disponível</div>`
+      }
+      hotels.forEach((hotel,hi) => {
         const hCode   = txt(hotel,'Code')
         const hName   = txt(hotel,'Name')
         const hRating = txt(hotel,'Rating')
@@ -662,7 +692,7 @@ function renderServicesStep(doc) {
             <input type="radio" name="hotel-itin-${itinCode}" value="${hCode}" data-itin="${itinCode}" data-idx="${hi}" ${hi===0?'checked':''}
               onchange="selectHotelCard(this,'${itinCode}',${hi})">
             <div style="flex:1">
-              <div style="font-weight:700">${esc(hName)} ${'★'.repeat(Math.min(parseInt(hRating)||0,5))}</div>
+              <div style="font-weight:700">${esc(hName)} ${hRating ? '★'.repeat(Math.min(parseInt(hRating)||0,5)) : ''}</div>
               <div style="font-size:12px;color:var(--muted)">${hPrice?'desde €'+parseFloat(hPrice).toFixed(2):''}</div>
             </div>
             <div><label style="font-size:11px;display:block">Regime</label>
@@ -756,7 +786,7 @@ function goToConfirm() {
 function renderPaxForm(paxList) {
   const c = document.getElementById('pax-form')
   let h = '<div class="pax-grid">'
-  if (paxList.length) {
+  if (paxList && paxList.length) {
     paxList.forEach((p,i) => {
       const room    = txt(p,'Room')||'DBL1'
       const type    = txt(p,'Type')||'ADT'
@@ -787,7 +817,7 @@ function renderPaxForm(paxList) {
   }
   h += '</div>'
   c.innerHTML = h
-  state.paxCount = paxList.length || state.rooms.length
+  state.paxCount = (paxList && paxList.length) || state.rooms.length
 }
 
 // ── CRIAR RESERVA ──
@@ -862,7 +892,7 @@ async function listReserves() {
       return
     }
     setStatus('reserves-status','ok',`✓ ${list.length} reserva(s)`)
-    let h = '<table style="width:100%;border-collapse:collapse;margin-top:12px"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Nº</th><th style="padding:8px;text-align:left">Cliente</th><th style="padding:8px;text-align:left">Partida</th><th style="padding:8px">Ações</th></tr></thead><tbody>'
+    let h = '<table style="width:100%;border-collapse:collapse;margin-top:12px"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Nº</th><th style="padding:8px;text-align:left">Cliente</th><th style="padding:8px;text-align:left">Partida</th><th style="padding:8px">Ações</th></td></thead><tbody>'
     list.forEach(r => {
       const num    = txt(r,'Reserve')
       const client = txt(r,'ClientName')
