@@ -1279,7 +1279,10 @@ textarea.finput{resize:vertical;min-height:72px}
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px" id="team-actions-bar">
           <div style="font-size:14px;font-weight:700;color:var(--text)" id="team-count-label"></div>
-          <button onclick="activarModoSeleccao()" class="btn btn-outline btn-sm" style="font-size:11px" id="btn-seleccionar">☑ Seleccionar</button>
+          <div style="display:flex;gap:6px">
+            <button onclick="exportarEquipaCSV()" class="btn btn-outline btn-sm" style="font-size:11px">📥 Exportar CSV</button>
+            <button onclick="activarModoSeleccao()" class="btn btn-outline btn-sm" style="font-size:11px" id="btn-seleccionar">☑ Seleccionar</button>
+          </div>
         </div>
         <div class="team-grid" id="team-grid"></div>
       </div>
@@ -6123,6 +6126,40 @@ async function submitRsv() {
 }
 
 // ── EQUIPA ─────────────────────────────────
+async function exportarEquipaCSV() {
+  const { data: perfis } = await sb.from('perfis')
+    .select('nome,email,telefone,plano,role,ativo,created_at,meta_mensal,consultor_do_ano')
+    .order('nome')
+
+  if (!perfis?.length) { toast('Sem dados para exportar.','err'); return }
+
+  const headers = ['Nome','Email','Telefone','Plano','Função','Ativo','Consultor do Ano','Meta Mensal (€)','Data de Registo']
+  const rows = perfis.map(p => [
+    p.nome || '',
+    p.email || '',
+    p.telefone || '',
+    p.plano || 'Agency',
+    p.role === 'admin' ? 'Admin' : 'Consultor/a',
+    p.ativo ? 'Sim' : 'Não',
+    p.consultor_do_ano ? 'Sim' : 'Não',
+    p.meta_mensal || 10000,
+    p.created_at ? new Date(p.created_at).toLocaleDateString('pt-PT') : ''
+  ])
+
+  const csv = [headers, ...rows]
+    .map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(';'))
+    .join('\n')
+
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `consultores_apm_${new Date().toISOString().slice(0,10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+  toast('✅ CSV exportado!', 'ok')
+}
+
 async function renderEquipa() {
   const isAdmin = currentPerfil.role === 'admin'
   if(isAdmin) renderBonusAdmin()
@@ -6175,6 +6212,7 @@ async function renderEquipa() {
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <span style="font-size:13px;font-weight:700;font-family:'Poppins',sans-serif;white-space:nowrap">${p.nome}</span>
           <span class="badge ${p.ativo ? 'badge-green' : 'badge-amber'}" style="font-size:10px;padding:1px 8px">${p.ativo ? 'Ativo' : 'Inativo'}</span>
+          <span style="background:${(p.plano||'Agency')==='Mundo'?'#f0fdf4':'#eff6ff'};color:${(p.plano||'Agency')==='Mundo'?'#166534':'#1e40af'};font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;border:1px solid ${(p.plano||'Agency')==='Mundo'?'#bbf7d0':'#bfdbfe'}">${p.plano||'Agency'}</span>
           ${p.consultor_do_ano ? '<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;border:1px solid #fcd34d">⭐</span>' : ''}
         </div>
         <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
