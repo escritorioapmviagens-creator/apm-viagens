@@ -13703,7 +13703,6 @@ async function carregarVistaCliente(clienteId) {
   const rsvIds = (await sb.from('reservas').select('id').eq('cliente_id', clienteId)).data?.map(r=>r.id) || []
   const { data: docsRaw } = rsvIds.length
     ? await sb.from('documentos').select('*').in('reserva_id', rsvIds)
-        .in('tipo', ['voucher','bilhete','seguro','documento','fatura','documento_cliente'])
         .order('created_at', { ascending: false })
     : { data: [] }
 
