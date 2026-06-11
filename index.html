@@ -42,21 +42,22 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .logo-svg{width:44px;height:44px;flex-shrink:0}
 .logo-tag{font-family:'Poppins',sans-serif;font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:1px}
 .nav{padding:.75rem 0;flex:1;overflow-y:auto}
-.rec-tab{padding:8px 20px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s;border:none;background:transparent;font-family:var(--font);color:var(--muted);white-space:nowrap}
-.rec-tab.on{background:var(--white);color:var(--coral);font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-.rec-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:20px;padding:28px 24px 22px;cursor:pointer;transition:all .22s;position:relative;overflow:hidden;min-height:200px;display:flex;flex-direction:column;box-shadow:0 1px 4px rgba(0,0,0,.04)}
-.rec-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0;transition:opacity .2s;opacity:0}
-.rec-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.1)}
-.rec-card:hover::after{opacity:1}
+.rec-tab{padding:9px 20px;border-radius:50px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s;border:1.5px solid #e5e7eb;background:#fff;font-family:var(--font);color:#6b7280;white-space:nowrap}
+.rec-tab:hover{border-color:#E8395A;color:#E8395A}
+.rec-tab.on{background:linear-gradient(135deg,#E8395A,#3B5BDB);color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(232,57,90,.3)}
+.rec-card{background:#fff;border:1px solid #f0f0f5;border-radius:20px;padding:28px 24px 22px;cursor:pointer;transition:all .22s;position:relative;overflow:hidden;min-height:210px;display:flex;flex-direction:column;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.rec-card:hover{transform:translateY(-5px);box-shadow:0 20px 48px rgba(0,0,0,.12);border-color:transparent}
 .rec-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
-.rec-card-icon-wrap{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
-.rec-card-title{font-size:1rem;font-weight:800;color:#111318;margin-bottom:6px;line-height:1.3}
-.rec-card-desc{font-size:.78rem;color:#6b7280;line-height:1.6;flex:1}
+.rec-card-icon-wrap{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.rec-card-title{font-size:.98rem;font-weight:800;color:#111318;margin-bottom:6px;line-height:1.3}
+.rec-card-desc{font-size:.77rem;color:#9ca3af;line-height:1.65;flex:1}
 .rec-card-footer{margin-top:16px;display:flex;align-items:center;justify-content:space-between}
-.rec-card-metric{font-size:.75rem;font-weight:700;padding:4px 12px;border-radius:20px;opacity:0;transition:opacity .3s}
-.rec-card-arrow{color:#d1d5db;font-size:1rem;font-weight:700;transition:all .2s}
-.rec-card:hover .rec-card-arrow{color:#111318;transform:translateX(4px)}
+.rec-card-metric{font-size:.72rem;font-weight:700;padding:4px 12px;border-radius:20px;opacity:0;transition:opacity .3s}
+.rec-card-arrow{color:#e5e7eb;font-size:1.1rem;font-weight:700;transition:all .22s}
+.rec-card:hover .rec-card-arrow{transform:translateX(5px)}
 .rec-card-badge{position:absolute;top:14px;right:14px;background:var(--coral);color:#fff;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:10px}
+.rec-section-label{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#9ca3af;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.rec-section-label::after{content:'';flex:1;height:1px;background:#f0f0f5}
 .nav-section{padding:0 1rem;margin:1rem 0 .3rem;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:8px}
 .nav-section::before{content:'';height:1.5px;width:16px;border-radius:2px;flex-shrink:0}
 .nav-section[data-s="recursos"]{color:#E8395A}.nav-section[data-s="recursos"]::before{background:#E8395A}
@@ -698,13 +699,22 @@ textarea.finput{resize:vertical;min-height:72px}
 
       <!-- PÁGINA DE ATENDIMENTO -->
       <!-- ── CENTRAL DE RECURSOS ── -->
-      <div class="page" id="page-recursos">
-        <div style="max-width:960px">
+      <div class="page" id="page-recursos" style="background:#fff;margin:-20px;padding:0;min-height:100vh">
+        <div style="max-width:1000px;margin:0 auto;padding:32px 28px">
+
+          <!-- HERO STRIP -->
+          <div style="background:linear-gradient(135deg,#E8395A 0%,#3B5BDB 100%);border-radius:20px;padding:28px 32px;margin-bottom:28px;position:relative;overflow:hidden">
+            <div style="position:absolute;right:-20px;top:-20px;width:180px;height:180px;background:rgba(255,255,255,.06);border-radius:50%"></div>
+            <div style="position:absolute;right:60px;bottom:-40px;width:120px;height:120px;background:rgba(255,255,255,.04);border-radius:50%"></div>
+            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.65);margin-bottom:6px">Central de Recursos</div>
+            <div style="font-size:1.5rem;font-weight:800;color:#fff;line-height:1.2;margin-bottom:4px">Tudo o que precisas para fechar mais reservas</div>
+            <div style="font-size:.85rem;color:rgba(255,255,255,.75)">Do primeiro contacto à reserva confirmada — em cliques, não em passos.</div>
+          </div>
 
           <!-- TABS -->
-          <div style="display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:24px;width:fit-content">
+          <div style="display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap">
             <button class="rec-tab on" onclick="recTab('fluxo',this)">⚡ Fluxo de trabalho</button>
-            <button class="rec-tab" onclick="recTab('documentos',this)">📄 Documentos</button>
+            <button class="rec-tab" onclick="recTab('documentos',this)">📄 Ferramentas</button>
             <button class="rec-tab" onclick="recTab('blog',this)">✍️ Blog</button>
             <button class="rec-tab" onclick="recTab('social',this)">📱 Redes Sociais</button>
             <button class="rec-tab" onclick="recTab('operadores',this)" id="rec-tab-op">🌍 Operadores</button>
@@ -718,7 +728,7 @@ textarea.finput{resize:vertical;min-height:72px}
 
           <!-- DOCUMENTOS -->
           <div id="rec-documentos" style="display:none">
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px">
               <div class="rec-card" style="border-top:3px solid #3B5BDB" onmouseenter="this.style.borderColor='#3B5BDB'" onmouseleave="this.style.borderColor='#e5e7eb';this.style.borderTopColor='#3B5BDB'" onclick="abrirModalPedidoOrcamento()">
                 <div class="rec-card-top"><div class="rec-card-icon-wrap" style="background:#eef2ff"><span style="font-size:1.6rem">🔗</span></div></div>
                 <div class="rec-card-title">Link de Orçamento</div>
@@ -772,7 +782,7 @@ textarea.finput{resize:vertical;min-height:72px}
 
           <!-- BLOG -->
           <div id="rec-blog" style="display:none">
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px">
               <div class="rec-card" style="--rc-color:#E8395A;--rc-bg:#fdedf0" onclick="navTo('blog',document.querySelector('.nav-item'))">
                 <div class="rec-card-top"><div class="rec-card-icon">📰</div></div>
                 <div class="rec-card-title">Ver todos os artigos</div>
@@ -808,7 +818,7 @@ textarea.finput{resize:vertical;min-height:72px}
 
           <!-- REDES SOCIAIS -->
           <div id="rec-social" style="display:none">
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px">
               <div class="rec-card" style="--rc-color:#E8395A;--rc-bg:#fdedf0" onclick="window.open('social.html','_blank')">
                 <div class="rec-card-top"><div class="rec-card-icon">📸</div></div>
                 <div class="rec-card-title">Posts para Instagram</div>
@@ -826,7 +836,7 @@ textarea.finput{resize:vertical;min-height:72px}
 
           <!-- OPERADORES -->
           <div id="rec-operadores" style="display:none">
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px">
               <div class="rec-card" style="--rc-color:#3B5BDB;--rc-bg:#eef2ff" onclick="abrirOperadores()">
                 <div class="rec-card-top"><div class="rec-card-icon">🌍</div></div>
                 <div class="rec-card-title">Lista de Operadores</div>
@@ -4157,8 +4167,16 @@ async function loadRecursos() {
     div.style.borderColor = '#e5e7eb'
     div.style.cssText += `--rc-color:${c.color};--rc-bg:${c.bgcolor}`
     // Aplicar cor de hover inline via mouseenter/leave
-    div.addEventListener('mouseenter', () => { div.style.borderColor = c.color })
-    div.addEventListener('mouseleave', () => { div.style.borderColor = '#e5e7eb' })
+    div.addEventListener('mouseenter', () => {
+      div.style.borderColor = 'transparent'
+      const arrow = div.querySelector('.rec-card-arrow')
+      if (arrow) arrow.style.color = c.color
+    })
+    div.addEventListener('mouseleave', () => {
+      div.style.borderColor = '#f0f0f5'
+      const arrow = div.querySelector('.rec-card-arrow')
+      if (arrow) arrow.style.color = '#e5e7eb'
+    })
     div.innerHTML = `
       <div class="rec-card-top">
         <div class="rec-card-icon-wrap" style="background:${c.bgcolor}">
