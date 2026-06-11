@@ -42,6 +42,15 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .logo-svg{width:44px;height:44px;flex-shrink:0}
 .logo-tag{font-family:'Poppins',sans-serif;font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:1px}
 .nav{padding:.75rem 0;flex:1;overflow-y:auto}
+.rec-tab{padding:7px 16px;border-radius:8px;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .18s;border:none;background:transparent;font-family:var(--font);color:var(--muted)}
+.rec-tab.on{background:var(--white);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.rec-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.rec-card:hover{border-color:var(--coral);transform:translateY(-2px);box-shadow:0 8px 24px rgba(232,57,90,.12)}
+.rec-card-icon{font-size:2rem;margin-bottom:10px;line-height:1}
+.rec-card-title{font-size:.9rem;font-weight:700;color:var(--dark);margin-bottom:5px}
+.rec-card-desc{font-size:.75rem;color:var(--muted);line-height:1.5}
+.rec-card-metric{margin-top:10px;font-size:.78rem;font-weight:700;color:var(--coral)}
+.rec-card-badge{position:absolute;top:12px;right:12px;background:var(--coral);color:#fff;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px}
 .nav-section{padding:0 1rem;margin:1rem 0 .3rem;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:8px}
 .nav-section::before{content:'';height:1.5px;width:16px;border-radius:2px;flex-shrink:0}
 .nav-section[data-s="recursos"]{color:#E8395A}.nav-section[data-s="recursos"]::before{background:#E8395A}
@@ -391,61 +400,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-item active" onclick="navTo('dashboard',this)"><span class="nav-icon">▦</span> Dashboard</div>
 
       <div class="nav-section" data-s="recursos">Recursos</div>
-
-      <!-- Documentos -->
-      <div class="nav-group">
-        <div class="nav-group-header" onclick="toggleGroup(this)">
-          <span class="nav-icon">📄</span> Documentos <span class="nav-group-arrow">▶</span>
-        </div>
-        <div class="nav-group-items">
-          <div class="nav-item" onclick="abrirModalPedidoOrcamento()"><span class="nav-icon">🔗</span> Link — Orçamento</div>
-          <div class="nav-item" onclick="navTo('atendimento',this)"><span class="nav-icon">💬</span> Página de Atendimento</div>
-          <div class="nav-item" onclick="window.open('orcamento.html','_blank')"><span class="nav-icon">💶</span> Construção de Orçamento</div>
-          <div class="nav-item" onclick="window.open('cst.html','_blank')"><span class="nav-icon">📋</span> Contrato de Serviço Turístico</div>
-          <div class="nav-item" onclick="window.open('reserva-complementar.html','_blank')"><span class="nav-icon">📝</span> Formulário Complementar de Reserva <span class="nav-badge" id="complementar-badge" style="display:none">0</span></div>
-          <div class="nav-item" onclick="abrirConsentimento()"><span class="nav-icon">🤝</span> Consentimento</div>
-          <div class="nav-item" onclick="abrirFerramentaReferencia('recomendar')"><span class="nav-icon">🎁</span> Pedir Referência</div>
-          <div class="nav-item" onclick="abrirFerramentaReferencia('satisfacao')"><span class="nav-icon">⭐</span> Questionário de Satisfação</div>
-        </div>
-      </div>
-
-      <!-- Blog -->
-      <div class="nav-group">
-        <div class="nav-group-header" onclick="toggleGroup(this)">
-          <span class="nav-icon">✍️</span> Blog <span class="nav-group-arrow">▶</span>
-        </div>
-        <div class="nav-group-items">
-          <div class="nav-item" onclick="navTo('blog',this)"><span class="nav-icon">📰</span> Ver todos os artigos</div>
-          <div class="nav-item" onclick="navTo('meus-artigos',this)"><span class="nav-icon">✏️</span> Os meus artigos</div>
-          <div class="nav-item" onclick="abrirBlogPost('destinos')"><span class="nav-icon">✈</span> Top Destinos 2026</div>
-          <div class="nav-item" onclick="abrirBlogPost('recrutamento')"><span class="nav-icon">💼</span> Oportunidade de Carreira</div>
-          <div class="nav-item" onclick="copiarLinkBlog('index')"><span class="nav-icon">🔗</span> Copiar link do blog</div>
-        </div>
-      </div>
-
-      <!-- Redes Sociais -->
-      <div class="nav-group">
-        <div class="nav-group-header" onclick="toggleGroup(this)">
-          <span class="nav-icon">📱</span> Redes Sociais <span class="nav-group-arrow">▶</span>
-        </div>
-        <div class="nav-group-items">
-          <div class="nav-item" onclick="window.open('social.html','_blank')"><span class="nav-icon">📸</span> Posts para Instagram</div>
-          <div class="nav-item" onclick="window.open('video.html','_blank')"><span class="nav-icon">🎬</span> Vídeos com Overlay</div>
-        </div>
-      </div>
-
-      <!-- Operadores -->
-      <div class="nav-group" id="group-operadores" style="display:none">
-        <div class="nav-group-header" onclick="toggleGroup(this)">
-          <span class="nav-icon">🌍</span> Operadores <span class="nav-group-arrow">▶</span>
-        </div>
-        <div class="nav-group-items">
-          <div class="nav-item" id="nav-operadores" onclick="abrirOperadores()"><span class="nav-icon">🌍</span> Lista de Operadores</div>
-          <div class="nav-item" id="nav-treino" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/treino','_blank')"><span class="nav-icon">🎓</span> Área de Treino</div>
-          <div class="nav-item" id="nav-soltropico" style="display:none" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/soltropico.html','_blank')"><span class="nav-icon">🏝</span> Soltropico</div>
-          <div class="nav-item" id="nav-operadores-promotor" style="display:none" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/operadores-promotor.html','_blank')"><span class="nav-icon">📣</span> Operadores Promotor</div>
-        </div>
-      </div>
+      <div class="nav-item" onclick="navTo('recursos',this)"><span class="nav-icon">🧰</span> Central de Recursos</div>
 
       <div class="nav-section" data-s="gestao">Gestão</div>
       <div class="nav-item" onclick="navTo('pipeline',this)"><span class="nav-icon">🎯</span> Gestão de Orçamentos <span class="nav-badge" id="pipeline-badge" style="display:none">0</span></div>
@@ -736,6 +691,143 @@ textarea.finput{resize:vertical;min-height:72px}
       </div>
 
       <!-- PÁGINA DE ATENDIMENTO -->
+      <!-- ── CENTRAL DE RECURSOS ── -->
+      <div class="page" id="page-recursos">
+        <div style="max-width:960px">
+
+          <!-- TABS -->
+          <div style="display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:24px;width:fit-content">
+            <button class="rec-tab on" onclick="recTab('fluxo',this)">⚡ Fluxo de trabalho</button>
+            <button class="rec-tab" onclick="recTab('documentos',this)">📄 Documentos</button>
+            <button class="rec-tab" onclick="recTab('blog',this)">✍️ Blog</button>
+            <button class="rec-tab" onclick="recTab('social',this)">📱 Redes Sociais</button>
+            <button class="rec-tab" onclick="recTab('operadores',this)" id="rec-tab-op">🌍 Operadores</button>
+          </div>
+
+          <!-- FLUXO DE TRABALHO -->
+          <div id="rec-fluxo">
+            <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:14px">Do pedido à reserva confirmada</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px" id="rec-cards-fluxo"></div>
+          </div>
+
+          <!-- DOCUMENTOS -->
+          <div id="rec-documentos" style="display:none">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
+              <div class="rec-card" onclick="abrirModalPedidoOrcamento()">
+                <div class="rec-card-icon">🔗</div>
+                <div class="rec-card-title">Link de Orçamento</div>
+                <div class="rec-card-desc">Partilhe o link de pedido de orçamento com clientes</div>
+              </div>
+              <div class="rec-card" onclick="navTo('atendimento',document.querySelector('.nav-item'))">
+                <div class="rec-card-icon">💬</div>
+                <div class="rec-card-title">Página de Atendimento</div>
+                <div class="rec-card-desc">Ferramenta de apoio ao atendimento personalizado</div>
+              </div>
+              <div class="rec-card" onclick="window.open('orcamento.html','_blank')">
+                <div class="rec-card-icon">💶</div>
+                <div class="rec-card-title">Construção de Orçamento</div>
+                <div class="rec-card-desc">Crie e envie propostas de viagem personalizadas</div>
+              </div>
+              <div class="rec-card" onclick="window.open('cst.html','_blank')">
+                <div class="rec-card-icon">📋</div>
+                <div class="rec-card-title">Contrato CST</div>
+                <div class="rec-card-desc">Gere e envie o Contrato de Serviço Turístico</div>
+              </div>
+              <div class="rec-card" onclick="window.open('reserva-complementar.html','_blank')">
+                <div class="rec-card-icon">📝</div>
+                <div class="rec-card-title">Formulário Complementar</div>
+                <div class="rec-card-desc">Complete a reserva após aceitação do CST</div>
+                <div class="rec-card-badge" id="rec-badge-complementar" style="display:none"></div>
+              </div>
+              <div class="rec-card" onclick="abrirConsentimento()">
+                <div class="rec-card-icon">🤝</div>
+                <div class="rec-card-title">Consentimento</div>
+                <div class="rec-card-desc">Envie o formulário de consentimento RGPD</div>
+              </div>
+              <div class="rec-card" onclick="abrirFerramentaReferencia('recomendar')">
+                <div class="rec-card-icon">🎁</div>
+                <div class="rec-card-title">Pedir Referência</div>
+                <div class="rec-card-desc">Envie o pedido de referência ao cliente</div>
+              </div>
+              <div class="rec-card" onclick="abrirFerramentaReferencia('satisfacao')">
+                <div class="rec-card-icon">⭐</div>
+                <div class="rec-card-title">Questionário de Satisfação</div>
+                <div class="rec-card-desc">Avalie a experiência do cliente após a viagem</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BLOG -->
+          <div id="rec-blog" style="display:none">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
+              <div class="rec-card" onclick="navTo('blog',document.querySelector('.nav-item'))">
+                <div class="rec-card-icon">📰</div>
+                <div class="rec-card-title">Ver todos os artigos</div>
+                <div class="rec-card-desc">Biblioteca completa de artigos de destinos</div>
+              </div>
+              <div class="rec-card" onclick="navTo('meus-artigos',document.querySelector('.nav-item'))">
+                <div class="rec-card-icon">✏️</div>
+                <div class="rec-card-title">Os meus artigos</div>
+                <div class="rec-card-desc">Artigos personalizados com o seu link de consultor</div>
+              </div>
+              <div class="rec-card" onclick="abrirBlogPost('destinos')">
+                <div class="rec-card-icon">✈️</div>
+                <div class="rec-card-title">Top Destinos 2026</div>
+                <div class="rec-card-desc">Artigo com os destinos em destaque para 2026</div>
+              </div>
+              <div class="rec-card" onclick="abrirBlogPost('recrutamento')">
+                <div class="rec-card-icon">💼</div>
+                <div class="rec-card-title">Oportunidade de Carreira</div>
+                <div class="rec-card-desc">Partilhe a oportunidade de recrutamento APM</div>
+              </div>
+              <div class="rec-card" onclick="copiarLinkBlog('index')">
+                <div class="rec-card-icon">🔗</div>
+                <div class="rec-card-title">Copiar link do blog</div>
+                <div class="rec-card-desc">Link personalizado do blog com o seu ID</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- REDES SOCIAIS -->
+          <div id="rec-social" style="display:none">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
+              <div class="rec-card" onclick="window.open('social.html','_blank')">
+                <div class="rec-card-icon">📸</div>
+                <div class="rec-card-title">Posts para Instagram</div>
+                <div class="rec-card-desc">Crie posts personalizados para as redes sociais</div>
+              </div>
+              <div class="rec-card" onclick="window.open('video.html','_blank')">
+                <div class="rec-card-icon">🎬</div>
+                <div class="rec-card-title">Vídeos com Overlay</div>
+                <div class="rec-card-desc">Personalize vídeos com o seu branding APM</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- OPERADORES -->
+          <div id="rec-operadores" style="display:none">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
+              <div class="rec-card" onclick="abrirOperadores()">
+                <div class="rec-card-icon">🌍</div>
+                <div class="rec-card-title">Lista de Operadores</div>
+                <div class="rec-card-desc">Contactos e condições de todos os operadores</div>
+              </div>
+              <div class="rec-card" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/treino','_blank')">
+                <div class="rec-card-icon">🎓</div>
+                <div class="rec-card-title">Área de Treino</div>
+                <div class="rec-card-desc">Simule reservas e aprenda a usar o sistema</div>
+              </div>
+              <div class="rec-card" id="rec-card-soltropico" style="display:none" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/soltropico.html','_blank')">
+                <div class="rec-card-icon">🏝️</div>
+                <div class="rec-card-title">Soltropico</div>
+                <div class="rec-card-desc">Pesquisa de pacotes Soltropico/Optigest</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       <div class="page" id="page-blog">
         <div style="max-width:700px">
           <div style="margin-bottom:24px">
@@ -3754,9 +3846,10 @@ function navTo(page, el) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
   sessionStorage.setItem('apm_page', page)
-  const titles={dashboard:'Dashboard',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',lembretes:'Lembretes em Destaque',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
+  const titles={dashboard:'Dashboard',recursos:'Central de Recursos',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',lembretes:'Lembretes em Destaque',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
   document.getElementById('tb-title').textContent = titles[page]||page
   document.getElementById('tb-sub').textContent = page==='dashboard'?(currentPerfil?.role==='admin'?'Visão global da agência':'Visão geral das tuas reservas'):''
+  if(page==='recursos') loadRecursos()
   if(page==='dashboard') renderDash()
   if(page==='reservas') renderTable()
   if(page==='pipeline') loadPipeline()
@@ -3939,6 +4032,118 @@ function nomeConsultor(r, fallback='—') {
 function nomeCliente(r, fallback='—') {
   const n = r?.cliente?.nome || r?.passageiro_titular || null
   return n ? n.toUpperCase() : fallback
+}
+
+function recTab(id, btn) {
+  ['fluxo','documentos','blog','social','operadores'].forEach(t => {
+    document.getElementById('rec-'+t).style.display = t===id ? 'block' : 'none'
+  })
+  document.querySelectorAll('.rec-tab').forEach(b => b.classList.remove('on'))
+  btn.classList.add('on')
+}
+
+async function loadRecursos() {
+  const isAdmin = currentPerfil?.role === 'admin'
+
+  // Mostrar/ocultar tab operadores
+  const tabOp = document.getElementById('rec-tab-op')
+  if (tabOp) tabOp.style.display = isAdmin ? 'block' : 'block' // todos vêem
+
+  // Mostrar card soltropico só se disponível
+  const soltCard = document.getElementById('rec-card-soltropico')
+  if (soltCard && isAdmin) soltCard.style.display = 'block'
+
+  // Carregar métricas para os cards do funil
+  const uid = currentPerfil?.id
+  const fluxoCards = [
+    {
+      icon: '📋', title: 'Pedidos de Orçamento', desc: 'Pedidos de clientes a aguardar resposta',
+      action: () => navTo('pedidos-orcamento', document.querySelector('.nav-item')),
+      metricFn: async () => {
+        let q = sb.from('pedidos_orcamento').select('id',{count:'exact',head:true}).eq('estado','novo')
+        if (!isAdmin) q = q.eq('consultor_id', uid)
+        const {count} = await q; return count > 0 ? `${count} novo${count!==1?'s':''}` : null
+      },
+      color: '#f59e0b'
+    },
+    {
+      icon: '🎯', title: 'Gestão de Orçamentos', desc: 'Orçamentos em pipeline por fechar',
+      action: () => navTo('pipeline', document.querySelector('.nav-item')),
+      metricFn: async () => {
+        let q = sb.from('reservas').select('id',{count:'exact',head:true}).in('estado',['Lead','Orçamento','Proposta'])
+        if (!isAdmin) q = q.eq('consultor_id', uid)
+        const {count} = await q; return count > 0 ? `${count} em curso` : null
+      },
+      color: '#3B5BDB'
+    },
+    {
+      icon: '📋', title: 'Contrato de Serviço Turístico', desc: 'Gere e envie CSTs aos clientes',
+      action: () => window.open('cst.html','_blank'),
+      metricFn: async () => null,
+      color: '#7c3aed'
+    },
+    {
+      icon: '📝', title: 'Formulário Complementar', desc: 'Complete reservas após aceitação do CST',
+      action: () => window.open('reserva-complementar.html','_blank'),
+      metricFn: async () => {
+        let q = sb.from('reservas').select('id',{count:'exact',head:true}).eq('cst_aceite',true).eq('complementar_preenchido',false).eq('estado','Pendente')
+        if (!isAdmin) q = q.eq('consultor_id', uid)
+        const {count} = await q; return count > 0 ? `${count} pendente${count!==1?'s':''}` : null
+      },
+      color: '#E8395A'
+    },
+    {
+      icon: '✈️', title: 'Reservas', desc: 'Todas as reservas activas confirmadas',
+      action: () => navTo('reservas', document.querySelector('.nav-item')),
+      metricFn: async () => {
+        let q = sb.from('reservas').select('id',{count:'exact',head:true}).eq('estado','Confirmada')
+        if (!isAdmin) q = q.eq('consultor_id', uid)
+        const {count} = await q; return count > 0 ? `${count} activa${count!==1?'s':''}` : null
+      },
+      color: '#10b981'
+    },
+    {
+      icon: '⏰', title: 'Follow-ups', desc: 'Follow-ups pendentes a tratar',
+      action: () => navTo('followups', document.querySelector('.nav-item')),
+      metricFn: async () => {
+        let q = sb.from('followups').select('id',{count:'exact',head:true}).lte('data_prevista', new Date().toISOString().slice(0,10)).eq('estado','pendente')
+        if (!isAdmin) q = q.eq('consultor_id', uid)
+        const {count} = await q; return count > 0 ? `${count} pendente${count!==1?'s':''}` : null
+      },
+      color: '#f59e0b'
+    },
+    {
+      icon: '🎂', title: 'Lembretes em Destaque', desc: 'Aniversários de reservas nos próximos 30 dias',
+      action: () => navTo('lembretes', document.querySelector('.nav-item')),
+      metricFn: async () => {
+        const badge = document.getElementById('lembretes-badge')
+        const n = badge ? parseInt(badge.textContent)||0 : 0
+        return n > 0 ? `${n} activo${n!==1?'s':''}` : null
+      },
+      color: '#E8395A'
+    }
+  ]
+
+  const grid = document.getElementById('rec-cards-fluxo')
+  grid.innerHTML = ''
+
+  for (const c of fluxoCards) {
+    const div = document.createElement('div')
+    div.className = 'rec-card'
+    div.onclick = c.action
+    div.innerHTML = `
+      <div class="rec-card-icon">${c.icon}</div>
+      <div class="rec-card-title">${c.title}</div>
+      <div class="rec-card-desc">${c.desc}</div>
+      <div class="rec-card-metric" id="rc-metric-${c.title.replace(/\s/g,'-')}" style="color:${c.color}"></div>`
+    grid.appendChild(div)
+
+    // Carregar métrica de forma assíncrona
+    c.metricFn().then(metric => {
+      const el = div.querySelector('.rec-card-metric')
+      if (el && metric) el.textContent = metric
+    }).catch(() => {})
+  }
 }
 
 async function renderDash() {
