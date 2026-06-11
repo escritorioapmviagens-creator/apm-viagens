@@ -42,15 +42,21 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .logo-svg{width:44px;height:44px;flex-shrink:0}
 .logo-tag{font-family:'Poppins',sans-serif;font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:1px}
 .nav{padding:.75rem 0;flex:1;overflow-y:auto}
-.rec-tab{padding:7px 16px;border-radius:8px;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .18s;border:none;background:transparent;font-family:var(--font);color:var(--muted)}
-.rec-tab.on{background:var(--white);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.rec-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
-.rec-card:hover{border-color:var(--coral);transform:translateY(-2px);box-shadow:0 8px 24px rgba(232,57,90,.12)}
-.rec-card-icon{font-size:2rem;margin-bottom:10px;line-height:1}
-.rec-card-title{font-size:.9rem;font-weight:700;color:var(--dark);margin-bottom:5px}
-.rec-card-desc{font-size:.75rem;color:var(--muted);line-height:1.5}
-.rec-card-metric{margin-top:10px;font-size:.78rem;font-weight:700;color:var(--coral)}
-.rec-card-badge{position:absolute;top:12px;right:12px;background:var(--coral);color:#fff;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px}
+.rec-tab{padding:8px 20px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s;border:none;background:transparent;font-family:var(--font);color:var(--muted);white-space:nowrap}
+.rec-tab.on{background:var(--white);color:var(--coral);font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.rec-card{background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:24px 22px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;min-height:160px;display:flex;flex-direction:column;justify-content:space-between}
+.rec-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--rc-color,var(--coral));border-radius:20px 20px 0 0;opacity:0;transition:opacity .2s}
+.rec-card:hover{border-color:var(--rc-color,var(--coral));transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.1)}
+.rec-card:hover::before{opacity:1}
+.rec-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.rec-card-icon{font-size:2.2rem;line-height:1;background:var(--rc-bg,#fdedf0);width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center}
+.rec-card-title{font-size:.95rem;font-weight:800;color:var(--dark);margin-bottom:5px;line-height:1.3}
+.rec-card-desc{font-size:.76rem;color:var(--muted);line-height:1.5;flex:1}
+.rec-card-footer{margin-top:14px;display:flex;align-items:center;justify-content:space-between}
+.rec-card-metric{font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--rc-bg,#fdedf0);color:var(--rc-color,var(--coral))}
+.rec-card-arrow{color:var(--muted);font-size:.85rem;transition:transform .2s}
+.rec-card:hover .rec-card-arrow{transform:translateX(4px);color:var(--rc-color,var(--coral))}
+.rec-card-badge{position:absolute;top:14px;right:14px;background:var(--coral);color:#fff;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:10px}
 .nav-section{padding:0 1rem;margin:1rem 0 .3rem;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:8px}
 .nav-section::before{content:'';height:1.5px;width:16px;border-radius:2px;flex-shrink:0}
 .nav-section[data-s="recursos"]{color:#E8395A}.nav-section[data-s="recursos"]::before{background:#E8395A}
@@ -712,115 +718,132 @@ textarea.finput{resize:vertical;min-height:72px}
 
           <!-- DOCUMENTOS -->
           <div id="rec-documentos" style="display:none">
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
-              <div class="rec-card" onclick="abrirModalPedidoOrcamento()">
-                <div class="rec-card-icon">🔗</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
+              <div class="rec-card" style="--rc-color:#3B5BDB;--rc-bg:#eef2ff" onclick="abrirModalPedidoOrcamento()">
+                <div class="rec-card-top"><div class="rec-card-icon">🔗</div></div>
                 <div class="rec-card-title">Link de Orçamento</div>
                 <div class="rec-card-desc">Partilhe o link de pedido de orçamento com clientes</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="navTo('atendimento',document.querySelector('.nav-item'))">
-                <div class="rec-card-icon">💬</div>
+              <div class="rec-card" style="--rc-color:#7c3aed;--rc-bg:#f5f3ff" onclick="navTo('atendimento',document.querySelector('.nav-item'))">
+                <div class="rec-card-top"><div class="rec-card-icon">💬</div></div>
                 <div class="rec-card-title">Página de Atendimento</div>
                 <div class="rec-card-desc">Ferramenta de apoio ao atendimento personalizado</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="window.open('orcamento.html','_blank')">
-                <div class="rec-card-icon">💶</div>
+              <div class="rec-card" style="--rc-color:#10b981;--rc-bg:#ecfdf5" onclick="window.open('orcamento.html','_blank')">
+                <div class="rec-card-top"><div class="rec-card-icon">💶</div></div>
                 <div class="rec-card-title">Construção de Orçamento</div>
                 <div class="rec-card-desc">Crie e envie propostas de viagem personalizadas</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="window.open('cst.html','_blank')">
-                <div class="rec-card-icon">📋</div>
+              <div class="rec-card" style="--rc-color:#E8395A;--rc-bg:#fdedf0" onclick="window.open('cst.html','_blank')">
+                <div class="rec-card-top"><div class="rec-card-icon">📋</div></div>
                 <div class="rec-card-title">Contrato CST</div>
-                <div class="rec-card-desc">Gere e envie o Contrato de Serviço Turístico</div>
+                <div class="rec-card-desc">Gere e envie o Contrato de Serviço Turístico ao cliente</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="window.open('reserva-complementar.html','_blank')">
-                <div class="rec-card-icon">📝</div>
+              <div class="rec-card" style="--rc-color:#E8395A;--rc-bg:#fdedf0" onclick="window.open('reserva-complementar.html','_blank')">
+                <div class="rec-card-top"><div class="rec-card-icon">📝</div><span class="rec-card-badge" id="rec-badge-complementar" style="display:none"></span></div>
                 <div class="rec-card-title">Formulário Complementar</div>
-                <div class="rec-card-desc">Complete a reserva após aceitação do CST</div>
-                <div class="rec-card-badge" id="rec-badge-complementar" style="display:none"></div>
+                <div class="rec-card-desc">Complete a reserva após aceitação do CST pelo cliente</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="abrirConsentimento()">
-                <div class="rec-card-icon">🤝</div>
-                <div class="rec-card-title">Consentimento</div>
-                <div class="rec-card-desc">Envie o formulário de consentimento RGPD</div>
+              <div class="rec-card" style="--rc-color:#f59e0b;--rc-bg:#fef3c7" onclick="abrirConsentimento()">
+                <div class="rec-card-top"><div class="rec-card-icon">🤝</div></div>
+                <div class="rec-card-title">Consentimento RGPD</div>
+                <div class="rec-card-desc">Envie o formulário de consentimento de dados</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="abrirFerramentaReferencia('recomendar')">
-                <div class="rec-card-icon">🎁</div>
+              <div class="rec-card" style="--rc-color:#10b981;--rc-bg:#ecfdf5" onclick="abrirFerramentaReferencia('recomendar')">
+                <div class="rec-card-top"><div class="rec-card-icon">🎁</div></div>
                 <div class="rec-card-title">Pedir Referência</div>
-                <div class="rec-card-desc">Envie o pedido de referência ao cliente</div>
+                <div class="rec-card-desc">Envie o pedido de referência ao cliente após a viagem</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="abrirFerramentaReferencia('satisfacao')">
-                <div class="rec-card-icon">⭐</div>
+              <div class="rec-card" style="--rc-color:#f59e0b;--rc-bg:#fef3c7" onclick="abrirFerramentaReferencia('satisfacao')">
+                <div class="rec-card-top"><div class="rec-card-icon">⭐</div></div>
                 <div class="rec-card-title">Questionário de Satisfação</div>
                 <div class="rec-card-desc">Avalie a experiência do cliente após a viagem</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
             </div>
           </div>
 
           <!-- BLOG -->
           <div id="rec-blog" style="display:none">
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
-              <div class="rec-card" onclick="navTo('blog',document.querySelector('.nav-item'))">
-                <div class="rec-card-icon">📰</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
+              <div class="rec-card" style="--rc-color:#E8395A;--rc-bg:#fdedf0" onclick="navTo('blog',document.querySelector('.nav-item'))">
+                <div class="rec-card-top"><div class="rec-card-icon">📰</div></div>
                 <div class="rec-card-title">Ver todos os artigos</div>
-                <div class="rec-card-desc">Biblioteca completa de artigos de destinos</div>
+                <div class="rec-card-desc">Biblioteca completa de artigos de destinos para partilhar</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="navTo('meus-artigos',document.querySelector('.nav-item'))">
-                <div class="rec-card-icon">✏️</div>
+              <div class="rec-card" style="--rc-color:#3B5BDB;--rc-bg:#eef2ff" onclick="navTo('meus-artigos',document.querySelector('.nav-item'))">
+                <div class="rec-card-top"><div class="rec-card-icon">✏️</div></div>
                 <div class="rec-card-title">Os meus artigos</div>
                 <div class="rec-card-desc">Artigos personalizados com o seu link de consultor</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="abrirBlogPost('destinos')">
-                <div class="rec-card-icon">✈️</div>
+              <div class="rec-card" style="--rc-color:#10b981;--rc-bg:#ecfdf5" onclick="abrirBlogPost('destinos')">
+                <div class="rec-card-top"><div class="rec-card-icon">✈️</div></div>
                 <div class="rec-card-title">Top Destinos 2026</div>
-                <div class="rec-card-desc">Artigo com os destinos em destaque para 2026</div>
+                <div class="rec-card-desc">Artigo com os destinos em destaque para este ano</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="abrirBlogPost('recrutamento')">
-                <div class="rec-card-icon">💼</div>
+              <div class="rec-card" style="--rc-color:#f59e0b;--rc-bg:#fef3c7" onclick="abrirBlogPost('recrutamento')">
+                <div class="rec-card-top"><div class="rec-card-icon">💼</div></div>
                 <div class="rec-card-title">Oportunidade de Carreira</div>
                 <div class="rec-card-desc">Partilhe a oportunidade de recrutamento APM</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="copiarLinkBlog('index')">
-                <div class="rec-card-icon">🔗</div>
+              <div class="rec-card" style="--rc-color:#7c3aed;--rc-bg:#f5f3ff" onclick="copiarLinkBlog('index')">
+                <div class="rec-card-top"><div class="rec-card-icon">🔗</div></div>
                 <div class="rec-card-title">Copiar link do blog</div>
-                <div class="rec-card-desc">Link personalizado do blog com o seu ID</div>
+                <div class="rec-card-desc">Link personalizado do blog com o seu ID de consultor</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
             </div>
           </div>
 
           <!-- REDES SOCIAIS -->
           <div id="rec-social" style="display:none">
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
-              <div class="rec-card" onclick="window.open('social.html','_blank')">
-                <div class="rec-card-icon">📸</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
+              <div class="rec-card" style="--rc-color:#E8395A;--rc-bg:#fdedf0" onclick="window.open('social.html','_blank')">
+                <div class="rec-card-top"><div class="rec-card-icon">📸</div></div>
                 <div class="rec-card-title">Posts para Instagram</div>
-                <div class="rec-card-desc">Crie posts personalizados para as redes sociais</div>
+                <div class="rec-card-desc">Crie posts personalizados e com branding APM para partilhar</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="window.open('video.html','_blank')">
-                <div class="rec-card-icon">🎬</div>
+              <div class="rec-card" style="--rc-color:#3B5BDB;--rc-bg:#eef2ff" onclick="window.open('video.html','_blank')">
+                <div class="rec-card-top"><div class="rec-card-icon">🎬</div></div>
                 <div class="rec-card-title">Vídeos com Overlay</div>
-                <div class="rec-card-desc">Personalize vídeos com o seu branding APM</div>
+                <div class="rec-card-desc">Personalize vídeos de destinos com o seu branding APM</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
             </div>
           </div>
 
           <!-- OPERADORES -->
           <div id="rec-operadores" style="display:none">
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
-              <div class="rec-card" onclick="abrirOperadores()">
-                <div class="rec-card-icon">🌍</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
+              <div class="rec-card" style="--rc-color:#3B5BDB;--rc-bg:#eef2ff" onclick="abrirOperadores()">
+                <div class="rec-card-top"><div class="rec-card-icon">🌍</div></div>
                 <div class="rec-card-title">Lista de Operadores</div>
-                <div class="rec-card-desc">Contactos e condições de todos os operadores</div>
+                <div class="rec-card-desc">Contactos, condições e links de todos os operadores parceiros</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/treino','_blank')">
-                <div class="rec-card-icon">🎓</div>
+              <div class="rec-card" style="--rc-color:#10b981;--rc-bg:#ecfdf5" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/treino','_blank')">
+                <div class="rec-card-top"><div class="rec-card-icon">🎓</div></div>
                 <div class="rec-card-title">Área de Treino</div>
-                <div class="rec-card-desc">Simule reservas e aprenda a usar o sistema</div>
+                <div class="rec-card-desc">Simule reservas e aprenda a usar o sistema APM</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
-              <div class="rec-card" id="rec-card-soltropico" style="display:none" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/soltropico.html','_blank')">
-                <div class="rec-card-icon">🏝️</div>
+              <div class="rec-card" id="rec-card-soltropico" style="display:none;--rc-color:#f59e0b;--rc-bg:#fef3c7" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/soltropico.html','_blank')">
+                <div class="rec-card-top"><div class="rec-card-icon">🏝️</div></div>
                 <div class="rec-card-title">Soltropico</div>
-                <div class="rec-card-desc">Pesquisa de pacotes Soltropico/Optigest</div>
+                <div class="rec-card-desc">Pesquisa de pacotes dinâmicos Soltropico/Optigest</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
             </div>
           </div>
@@ -4064,7 +4087,7 @@ async function loadRecursos() {
         if (!isAdmin) q = q.eq('consultor_id', uid)
         const {count} = await q; return count > 0 ? `${count} novo${count!==1?'s':''}` : null
       },
-      color: '#f59e0b'
+      color: '#f59e0b', bgcolor: '#fef3c7'
     },
     {
       icon: '🎯', title: 'Gestão de Orçamentos', desc: 'Orçamentos em pipeline por fechar',
@@ -4074,13 +4097,13 @@ async function loadRecursos() {
         if (!isAdmin) q = q.eq('consultor_id', uid)
         const {count} = await q; return count > 0 ? `${count} em curso` : null
       },
-      color: '#3B5BDB'
+      color: '#3B5BDB', bgcolor: '#eef2ff'
     },
     {
-      icon: '📋', title: 'Contrato de Serviço Turístico', desc: 'Gere e envie CSTs aos clientes',
+      icon: '📄', title: 'Contrato de Serviço Turístico', desc: 'Gere e envie CSTs aos clientes para aceitação',
       action: () => window.open('cst.html','_blank'),
       metricFn: async () => null,
-      color: '#7c3aed'
+      color: '#7c3aed', bgcolor: '#f5f3ff'
     },
     {
       icon: '📝', title: 'Formulário Complementar', desc: 'Complete reservas após aceitação do CST',
@@ -4090,27 +4113,27 @@ async function loadRecursos() {
         if (!isAdmin) q = q.eq('consultor_id', uid)
         const {count} = await q; return count > 0 ? `${count} pendente${count!==1?'s':''}` : null
       },
-      color: '#E8395A'
+      color: '#E8395A', bgcolor: '#fdedf0'
     },
     {
-      icon: '✈️', title: 'Reservas', desc: 'Todas as reservas activas confirmadas',
+      icon: '✈️', title: 'Reservas', desc: 'Todas as reservas activas e confirmadas',
       action: () => navTo('reservas', document.querySelector('.nav-item')),
       metricFn: async () => {
         let q = sb.from('reservas').select('id',{count:'exact',head:true}).eq('estado','Confirmada')
         if (!isAdmin) q = q.eq('consultor_id', uid)
         const {count} = await q; return count > 0 ? `${count} activa${count!==1?'s':''}` : null
       },
-      color: '#10b981'
+      color: '#10b981', bgcolor: '#ecfdf5'
     },
     {
-      icon: '⏰', title: 'Follow-ups', desc: 'Follow-ups pendentes a tratar',
+      icon: '⏰', title: 'Follow-ups', desc: 'Follow-ups pendentes a tratar hoje',
       action: () => navTo('followups', document.querySelector('.nav-item')),
       metricFn: async () => {
         let q = sb.from('followups').select('id',{count:'exact',head:true}).lte('data_prevista', new Date().toISOString().slice(0,10)).eq('estado','pendente')
         if (!isAdmin) q = q.eq('consultor_id', uid)
         const {count} = await q; return count > 0 ? `${count} pendente${count!==1?'s':''}` : null
       },
-      color: '#f59e0b'
+      color: '#f59e0b', bgcolor: '#fef3c7'
     },
     {
       icon: '🎂', title: 'Lembretes em Destaque', desc: 'Aniversários de reservas nos próximos 30 dias',
@@ -4120,7 +4143,7 @@ async function loadRecursos() {
         const n = badge ? parseInt(badge.textContent)||0 : 0
         return n > 0 ? `${n} activo${n!==1?'s':''}` : null
       },
-      color: '#E8395A'
+      color: '#E8395A', bgcolor: '#fdedf0'
     }
   ]
 
@@ -4131,11 +4154,18 @@ async function loadRecursos() {
     const div = document.createElement('div')
     div.className = 'rec-card'
     div.onclick = c.action
+    div.style.setProperty('--rc-color', c.color)
+    div.style.setProperty('--rc-bg', c.bgcolor)
     div.innerHTML = `
-      <div class="rec-card-icon">${c.icon}</div>
+      <div class="rec-card-top">
+        <div class="rec-card-icon">${c.icon}</div>
+      </div>
       <div class="rec-card-title">${c.title}</div>
       <div class="rec-card-desc">${c.desc}</div>
-      <div class="rec-card-metric" id="rc-metric-${c.title.replace(/\s/g,'-')}" style="color:${c.color}"></div>`
+      <div class="rec-card-footer">
+        <span class="rec-card-metric" id="rc-metric-${c.title.replace(/[^a-z0-9]/gi,'-')}" style="opacity:0">—</span>
+        <span class="rec-card-arrow">→</span>
+      </div>`
     grid.appendChild(div)
 
     // Carregar métrica de forma assíncrona
