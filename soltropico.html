@@ -27,7 +27,7 @@ header span{font-size:12px;color:var(--muted)}
 .form-group input,.form-group select{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;transition:border-color .15s;background:#fff}
 .form-group input:focus,.form-group select:focus{border-color:var(--blue)}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .18s}
-.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#3251c4}.btn-blue:disabled{opacity:.5;cursor:not-allowed}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#3251c4}
 .btn-coral{background:var(--coral);color:#fff}.btn-coral:hover{background:#d02f4e}
 .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--navy)}.btn-outline:hover{background:var(--bg)}
 .btn-sm{padding:5px 12px;font-size:12px}
@@ -42,7 +42,6 @@ header span{font-size:12px;color:var(--muted)}
 .product-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:all .2s;border:2px solid transparent}
 .product-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.12);transform:translateY(-2px);border-color:var(--blue)}
 .product-img{width:100%;height:130px;object-fit:cover;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:36px}
-.product-img img{width:100%;height:100%;object-fit:cover}
 .product-info{padding:12px}
 .product-name{font-weight:700;font-size:14px;margin-bottom:4px}
 .product-meta{font-size:12px;color:var(--muted)}
@@ -81,7 +80,6 @@ header span{font-size:12px;color:var(--muted)}
     <button class="tab" onclick="switchTab('debug',this)">🛠 Diagnóstico</button>
   </div>
 
-  <!-- PESQUISA -->
   <div id="panel-pesquisa" class="panel active">
     <div class="card">
       <div class="card-title"><span>🔍</span> Pesquisa de Produtos</div>
@@ -100,7 +98,6 @@ header span{font-size:12px;color:var(--muted)}
     <div id="search-results"></div>
   </div>
 
-  <!-- RESERVA -->
   <div id="panel-reserva" class="panel">
     <div class="steps">
       <div class="step done" id="step1"><span class="step-num">1</span>Produto</div>
@@ -112,8 +109,8 @@ header span{font-size:12px;color:var(--muted)}
     <div id="reserva-status" class="status-bar"></div>
     <div id="r-step1" class="card">
       <div class="card-title"><span>📦</span> Produto Selecionado</div>
-      <div id="r-product-info" style="font-size:14px;margin-bottom:16px;color:var(--muted)">Nenhum produto selecionado. Volte à pesquisa.</div>
-      <div class="form-group" style="max-width:300px"><label>Ou introduza o código manualmente</label><input type="number" id="r-product-code" placeholder="ex: 105" min="1"></div>
+      <div id="r-product-info" style="font-size:14px;margin-bottom:16px;color:var(--muted)">Nenhum produto selecionado.</div>
+      <div class="form-group" style="max-width:300px"><label>Código do Produto</label><input type="number" id="r-product-code" placeholder="ex: 105" min="1"></div>
       <div class="btn-actions"><button class="btn btn-blue" onclick="getProductParams()">Obter Parâmetros →</button></div>
     </div>
     <div id="r-step2" class="card" style="display:none">
@@ -150,13 +147,12 @@ header span{font-size:12px;color:var(--muted)}
     <div id="r-final" style="display:none"></div>
   </div>
 
-  <!-- MINHAS RESERVAS -->
   <div id="panel-minhas-reservas" class="panel">
     <div class="card">
       <div class="card-title"><span>📁</span> Pesquisar Reservas</div>
       <div class="form-grid">
         <div class="form-group"><label>Nº Reserva</label><input type="number" id="rl-reserve"></div>
-        <div class="form-group"><label>Estado</label><select id="rl-status"><option value="">Todos</option><option value="OK">Confirmada</option><option value="WL">Lista Espera</option><option value="CL">Cancelada</option></select></div>
+        <div class="form-group"><label>Estado</label><select id="rl-status"><option value="">Todos</option><option value="OK">Confirmada</option><option value="WL">Lista Espera</option></select></div>
         <div class="form-group"><label>Partida de</label><input type="date" id="rl-depfrom"></div>
         <div class="form-group"><label>Partida até</label><input type="date" id="rl-depto"></div>
       </div>
@@ -166,35 +162,24 @@ header span{font-size:12px;color:var(--muted)}
     <div id="reserves-results"></div>
   </div>
 
-  <!-- DIAGNÓSTICO -->
   <div id="panel-debug" class="panel">
     <div class="card">
       <div class="card-title"><span>🛠</span> Diagnóstico</div>
       <div class="btn-actions">
         <button class="btn btn-blue" onclick="testConnection()">📡 Testar Conexão</button>
-        <button class="btn btn-outline" onclick="testProductTypes()">📦 Listar Tipos</button>
         <button class="btn btn-outline" onclick="clearLogs()">🗑 Limpar Logs</button>
       </div>
-      <div id="debug-status" class="status-bar" style="margin-top:12px"></div>
-      <div id="log-panel" class="log-panel" style="margin-top:12px"><div class="log-entry log-info">Aguardando ação...</div></div>
+      <div id="debug-status" class="status-bar"></div>
+      <div id="log-panel" class="log-panel"><div class="log-entry log-info">Aguardando ação...</div></div>
     </div>
     <div class="card" id="xml-card" style="display:none">
       <div class="card-title"><span>📄</span> XML Bruto da Última Resposta</div>
       <div id="raw-xml" class="xml-block"></div>
     </div>
-    <div class="card">
-      <div class="card-title"><span>⚙️</span> Configuração</div>
-      <div style="font-size:13px;color:var(--muted);line-height:2">
-        <div><b>Endpoint:</b> https://www3.optitravel.net/optitravel/export/wbs/pkt/wbs_server.php</div>
-        <div><b>System:</b> 808 &nbsp;|&nbsp; <b>Client:</b> 289363 &nbsp;|&nbsp; <b>Username:</b> admin@apmviagens.pt</div>
-        <div style="margin-top:8px;padding:10px;background:#FFF3E0;border-radius:8px;color:#E65100;font-size:12px">⚠️ As chamadas SOAP utilizam a Edge Function <code>soltropico-proxy</code> do Supabase como proxy CORS.</div>
-      </div>
-    </div>
   </div>
 </div>
 
 <script>
-// ── CONFIG ──
 const SUPABASE_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
 const PROXY_URL = `${SUPABASE_URL}/functions/v1/soltropico-proxy`
@@ -203,17 +188,13 @@ const CREDS = { System: 808, Client: 289363, Username: 'admin@apmviagens.pt', Pa
 let state = {
   sessionHash: null,
   selectedProduct: null,
-  productParams: null,
-  rooms: [{ num: 1, code: 1, childAges: '' }],
+  rooms: [{ num: 1, code: '', childAges: '' }],
   roomTypes: [],
   baseLocals: [],
   simulationData: null,
-  paxCount: 1,
-  isDynamic: true,
-  productKeyType: null  // IMPORTANTE: armazenar o ProductKeyType retornado
+  productKeyType: 1
 }
 
-// ── LOGS ──
 function log(msg, type='info') {
   const p = document.getElementById('log-panel')
   if (!p) return
@@ -222,18 +203,19 @@ function log(msg, type='info') {
   p.innerHTML += `<div class="log-entry ${cls}">[${t}] ${msg}</div>`
   p.scrollTop = p.scrollHeight
 }
+
 function clearLogs() {
   document.getElementById('log-panel').innerHTML = '<div class="log-entry log-info">Logs limpos.</div>'
   document.getElementById('xml-card').style.display = 'none'
 }
 
-// ── UI ──
 function switchTab(tab, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
   document.getElementById('panel-' + tab).classList.add('active')
   if (btn) btn.classList.add('active')
 }
+
 function setStatus(id, type, msg) {
   const el = document.getElementById(id)
   if (!el) return
@@ -241,28 +223,45 @@ function setStatus(id, type, msg) {
   el.className = `status-bar show ${type}`
   el.innerHTML = type === 'loading' ? `<span class="loader"></span>${msg}` : msg
 }
+
 function setStep(n) {
   for (let i = 1; i <= 5; i++) {
     const el = document.getElementById('step' + i)
     if (el) el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '')
   }
 }
+
 function backStep(n) {
-  ['r-step1','r-step2','r-step3','r-step4','r-step5','r-final'].forEach(s => {
-    const el = document.getElementById(s); if (el) el.style.display = 'none'
-  })
-  const target = document.getElementById('r-step' + n)
-  if (target) target.style.display = 'block'
+  document.getElementById('r-step1').style.display = 'none'
+  document.getElementById('r-step2').style.display = 'none'
+  document.getElementById('r-step3').style.display = 'none'
+  document.getElementById('r-step4').style.display = 'none'
+  document.getElementById('r-step5').style.display = 'none'
+  document.getElementById('r-final').style.display = 'none'
+  document.getElementById('r-step' + n).style.display = 'block'
   setStep(n)
 }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 
-// ── SOAP ──
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
 function credXML() {
-  return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">${CREDS.System}</System><Client xsi:type="xsd:int">${CREDS.Client}</Client><Username xsi:type="xsd:string">${CREDS.Username}</Username><Password xsi:type="xsd:string">${CREDS.Password}</Password></Credentials>`
+  return `<Credentials xsi:type="ns1:CredentialsStruct">
+    <System xsi:type="xsd:int">${CREDS.System}</System>
+    <Client xsi:type="xsd:int">${CREDS.Client}</Client>
+    <Username xsi:type="xsd:string">${CREDS.Username}</Username>
+    <Password xsi:type="xsd:string">${CREDS.Password}</Password>
+  </Credentials>`
 }
+
 function wrap(body) {
-  return `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
+  return `<?xml version="1.0" encoding="UTF-8"?>
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+                    xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" 
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Header/>
+    <soapenv:Body>${body}</soapenv:Body>
+  </soapenv:Envelope>`
 }
 
 async function soapCall(action, body) {
@@ -275,15 +274,13 @@ async function soapCall(action, body) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const data = await res.json()
   if (data.error) throw new Error(data.error)
+  
   const xmlStr = (data.xml || '').replace(/^\uFEFF/, '').trim()
-
-  const rawEl = document.getElementById('raw-xml')
-  const xmlCard = document.getElementById('xml-card')
-  if (rawEl) rawEl.textContent = xmlStr
-  if (xmlCard) xmlCard.style.display = 'block'
-
+  document.getElementById('raw-xml').textContent = xmlStr
+  document.getElementById('xml-card').style.display = 'block'
+  
   const doc = new DOMParser().parseFromString(xmlStr, 'text/xml')
-  if (doc.querySelector('parsererror')) throw new Error('XML inválido na resposta')
+  if (doc.querySelector('parsererror')) throw new Error('XML inválido')
   const fault = doc.querySelector('faultstring')
   if (fault) throw new Error(fault.textContent)
   return doc
@@ -291,641 +288,410 @@ async function soapCall(action, body) {
 
 function txt(el, tag) {
   if (!el) return ''
-  for (let i = 0; i < el.children.length; i++) {
-    const child = el.children[i]
-    const local = child.localName || child.tagName.split(':').pop()
-    if (local === tag) return child.textContent.trim()
-  }
-  const direct = el.querySelector(tag)
-  if (direct) return direct.textContent.trim()
-  const nodes = el.getElementsByTagName('*')
-  for (let i = 0; i < nodes.length; i++) {
-    const local = nodes[i].localName || nodes[i].tagName.split(':').pop()
-    if (local === tag) return nodes[i].textContent.trim()
+  const found = el.getElementsByTagName(tag)
+  if (found.length) return found[0].textContent.trim()
+  const allNodes = el.getElementsByTagName('*')
+  for (let i = 0; i < allNodes.length; i++) {
+    if (allNodes[i].localName === tag || allNodes[i].tagName === tag || allNodes[i].tagName.endsWith(':' + tag)) {
+      return allNodes[i].textContent.trim()
+    }
   }
   return ''
 }
-function all(el, tag) {
-  let res = Array.from(el.querySelectorAll(tag))
-  if (!res.length) {
-    res = Array.from(el.getElementsByTagName('*')).filter(e => {
-      const local = e.localName || e.tagName.split(':').pop()
-      return local === tag
-    })
-  }
-  return res
-}
 
-// ── DIAGNÓSTICO ──
-async function testConnection() {
-  setStatus('debug-status','loading','A testar…')
-  log('🔌 Testando ligação…')
-  try {
-    const doc = await soapCall('SearchProductTypes',
-      `<ns1:SearchProductTypes><SearchProductTypesRequest>${credXML()}</SearchProductTypesRequest></ns1:SearchProductTypes>`)
-    const types = all(doc, 'ProductType')
-    log(`✅ Ligação OK — ${types.length} tipo(s)`, 'success')
-    setStatus('debug-status','ok',`✅ Ligação OK! ${types.length} tipo(s) de produto disponíveis.`)
-  } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('debug-status','err',`❌ ${e.message}`)
-  }
-}
-async function testProductTypes() {
-  setStatus('debug-status','loading','A listar…')
-  try {
-    const doc = await soapCall('SearchProductTypes',
-      `<ns1:SearchProductTypes><SearchProductTypesRequest>${credXML()}</SearchProductTypesRequest></ns1:SearchProductTypes>`)
-    const types = all(doc, 'ProductType')
-    log(`✅ ${types.length} tipo(s):`, 'success')
-    types.forEach(t => log(`   • ${txt(t,'Code')} — ${txt(t,'Description')}`))
-    setStatus('debug-status','ok',`✓ ${types.length} tipo(s) encontrado(s)`)
-  } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('debug-status','err',`❌ ${e.message}`)
-  }
-}
-
-// ── PESQUISA ──
+// PESQUISA
 async function searchProducts() {
-  const name    = document.getElementById('s-name').value
+  const name = document.getElementById('s-name').value
   const depdate = document.getElementById('s-depdate').value
   const pkttype = document.getElementById('s-pkttype').value
-  const country = document.getElementById('s-country').value
-
-  log(`🔍 Pesquisando: "${name||'(todos)'}"`)
+  
   setStatus('search-status','loading','A pesquisar…')
-  document.getElementById('search-results').innerHTML = ''
-
+  
   let xml = `<ns1:SearchProducts><SearchProductsRequest>${credXML()}`
-  if (name)    xml += `<Name>${name}</Name>`
-  if (country) xml += `<Country>${country}</Country>`
+  if (name) xml += `<Name>${name}</Name>`
   if (depdate) xml += `<DepDate>${depdate}</DepDate>`
   if (pkttype) xml += `<Pkt_type>${pkttype}</Pkt_type>`
   xml += `<PriceFrom>0</PriceFrom><PriceTo>99999</PriceTo></SearchProductsRequest></ns1:SearchProducts>`
 
   try {
     const doc = await soapCall('SearchProducts', xml)
-
-    const productArray = all(doc, 'ProductArray')[0] || all(doc, 'ProductsList')[0]
-    let items = productArray
-      ? Array.from(productArray.children).filter(e => {
-          const local = e.localName || e.tagName.split(':').pop()
-          return local === 'item' || local === 'Product'
-        })
-      : all(doc, 'Product')
-    if (!items.length) items = all(doc, 'item').filter(e => {
-      return Array.from(e.children).some(c => (c.localName||c.tagName.split(':').pop()) === 'Name')
-    })
-    log(`📦 ${items.length} item(ns) bruto(s) recebido(s)`)
-
-    const products = items.map(p => {
-      let code = txt(p,'Code') || txt(p,'ProdCode') || txt(p,'ProductCode') || ''
-      code = code.trim()
-      const codeInt = parseInt(code)
-      const name  = txt(p,'Name') || txt(p,'ProdName') || txt(p,'Description') || ''
-      const price = txt(p,'PriceFrom') || txt(p,'PriceFromMin') || '0'
-      const pkt   = txt(p,'ProdType') || txt(p,'Pkt_type') || txt(p,'PackType') || ''
-      const img   = txt(p,'ImageUrl') || txt(p,'Image') || ''
-      const flight= txt(p,'HasFlights') || txt(p,'Flight') || 'NO'
-      const opFrom= txt(p,'OperationFrom') || ''
-      const opTo  = txt(p,'OperationTo') || ''
-
-      return { code, codeInt, name, price, pkt, img, flight, opFrom, opTo, valid: !isNaN(codeInt) && codeInt > 0 && name !== '' }
-    }).filter(p => p.name && p.name !== 'TESTE OMNIBEES')
-
-    const valid = products.filter(p => p.valid)
-    const invalid = products.filter(p => !p.valid)
-
-    log(`📊 Válidos: ${valid.length} | Inválidos: ${invalid.length}`, valid.length ? 'success' : 'warn')
-
-    if (!valid.length) {
-      setStatus('search-status','err','⚠️ Nenhum produto com código válido encontrado.')
-      document.getElementById('search-results').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Sem resultados válidos. Consulte o painel Diagnóstico para ver o XML retornado.</div>'
+    const products = doc.getElementsByTagName('Product')
+    
+    if (!products.length) {
+      setStatus('search-status','err','Nenhum produto encontrado')
       return
     }
-
-    setStatus('search-status','ok',`✓ ${valid.length} produto(s) encontrado(s)`)
-
-    let html = `<div class="section-title">🏖️ Produtos <span style="font-size:13px;font-weight:400;color:var(--muted)">(${valid.length})</span></div><div class="product-grid">`
-    valid.forEach(p => { html += renderCard(p) })
+    
+    let html = '<div class="product-grid">'
+    for (let i = 0; i < products.length; i++) {
+      const p = products[i]
+      const code = txt(p, 'Code') || txt(p, 'ProductCode')
+      const name = txt(p, 'Name')
+      const pkt = txt(p, 'Pkt_type')
+      const price = txt(p, 'PriceFrom')
+      
+      if (code && name) {
+        html += `
+          <div class="product-card" onclick="selectProduct(${code}, '${esc(name)}', '${pkt}')">
+            <div class="product-img">🌍</div>
+            <div class="product-info">
+              <div class="product-name">${esc(name)}</div>
+              <div class="product-meta">Código: ${code}</div>
+              <div class="product-price">${price ? '€' + parseFloat(price).toFixed(2) : 'Sob consulta'}</div>
+              <button class="btn btn-blue btn-sm" style="width:100%">Reservar →</button>
+            </div>
+          </div>
+        `
+      }
+    }
     html += '</div>'
     document.getElementById('search-results').innerHTML = html
-
+    setStatus('search-status','ok',`✓ ${products.length} produtos encontrados`)
   } catch(e) {
     log(`❌ ${e.message}`, 'error')
-    setStatus('search-status','err',`❌ ${e.message}`)
+    setStatus('search-status','err',e.message)
   }
 }
 
-function renderCard(p) {
-  const priceVal = parseFloat(p.price) || 0
-  const hasFlight = p.flight === 'YES' || p.flight === '1'
-  const typeBadge = p.pkt === 'DYNAMIC' ? '<span class="badge badge-dyn">Dinâmico</span>'
-    : p.pkt === 'STATIC' ? '<span class="badge badge-sta">Estático</span>' : ''
-
-  return `<div class="product-card" onclick="selectProduct(${p.codeInt}, '${esc(p.name)}', '${p.pkt}')">
-    <div class="product-img">${p.img ? `<img src="${esc(p.img)}" onerror="this.parentElement.innerHTML='🌍'">` : '🌍'}</div>
-    <div class="product-info">
-      <div style="margin-bottom:6px">${typeBadge}${hasFlight ? '<span class="badge badge-flight">✈️ Voo</span>' : ''}</div>
-      <div class="product-name">${esc(p.name)}</div>
-      <div class="product-meta">Código: <strong>${p.code}</strong></div>
-      ${p.opFrom ? `<div class="product-meta">📅 ${p.opFrom} → ${p.opTo}</div>` : ''}
-      <div class="product-price">${priceVal > 0 ? `€${priceVal.toLocaleString('pt-PT',{minimumFractionDigits:2})}` : 'Sob consulta'}</div>
-      <button class="btn btn-blue btn-sm" style="width:100%;justify-content:center;margin-top:8px"
-        onclick="event.stopPropagation();selectProduct(${p.codeInt},'${esc(p.name)}','${p.pkt}')">Reservar →</button>
-    </div>
-  </div>`
-}
-
-function selectProduct(codeInt, name, pkt) {
-  const code = parseInt(codeInt)
-  if (!code || isNaN(code) || code <= 0) {
-    log(`❌ Código inválido: "${codeInt}"`, 'error')
-    alert(`Não é possível reservar este produto.\nCódigo inválido: "${codeInt}"`)
-    return
-  }
-  log(`✅ Produto selecionado: ${name} (código ${code}, tipo ${pkt})`, 'success')
+function selectProduct(code, name, pkt) {
+  log(`✅ Produto selecionado: ${name} (${code})`, 'success')
   state.selectedProduct = { code, name, pkt: pkt || 'DYNAMIC' }
   document.getElementById('r-product-code').value = code
-  document.getElementById('r-product-info').innerHTML =
-    `<strong>${esc(name)}</strong> <span style="color:var(--muted)">(código: ${code})</span>`
-
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
-  document.getElementById('panel-reserva').classList.add('active')
-  document.querySelectorAll('.tab')[1].classList.add('active')
+  
+  switchTab('reserva')
   setStep(1)
   getProductParams()
 }
 
 function clearSearch() {
-  ['s-name','s-depdate','s-country'].forEach(id => { const el=document.getElementById(id); if(el) el.value='' })
+  document.getElementById('s-name').value = ''
+  document.getElementById('s-depdate').value = ''
   document.getElementById('s-pkttype').value = ''
   document.getElementById('search-results').innerHTML = ''
   setStatus('search-status','','')
 }
 
-// ── PARÂMETROS DO PRODUTO ──
+// PARÂMETROS
 async function getProductParams() {
-  const raw = document.getElementById('r-product-code').value
-  const code = parseInt(raw)
-
-  if (!code || isNaN(code) || code <= 0) {
-    setStatus('reserva-status','err',`❌ Código "${raw}" inválido.`)
+  const code = parseInt(document.getElementById('r-product-code').value)
+  if (!code) {
+    setStatus('reserva-status','err','Código inválido')
     return
   }
-
-  log(`📦 Parâmetros do produto ${code}`)
-  setStatus('reserva-status','loading',`A obter parâmetros do produto ${code}…`)
-
+  
+  setStatus('reserva-status','loading','A obter parâmetros...')
+  
   try {
-    const pkt = state.selectedProduct?.pkt || 'DYNAMIC'
-    state.isDynamic = pkt === 'DYNAMIC'
-    log(`📦 Tipo: ${pkt} (${state.isDynamic ? 'Dinâmico' : 'Estático'})`)
-
-    let doc
-    if (state.isDynamic) {
-      doc = await soapCall('DynGetProductParameters',
-        `<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${code}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
-    } else {
-      doc = await soapCall('StaticGetProductParameters',
-        `<ns1:StaticGetProductParameters><StaticProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${code}</Productcode></StaticProductParametersRequest></ns1:StaticGetProductParameters>`)
-    }
+    const doc = await soapCall('DynGetProductParameters',
+      `<ns1:DynGetProductParameters>
+        <DynProductParametersRequest>
+          ${credXML()}
+          <Productcode xsi:type="xsd:int">${code}</Productcode>
+        </DynProductParametersRequest>
+      </ns1:DynGetProductParameters>`)
     
-    // EXTRAIR O ProductKeyType da resposta (CRÍTICO!)
-    const pktType = txt(doc, 'ProductKeyType') || txt(doc, 'Pkt_type')
-    if (pktType && !isNaN(parseInt(pktType))) {
+    // Tentar extrair ProductKeyType
+    const pktType = txt(doc, 'ProductKeyType')
+    if (pktType) {
       state.productKeyType = parseInt(pktType)
-      log(`✅ ProductKeyType obtido: ${state.productKeyType}`, 'success')
-    } else {
-      // Fallback: se não veio na resposta, tentar determinar pelo tipo
-      state.productKeyType = state.isDynamic ? 1 : 2  // 1=dinâmico, 2=estático (valor comum)
-      log(`⚠️ ProductKeyType não encontrado, usando fallback: ${state.productKeyType}`, 'warn')
+      log(`✅ ProductKeyType: ${state.productKeyType}`, 'success')
     }
-
-    const productName = txt(doc,'Name')
-    if (productName) {
-      state.selectedProduct = { ...state.selectedProduct, name: productName }
+    
+    // Datas
+    const dates = doc.getElementsByTagName('DynDepartureDate')
+    let dateHtml = ''
+    for (let i = 0; i < dates.length; i++) {
+      dateHtml += `<option value="${dates[i].textContent}">${dates[i].textContent}</option>`
     }
-
-    state.productParams = doc
-
-    let dates = all(doc,'DynDepartureDate')
-    if (!dates.length) dates = all(doc,'Date')
-    if (!dates.length) dates = all(doc,'DepartureDate')
+    document.getElementById('r-depdate').innerHTML = dateHtml
     
-    if (!dates.length) {
-      log(`⚠️ Produto ${code} sem datas de partida disponíveis`, 'warn')
-      document.getElementById('r-depdate').innerHTML = '<option value="">Nenhuma data disponível</option>'
-    } else {
-      document.getElementById('r-depdate').innerHTML =
-        dates.map(d => `<option value="${d.textContent.trim()}">${d.textContent.trim()}</option>`).join('')
-      log(`📅 ${dates.length} data(s) de partida encontrada(s)`)
+    // Locais
+    const locals = doc.getElementsByTagName('DynDepartureLocal')
+    let localHtml = '<option value="LIS">Lisboa</option>'
+    for (let i = 0; i < locals.length; i++) {
+      const code = txt(locals[i], 'Code')
+      const name = txt(locals[i], 'Name')
+      localHtml += `<option value="${code}">${name || code}</option>`
     }
-
-    let locals = all(doc,'DynDepartureLocal')
-    if (!locals.length) locals = all(doc,'DepartureLocal')
+    document.getElementById('r-deplocal').innerHTML = localHtml
     
-    document.getElementById('r-deplocal').innerHTML = locals.length
-      ? locals.map(l => `<option value="${txt(l,'Code')}">${txt(l,'Name')||txt(l,'Code')}</option>`).join('')
-      : '<option value="LIS">Lisboa (LIS)</option>'
-
-    let roomTypesNodes = all(doc,'DynRoomType')
-    if (!roomTypesNodes.length) roomTypesNodes = all(doc,'RoomType')
+    // Quartos
+    const roomTypes = doc.getElementsByTagName('DynRoomType')
+    state.roomTypes = []
+    for (let i = 0; i < roomTypes.length; i++) {
+      state.roomTypes.push({
+        code: txt(roomTypes[i], 'Code'),
+        name: txt(roomTypes[i], 'Name')
+      })
+    }
     
-    state.roomTypes = roomTypesNodes.map(r => ({ code: txt(r,'Code'), name: txt(r,'Name') }))
-    if (state.roomTypes.length) log(`🏨 ${state.roomTypes.length} tipo(s) de quarto encontrado(s)`)
-
-    let baseLocalsNodes = all(doc,'DynBaseLocal')
-    if (!baseLocalsNodes.length) baseLocalsNodes = all(doc,'BaseLocal')
-    
-    state.baseLocals = baseLocalsNodes.map(b => ({
-      code: txt(b,'Code'), name: txt(b,'Name'),
-      minNights: txt(b,'MinNights')||'1', maxNights: txt(b,'Maxnights')||'7'
-    }))
-
-    log(`✅ Parâmetros carregados com sucesso!`, 'success')
-
     renderRooms()
-    renderBaseLocals()
+    
     document.getElementById('r-step1').style.display = 'none'
     document.getElementById('r-step2').style.display = 'block'
     setStep(2)
     setStatus('reserva-status','','')
-
+    
   } catch(e) {
     log(`❌ ${e.message}`, 'error')
-    setStatus('reserva-status','err',`❌ ${e.message}`)
+    setStatus('reserva-status','err',e.message)
   }
 }
 
 function renderRooms() {
-  const c = document.getElementById('rooms-list')
-  if (!state.roomTypes.length) {
-    c.innerHTML = '<div class="log-warn">⚠️ Nenhum tipo de quarto disponível para este produto.</div>'
-    return
-  }
-  c.innerHTML = state.rooms.map((r,i) => `
+  const container = document.getElementById('rooms-list')
+  container.innerHTML = state.rooms.map((r, i) => `
     <div class="room-row">
-      <label style="min-width:70px">Quarto ${r.num}</label>
-      <select id="room-code-${i}" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px">
-        ${state.roomTypes.map(t=>`<option value="${t.code}" ${t.code==r.code?'selected':''}>${t.name}</option>`).join('')}
+      <label>Quarto ${r.num}</label>
+      <select id="room-code-${i}" style="flex:1">
+        ${state.roomTypes.map(t => `<option value="${t.code}">${t.name}</option>`).join('')}
       </select>
-      <input type="text" id="room-childages-${i}" placeholder="idades crianças (3,7)" value="${r.childAges}"
-        style="width:130px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
-      ${state.rooms.length>1?`<button class="btn btn-outline btn-sm" onclick="removeRoom(${i})">✕</button>`:''}
-    </div>`).join('')
-}
-function addRoom() { state.rooms.push({num:state.rooms.length+1,code:state.roomTypes[0]?.code||1,childAges:''}); renderRooms() }
-function removeRoom(i) { state.rooms.splice(i,1); state.rooms.forEach((r,idx)=>r.num=idx+1); renderRooms() }
-
-function renderBaseLocals() {
-  const sec = document.getElementById('base-locals-section')
-  const c   = document.getElementById('base-locals-list')
-  if (!state.baseLocals.length) { sec.style.display='none'; return }
-  sec.style.display='block'
-  c.innerHTML = state.baseLocals.map((b,i)=>`
-    <div class="room-row">
-      <label style="min-width:110px">${b.name||b.code}</label>
-      <input type="number" id="base-nights-${i}" value="${b.minNights}" min="${b.minNights}" max="${b.maxNights}"
-        style="width:70px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
-      <span style="font-size:12px;color:var(--muted)">noites (${b.minNights}–${b.maxNights})</span>
-    </div>`).join('')
+      <input type="text" id="room-childages-${i}" placeholder="idades crianças" style="width:120px">
+      ${state.rooms.length > 1 ? `<button class="btn btn-outline btn-sm" onclick="removeRoom(${i})">✕</button>` : ''}
+    </div>
+  `).join('')
 }
 
-// ── DISPONIBILIDADE (CORRIGIDO: adicionado ProductKeyType e Pkt_type) ──
+function addRoom() {
+  state.rooms.push({ num: state.rooms.length + 1, code: '', childAges: '' })
+  renderRooms()
+}
+
+function removeRoom(i) {
+  state.rooms.splice(i, 1)
+  state.rooms.forEach((r, idx) => r.num = idx + 1)
+  renderRooms()
+}
+
+// DISPONIBILIDADE
 async function searchAvailableServices() {
-  setStatus('reserva-status','loading','A pesquisar disponibilidade…')
-  state.rooms.forEach((r,i)=>{
-    r.code = parseInt(document.getElementById(`room-code-${i}`)?.value||r.code)
-    r.childAges = document.getElementById(`room-childages-${i}`)?.value||''
-  })
-  const depDate     = document.getElementById('r-depdate').value
-  const depLocal    = document.getElementById('r-deplocal').value
-  const extraNights = document.getElementById('r-extranights').value||'0'
-  
+  const depDate = document.getElementById('r-depdate').value
   if (!depDate) {
-    setStatus('reserva-status','err','❌ Selecione uma data de partida')
+    setStatus('reserva-status','err','Selecione uma data')
     return
   }
   
-  const roomsXML    = state.rooms.map(r=>`<RoomTypeOption><RoomNum>${r.num}</RoomNum><Code>${r.code}</Code><ChildAges>${r.childAges}</ChildAges></RoomTypeOption>`).join('')
-  const baseXML     = state.baseLocals.length
-    ? state.baseLocals.map((b,i)=>`<Local><Code>${b.code}</Code><Nights>${document.getElementById(`base-nights-${i}`)?.value||b.minNights}</Nights></Local>`).join('')
-    : '<Local><Code>1</Code><Nights>3</Nights></Local>'
-
-  // CRÍTICO: Adicionar ProductKeyType e Pkt_type conforme documentação
-  const pktTypeValue = state.productKeyType || (state.isDynamic ? 1 : 2)
-
+  setStatus('reserva-status','loading','A verificar disponibilidade...')
+  
+  // Recolher dados dos quartos
+  state.rooms.forEach((r, i) => {
+    r.code = document.getElementById(`room-code-${i}`)?.value || ''
+    r.childAges = document.getElementById(`room-childages-${i}`)?.value || ''
+  })
+  
+  const roomsXML = state.rooms.map(r => `
+    <RoomTypeOption>
+      <RoomNum>${r.num}</RoomNum>
+      <Code>${r.code}</Code>
+      <ChildAges>${r.childAges}</ChildAges>
+    </RoomTypeOption>
+  `).join('')
+  
+  const depLocal = document.getElementById('r-deplocal').value
+  
   try {
-    let doc
-    if (state.isDynamic) {
-      doc = await soapCall('DynSearchProductAvailableServices',
-        `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}
+    const doc = await soapCall('DynSearchProductAvailableServices',
+      `<ns1:DynSearchProductAvailableServices>
+        <DynProductAvailableServicesRequest>
+          ${credXML()}
           <Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode>
-          <ProductKeyType xsi:type="xsd:int">${pktTypeValue}</ProductKeyType>
-          <Pkt_type xsi:type="xsd:string">DYNAMIC</Pkt_type>
+          <ProductKeyType xsi:type="xsd:int">${state.productKeyType}</ProductKeyType>
           <DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate>
           <DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal>
           <RoomTypes>${roomsXML}</RoomTypes>
-          <BaseLocals>${baseXML}</BaseLocals>
-          <ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights>
-        </DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
-    } else {
-      doc = await soapCall('StaticGetRoomsStruct',
-        `<ns1:StaticGetRoomsStruct><StaticGetRoomsStructRequest>${credXML()}
-          <Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode>
-          <ProductKeyType xsi:type="xsd:int">${pktTypeValue}</ProductKeyType>
-          <Pkt_type xsi:type="xsd:string">STATIC</Pkt_type>
-          <DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate>
-          <DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal>
-          <RoomTypes>${roomsXML}</RoomTypes>
-        </StaticGetRoomsStructRequest></ns1:StaticGetRoomsStruct>`)
-    }
-
-    state.sessionHash = txt(doc,'SessionHash')
-    if (state.sessionHash) {
-      log(`✅ SessionHash obtido: ${state.sessionHash.substring(0,30)}...`, 'success')
-    } else {
-      log(`⚠️ SessionHash não encontrado na resposta`, 'warn')
+          <ExtraNights xsi:type="xsd:int">0</ExtraNights>
+        </DynProductAvailableServicesRequest>
+      </ns1:DynSearchProductAvailableServices>`)
+    
+    const sessionHash = txt(doc, 'SessionHash')
+    if (sessionHash) {
+      state.sessionHash = sessionHash
+      log(`✅ SessionHash obtido`, 'success')
     }
     
-    renderServicesStep(doc)
-    document.getElementById('r-step2').style.display='none'
-    document.getElementById('r-step3').style.display='block'
+    // Mostrar opções de hotel
+    const hotels = doc.getElementsByTagName('DynHotelOption')
+    if (hotels.length) {
+      let hotelHtml = '<div style="font-weight:700;margin:10px 0">🏨 Hotéis disponíveis:</div>'
+      for (let i = 0; i < hotels.length; i++) {
+        const name = txt(hotels[i], 'Name')
+        const price = txt(hotels[i], 'PriceFrom')
+        hotelHtml += `
+          <label style="display:block;padding:8px;background:var(--bg);margin:5px 0;border-radius:8px">
+            <input type="radio" name="hotel" value="${i}"> ${name} - ${price ? '€' + price : 'Sob consulta'}
+          </label>
+        `
+      }
+      document.getElementById('hotel-options-section').innerHTML = hotelHtml
+    }
+    
+    document.getElementById('r-step2').style.display = 'none'
+    document.getElementById('r-step3').style.display = 'block'
     setStep(3)
     setStatus('reserva-status','','')
+    
   } catch(e) {
     log(`❌ ${e.message}`, 'error')
-    setStatus('reserva-status','err',`❌ ${e.message}`)
+    setStatus('reserva-status','err',e.message)
   }
 }
 
-function renderServicesStep(doc) {
-  const fs = document.getElementById('flight-options-section')
-  const flights = all(doc,'DynFlightOption')
-  if (flights.length) {
-    let h = '<div style="font-weight:700;margin-bottom:10px">✈️ Opções de Voo</div><div style="display:grid;gap:8px">'
-    flights.forEach((f,i) => {
-      const optCode = txt(f,'OptionCode')||i
-      const sup = parseFloat(txt(f,'SuplementsTotalVal')||0).toFixed(2)
-      h += `<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:8px;cursor:pointer">
-        <input type="radio" name="flight-opt" value="${optCode}" ${i===0?'checked':''}> Opção ${optCode} — suplemento +€${sup}</label>`
-    })
-    h += '</div>'
-    fs.innerHTML = h
-  } else fs.innerHTML = '<div style="padding:10px;color:var(--muted);text-align:center">✈️ Sem opções de voo disponíveis</div>'
-
-  const hs = document.getElementById('hotel-options-section')
-  const itins = all(doc,'DynItinerary')
-  if (itins.length) {
-    let h = '<div style="font-weight:700;margin:16px 0 10px">🏨 Opções de Alojamento</div>'
-    itins.forEach((itin,ii) => {
-      const itinCode = txt(itin,'Code')||ii
-      const itinName = txt(itin,'Name')||`Destino ${ii+1}`
-      h += `<div style="font-weight:600;color:var(--blue);margin:10px 0 6px">📍 ${esc(itinName)}</div>`
-      const hotels = all(itin,'DynHotelOption')
-      hotels.forEach((hotel,hi) => {
-        const hCode   = txt(hotel,'Code')
-        const hName   = txt(hotel,'Name')
-        const hRating = txt(hotel,'Rating')
-        const hPrice  = txt(hotel,'PriceFrom')
-        const boards  = all(hotel,'DynBoards')
-        const boardHtml = boards.length
-          ? boards.map(b=>`<option value="${txt(b,'Code')}">${txt(b,'Name')}</option>`).join('')
-          : '<option value="1">Alojamento e Pequeno-almoço</option>'
-        h += `<div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:6px;border:2px solid transparent" id="hcard-${itinCode}-${hi}">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <input type="radio" name="hotel-itin-${itinCode}" value="${hCode}" data-itin="${itinCode}" data-idx="${hi}" ${hi===0?'checked':''}
-              onchange="selectHotelCard(this,'${itinCode}',${hi})">
-            <div style="flex:1">
-              <div style="font-weight:700">${esc(hName)} ${hRating ? '★'.repeat(Math.min(parseInt(hRating)||0,5)) : ''}</div>
-              <div style="font-size:12px;color:var(--muted)">${hPrice?'desde €'+parseFloat(hPrice).toFixed(2):''}</div>
-            </div>
-            <div><label style="font-size:11px;display:block">Regime</label>
-              <select id="board-${itinCode}-${hCode}" style="padding:5px 8px;border-radius:6px;border:1.5px solid var(--border);font-size:12px">${boardHtml}</select>
-            </div>
-          </div>
-        </div>`
-      })
-    })
-    hs.innerHTML = h
-  } else {
-    hs.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">🏨 Sem hotéis disponíveis para estes parâmetros.</div>'
-  }
-}
-
-function selectHotelCard(radio, itinCode, idx) {
-  document.querySelectorAll(`[id^="hcard-${itinCode}-"]`).forEach(c=>c.style.borderColor='transparent')
-  document.getElementById(`hcard-${itinCode}-${idx}`).style.borderColor='var(--blue)'
-}
-
-// ── SIMULAÇÃO ──
+// SIMULAÇÃO
 async function setServicesAndSimulate() {
-  setStatus('reserva-status','loading','A simular…')
-  const flightRadio = document.querySelector('input[name="flight-opt"]:checked')
-  const flightsXML  = flightRadio ? `<FlightsSelected><OptionCode>${flightRadio.value}</OptionCode></FlightsSelected>` : ''
-
-  let hotelsXML = '<HotelsSelected>'
-  document.querySelectorAll('input[type=radio][data-itin]:checked').forEach(r => {
-    const itinCode = r.dataset.itin
-    const hCode    = r.value
-    const board    = document.getElementById(`board-${itinCode}-${hCode}`)?.value||'1'
-    const roomsXML = state.rooms.map(rm=>`<DynRoomsSelect><RoomNum>${rm.num}</RoomNum><RoomCode>${rm.code}</RoomCode></DynRoomsSelect>`).join('')
-    hotelsXML += `<DynHotelsSelect><ItineraryCode>${itinCode}</ItineraryCode><HotelSelected>${hCode}</HotelSelected><RoomsSelected>${roomsXML}</RoomsSelected><BoardSelected>${board}</BoardSelected></DynHotelsSelect>`
-  })
-  hotelsXML += '</HotelsSelected>'
-
+  setStatus('reserva-status','loading','A simular...')
+  
   try {
-    await soapCall('DynSetServicesSelected',
-      `<ns1:DynSetServicesSelected><DynServicesSelectedRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash>${flightsXML}${hotelsXML}</DynServicesSelectedRequest></ns1:DynSetServicesSelected>`)
-
     const simDoc = await soapCall('DynGetSimulation',
-      `<ns1:DynGetSimulation><DynGetSimulationRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
-
-    state.simulationData = simDoc
-    renderSimulation(simDoc)
-    document.getElementById('r-step3').style.display='none'
-    document.getElementById('r-step4').style.display='block'
+      `<ns1:DynGetSimulation>
+        <DynGetSimulationRequest>
+          ${credXML()}
+          <SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash>
+        </DynGetSimulationRequest>
+      </ns1:DynGetSimulation>`)
+    
+    const totalPrice = txt(simDoc, 'TotalPrice')
+    const status = txt(simDoc, 'AvailableStatus')
+    
+    document.getElementById('simulation-result').innerHTML = `
+      <div style="text-align:center;padding:20px">
+        <div style="font-size:36px;color:var(--coral);font-weight:700">€${parseFloat(totalPrice||0).toFixed(2)}</div>
+        <div class="badge ${status==='OK'?'badge-ok':'badge-wl'}" style="margin-top:10px">
+          ${status==='OK' ? '✅ Disponível' : '⏳ Sujeito a confirmação'}
+        </div>
+      </div>
+    `
+    
+    document.getElementById('btn-step4-actions').style.display = 'flex'
+    document.getElementById('r-step3').style.display = 'none'
+    document.getElementById('r-step4').style.display = 'block'
     setStep(4)
     setStatus('reserva-status','','')
+    
   } catch(e) {
     log(`❌ ${e.message}`, 'error')
-    setStatus('reserva-status','err',`❌ ${e.message}`)
+    setStatus('reserva-status','err',e.message)
   }
-}
-
-function renderSimulation(doc) {
-  const status = txt(doc,'AvailableStatus')
-  const price  = parseFloat(txt(doc,'TotalPrice')||0).toFixed(2)
-  const services = all(doc,'DynResService')
-  const badge = status==='OK'
-    ? '<span class="badge badge-ok">✅ Confirmação Imediata</span>'
-    : '<span class="badge badge-wl">⏳ Sujeito a Confirmação</span>'
-
-  let h = `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px">
-    ${badge}<div style="font-size:30px;font-weight:800;color:var(--coral);font-family:'Poppins',sans-serif">€${price}</div><div style="color:var(--muted)">Total</div></div>`
-
-  if (services.length) {
-    h += '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Tipo</th><th style="padding:8px;text-align:left">Descrição</th><th style="padding:8px;text-align:left">Período</th><th style="padding:8px">Estado</th></tr></thead><tbody>'
-    services.forEach(s => {
-      const st = txt(s,'Status')
-      h += `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:8px">${txt(s,'Type')}</td>
-        <td style="padding:8px">${txt(s,'Description')}</td>
-        <td style="padding:8px;font-size:12px">${txt(s,'DateFrom')} → ${txt(s,'DateTo')}</td>
-        <td style="padding:8px;text-align:center"><span class="badge ${st==='OK'?'badge-ok':'badge-wl'}">${st}</span></td>
-      </tr>`
-    })
-    h += '</tbody></table>'
-  }
-  document.getElementById('simulation-result').innerHTML = h
-  document.getElementById('btn-step4-actions').style.display='flex'
 }
 
 function goToConfirm() {
-  renderPaxForm(all(state.simulationData,'DynResPax'))
-  document.getElementById('r-step4').style.display='none'
-  document.getElementById('r-step5').style.display='block'
+  renderPaxForm()
+  document.getElementById('r-step4').style.display = 'none'
+  document.getElementById('r-step5').style.display = 'block'
   setStep(5)
 }
 
-function renderPaxForm(paxList) {
-  const c = document.getElementById('pax-form')
-  let h = '<div class="pax-grid">'
-  if (paxList && paxList.length) {
-    paxList.forEach((p,i) => {
-      const room    = txt(p,'Room')||'DBL1'
-      const type    = txt(p,'Type')||'ADT'
-      const roomNum = txt(p,'RoomNumber')||'1'
-      h += `<div class="pax-row">
-        <div class="pax-row-title">Passageiro ${i+1} — ${room} · ${type==='ADT'?'Adulto':'Criança'}</div>
-        <div class="form-group"><label>Tratamento</label><select id="pax-title-${i}"><option>MR</option><option>MRS</option><option>MISS</option><option>MSTR</option>${type==='CHD'?'<option selected>CHD</option>':''}</select></div>
-        <div class="form-group"><label>Nome</label><input type="text" id="pax-name-${i}"></div>
-        <div class="form-group"><label>Apelido</label><input type="text" id="pax-surname-${i}"></div>
-        <div class="form-group"><label>Data Nasc.</label><input type="date" id="pax-dob-${i}"></div>
-        <input type="hidden" id="pax-roomnum-${i}" value="${roomNum}">
-        <input type="hidden" id="pax-room-${i}" value="${room}">
-        ${type==='CHD'?`<div class="form-group"><label>Idade</label><input type="number" id="pax-childage-${i}" min="0" max="17"></div>`:''}
-      </div>`
-    })
-  } else {
-    state.rooms.forEach((r,i) => {
-      h += `<div class="pax-row">
-        <div class="pax-row-title">Quarto ${r.num} — Adulto</div>
-        <div class="form-group"><label>Tratamento</label><select id="pax-title-${i}"><option>MR</option><option>MRS</option><option>MISS</option></select></div>
-        <div class="form-group"><label>Nome</label><input type="text" id="pax-name-${i}"></div>
-        <div class="form-group"><label>Apelido</label><input type="text" id="pax-surname-${i}"></div>
-        <div class="form-group"><label>Data Nasc.</label><input type="date" id="pax-dob-${i}"></div>
-        <input type="hidden" id="pax-roomnum-${i}" value="${r.num}">
-        <input type="hidden" id="pax-room-${i}" value="DBL${r.num}">
-      </div>`
-    })
-  }
-  h += '</div>'
-  c.innerHTML = h
-  state.paxCount = (paxList && paxList.length) || state.rooms.length
+function renderPaxForm() {
+  const container = document.getElementById('pax-form')
+  let html = ''
+  state.rooms.forEach((room, roomIdx) => {
+    html += `
+      <div class="pax-row">
+        <div class="pax-row-title">Quarto ${room.num} - Adulto 1</div>
+        <div class="form-group"><label>Nome</label><input type="text" id="pax-name-${roomIdx}-0"></div>
+        <div class="form-group"><label>Apelido</label><input type="text" id="pax-surname-${roomIdx}-0"></div>
+      </div>
+    `
+  })
+  container.innerHTML = html
 }
 
-// ── CRIAR RESERVA ──
+// CRIAÇÃO DA RESERVA
 async function createReservation() {
-  setStatus('reserva-status','loading','A criar reserva…')
+  setStatus('reserva-status','loading','A criar reserva...')
+  
   let paxXML = ''
-  for (let i = 0; i < state.paxCount; i++) {
-    const title   = document.getElementById(`pax-title-${i}`)?.value||'MR'
-    const name    = document.getElementById(`pax-name-${i}`)?.value||''
-    const surname = document.getElementById(`pax-surname-${i}`)?.value||''
-    const dob     = document.getElementById(`pax-dob-${i}`)?.value||'1990-01-01'
-    const roomNum = document.getElementById(`pax-roomnum-${i}`)?.value||'1'
-    const room    = document.getElementById(`pax-room-${i}`)?.value||'DBL1'
-    const childAge= document.getElementById(`pax-childage-${i}`)?.value||'0'
-    paxXML += `<DynPax><RoomNum>${roomNum}</RoomNum><Title>${title}</Title><Name>${name}</Name><Surname>${surname}</Surname><DateBirth>${dob}</DateBirth><Room>${room}</Room>${title==='CHD'?`<ChildAge>${childAge}</ChildAge>`:''}</DynPax>`
-  }
-  const ref = document.getElementById('r-clientref').value||''
-  const obs = document.getElementById('r-clientobs').value||''
-
+  let paxCount = 0
+  state.rooms.forEach((room, roomIdx) => {
+    const name = document.getElementById(`pax-name-${roomIdx}-0`)?.value || ''
+    const surname = document.getElementById(`pax-surname-${roomIdx}-0`)?.value || ''
+    paxXML += `<DynPax>
+      <RoomNum>${room.num}</RoomNum>
+      <Title>MR</Title>
+      <Name>${name}</Name>
+      <Surname>${surname}</Surname>
+      <DateBirth>1990-01-01</DateBirth>
+      <Room>DBL</Room>
+    </DynPax>`
+    paxCount++
+  })
+  
   try {
     const doc = await soapCall('DynCreateReserve',
-      `<ns1:DynCreateReserve><DynCreateReserveRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><PaxsStruct>${paxXML}</PaxsStruct>${ref?`<ClientRef>${ref}</ClientRef>`:''}${obs?`<ClientObs>${obs}</ClientObs>`:''}</DynCreateReserveRequest></ns1:DynCreateReserve>`)
-
-    const reserve   = txt(doc,'Reserve')
-    const sysStatus = txt(doc,'SystemStatus')
-    const statusAll = txt(doc,'StatusAll')
-
-    log(`✅ Reserva criada: ${reserve} — ${sysStatus}`, 'success')
-    document.getElementById('r-step5').style.display='none'
-    document.getElementById('r-final').style.display='block'
-    document.getElementById('r-final').innerHTML = `<div class="res-success">
-      <div style="font-size:40px;margin-bottom:8px">✅</div>
-      <div class="res-number">${reserve}</div>
-      <div style="color:var(--muted);margin-top:4px">Número de Reserva Optigest / Soltropico</div>
-      <div style="margin-top:14px">
-        <span class="badge ${sysStatus==='OK'?'badge-ok':'badge-wl'}">Sistema: ${sysStatus}</span>
-        <span class="badge ${statusAll==='OK'?'badge-ok':'badge-wl'}">Serviços: ${statusAll}</span>
+      `<ns1:DynCreateReserve>
+        <DynCreateReserveRequest>
+          ${credXML()}
+          <SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash>
+          <PaxsStruct>${paxXML}</PaxsStruct>
+          <ClientRef>WEB_${Date.now()}</ClientRef>
+        </DynCreateReserveRequest>
+      </ns1:DynCreateReserve>`)
+    
+    const reserve = txt(doc, 'Reserve')
+    
+    document.getElementById('r-step5').style.display = 'none'
+    document.getElementById('r-final').innerHTML = `
+      <div class="res-success">
+        <div style="font-size:40px">✅</div>
+        <div class="res-number">${reserve}</div>
+        <div style="margin-top:10px">Reserva criada com sucesso!</div>
+        <button class="btn btn-blue" style="margin-top:20px" onclick="location.reload()">Nova Reserva</button>
       </div>
-      <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
-        <button class="btn btn-outline" onclick="viewReserve(${reserve})">Ver Detalhes</button>
-        <button class="btn btn-blue" onclick="location.reload()">Nova Reserva</button>
-      </div>
-    </div>`
+    `
+    document.getElementById('r-final').style.display = 'block'
     setStatus('reserva-status','','')
+    
   } catch(e) {
     log(`❌ ${e.message}`, 'error')
-    setStatus('reserva-status','err',`❌ ${e.message}`)
+    setStatus('reserva-status','err',e.message)
   }
 }
 
-// ── LISTA DE RESERVAS ──
+// LISTA DE RESERVAS
 async function listReserves() {
-  setStatus('reserves-status','loading','A pesquisar…')
-  const reserve = document.getElementById('rl-reserve').value
-  const status  = document.getElementById('rl-status').value
-  const depFrom = document.getElementById('rl-depfrom').value
-  const depTo   = document.getElementById('rl-depto').value
-
-  let xml = `<ns1:ReserveList><ReserveListRequest>${credXML()}`
-  if (reserve) xml += `<Reserve>${reserve}</Reserve>`
-  if (status)  xml += `<Status>${status}</Status>`
-  if (depFrom) xml += `<DepDateFrom>${depFrom}</DepDateFrom>`
-  if (depTo)   xml += `<DepDateTo>${depTo}</DepDateTo>`
-  xml += `<MaxReg>50</MaxReg></ReserveListRequest></ns1:ReserveList>`
-
+  setStatus('reserves-status','loading','A pesquisar...')
+  
   try {
-    const doc = await soapCall('ReserveList', xml)
-    const list = all(doc,'ResList')
-    if (!list.length) {
-      setStatus('reserves-status','err','Nenhuma reserva encontrada.')
-      document.getElementById('reserves-results').innerHTML = ''
+    const doc = await soapCall('ReserveList',
+      `<ns1:ReserveList>
+        <ReserveListRequest>
+          ${credXML()}
+          <MaxReg>20</MaxReg>
+        </ReserveListRequest>
+      </ns1:ReserveList>`)
+    
+    const reserves = doc.getElementsByTagName('ResList')
+    if (!reserves.length) {
+      setStatus('reserves-status','err','Nenhuma reserva encontrada')
       return
     }
-    setStatus('reserves-status','ok',`✓ ${list.length} reserva(s)`)
-    let h = '<table style="width:100%;border-collapse:collapse;margin-top:12px"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Nº</th><th style="padding:8px;text-align:left">Cliente</th><th style="padding:8px;text-align:left">Partida</th><th style="padding:8px">Ações</th></tr></thead><tbody>'
-    list.forEach(r => {
-      const num    = txt(r,'Reserve')
-      const client = txt(r,'ClientName')
-      const dep    = txt(r,'DepDate')
-      h += `<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px"><strong>${num}</strong></td><td style="padding:8px">${esc(client)}</td><td style="padding:8px">${dep}</td><td style="padding:8px;text-align:center"><button class="btn btn-outline btn-sm" onclick="viewReserve(${num})">Ver</button></td></tr>`
-    })
-    h += '</tbody></table>'
-    document.getElementById('reserves-results').innerHTML = h
+    
+    let html = '<table style="width:100%"><thead><tr><th>Nº</th><th>Data</th><th>Status</th></tr></thead><tbody>'
+    for (let i = 0; i < reserves.length; i++) {
+      const num = txt(reserves[i], 'Reserve')
+      const date = txt(reserves[i], 'DepDate')
+      html += `<tr><td>${num}</td><td>${date}</td><td>-</td></tr>`
+    }
+    html += '</tbody></table>'
+    document.getElementById('reserves-results').innerHTML = html
+    setStatus('reserves-status','ok',`✓ ${reserves.length} reservas encontradas`)
+    
   } catch(e) {
     log(`❌ ${e.message}`, 'error')
-    setStatus('reserves-status','err',`❌ ${e.message}`)
+    setStatus('reserves-status','err',e.message)
   }
 }
 
-async function viewReserve(num) {
+async function testConnection() {
+  setStatus('debug-status','loading','A testar...')
   try {
-    const doc = await soapCall('RetrieveReserve',
-      `<ns1:RetrieveReserve><RetrieveReserveRequest>${credXML()}<Reserve xsi:type="xsd:int">${num}</Reserve></RetrieveReserveRequest></ns1:RetrieveReserve>`)
-    const head  = doc.querySelector('Head') || doc.querySelector('ResHead')
-    const prod  = head ? txt(head,'Product') : ''
-    const dep   = head ? txt(head,'DepDate') : ''
-    const arr   = head ? txt(head,'ArrDate') : ''
-    const total = head ? parseFloat(txt(head,'TotalGrossVal')||0).toFixed(2) : '0.00'
-    alert(`Reserva ${num}\nProduto: ${prod}\nPartida: ${dep}\nRegresso: ${arr}\nTotal: €${total}`)
-  } catch(e) { alert('Erro: ' + e.message) }
+    const doc = await soapCall('SearchProductTypes',
+      `<ns1:SearchProductTypes><SearchProductTypesRequest>${credXML()}</SearchProductTypesRequest></ns1:SearchProductTypes>`)
+    log('✅ Conexão OK!', 'success')
+    setStatus('debug-status','ok','Conexão estabelecida')
+  } catch(e) {
+    log(`❌ ${e.message}`, 'error')
+    setStatus('debug-status','err',e.message)
+  }
 }
 
 document.getElementById('s-depdate').value = new Date().toISOString().split('T')[0]
