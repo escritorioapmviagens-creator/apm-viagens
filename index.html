@@ -13709,13 +13709,15 @@ async function carregarVistaCliente(clienteId) {
   // Gerar URLs assinados para documentos em storage
   const docs = await Promise.all((docsRaw||[]).map(async d => {
     let url = d.url || null
-    if (!url && (d.storage_path || d.path)) {
-      const p = d.storage_path || d.path
-      const bucket = p.startsWith('reservas/') ? 'documentos' : 'documentos-reservas'
-      try {
-        const { data: signed } = await sb.storage.from(bucket).createSignedUrl(p, 3600)
-        url = signed?.signedUrl || null
-      } catch(e) {}
+    if (!url && d.storage_path) {
+      const p = d.storage_path
+      // Tentar os dois buckets
+      for (const bucket of ['documentos-reservas', 'documentos']) {
+        try {
+          const { data: signed, error } = await sb.storage.from(bucket).createSignedUrl(p, 3600)
+          if (!error && signed?.signedUrl) { url = signed.signedUrl; break }
+        } catch(e) {}
+      }
     }
     return { ...d, _url: url }
   }))
