@@ -91,7 +91,6 @@ header span{font-size:12px;color:var(--muted)}
     <button class="tab" onclick="switchTab('debug',this)">🛠 Diagnóstico</button>
   </div>
 
-  <!-- PESQUISA -->
   <div id="panel-pesquisa" class="panel active">
     <div class="card">
       <div class="card-title"><span>🔍</span> Pesquisa de Produtos</div>
@@ -110,7 +109,6 @@ header span{font-size:12px;color:var(--muted)}
     <div id="search-results"></div>
   </div>
 
-  <!-- RESERVA -->
   <div id="panel-reserva" class="panel">
     <div class="steps">
       <div class="step done" id="step1"><span class="step-num">1</span>Produto</div>
@@ -161,7 +159,6 @@ header span{font-size:12px;color:var(--muted)}
     <div id="r-final" style="display:none"></div>
   </div>
 
-  <!-- MINHAS RESERVAS -->
   <div id="panel-minhas-reservas" class="panel">
     <div class="card">
       <div class="card-title"><span>📁</span> Pesquisar Reservas</div>
@@ -177,7 +174,6 @@ header span{font-size:12px;color:var(--muted)}
     <div id="reserves-results"></div>
   </div>
 
-  <!-- DIAGNÓSTICO -->
   <div id="panel-debug" class="panel">
     <div class="card">
       <div class="card-title"><span>🛠</span> Diagnóstico</div>
@@ -203,9 +199,7 @@ header span{font-size:12px;color:var(--muted)}
     </div>
   </div>
 </div>
-
 <script>
-// CONFIGURAÇÃO
 const SUPABASE_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
 const PROXY_URL = `${SUPABASE_URL}/functions/v1/soltropico-proxy`
@@ -222,10 +216,10 @@ let state = {
   paxCount: 1,
   isDynamic: true,
   selectedHotel: null,
-  selectedFlight: null
+  selectedFlight: null,
+  hotels: []
 }
 
-// UTILITÁRIOS
 function log(msg, type='info') {
   const p = document.getElementById('log-panel')
   if (!p) return
@@ -234,19 +228,16 @@ function log(msg, type='info') {
   p.innerHTML += `<div class="log-entry ${cls}">[${t}] ${msg}</div>`
   p.scrollTop = p.scrollHeight
 }
-
 function clearLogs() {
   document.getElementById('log-panel').innerHTML = '<div class="log-entry log-info">Logs limpos.</div>'
   document.getElementById('xml-card').style.display = 'none'
 }
-
 function switchTab(tab, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
   document.getElementById('panel-' + tab).classList.add('active')
   if (btn) btn.classList.add('active')
 }
-
 function setStatus(id, type, msg) {
   const el = document.getElementById(id)
   if (!el) return
@@ -254,14 +245,12 @@ function setStatus(id, type, msg) {
   el.className = `status-bar show ${type}`
   el.innerHTML = type === 'loading' ? `<span class="loader"></span>${msg}` : msg
 }
-
 function setStep(n) {
   for (let i = 1; i <= 5; i++) {
     const el = document.getElementById('step' + i)
     if (el) el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '')
   }
 }
-
 function backStep(n) {
   ['r-step1','r-step2','r-step3','r-step4','r-step5','r-final'].forEach(s => {
     const el = document.getElementById(s); if (el) el.style.display = 'none'
@@ -270,14 +259,11 @@ function backStep(n) {
   if (target) target.style.display = 'block'
   setStep(n)
 }
-
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 
-// SOAP
 function credXML() {
   return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">${CREDS.System}</System><Client xsi:type="xsd:int">${CREDS.Client}</Client><Username xsi:type="xsd:string">${CREDS.Username}</Username><Password xsi:type="xsd:string">${CREDS.Password}</Password></Credentials>`
 }
-
 function wrap(body) {
   return `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
 }
@@ -296,12 +282,12 @@ async function soapCall(action, body) {
 
   window.xmlHistory = window.xmlHistory || {}
   window.xmlHistory[action] = xmlStr
+  console.log(`[SOAP] ${action}\n` + xmlStr)
 
   const rawEl = document.getElementById('raw-xml')
   const xmlCard = document.getElementById('xml-card')
   if (rawEl) rawEl.textContent = xmlStr
   if (xmlCard) xmlCard.style.display = 'block'
-  
   const sel = document.getElementById('xml-selector')
   if (sel && window.xmlHistory) {
     sel.innerHTML = Object.keys(window.xmlHistory).map(k => `<option value="${k}">${k}</option>`).join('')
@@ -313,24 +299,22 @@ async function soapCall(action, body) {
   if (fault) throw new Error(fault.textContent)
   return doc
 }
-
 function showXmlFromHistory() {
   const sel = document.getElementById('xml-selector')
   const rawEl = document.getElementById('raw-xml')
-  if (sel && rawEl && window.xmlHistory) {
-    rawEl.textContent = window.xmlHistory[sel.value] || ''
-  }
+  if (sel && rawEl && window.xmlHistory) rawEl.textContent = window.xmlHistory[sel.value] || ''
 }
 
+// ── PARSING (corrigido para namespaces ns1: e arrays SOAP) ──
+// txt: primeiro filho direto com esse localName
 function txt(el, tag) {
   if (!el) return ''
   for (let i = 0; i < el.children.length; i++) {
-    const child = el.children[i]
-    const local = child.localName || child.tagName.split(':').pop()
-    if (local === tag) return child.textContent.trim()
+    const c = el.children[i]
+    const local = c.localName || c.tagName.split(':').pop()
+    if (local === tag) return c.textContent.trim()
   }
-  const direct = el.querySelector(tag)
-  if (direct) return direct.textContent.trim()
+  // procura em profundidade como fallback
   const nodes = el.getElementsByTagName('*')
   for (let i = 0; i < nodes.length; i++) {
     const local = nodes[i].localName || nodes[i].tagName.split(':').pop()
@@ -339,18 +323,47 @@ function txt(el, tag) {
   return ''
 }
 
-function all(el, tag) {
-  let res = Array.from(el.querySelectorAll(tag))
-  if (!res.length) {
-    res = Array.from(el.getElementsByTagName('*')).filter(e => {
-      const local = e.localName || e.tagName.split(':').pop()
-      return local === tag
-    })
+// childByLocal: devolve o PRIMEIRO elemento descendente (a qualquer profundidade) com este localName
+function firstByLocal(el, tag) {
+  if (!el) return null
+  const nodes = el.getElementsByTagName('*')
+  for (let i = 0; i < nodes.length; i++) {
+    const local = nodes[i].localName || nodes[i].tagName.split(':').pop()
+    if (local === tag) return nodes[i]
   }
-  return res
+  return null
 }
 
-// DIAGNÓSTICO
+// directChildren: filhos diretos com localName (não desce)
+function directChildren(el, tag) {
+  if (!el) return []
+  const out = []
+  for (let i = 0; i < el.children.length; i++) {
+    const c = el.children[i]
+    const local = c.localName || c.tagName.split(':').pop()
+    if (local === tag) out.push(c)
+  }
+  return out
+}
+
+// all: todos os descendentes com este localName (a qualquer profundidade)
+function all(el, tag) {
+  if (!el) return []
+  const out = []
+  const nodes = el.getElementsByTagName('*')
+  for (let i = 0; i < nodes.length; i++) {
+    const local = nodes[i].localName || nodes[i].tagName.split(':').pop()
+    if (local === tag) out.push(nodes[i])
+  }
+  return out
+}
+
+// itemsOf: os <item> filhos diretos de um container-array (ex: HotelOption > item)
+function itemsOf(container) {
+  return container ? directChildren(container, 'item') : []
+}
+
+// ── DIAGNÓSTICO ──
 async function testConnection() {
   setStatus('debug-status','loading','A testar…')
   log('🔌 Testando ligação…')
@@ -359,13 +372,9 @@ async function testConnection() {
       `<ns1:SearchProductTypes><SearchProductTypesRequest>${credXML()}</SearchProductTypesRequest></ns1:SearchProductTypes>`)
     const types = all(doc, 'ProductType')
     log(`✅ Ligação OK — ${types.length} tipo(s)`, 'success')
-    setStatus('debug-status','ok',`✅ Ligação OK! ${types.length} tipo(s) de produto disponíveis.`)
-  } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('debug-status','err',`❌ ${e.message}`)
-  }
+    setStatus('debug-status','ok',`✅ Ligação OK! ${types.length} tipo(s) de produto.`)
+  } catch(e) { log(`❌ ${e.message}`, 'error'); setStatus('debug-status','err',`❌ ${e.message}`) }
 }
-
 async function testProductTypes() {
   setStatus('debug-status','loading','A listar…')
   try {
@@ -374,62 +383,46 @@ async function testProductTypes() {
     const types = all(doc, 'ProductType')
     log(`✅ ${types.length} tipo(s):`, 'success')
     types.forEach(t => log(`   • ${txt(t,'Code')} — ${txt(t,'Description')}`))
-    setStatus('debug-status','ok',`✓ ${types.length} tipo(s) encontrado(s)`)
-  } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('debug-status','err',`❌ ${e.message}`)
-  }
+    setStatus('debug-status','ok',`✓ ${types.length} tipo(s)`)
+  } catch(e) { log(`❌ ${e.message}`, 'error'); setStatus('debug-status','err',`❌ ${e.message}`) }
 }
 
-// PESQUISA DE PRODUTOS
+// ── PESQUISA DE PRODUTOS ──
 async function searchProducts() {
   const name = document.getElementById('s-name').value
   const depdate = document.getElementById('s-depdate').value
   const pkttype = document.getElementById('s-pkttype').value
   const country = document.getElementById('s-country').value
-
   log(`🔍 Pesquisando: "${name||'(todos)'}"`)
   setStatus('search-status','loading','A pesquisar…')
   document.getElementById('search-results').innerHTML = ''
-
   let xml = `<ns1:SearchProducts><SearchProductsRequest>${credXML()}`
   if (name) xml += `<Name>${name}</Name>`
   if (country) xml += `<Country>${country}</Country>`
   if (depdate) xml += `<DepDate>${depdate}</DepDate>`
   if (pkttype) xml += `<Pkt_type>${pkttype}</Pkt_type>`
   xml += `<PriceFrom>0</PriceFrom><PriceTo>99999</PriceTo></SearchProductsRequest></ns1:SearchProducts>`
-
   try {
     const doc = await soapCall('SearchProducts', xml)
-    const productArray = all(doc, 'ProductArray')[0] || all(doc, 'ProductsList')[0]
-    let items = productArray
-      ? Array.from(productArray.children).filter(e => {
-          const local = e.localName || e.tagName.split(':').pop()
-          return local === 'item' || local === 'Product'
-        })
-      : all(doc, 'Product')
-    if (!items.length) items = all(doc, 'item')
-
+    const productArray = all(doc, 'ProductArray')[0]
+    let items = productArray ? itemsOf(productArray) : []
+    if (!items.length) items = all(doc, 'Product')
     const products = items.map(p => {
-      let code = txt(p,'Code') || txt(p,'ProdCode') || txt(p,'ProductCode') || ''
-      code = code.trim()
+      let code = (txt(p,'Code') || txt(p,'ProdCode') || txt(p,'ProductCode') || '').trim()
       const codeInt = parseInt(code)
-      const name = txt(p,'Name') || txt(p,'ProdName') || txt(p,'Description') || ''
-      const price = txt(p,'PriceFrom') || txt(p,'PriceFromMin') || '0'
-      const pkt = txt(p,'ProdType') || txt(p,'Pkt_type') || txt(p,'PackType') || ''
+      const nm = txt(p,'Name') || txt(p,'ProdName') || txt(p,'Description') || ''
+      const price = txt(p,'PriceFrom') || '0'
+      const pkt = txt(p,'ProdType') || txt(p,'Pkt_type') || ''
       const img = txt(p,'ImageUrl') || txt(p,'Image') || ''
-      return { code, codeInt, name, price, pkt, img, valid: !isNaN(codeInt) && codeInt > 0 && name !== '' }
+      return { code, codeInt, name: nm, price, pkt, img, valid: !isNaN(codeInt) && codeInt > 0 && nm !== '' }
     }).filter(p => p.name && p.name !== 'TESTE OMNIBEES')
-
     const valid = products.filter(p => p.valid)
     if (!valid.length) {
-      setStatus('search-status','err','⚠️ Nenhum produto com código válido encontrado.')
-      document.getElementById('search-results').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Sem resultados válidos.</div>'
+      setStatus('search-status','err','⚠️ Nenhum produto válido.')
+      document.getElementById('search-results').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Sem resultados.</div>'
       return
     }
-
-    setStatus('search-status','ok',`✓ ${valid.length} produto(s) encontrado(s)`)
-
+    setStatus('search-status','ok',`✓ ${valid.length} produto(s)`)
     let html = `<div class="section-title">🏖️ Produtos</div><div class="product-grid">`
     valid.forEach(p => {
       const priceVal = parseFloat(p.price) || 0
@@ -440,29 +433,20 @@ async function searchProducts() {
           <div class="product-meta">Código: <strong>${p.code}</strong></div>
           <div class="product-price">${priceVal > 0 ? `€${priceVal.toLocaleString('pt-PT',{minimumFractionDigits:2})}` : 'Sob consulta'}</div>
           <button class="btn btn-blue btn-sm" style="width:100%;justify-content:center;margin-top:8px" onclick="event.stopPropagation();selectProduct(${p.codeInt},'${esc(p.name)}','${p.pkt}')">Reservar →</button>
-        </div>
-      </div>`
+        </div></div>`
     })
     html += '</div>'
     document.getElementById('search-results').innerHTML = html
-  } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('search-status','err',`❌ ${e.message}`)
-  }
+  } catch(e) { log(`❌ ${e.message}`, 'error'); setStatus('search-status','err',`❌ ${e.message}`) }
 }
 
 function selectProduct(codeInt, name, pkt) {
   const code = parseInt(codeInt)
-  if (!code || isNaN(code) || code <= 0) {
-    log(`❌ Código inválido: "${codeInt}"`, 'error')
-    alert(`Não é possível reservar este produto.\nCódigo inválido: "${codeInt}"`)
-    return
-  }
-  log(`✅ Produto selecionado: ${name} (código ${code})`, 'success')
+  if (!code || isNaN(code) || code <= 0) { alert(`Código inválido: "${codeInt}"`); return }
+  log(`✅ Produto: ${name} (${code})`, 'success')
   state.selectedProduct = { code, name, pkt: pkt || 'DYNAMIC' }
   document.getElementById('r-product-code').value = code
   document.getElementById('r-product-info').innerHTML = `<strong>${esc(name)}</strong> <span style="color:var(--muted)">(código: ${code})</span>`
-
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
   document.getElementById('panel-reserva').classList.add('active')
@@ -470,7 +454,6 @@ function selectProduct(codeInt, name, pkt) {
   setStep(1)
   getProductParams()
 }
-
 function clearSearch() {
   ['s-name','s-depdate','s-country'].forEach(id => { const el=document.getElementById(id); if(el) el.value='' })
   document.getElementById('s-pkttype').value = ''
@@ -478,23 +461,16 @@ function clearSearch() {
   setStatus('search-status','','')
 }
 
-// PARÂMETROS DO PRODUTO
+// ── PARÂMETROS ──
 async function getProductParams() {
   const raw = document.getElementById('r-product-code').value
   const code = parseInt(raw)
-
-  if (!code || isNaN(code) || code <= 0) {
-    setStatus('reserva-status','err',`❌ Código "${raw}" inválido.`)
-    return
-  }
-
+  if (!code || isNaN(code) || code <= 0) { setStatus('reserva-status','err',`❌ Código "${raw}" inválido.`); return }
   log(`📦 Parâmetros do produto ${code}`)
-  setStatus('reserva-status','loading',`A obter parâmetros do produto ${code}…`)
-
+  setStatus('reserva-status','loading',`A obter parâmetros…`)
   try {
     const pkt = state.selectedProduct?.pkt || 'DYNAMIC'
     state.isDynamic = pkt === 'DYNAMIC'
-
     let doc
     if (state.isDynamic) {
       doc = await soapCall('DynGetProductParameters',
@@ -503,58 +479,38 @@ async function getProductParams() {
       doc = await soapCall('StaticGetProductParameters',
         `<ns1:StaticGetProductParameters><StaticProductParametersRequest>${credXML()}<ProductCode xsi:type="xsd:int">${code}</ProductCode></StaticProductParametersRequest></ns1:StaticGetProductParameters>`)
     }
-
     const productName = txt(doc,'Name')
     if (!productName) throw new Error(`Produto ${code} não encontrado`)
-
     state.selectedProduct = { code, name: productName, pkt }
     state.productParams = doc
 
     function arrayItems(container) {
       const wrap = all(doc, container)[0]
-      if (!wrap) return []
-      const items = []
-      for (let i = 0; i < wrap.children.length; i++) {
-        const local = wrap.children[i].localName || wrap.children[i].tagName.split(':').pop()
-        if (local === 'item') items.push(wrap.children[i])
-      }
-      return items
+      return wrap ? itemsOf(wrap) : []
     }
-
-    const dateItems = arrayItems('DepartureDates')
-    const dates = dateItems.map(it => txt(it, 'Date')).filter(Boolean)
+    const dates = arrayItems('DepartureDates').map(it => txt(it,'Date')).filter(Boolean)
     document.getElementById('r-depdate').innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('')
 
-    const localItems = arrayItems('DepartureLocals')
-    const locals = localItems.map(it => ({ code: txt(it,'Code'), name: txt(it,'Name') })).filter(l => l.code)
+    const locals = arrayItems('DepartureLocals').map(it => ({ code: txt(it,'Code'), name: txt(it,'Name') })).filter(l => l.code)
     document.getElementById('r-deplocal').innerHTML = locals.length
       ? locals.map(l => `<option value="${l.code}">${l.name||l.code}</option>`).join('')
       : '<option value="LIS">Lisboa (LIS)</option>'
 
-    const roomItems = arrayItems('RoomTypes')
-    state.roomTypes = roomItems.map(r => ({
-      code: txt(r,'Code'), name: txt(r,'Name'),
-      numAdults: txt(r,'NumAdults'), numChilds: txt(r,'NumChilds')
+    state.roomTypes = arrayItems('RoomTypes').map(r => ({
+      code: txt(r,'Code'), name: txt(r,'Name'), numAdults: txt(r,'NumAdults'), numChilds: txt(r,'NumChilds')
     })).filter(r => r.code)
 
-    const baseItems = arrayItems('BaseLocals')
-    state.baseLocals = baseItems.map(b => ({
-      code: txt(b,'Code'), name: txt(b,'Name'),
-      minNights: txt(b,'MinNights')||'1', maxNights: txt(b,'MaxNights')||'7'
+    state.baseLocals = arrayItems('BaseLocals').map(b => ({
+      code: txt(b,'Code'), name: txt(b,'Name'), minNights: txt(b,'MinNights')||'1', maxNights: txt(b,'MaxNights')||'7'
     })).filter(b => b.code)
 
-    log(`✅ Parâmetros carregados: ${dates.length} data(s), ${state.roomTypes.length} tipo(s) de quarto`, 'success')
-
-    renderRooms()
-    renderBaseLocals()
+    log(`✅ ${dates.length} data(s), ${locals.length} local(is), ${state.roomTypes.length} quarto(s), ${state.baseLocals.length} hotel-base`, 'success')
+    if (state.roomTypes.length && !state.roomTypes.find(r=>r.code==state.rooms[0].code)) state.rooms[0].code = state.roomTypes[0].code
+    renderRooms(); renderBaseLocals()
     document.getElementById('r-step1').style.display = 'none'
     document.getElementById('r-step2').style.display = 'block'
-    setStep(2)
-    setStatus('reserva-status','','')
-  } catch(e) {
-    log(`❌ ${e.message}`, 'error')
-    setStatus('reserva-status','err',`❌ ${e.message}`)
-  }
+    setStep(2); setStatus('reserva-status','','')
+  } catch(e) { log(`❌ ${e.message}`, 'error'); setStatus('reserva-status','err',`❌ ${e.message}`) }
 }
 
 function renderRooms() {
@@ -565,14 +521,12 @@ function renderRooms() {
       <select id="room-code-${i}" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px">
         ${state.roomTypes.map(t=>`<option value="${t.code}" ${t.code==r.code?'selected':''}>${t.name}</option>`).join('')}
       </select>
-      <input type="text" id="room-childages-${i}" placeholder="idades crianças (3,7)" value="${r.childAges}" style="width:130px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px">
+      <input type="text" id="room-childages-${i}" placeholder="idades (3,7)" value="${r.childAges}" style="width:120px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px">
       ${state.rooms.length>1?`<button class="btn btn-outline btn-sm" onclick="removeRoom(${i})">✕</button>`:''}
     </div>`).join('')
 }
-
 function addRoom() { state.rooms.push({num:state.rooms.length+1,code:state.roomTypes[0]?.code||437,childAges:''}); renderRooms() }
 function removeRoom(i) { state.rooms.splice(i,1); state.rooms.forEach((r,idx)=>r.num=idx+1); renderRooms() }
-
 function renderBaseLocals() {
   const sec = document.getElementById('base-locals-section')
   const c = document.getElementById('base-locals-list')
@@ -581,431 +535,318 @@ function renderBaseLocals() {
   c.innerHTML = state.baseLocals.map((b,i)=>`
     <div class="room-row">
       <label style="min-width:110px">${b.name||b.code}</label>
-      <input type="number" id="base-nights-${i}" value="${b.minNights}" min="${b.minNights}" max="${b.maxNights}" style="width:70px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px">
+      <input type="number" id="base-nights-${i}" value="${b.minNights}" min="${b.minNights}" style="width:70px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px">
       <span style="font-size:12px;color:var(--muted)">noites (${b.minNights}–${b.maxNights})</span>
     </div>`).join('')
 }
 
-// PESQUISAR DISPONIBILIDADE
+// ── DISPONIBILIDADE ──
 async function searchAvailableServices() {
-  setStatus('reserva-status', 'loading', 'A pesquisar disponibilidade…');
-  
+  setStatus('reserva-status', 'loading', 'A pesquisar disponibilidade…')
   state.rooms.forEach((r, i) => {
-    r.code = parseInt(document.getElementById(`room-code-${i}`)?.value || r.code);
-    r.childAges = document.getElementById(`room-childages-${i}`)?.value || '';
-  });
-  
-  const depDate = document.getElementById('r-depdate').value;
-  const depLocal = document.getElementById('r-deplocal').value;
-  const extraNights = document.getElementById('r-extranights').value || '0';
-  
-  const roomsXML = state.rooms.map(r => 
-    `<RoomTypeOption><RoomNum>${r.num}</RoomNum><Code>${r.code}</Code><ChildAges>${r.childAges}</ChildAges></RoomTypeOption>`
-  ).join('');
-  
+    r.code = parseInt(document.getElementById(`room-code-${i}`)?.value || r.code)
+    r.childAges = document.getElementById(`room-childages-${i}`)?.value || ''
+  })
+  const depDate = document.getElementById('r-depdate').value
+  const depLocal = document.getElementById('r-deplocal').value
+  const extraNights = document.getElementById('r-extranights').value || '0'
+  const roomsXML = state.rooms.map(r =>
+    `<RoomTypeOption><RoomNum>${r.num}</RoomNum><Code>${r.code}</Code><ChildAges>${r.childAges}</ChildAges></RoomTypeOption>`).join('')
   const baseXML = state.baseLocals.length
-    ? state.baseLocals.map((b, i) => 
-        `<Local><Code>${b.code}</Code><Nights>${document.getElementById(`base-nights-${i}`)?.value || b.minNights}</Nights></Local>`
-      ).join('')
-    : '<Local><Code>2234</Code><Nights>7</Nights></Local>';
-
+    ? state.baseLocals.map((b, i) => `<Local><Code>${b.code}</Code><Nights>${document.getElementById(`base-nights-${i}`)?.value || b.minNights}</Nights></Local>`).join('')
+    : '<Local><Code>2234</Code><Nights>7</Nights></Local>'
   try {
     const doc = await soapCall('DynSearchProductAvailableServices',
-      `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`);
-
-    state.sessionHash = txt(doc, 'SessionHash');
-    log(`✅ SessionHash: ${state.sessionHash}`, 'success');
-
-    renderServicesStep(doc);
-    document.getElementById('r-step2').style.display = 'none';
-    document.getElementById('r-step3').style.display = 'block';
-    setStep(3);
-    setStatus('reserva-status', '', '');
-  } catch (e) {
-    log(`❌ ${e.message}`, 'error');
-    setStatus('reserva-status', 'err', `❌ ${e.message}`);
-  }
+      `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+    state.sessionHash = txt(doc, 'SessionHash')
+    log(`✅ SessionHash: ${state.sessionHash}`, 'success')
+    renderServicesStep(doc)
+    document.getElementById('r-step2').style.display = 'none'
+    document.getElementById('r-step3').style.display = 'block'
+    setStep(3); setStatus('reserva-status', '', '')
+  } catch (e) { log(`❌ ${e.message}`, 'error'); setStatus('reserva-status', 'err', `❌ ${e.message}`) }
 }
 
-// RENDERIZAR SERVIÇOS (VOOS E HOTÉIS)
+// ── RENDER SERVIÇOS (VOOS + HOTÉIS) ──
 function renderServicesStep(doc) {
-  // ========== VOOS ==========
-  const fs = document.getElementById('flight-options-section');
-  let flightsHtml = '<div style="font-weight:700;margin-bottom:10px">✈️ Opções de Voo</div>';
-  let hasFlights = false;
-  
-  // CORREÇÃO: usar FlightMainGroup e FlightOptionsSuperBB
-  const flightMainGroups = all(doc, 'FlightMainGroup');
-  for (const fmg of flightMainGroups) {
-    const flightOptions = all(fmg, 'FlightOptionsSuperBB');
-    for (const fo of flightOptions) {
-      const opts = all(fo, 'item');
-      for (let i = 0; i < opts.length; i++) {
-        const opt = opts[i];
-        const optCode = txt(opt, 'OptionCode');
-        const supTotal = txt(opt, 'SuplementsTotalVal');
-        if (optCode) {
-          hasFlights = true;
-          const sup = parseFloat(supTotal || 0).toFixed(2);
-          flightsHtml += `<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:8px;cursor:pointer">
-            <input type="radio" name="flight-opt" value="${optCode}" ${i === 0 ? 'checked' : ''}> 
-            <span>Opção ${optCode} — suplemento +€${sup}</span>
-          </label>`;
+  // VOOS — descer FlightMainGroup > item > FlightOptionsSuperBB|FlightOptions > item
+  const fsec = document.getElementById('flight-options-section')
+  let flightsHtml = '<div style="font-weight:700;margin-bottom:10px">✈️ Opções de Voo</div>'
+  let flightOpts = []
+  const fmgContainer = all(doc, 'FlightMainGroup')[0]
+  itemsOf(fmgContainer).forEach(fmg => {
+    // tentar SuperBB e Options
+    ;['FlightOptionsSuperBB','FlightOptions','FlightOptionsFlightEngine'].forEach(key => {
+      const cont = directChildren(fmg, key)[0]
+      itemsOf(cont).forEach(opt => {
+        const optCode = txt(opt, 'OptionCode')
+        const rate = txt(opt, 'RateTaxVal')
+        const tax = txt(opt, 'Tax')
+        const sup = txt(opt, 'SuplementsTotalVal')
+        // descrição do 1º e último segmento
+        const segs = all(opt, 'DynFlight')
+        let route = ''
+        if (segs.length) {
+          const first = segs[0], last = segs[segs.length-1]
+          route = `${txt(first,'From')}→${txt(first,'To')} ${txt(first,'DepDate')} … ${txt(last,'From')}→${txt(last,'To')} ${txt(last,'DepDate')}`
         }
-      }
-    }
+        flightOpts.push({ optCode, rate, tax, sup, route })
+      })
+    })
+  })
+  if (flightOpts.length) {
+    flightOpts.forEach((f,i) => {
+      const base = f.rate ? `€${parseFloat(f.rate).toFixed(2)}` : (f.sup ? `+€${parseFloat(f.sup).toFixed(2)}` : '')
+      flightsHtml += `<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:8px;cursor:pointer">
+        <input type="radio" name="flight-opt" value="${f.optCode}" ${i===0?'checked':''}>
+        <div><div style="font-weight:600">Opção ${f.optCode} ${base?'— '+base:''}</div>
+        ${f.route?`<div style="font-size:12px;color:var(--muted)">${esc(f.route)}</div>`:''}</div></label>`
+    })
+  } else {
+    flightsHtml += '<div style="padding:14px;color:var(--muted);background:var(--bg);border-radius:8px">✈️ Sem voos nesta resposta (já incluídos no pacote ou indisponíveis para esta data).</div>'
   }
-  
-  if (!hasFlights) {
-    flightsHtml += '<div style="padding:20px;text-align:center;color:var(--muted)">✈️ Sem voos disponíveis ou já incluídos no pacote.</div>';
-  }
-  fs.innerHTML = flightsHtml;
+  fsec.innerHTML = flightsHtml
 
-  // ========== HOTÉIS ==========
-  const hs = document.getElementById('hotel-options-section');
-  
-  // CORREÇÃO: usar 'Itinerary' (não DynItinerary)
-  const itineraries = all(doc, 'Itinerary');
-  
-  if (!itineraries.length) {
-    hs.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">🏨 Nenhum itinerário encontrado.</div>';
-    return;
-  }
-  
-  let allHotelsHtml = '<div style="font-weight:700;margin:16px 0 10px">🏨 Opções de Alojamento</div>';
-  
-  for (const itinerary of itineraries) {
-    const itinCode = txt(itinerary, 'Code') || '0';
-    const itinName = txt(itinerary, 'Name') || 'Destino';
-    
-    allHotelsHtml += `<div style="font-weight:600;color:var(--blue);margin:15px 0 8px">📌 ${esc(itinName)}</div>`;
-    
-    // CORREÇÃO: usar 'HotelOption' (não DynHotelOption)
-    const hotels = all(itinerary, 'HotelOption');
-    
-    log(`🏨 Encontrados ${hotels.length} hotéis em ${itinName}`, 'info');
-    
-    if (hotels.length === 0) {
-      allHotelsHtml += '<div style="padding:10px;color:var(--muted);font-style:italic">Nenhum hotel disponível para este destino.</div>';
-      continue;
-    }
-    
-    // ACUMULAR todos os hotéis
-    for (let hi = 0; hi < hotels.length; hi++) {
-      const hotel = hotels[hi];
-      const hCode = txt(hotel, 'Code');
-      const hName = txt(hotel, 'Name');
-      const hRating = txt(hotel, 'Rating');
-      const hPrice = txt(hotel, 'PriceFrom');
-      const hImage = txt(hotel, 'Image');
-      const hAddress = txt(hotel, 'Address');
-      const hLocal = txt(hotel, 'Local');
-      
-      const ratingNum = parseInt(hRating) || 0;
-      const stars = '★'.repeat(Math.min(ratingNum, 5)) + '☆'.repeat(Math.max(0, 5 - ratingNum));
-      
-      // Procurar regimes de refeição (Boards)
-      let boardsHtml = '';
-      const boards = all(hotel, 'Boards');
-      if (boards.length) {
-        const boardItems = all(boards[0], 'item');
-        if (boardItems.length) {
-          boardItems.forEach(b => {
-            const boardCode = txt(b, 'Code');
-            const boardName = txt(b, 'Name');
-            if (boardCode) {
-              boardsHtml += `<option value="${boardCode}">${boardName}</option>`;
-            }
-          });
-        } else {
-          const boardCode = txt(boards[0], 'Code');
-          const boardName = txt(boards[0], 'Name');
-          if (boardCode) {
-            boardsHtml = `<option value="${boardCode}">${boardName || boardCode}</option>`;
-          }
+  // HOTÉIS — Itinerary > item > HotelOption > item(N)
+  const hsec = document.getElementById('hotel-options-section')
+  state.hotels = []
+  let html = '<div style="font-weight:700;margin:16px 0 10px">🏨 Opções de Alojamento</div>'
+  const itinContainer = all(doc, 'Itinerary')[0]
+  const itinItems = itemsOf(itinContainer)
+  if (!itinItems.length) { hsec.innerHTML = html + '<div style="padding:14px;color:var(--muted)">Nenhum itinerário encontrado.</div>'; return }
+
+  itinItems.forEach(itin => {
+    const itinCode = txt(itin, 'Code') || '0'
+    const itinName = txt(itin, 'Name') || 'Destino'
+    html += `<div style="font-weight:600;color:var(--blue);margin:12px 0 8px">📌 ${esc(itinName)}</div>`
+    const hotelContainer = directChildren(itin, 'HotelOption')[0]
+    const hotels = itemsOf(hotelContainer)
+    log(`🏨 ${hotels.length} hotel(éis) em "${itinName}"`, hotels.length ? 'success' : 'warn')
+    if (!hotels.length) { html += '<div style="padding:10px;color:var(--muted);font-style:italic">Sem hotéis disponíveis.</div>'; return }
+
+    hotels.forEach((hotel, hi) => {
+      const hCode = txt(hotel, 'Code')
+      const hName = txt(hotel, 'Name')
+      const hRating = parseInt(txt(hotel, 'Rating')) || 0
+      const hPrice = parseFloat(txt(hotel, 'PriceFrom')) || 0
+      const hImage = txt(hotel, 'Image')
+      const hAddr = txt(hotel, 'Address')
+      const hLocal = txt(hotel, 'Local')
+      const stars = '★'.repeat(Math.min(hRating,5)) + '☆'.repeat(Math.max(0,5-hRating))
+
+      // Quartos: RoomsOccupancy > item > Rooms > item(N)
+      const occContainer = directChildren(hotel, 'RoomsOccupancy')[0]
+      const occItem = itemsOf(occContainer)[0]
+      const roomsContainer = occItem ? directChildren(occItem, 'Rooms')[0] : null
+      const rooms = itemsOf(roomsContainer)
+      let roomsHtml = ''
+      rooms.forEach(rm => {
+        const rCode = txt(rm,'Code')
+        const rName = txt(rm,'Name')
+        const rSell = parseFloat(txt(rm,'SellValue')) || 0
+        const rBoard = txt(rm,'BoardCode') || 'TI'
+        const avail = txt(rm,'AvailStatus')
+        if (avail === 'OK') {
+          roomsHtml += `<option value="${rCode}" data-board="${rBoard}" data-sell="${rSell}">${esc(rName)} — €${rSell.toFixed(2)} (${rBoard})</option>`
         }
-      }
-      if (!boardsHtml) boardsHtml = '<option value="TI">All Inclusive</option><option value="APA">Bed & Breakfast</option><option value="MP">Half Board</option>';
-      
-      // Procurar tipos de quarto
-      let roomsHtml = '';
-      const roomsOccupancy = all(hotel, 'RoomsOccupancy');
-      if (roomsOccupancy.length) {
-        const roomsItems = all(roomsOccupancy[0], 'Rooms');
-        if (roomsItems.length) {
-          roomsItems.forEach(room => {
-            const roomCode = txt(room, 'Code');
-            const roomName = txt(room, 'Name');
-            const roomPrice = txt(room, 'SellValue');
-            const roomAvail = txt(room, 'AvailStatus');
-            if (roomCode && roomAvail === 'OK') {
-              const priceAdd = roomPrice ? ` (+€${parseFloat(roomPrice).toFixed(2)})` : '';
-              roomsHtml += `<option value="${roomCode}" data-price="${roomPrice}">${roomName}${priceAdd}</option>`;
-            }
-          });
-        }
-      }
-      if (!roomsHtml) roomsHtml = '<option value="0">Standard Room</option>';
-      
-      const priceNum = parseFloat(hPrice) || 0;
-      
-      allHotelsHtml += `
-        <div class="hotel-card" id="hcard-${itinCode}-${hi}" data-hotel-code="${hCode}" data-itin-code="${itinCode}" onclick="selectHotelCard('${itinCode}', ${hi}, '${hCode}')">
+      })
+      if (!roomsHtml) roomsHtml = '<option value="0" data-board="TI">Standard</option>'
+
+      // Regimes (Boards)
+      const boardsContainer = directChildren(hotel, 'Boards')[0]
+      const boards = itemsOf(boardsContainer)
+      let boardsHtml = boards.map(b => `<option value="${txt(b,'Code')}">${esc(txt(b,'Name'))}</option>`).join('')
+      if (!boardsHtml) boardsHtml = '<option value="TI">All Inclusive</option>'
+
+      state.hotels.push({ itinCode, hCode, hName })
+      html += `
+        <div class="hotel-card" id="hcard-${itinCode}-${hi}" data-itin="${itinCode}" data-hotel="${hCode}" data-idx="${hi}" onclick="selectHotelCard('${itinCode}',${hi},'${hCode}')">
           <div style="display:flex;gap:12px;flex-wrap:wrap">
-            ${hImage ? `<img src="${hImage}" class="hotel-image" onerror="this.style.display='none'">` : ''}
-            <div style="flex:1">
+            ${hImage ? `<img src="${esc(hImage)}" class="hotel-image" onerror="this.style.display='none'">` : ''}
+            <div style="flex:1;min-width:200px">
               <div class="hotel-name">${esc(hName)} <span class="hotel-rating">${stars}</span></div>
-              ${hAddress ? `<div class="hotel-address">📍 ${esc(hAddress)}</div>` : ''}
-              ${hLocal ? `<div class="hotel-address">🏘️ ${esc(hLocal)}</div>` : ''}
-              <div class="hotel-price">${priceNum > 0 ? `€${priceNum.toFixed(2)}` : 'Sob consulta'}</div>
+              ${hAddr ? `<div class="hotel-address">📍 ${esc(hAddr)}${hLocal?' · '+esc(hLocal):''}</div>` : ''}
+              <div class="hotel-price">desde €${hPrice.toFixed(2)}</div>
               <div class="hotel-selectors">
-                <select id="board-${itinCode}-${hCode}" onclick="event.stopPropagation()">${boardsHtml}</select>
                 <select id="room-${itinCode}-${hCode}" onclick="event.stopPropagation()">${roomsHtml}</select>
+                <select id="board-${itinCode}-${hCode}" onclick="event.stopPropagation()">${boardsHtml}</select>
               </div>
             </div>
           </div>
-        </div>
-      `;
-    }
+        </div>`
+    })
+  })
+  hsec.innerHTML = html
+  // pré-selecionar o primeiro hotel
+  if (state.hotels.length) {
+    const h0 = state.hotels[0]
+    selectHotelCard(h0.itinCode, 0, h0.hCode)
   }
-  
-  hs.innerHTML = allHotelsHtml;
-  log(`🏨 Renderização concluída: ${hs.querySelectorAll('.hotel-card').length} hotéis exibidos`, 'success');
+  log(`🏨 Total exibidos: ${hsec.querySelectorAll('.hotel-card').length}`, 'success')
 }
 
 function selectHotelCard(itinCode, idx, hotelCode) {
-  document.querySelectorAll('.hotel-card').forEach(c => c.classList.remove('selected'));
-  const card = document.getElementById(`hcard-${itinCode}-${idx}`);
+  document.querySelectorAll('.hotel-card').forEach(c => c.classList.remove('selected'))
+  const card = document.getElementById(`hcard-${itinCode}-${idx}`)
   if (card) {
-    card.classList.add('selected');
-    state.selectedHotel = { itinCode, hotelCode };
-    log(`🏨 Hotel selecionado: ${hotelCode}`, 'success');
+    card.classList.add('selected')
+    state.selectedHotel = { itinCode, hotelCode }
   }
 }
 
-// SIMULAÇÃO
+// ── SIMULAÇÃO ──
 async function setServicesAndSimulate() {
-  setStatus('reserva-status', 'loading', 'A simular…');
-  
-  const flightRadio = document.querySelector('input[name="flight-opt"]:checked');
-  let flightsXML = '';
-  if (flightRadio) {
-    flightsXML = `<FlightsSelectedSuperBB><item><OptionCode>${flightRadio.value}</OptionCode></item></FlightsSelectedSuperBB>`;
-  }
+  setStatus('reserva-status', 'loading', 'A simular…')
+  const flightRadio = document.querySelector('input[name="flight-opt"]:checked')
+  let flightsXML = ''
+  if (flightRadio) flightsXML = `<FlightsSelectedSuperBB><item><OptionCode>${flightRadio.value}</OptionCode></item></FlightsSelectedSuperBB>`
 
-  let hotelsXML = '<HotelsSelected>';
-  const selectedCard = document.querySelector('.hotel-card.selected');
-  if (selectedCard) {
-    const itinCode = selectedCard.dataset.itinCode;
-    const hotelCode = selectedCard.dataset.hotelCode;
-    const boardSelect = document.getElementById(`board-${itinCode}-${hotelCode}`);
-    const roomSelect = document.getElementById(`room-${itinCode}-${hotelCode}`);
-    const boardCode = boardSelect ? boardSelect.value : 'TI';
-    const roomCode = roomSelect ? roomSelect.value : '0';
-    
-    hotelsXML += `<item><ItineraryCode>${itinCode}</ItineraryCode><HotelSelected>${hotelCode}</HotelSelected><BoardSelected>${boardCode}</BoardSelected><RoomSelected>${roomCode}</RoomSelected></item>`;
-  } else {
-    const firstHotel = document.querySelector('.hotel-card');
-    if (firstHotel) {
-      firstHotel.classList.add('selected');
-      const itinCode = firstHotel.dataset.itinCode;
-      const hotelCode = firstHotel.dataset.hotelCode;
-      hotelsXML += `<item><ItineraryCode>${itinCode}</ItineraryCode><HotelSelected>${hotelCode}</HotelSelected><BoardSelected>TI</BoardSelected><RoomSelected>0</RoomSelected></item>`;
-    }
+  const card = document.querySelector('.hotel-card.selected') || document.querySelector('.hotel-card')
+  let hotelsXML = '<HotelsSelected>'
+  if (card) {
+    card.classList.add('selected')
+    const itinCode = card.dataset.itin
+    const hotelCode = card.dataset.hotel
+    const roomSel = document.getElementById(`room-${itinCode}-${hotelCode}`)
+    const boardSel = document.getElementById(`board-${itinCode}-${hotelCode}`)
+    const roomCode = roomSel ? roomSel.value : '0'
+    const boardCode = (roomSel && roomSel.selectedOptions[0]?.dataset.board) || (boardSel ? boardSel.value : 'TI')
+    hotelsXML += `<item><ItineraryCode>${itinCode}</ItineraryCode><HotelSelected>${hotelCode}</HotelSelected><RoomSelected>${roomCode}</RoomSelected><BoardSelected>${boardCode}</BoardSelected></item>`
   }
-  hotelsXML += '</HotelsSelected>';
+  hotelsXML += '</HotelsSelected>'
 
   try {
     await soapCall('DynSetServicesSelected',
-      `<ns1:DynSetServicesSelected><DynServicesSelectedRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash>${flightsXML}${hotelsXML}</DynServicesSelectedRequest></ns1:DynSetServicesSelected>`);
-
+      `<ns1:DynSetServicesSelected><DynServicesSelectedRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash>${flightsXML}${hotelsXML}</DynServicesSelectedRequest></ns1:DynSetServicesSelected>`)
     const simDoc = await soapCall('DynGetSimulation',
-      `<ns1:DynGetSimulation><DynGetSimulationRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`);
-
-    state.simulationData = simDoc;
-    renderSimulation(simDoc);
-    document.getElementById('r-step3').style.display = 'none';
-    document.getElementById('r-step4').style.display = 'block';
-    setStep(4);
-    setStatus('reserva-status', '', '');
-  } catch (e) {
-    log(`❌ ${e.message}`, 'error');
-    setStatus('reserva-status', 'err', `❌ ${e.message}`);
-  }
+      `<ns1:DynGetSimulation><DynGetSimulationRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
+    state.simulationData = simDoc
+    renderSimulation(simDoc)
+    document.getElementById('r-step3').style.display = 'none'
+    document.getElementById('r-step4').style.display = 'block'
+    setStep(4); setStatus('reserva-status', '', '')
+  } catch (e) { log(`❌ ${e.message}`, 'error'); setStatus('reserva-status', 'err', `❌ ${e.message}`) }
 }
 
 function renderSimulation(doc) {
-  const status = txt(doc, 'AvailableStatus');
-  const price = parseFloat(txt(doc, 'TotalPrice') || 0).toFixed(2);
-  const services = all(doc, 'DynResService');
-  const badge = status === 'OK'
-    ? '<span class="badge badge-ok">✅ Confirmação Imediata</span>'
-    : '<span class="badge badge-wl">⏳ Sujeito a Confirmação</span>';
-
-  let h = `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px">
-    ${badge}<div style="font-size:30px;font-weight:800;color:var(--coral);font-family:'Poppins',sans-serif">€${price}</div><div style="color:var(--muted)">Total</div></div>`;
-
+  const status = txt(doc, 'AvailableStatus') || 'OK'
+  const price = parseFloat(txt(doc, 'TotalPrice') || 0).toFixed(2)
+  const services = all(doc, 'DynResService')
+  const badge = status === 'OK' ? '<span class="badge badge-ok">✅ Confirmação Imediata</span>' : '<span class="badge badge-wl">⏳ Sujeito a Confirmação</span>'
+  let h = `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px">${badge}<div style="font-size:30px;font-weight:800;color:var(--coral);font-family:'Poppins',sans-serif">€${price}</div><div style="color:var(--muted)">Total</div></div>`
   if (services.length) {
-    h += '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Tipo</th><th style="padding:8px;text-align:left">Descrição</th><th style="padding:8px;text-align:left">Período</th><th style="padding:8px">Estado</th></tr></thead><tbody>';
+    h += '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Tipo</th><th style="padding:8px;text-align:left">Descrição</th><th style="padding:8px;text-align:left">Período</th><th style="padding:8px">Estado</th></tr></thead><tbody>'
     services.forEach(s => {
-      const st = txt(s, 'Status');
-      h += `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:8px">${txt(s, 'Type')}</td>
-        <td style="padding:8px">${txt(s, 'Description')}</td>
-        <td style="padding:8px;font-size:12px">${txt(s, 'DateFrom')} → ${txt(s, 'DateTo')}</td>
-        <td style="padding:8px;text-align:center"><span class="badge ${st === 'OK' ? 'badge-ok' : 'badge-wl'}">${st}</span></td>
-      </tr>`;
-    });
-    h += '</tbody></table>';
+      const st = txt(s, 'Status')
+      h += `<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px">${txt(s,'Type')}</td><td style="padding:8px">${esc(txt(s,'Description'))}</td><td style="padding:8px;font-size:12px">${txt(s,'DateFrom')} → ${txt(s,'DateTo')}</td><td style="padding:8px;text-align:center"><span class="badge ${st==='OK'?'badge-ok':'badge-wl'}">${st}</span></td></tr>`
+    })
+    h += '</tbody></table>'
   }
-  document.getElementById('simulation-result').innerHTML = h;
-  document.getElementById('btn-step4-actions').style.display = 'flex';
+  document.getElementById('simulation-result').innerHTML = h
+  document.getElementById('btn-step4-actions').style.display = 'flex'
 }
 
 function goToConfirm() {
-  renderPaxForm(all(state.simulationData, 'DynResPax'));
-  document.getElementById('r-step4').style.display = 'none';
-  document.getElementById('r-step5').style.display = 'block';
-  setStep(5);
+  renderPaxForm(all(state.simulationData, 'DynResPax'))
+  document.getElementById('r-step4').style.display = 'none'
+  document.getElementById('r-step5').style.display = 'block'
+  setStep(5)
 }
-
 function renderPaxForm(paxList) {
-  const c = document.getElementById('pax-form');
-  let h = '<div class="pax-grid">';
-  if (paxList.length) {
-    paxList.forEach((p, i) => {
-      const room = txt(p, 'Room') || 'DBL1';
-      const type = txt(p, 'Type') || 'ADT';
-      const roomNum = txt(p, 'RoomNumber') || '1';
-      h += `<div class="pax-row">
-        <div class="pax-row-title">Passageiro ${i + 1} — ${room} · ${type === 'ADT' ? 'Adulto' : 'Criança'}</div>
-        <div class="form-group"><label>Tratamento</label><select id="pax-title-${i}"><option>MR</option><option>MRS</option><option>MISS</option></select></div>
-        <div class="form-group"><label>Nome</label><input type="text" id="pax-name-${i}"></div>
-        <div class="form-group"><label>Apelido</label><input type="text" id="pax-surname-${i}"></div>
-        <div class="form-group"><label>Data Nasc.</label><input type="date" id="pax-dob-${i}"></div>
-        <input type="hidden" id="pax-roomnum-${i}" value="${roomNum}">
-        <input type="hidden" id="pax-room-${i}" value="${room}">
-      </div>`;
-    });
-  } else {
-    state.rooms.forEach((r, i) => {
-      h += `<div class="pax-row">
-        <div class="pax-row-title">Quarto ${r.num} — Adulto</div>
-        <div class="form-group"><label>Tratamento</label><select id="pax-title-${i}"><option>MR</option><option>MRS</option><option>MISS</option></select></div>
-        <div class="form-group"><label>Nome</label><input type="text" id="pax-name-${i}"></div>
-        <div class="form-group"><label>Apelido</label><input type="text" id="pax-surname-${i}"></div>
-        <div class="form-group"><label>Data Nasc.</label><input type="date" id="pax-dob-${i}"></div>
-        <input type="hidden" id="pax-roomnum-${i}" value="${r.num}">
-        <input type="hidden" id="pax-room-${i}" value="DBL${r.num}">
-      </div>`;
-    });
-  }
-  h += '</div>';
-  c.innerHTML = h;
-  state.paxCount = paxList.length || state.rooms.length;
+  const c = document.getElementById('pax-form')
+  let h = ''
+  const list = paxList.length ? paxList : state.rooms.map((r,i)=>({room:'DBL'+r.num, type:'ADT', roomNum:r.num}))
+  list.forEach((p, i) => {
+    const room = paxList.length ? (txt(p,'Room')||'DBL1') : p.room
+    const type = paxList.length ? (txt(p,'Type')||'ADT') : p.type
+    const roomNum = paxList.length ? (txt(p,'RoomNumber')||'1') : p.roomNum
+    h += `<div class="pax-row">
+      <div class="pax-row-title">Passageiro ${i+1} — ${room} · ${type==='ADT'?'Adulto':'Criança'}</div>
+      <div class="form-group"><label>Tratamento</label><select id="pax-title-${i}"><option>MR</option><option>MRS</option><option>MISS</option></select></div>
+      <div class="form-group"><label>Nome</label><input type="text" id="pax-name-${i}"></div>
+      <div class="form-group"><label>Apelido</label><input type="text" id="pax-surname-${i}"></div>
+      <div class="form-group"><label>Data Nasc.</label><input type="date" id="pax-dob-${i}"></div>
+      <input type="hidden" id="pax-roomnum-${i}" value="${roomNum}">
+      <input type="hidden" id="pax-room-${i}" value="${room}"></div>`
+  })
+  c.innerHTML = h
+  state.paxCount = list.length
 }
 
-// CRIAR RESERVA
 async function createReservation() {
-  setStatus('reserva-status', 'loading', 'A criar reserva…');
-  let paxXML = '';
+  setStatus('reserva-status', 'loading', 'A criar reserva…')
+  let paxXML = ''
   for (let i = 0; i < state.paxCount; i++) {
-    const title = document.getElementById(`pax-title-${i}`)?.value || 'MR';
-    const name = document.getElementById(`pax-name-${i}`)?.value || '';
-    const surname = document.getElementById(`pax-surname-${i}`)?.value || '';
-    const dob = document.getElementById(`pax-dob-${i}`)?.value || '1990-01-01';
-    const roomNum = document.getElementById(`pax-roomnum-${i}`)?.value || '1';
-    const room = document.getElementById(`pax-room-${i}`)?.value || 'DBL1';
-    paxXML += `<DynPax><RoomNum>${roomNum}</RoomNum><Title>${title}</Title><Name>${name}</Name><Surname>${surname}</Surname><DateBirth>${dob}</DateBirth><Room>${room}</Room></DynPax>`;
+    const title = document.getElementById(`pax-title-${i}`)?.value || 'MR'
+    const name = document.getElementById(`pax-name-${i}`)?.value || ''
+    const surname = document.getElementById(`pax-surname-${i}`)?.value || ''
+    const dob = document.getElementById(`pax-dob-${i}`)?.value || '1990-01-01'
+    const roomNum = document.getElementById(`pax-roomnum-${i}`)?.value || '1'
+    const room = document.getElementById(`pax-room-${i}`)?.value || 'DBL1'
+    paxXML += `<DynPax><RoomNum>${roomNum}</RoomNum><Title>${title}</Title><Name>${name}</Name><Surname>${surname}</Surname><DateBirth>${dob}</DateBirth><Room>${room}</Room></DynPax>`
   }
-  const ref = document.getElementById('r-clientref').value || '';
-  const obs = document.getElementById('r-clientobs').value || '';
-
+  const ref = document.getElementById('r-clientref').value || ''
+  const obs = document.getElementById('r-clientobs').value || ''
   try {
     const doc = await soapCall('DynCreateReserve',
-      `<ns1:DynCreateReserve><DynCreateReserveRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><PaxsStruct>${paxXML}</PaxsStruct>${ref ? `<ClientRef>${ref}</ClientRef>` : ''}${obs ? `<ClientObs>${obs}</ClientObs>` : ''}</DynCreateReserveRequest></ns1:DynCreateReserve>`);
-
-    const reserve = txt(doc, 'Reserve');
-    const sysStatus = txt(doc, 'SystemStatus');
-    const statusAll = txt(doc, 'StatusAll');
-
-    log(`✅ Reserva criada: ${reserve} — ${sysStatus}`, 'success');
-    document.getElementById('r-step5').style.display = 'none';
-    document.getElementById('r-final').style.display = 'block';
+      `<ns1:DynCreateReserve><DynCreateReserveRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><PaxsStruct>${paxXML}</PaxsStruct>${ref?`<ClientRef>${ref}</ClientRef>`:''}${obs?`<ClientObs>${obs}</ClientObs>`:''}</DynCreateReserveRequest></ns1:DynCreateReserve>`)
+    const reserve = txt(doc, 'Reserve')
+    const sysStatus = txt(doc, 'SystemStatus')
+    const statusAll = txt(doc, 'StatusAll')
+    log(`✅ Reserva criada: ${reserve} — ${sysStatus}`, 'success')
+    document.getElementById('r-step5').style.display = 'none'
+    document.getElementById('r-final').style.display = 'block'
     document.getElementById('r-final').innerHTML = `<div class="res-success">
       <div style="font-size:40px;margin-bottom:8px">✅</div>
       <div class="res-number">${reserve}</div>
       <div style="color:var(--muted);margin-top:4px">Número de Reserva Optigest / Soltropico</div>
-      <div style="margin-top:14px">
-        <span class="badge ${sysStatus === 'OK' ? 'badge-ok' : 'badge-wl'}">Sistema: ${sysStatus}</span>
-        <span class="badge ${statusAll === 'OK' ? 'badge-ok' : 'badge-wl'}">Serviços: ${statusAll}</span>
-      </div>
-      <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
-        <button class="btn btn-outline" onclick="viewReserve(${reserve})">Ver Detalhes</button>
-        <button class="btn btn-blue" onclick="location.reload()">Nova Reserva</button>
-      </div>
-    </div>`;
-    setStatus('reserva-status', '', '');
-  } catch (e) {
-    log(`❌ ${e.message}`, 'error');
-    setStatus('reserva-status', 'err', `❌ ${e.message}`);
-  }
+      <div style="margin-top:14px"><span class="badge ${sysStatus==='OK'?'badge-ok':'badge-wl'}">Sistema: ${sysStatus}</span><span class="badge ${statusAll==='OK'?'badge-ok':'badge-wl'}">Serviços: ${statusAll}</span></div>
+      <div style="margin-top:20px;display:flex;gap:10px;justify-content:center"><button class="btn btn-outline" onclick="viewReserve(${reserve})">Ver Detalhes</button><button class="btn btn-blue" onclick="location.reload()">Nova Reserva</button></div>
+    </div>`
+    setStatus('reserva-status', '', '')
+  } catch (e) { log(`❌ ${e.message}`, 'error'); setStatus('reserva-status', 'err', `❌ ${e.message}`) }
 }
 
-// LISTAR RESERVAS
 async function listReserves() {
-  setStatus('reserves-status', 'loading', 'A pesquisar…');
-  const reserve = document.getElementById('rl-reserve').value;
-  const status = document.getElementById('rl-status').value;
-  const depFrom = document.getElementById('rl-depfrom').value;
-  const depTo = document.getElementById('rl-depto').value;
-
-  let xml = `<ns1:ReserveList><ReserveListRequest>${credXML()}`;
-  if (reserve) xml += `<Reserve>${reserve}</Reserve>`;
-  if (status) xml += `<Status>${status}</Status>`;
-  if (depFrom) xml += `<DepDateFrom>${depFrom}</DepDateFrom>`;
-  if (depTo) xml += `<DepDateTo>${depTo}</DepDateTo>`;
-  xml += `<MaxReg>50</MaxReg></ReserveListRequest></ns1:ReserveList>`;
-
+  setStatus('reserves-status', 'loading', 'A pesquisar…')
+  const reserve = document.getElementById('rl-reserve').value
+  const status = document.getElementById('rl-status').value
+  const depFrom = document.getElementById('rl-depfrom').value
+  const depTo = document.getElementById('rl-depto').value
+  let xml = `<ns1:ReserveList><ReserveListRequest>${credXML()}`
+  if (reserve) xml += `<Reserve>${reserve}</Reserve>`
+  if (status) xml += `<Status>${status}</Status>`
+  if (depFrom) xml += `<DepDateFrom>${depFrom}</DepDateFrom>`
+  if (depTo) xml += `<DepDateTo>${depTo}</DepDateTo>`
+  xml += `<MaxReg>50</MaxReg></ReserveListRequest></ns1:ReserveList>`
   try {
-    const doc = await soapCall('ReserveList', xml);
-    const list = all(doc, 'ResList');
-    if (!list.length) {
-      setStatus('reserves-status', 'err', 'Nenhuma reserva encontrada.');
-      document.getElementById('reserves-results').innerHTML = '';
-      return;
-    }
-    setStatus('reserves-status', 'ok', `✓ ${list.length} reserva(s)`);
-    let h = '<table style="width:100%;border-collapse:collapse;margin-top:12px"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Nº</th><th style="padding:8px;text-align:left">Cliente</th><th style="padding:8px;text-align:left">Partida</th><th style="padding:8px">Ações</th></tr></thead><tbody>';
+    const doc = await soapCall('ReserveList', xml)
+    const list = all(doc, 'ResList')
+    if (!list.length) { setStatus('reserves-status', 'err', 'Nenhuma reserva.'); document.getElementById('reserves-results').innerHTML = ''; return }
+    setStatus('reserves-status', 'ok', `✓ ${list.length} reserva(s)`)
+    let h = '<table style="width:100%;border-collapse:collapse;margin-top:12px"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Nº</th><th style="padding:8px;text-align:left">Cliente</th><th style="padding:8px;text-align:left">Partida</th><th style="padding:8px">Ações</th></tr></thead><tbody>'
     list.forEach(r => {
-      const num = txt(r, 'Reserve');
-      const client = txt(r, 'ClientName');
-      const dep = txt(r, 'DepDate');
-      h += `<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px"><strong>${num}</strong></td><td style="padding:8px">${esc(client)}</td><td style="padding:8px">${dep}</td><td style="padding:8px;text-align:center"><button class="btn btn-outline btn-sm" onclick="viewReserve(${num})">Ver</button></td></tr>`;
-    });
-    h += '</tbody></table>';
-    document.getElementById('reserves-results').innerHTML = h;
-  } catch (e) {
-    log(`❌ ${e.message}`, 'error');
-    setStatus('reserves-status', 'err', `❌ ${e.message}`);
-  }
+      const num = txt(r,'Reserve'); const client = txt(r,'ClientName'); const dep = txt(r,'DepDate')
+      h += `<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px"><strong>${num}</strong></td><td style="padding:8px">${esc(client)}</td><td style="padding:8px">${dep}</td><td style="padding:8px;text-align:center"><button class="btn btn-outline btn-sm" onclick="viewReserve(${num})">Ver</button></td></tr>`
+    })
+    h += '</tbody></table>'
+    document.getElementById('reserves-results').innerHTML = h
+  } catch (e) { log(`❌ ${e.message}`, 'error'); setStatus('reserves-status', 'err', `❌ ${e.message}`) }
 }
-
 async function viewReserve(num) {
   try {
     const doc = await soapCall('RetrieveReserve',
-      `<ns1:RetrieveReserve><RetrieveReserveRequest>${credXML()}<Reserve xsi:type="xsd:int">${num}</Reserve></RetrieveReserveRequest></ns1:RetrieveReserve>`);
-    const head = doc.querySelector('Head') || doc.querySelector('ResHead');
-    const prod = head ? txt(head, 'Product') : '';
-    const dep = head ? txt(head, 'DepDate') : '';
-    const arr = head ? txt(head, 'ArrDate') : '';
-    const total = head ? parseFloat(txt(head, 'TotalGrossVal') || 0).toFixed(2) : '0.00';
-    alert(`Reserva ${num}\nProduto: ${prod}\nPartida: ${dep}\nRegresso: ${arr}\nTotal: €${total}`);
-  } catch (e) { alert('Erro: ' + e.message); }
+      `<ns1:RetrieveReserve><RetrieveReserveRequest>${credXML()}<Reserve xsi:type="xsd:int">${num}</Reserve></RetrieveReserveRequest></ns1:RetrieveReserve>`)
+    const head = firstByLocal(doc, 'Head') || firstByLocal(doc, 'ResHead')
+    const prod = head ? txt(head,'Product') : ''
+    const dep = head ? txt(head,'DepDate') : ''
+    const total = head ? parseFloat(txt(head,'TotalGrossVal')||0).toFixed(2) : '0.00'
+    alert(`Reserva ${num}\nProduto: ${prod}\nPartida: ${dep}\nTotal: €${total}`)
+  } catch (e) { alert('Erro: ' + e.message) }
 }
 
-// INIT
-document.getElementById('s-depdate').value = new Date().toISOString().split('T')[0];
+document.getElementById('s-depdate').value = new Date().toISOString().split('T')[0]
+log('🚀 Sistema pronto.', 'success')
 </script>
 </body>
 </html>
