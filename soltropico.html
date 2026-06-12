@@ -697,27 +697,53 @@ function selectHotelCard(itinCode, idx, hotelCode) {
 // ── SIMULAÇÃO ──
 async function setServicesAndSimulate() {
   setStatus('reserva-status', 'loading', 'A simular…')
-  const flightRadio = document.querySelector('input[name="flight-opt"]:checked')
-  let flightsXML = ''
-  if (flightRadio) flightsXML = `<FlightsSelectedSuperBB><item><OptionCode>${flightRadio.value}</OptionCode></item></FlightsSelectedSuperBB>`
 
+  // VOO selecionado (SuperBB). Se não houver voos, fica nil.
+  const flightRadio = document.querySelector('input[name="flight-opt"]:checked')
+  const flightsSuperBB = flightRadio
+    ? `<FlightsSelectedSuperBB SOAP-ENC:arrayType="ns1:DynFlightSelected[1]" xsi:type="ns1:DynFlightSelectedArray"><item xsi:type="ns1:DynFlightSelected"><OptionCode xsi:type="xsd:string">${flightRadio.value}</OptionCode></item></FlightsSelectedSuperBB>`
+    : `<FlightsSelectedSuperBB xsi:nil="true"/>`
+
+  // HOTEL selecionado
   const card = document.querySelector('.hotel-card.selected') || document.querySelector('.hotel-card')
-  let hotelsXML = '<HotelsSelected>'
+  let hotelsSelected = `<HotelsSelected xsi:nil="true"/>`
   if (card) {
     card.classList.add('selected')
     const itinCode = card.dataset.itin
     const hotelCode = card.dataset.hotel
     const roomSel = document.getElementById(`room-${itinCode}-${hotelCode}`)
-    const boardSel = document.getElementById(`board-${itinCode}-${hotelCode}`)
     const roomCode = roomSel ? roomSel.value : '0'
-    const boardCode = (roomSel && roomSel.selectedOptions[0]?.dataset.board) || (boardSel ? boardSel.value : 'TI')
-    hotelsXML += `<item><ItineraryCode>${itinCode}</ItineraryCode><HotelSelected>${hotelCode}</HotelSelected><RoomSelected>${roomCode}</RoomSelected><BoardSelected>${boardCode}</BoardSelected></item>`
+    const boardCode = (roomSel && roomSel.selectedOptions[0]?.dataset.board) || 'TI'
+    hotelsSelected = `<HotelsSelected SOAP-ENC:arrayType="ns1:DynHotelSelected[1]" xsi:type="ns1:DynHotelSelectedArray"><item xsi:type="ns1:DynHotelSelected"><ItineraryCode xsi:type="xsd:string">${itinCode}</ItineraryCode><HotelSelected xsi:type="xsd:string">${hotelCode}</HotelSelected><RoomSelected xsi:type="xsd:string">${roomCode}</RoomSelected><BoardSelected xsi:type="xsd:string">${boardCode}</BoardSelected></item></HotelsSelected>`
   }
-  hotelsXML += '</HotelsSelected>'
+
+  // Estrutura completa na ordem exata da Sandbox (campos não usados a nil)
+  const setBody =
+    `<ns1:DynSetServicesSelected><DynServicesSelectedRequest xsi:type="ns1:DynServicesSelectedRequest">${credXML()}` +
+    `<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash>` +
+    `<Reserve xsi:nil="true"/>` +
+    `<Local xsi:nil="true"/>` +
+    `<Regime xsi:nil="true"/>` +
+    `<Connector xsi:nil="true"/>` +
+    `<Skeleton_id xsi:nil="true"/>` +
+    `<Action xsi:nil="true"/>` +
+    `<DepLocal xsi:nil="true"/>` +
+    `<OptionId xsi:nil="true"/>` +
+    `<FlightsSelected xsi:nil="true"/>` +
+    flightsSuperBB +
+    `<FlightsSelectedFlightEngine xsi:nil="true"/>` +
+    `<FlightsSelectedAirAvailFlightEngine xsi:nil="true"/>` +
+    `<BusSelected xsi:nil="true"/>` +
+    hotelsSelected +
+    `<OptionalsSelected xsi:nil="true"/>` +
+    `<RoomsOfi xsi:nil="true"/>` +
+    `<RoomsSeniorOfi xsi:nil="true"/>` +
+    `<RoomsPktStatic xsi:nil="true"/>` +
+    `<RoomsSeniorPktStatic xsi:nil="true"/>` +
+    `</DynServicesSelectedRequest></ns1:DynSetServicesSelected>`
 
   try {
-    await soapCall('DynSetServicesSelected',
-      `<ns1:DynSetServicesSelected><DynServicesSelectedRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash>${flightsXML}${hotelsXML}</DynServicesSelectedRequest></ns1:DynSetServicesSelected>`)
+    await soapCall('DynSetServicesSelected', setBody)
     const simDoc = await soapCall('DynGetSimulation',
       `<ns1:DynGetSimulation><DynGetSimulationRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
     state.simulationData = simDoc
