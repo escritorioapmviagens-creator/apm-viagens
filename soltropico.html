@@ -604,7 +604,7 @@ async function searchAvailableServices() {
     let doc
     if (state.isDynamic !== false) {
       doc = await soapCall('DynSearchProductAvailableServices',
-        `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode><Pkt xsi:type="xsd:int">1</Pkt><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+        `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
     } else {
       doc = await soapCall('StaticGetRoomsStruct',
         `<ns1:StaticGetRoomsStruct><StaticGetRoomsStructRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes></StaticGetRoomsStructRequest></ns1:StaticGetRoomsStruct>`)
