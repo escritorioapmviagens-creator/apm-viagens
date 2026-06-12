@@ -713,8 +713,22 @@ async function setServicesAndSimulate() {
     const hotelCode = card.dataset.hotel
     const roomSel = document.getElementById(`room-${itinCode}-${hotelCode}`)
     const roomCode = roomSel ? roomSel.value : '0'
+    const roomName = roomSel ? (roomSel.selectedOptions[0]?.textContent || '').split(' — ')[0] : ''
     const boardCode = (roomSel && roomSel.selectedOptions[0]?.dataset.board) || 'TI'
-    hotelsSelected = `<HotelsSelected SOAP-ENC:arrayType="ns1:DynHotelSelected[1]" xsi:type="ns1:DynHotelSelectedArray"><item xsi:type="ns1:DynHotelSelected"><ItineraryCode xsi:type="xsd:string">${itinCode}</ItineraryCode><HotelSelected xsi:type="xsd:string">${hotelCode}</HotelSelected><RoomSelected xsi:type="xsd:string">${roomCode}</RoomSelected><BoardSelected xsi:type="xsd:string">${boardCode}</BoardSelected></item></HotelsSelected>`
+    // Array de quartos selecionados (1 por quarto pedido). count() incide aqui.
+    const roomsListXML = state.rooms.map((r, idx) =>
+      `<item xsi:type="ns1:RoomsList"><RoomNum xsi:type="xsd:string">${idx}</RoomNum><Name xsi:type="xsd:string">${esc(roomName)}</Name><Board xsi:type="xsd:string">${boardCode}</Board></item>`
+    ).join('')
+    hotelsSelected =
+      `<HotelsSelected SOAP-ENC:arrayType="ns1:DynHotelSelected[1]" xsi:type="ns1:DynHotelSelectedArray">` +
+        `<item xsi:type="ns1:DynHotelSelected">` +
+          `<ItineraryCode xsi:type="xsd:string">${itinCode}</ItineraryCode>` +
+          `<HotelSelected xsi:type="xsd:string">${hotelCode}</HotelSelected>` +
+          `<RoomSelected xsi:type="xsd:string">${roomCode}</RoomSelected>` +
+          `<BoardSelected xsi:type="xsd:string">${boardCode}</BoardSelected>` +
+          `<RoomsList SOAP-ENC:arrayType="ns1:RoomsList[${state.rooms.length}]" xsi:type="ns1:RoomsListArray">${roomsListXML}</RoomsList>` +
+        `</item>` +
+      `</HotelsSelected>`
   }
 
   // Estrutura completa na ordem exata da Sandbox (campos não usados a nil)
