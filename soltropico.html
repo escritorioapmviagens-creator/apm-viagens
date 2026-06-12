@@ -179,7 +179,8 @@ header span{font-size:12px;color:var(--muted)}
       <div id="log-panel" class="log-panel" style="margin-top:12px"><div class="log-entry log-info">Aguardando ação...</div></div>
     </div>
     <div class="card" id="xml-card" style="display:none">
-      <div class="card-title"><span>📄</span> XML Bruto da Última Resposta</div>
+      <div class="card-title"><span>📄</span> XML Bruto das Respostas</div>
+      <select id="xml-selector" onchange="showXmlFromHistory()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;margin-bottom:10px"></select>
       <div id="raw-xml" class="xml-block"></div>
     </div>
     <div class="card">
@@ -275,17 +276,41 @@ async function soapCall(action, body) {
   if (data.error) throw new Error(data.error)
   const xmlStr = (data.xml || '').replace(/^\uFEFF/, '').trim()
 
+  // Guardar no histórico (acessível via window.xmlHistory ou seletor no diagnóstico)
+  window.xmlHistory = window.xmlHistory || {}
+  window.xmlHistory[action] = xmlStr
+  console.log(`%c[SOAP] ${action}`, 'color:#3B5BDB;font-weight:bold', '\n' + xmlStr)
+
   // Mostrar XML no diagnóstico
   const rawEl = document.getElementById('raw-xml')
   const xmlCard = document.getElementById('xml-card')
   if (rawEl) rawEl.textContent = xmlStr
   if (xmlCard) xmlCard.style.display = 'block'
+  // Actualizar seletor de histórico
+  if (typeof updateXmlSelector === 'function') updateXmlSelector()
 
   const doc = new DOMParser().parseFromString(xmlStr, 'text/xml')
   if (doc.querySelector('parsererror')) throw new Error('XML inválido na resposta')
   const fault = doc.querySelector('faultstring')
   if (fault) throw new Error(fault.textContent)
   return doc
+}
+
+function updateXmlSelector() {
+  const sel = document.getElementById('xml-selector')
+  if (!sel || !window.xmlHistory) return
+  const current = sel.value
+  sel.innerHTML = Object.keys(window.xmlHistory)
+    .map(k => `<option value="${k}">${k}</option>`).join('')
+  if (current && window.xmlHistory[current]) sel.value = current
+}
+
+function showXmlFromHistory() {
+  const sel = document.getElementById('xml-selector')
+  const rawEl = document.getElementById('raw-xml')
+  if (sel && rawEl && window.xmlHistory) {
+    rawEl.textContent = window.xmlHistory[sel.value] || ''
+  }
 }
 
 // Encontrar texto de qualquer tag, ignorando namespace
