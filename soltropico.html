@@ -7,72 +7,89 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.07);--radius:12px;--radius-sm:8px}
-body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:var(--bg)}
-header{background:var(--surface);border-bottom:3px solid var(--coral);padding:14px 28px;display:flex;align-items:center;gap:14px}
-header img{height:44px}
+:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.07);--radius:12px;--radius-sm:8px;--shadow:0 2px 8px rgba(0,0,0,0.06)}
+body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:var(--bg);min-height:100vh}
+header{background:var(--surface);border-bottom:3px solid var(--coral);padding:14px 28px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);flex-wrap:wrap}
+header img{height:44px;object-fit:contain}
 header h1{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700}
-.container{max-width:1200px;margin:0 auto;padding:28px 20px}
-.tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:6px;margin-bottom:24px;flex-wrap:wrap}
-.tab{flex:1;min-width:140px;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);text-align:center}
-.tab.active{background:var(--blue);color:#fff}
+header span{font-size:12px;color:var(--muted)}
+.container{max-width:1200px;margin:0 auto;padding:28px 20px 60px}
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:6px;box-shadow:var(--shadow);margin-bottom:24px;flex-wrap:wrap}
+.tab{flex:1;min-width:140px;padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s;text-align:center}
+.tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,91,219,0.3)}
+.tab:hover:not(.active){background:var(--bg);color:var(--navy)}
 .panel{display:none}.panel.active{display:block}
-.card{background:var(--surface);border-radius:var(--radius);padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
-.card-title{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:16px}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
+.card-title{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:16px;color:var(--navy);display:flex;align-items:center;gap:8px}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
 .form-group{display:flex;flex-direction:column;gap:4px}
-.form-group label{font-size:12px;font-weight:600;color:var(--muted)}
-.form-group input,.form-group select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none}
-.btn-blue{background:var(--blue);color:#fff}
-.btn-coral{background:var(--coral);color:#fff}
-.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--navy)}
+.form-group label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.form-group input,.form-group select{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;transition:border-color .15s;background:#fff}
+.form-group input:focus,.form-group select:focus{border-color:var(--blue)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .18s}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#3251c4}.btn-blue:disabled{opacity:.5;cursor:not-allowed}
+.btn-coral{background:var(--coral);color:#fff}.btn-coral:hover{background:#d02f4e}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--navy)}.btn-outline:hover{background:var(--bg)}
+.btn-sm{padding:5px 12px;font-size:12px}
 .btn-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
-.status-bar{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
+.status-bar{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;margin-bottom:16px;display:none}
 .status-bar.show{display:block}
-.status-bar.loading{background:#EEF2FF;color:#3251c4}
-.status-bar.ok{background:#E8F5E9;color:#2E7D32}
-.status-bar.err{background:#FFEBEE;color:#C62828}
+.status-bar.loading{background:#EEF2FF;color:#3251c4;border:1px solid #c7d2fe}
+.status-bar.ok{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
+.status-bar.err{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2}
+.section-title{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;margin:24px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--blue)}
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.product-card{background:var(--surface);border-radius:var(--radius);cursor:pointer;border:2px solid transparent}
-.product-card:hover{border-color:var(--blue);box-shadow:0 4px 12px rgba(0,0,0,0.1)}
-.product-img{height:130px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:36px}
+.product-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.product-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.12);transform:translateY(-2px);border-color:var(--blue)}
+.product-img{width:100%;height:130px;object-fit:cover;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:36px}
+.product-img img{width:100%;height:100%;object-fit:cover}
 .product-info{padding:12px}
-.product-name{font-weight:700;margin-bottom:4px}
+.product-name{font-weight:700;font-size:14px;margin-bottom:4px}
+.product-meta{font-size:12px;color:var(--muted)}
 .product-price{font-size:17px;font-weight:700;color:var(--coral);margin:6px 0}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
-.badge-dyn{background:#EEF2FF;color:#3B5BDB}
-.log-panel{background:#1e1e2e;color:#a6e3a1;font-family:monospace;font-size:12px;padding:16px;border-radius:8px;max-height:400px;overflow-y:auto}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;margin:2px}
+.badge-dyn{background:#EEF2FF;color:#3B5BDB}.badge-sta{background:#F3E5F5;color:#6A1B9A}
+.badge-ok{background:#E8F5E9;color:#2E7D32}.badge-wl{background:#FFF3E0;color:#E65100}
+.badge-flight{background:#E8F5E9;color:#2E7D32}
+.log-panel{background:#1e1e2e;color:#a6e3a1;font-family:monospace;font-size:12px;padding:16px;border-radius:8px;max-height:400px;overflow-y:auto;white-space:pre-wrap}
 .log-entry{margin:3px 0;padding:3px 0;border-bottom:1px solid #334155}
-.log-error{color:#f87171}.log-success{color:#4ade80}.log-info{color:#60a5fa}
-.xml-block{background:#1e1e2e;color:#cdd6f4;font-family:monospace;font-size:11px;padding:14px;border-radius:8px;overflow-x:auto;max-height:350px;white-space:pre-wrap;margin-top:8px}
-.steps{display:flex;background:var(--surface);border-radius:var(--radius);margin-bottom:20px}
-.step{flex:1;padding:10px;text-align:center;font-size:11px;font-weight:600;color:var(--muted)}
-.step.active{background:var(--blue);color:#fff}
-.step.done{background:#EEF2FF;color:var(--blue)}
-.room-row{display:flex;align-items:center;gap:8px;padding:8px 0}
-.res-success{background:#E8F5E9;border:1.5px solid #A5D6A7;border-radius:var(--radius);padding:24px;text-align:center}
+.log-error{color:#f87171}.log-success{color:#4ade80}.log-info{color:#60a5fa}.log-warn{color:#fbbf24}
+.xml-block{background:#1e1e2e;color:#cdd6f4;font-family:monospace;font-size:11px;padding:14px;border-radius:8px;overflow-x:auto;max-height:350px;overflow-y:auto;white-space:pre-wrap;margin-top:8px}
+.steps{display:flex;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.step{flex:1;padding:10px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--muted);border-right:1px solid var(--border)}
+.step:last-child{border-right:none}.step.done{background:#EEF2FF;color:var(--blue)}.step.active{background:var(--blue);color:#fff}
+.step-num{display:block;font-size:16px;font-weight:700}
+.room-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.pax-row{background:var(--bg);border-radius:var(--radius-sm);padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:8px}
+.pax-row-title{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;grid-column:1/-1;margin-bottom:4px}
+.res-success{background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:1.5px solid #A5D6A7;border-radius:var(--radius);padding:24px;text-align:center}
 .res-number{font-family:'Poppins',sans-serif;font-size:40px;font-weight:700;color:#2E7D32}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader{display:inline-block;width:13px;height:13px;border:2px solid rgba(59,91,219,.3);border-top-color:#3B5BDB;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
 </style>
 </head>
 <body>
 <header>
   <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM">
-  <h1>Soltropico — Motor de Reservas</h1>
+  <div><h1>Soltropico — Motor de Reservas</h1><span>Integração Optigest SOAP · APM Viagens</span></div>
 </header>
 <div class="container">
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('pesquisa')">🔍 Pesquisar</button>
-    <button class="tab" onclick="switchTab('reserva')">📋 Reserva</button>
-    <button class="tab" onclick="switchTab('debug')">🛠 Diagnóstico</button>
+    <button class="tab active" onclick="switchTab('pesquisa',this)">🔍 Pesquisar Produtos</button>
+    <button class="tab" onclick="switchTab('reserva',this)">📋 Fazer Reserva</button>
+    <button class="tab" onclick="switchTab('minhas-reservas',this)">📁 Minhas Reservas</button>
+    <button class="tab" onclick="switchTab('debug',this)">🛠 Diagnóstico</button>
   </div>
 
+  <!-- PESQUISA -->
   <div id="panel-pesquisa" class="panel active">
     <div class="card">
-      <div class="card-title">🔍 Pesquisa de Produtos</div>
+      <div class="card-title"><span>🔍</span> Pesquisa de Produtos</div>
       <div class="form-grid">
-        <div class="form-group"><label>Nome</label><input type="text" id="s-name" placeholder="Ex: Dubai, Maldivas..."></div>
+        <div class="form-group"><label>Nome</label><input type="text" id="s-name" placeholder="DIS, MAL, PARIS…"></div>
         <div class="form-group"><label>Data Partida</label><input type="date" id="s-depdate"></div>
+        <div class="form-group"><label>Tipo</label><select id="s-pkttype"><option value="">Todos</option><option value="DYNAMIC">Dinâmico</option><option value="STATIC">Estático</option></select></div>
+        <div class="form-group"><label>País (ISO)</label><input type="text" id="s-country" placeholder="PT, FR…" maxlength="2"></div>
       </div>
       <div class="btn-actions">
         <button class="btn btn-blue" onclick="searchProducts()">🔍 Pesquisar</button>
@@ -83,67 +100,101 @@ header h1{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700}
     <div id="search-results"></div>
   </div>
 
+  <!-- RESERVA -->
   <div id="panel-reserva" class="panel">
     <div class="steps">
-      <div class="step done" id="step1">1. Produto</div>
-      <div class="step" id="step2">2. Parâmetros</div>
-      <div class="step" id="step3">3. Confirmar</div>
+      <div class="step done" id="step1"><span class="step-num">1</span>Produto</div>
+      <div class="step" id="step2"><span class="step-num">2</span>Parâmetros</div>
+      <div class="step" id="step3"><span class="step-num">3</span>Serviços</div>
+      <div class="step" id="step4"><span class="step-num">4</span>Simulação</div>
+      <div class="step" id="step5"><span class="step-num">5</span>Confirmar</div>
     </div>
     <div id="reserva-status" class="status-bar"></div>
-    
-    <div id="step1-panel" class="card">
-      <div class="card-title">📦 Produto Selecionado</div>
-      <div id="r-product-info">Nenhum produto selecionado.</div>
-      <div class="btn-actions"><button class="btn btn-blue" onclick="goToStep2()">Continuar →</button></div>
+    <div id="r-step1" class="card">
+      <div class="card-title"><span>📦</span> Produto Selecionado</div>
+      <div id="r-product-info" style="font-size:14px;margin-bottom:16px;color:var(--muted)">Nenhum produto selecionado. Volte à pesquisa.</div>
+      <div class="form-group" style="max-width:300px"><label>Ou introduza o código manualmente</label><input type="number" id="r-product-code" placeholder="ex: 105" min="1"></div>
+      <div class="btn-actions"><button class="btn btn-blue" onclick="getProductParams()">Obter Parâmetros →</button></div>
     </div>
-
-    <div id="step2-panel" class="card" style="display:none">
-      <div class="card-title">⚙️ Parâmetros da Reserva</div>
+    <div id="r-step2" class="card" style="display:none">
+      <div class="card-title"><span>⚙️</span> Parâmetros</div>
       <div class="form-grid">
         <div class="form-group"><label>Data Partida</label><select id="r-depdate"></select></div>
         <div class="form-group"><label>Local Partida</label><select id="r-deplocal"></select></div>
         <div class="form-group"><label>Noites Extra</label><input type="number" id="r-extranights" value="0" min="0"></div>
       </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px"><span style="font-weight:700">Quartos</span><button class="btn btn-outline btn-sm" onclick="addRoom()">+ Quarto</button></div>
       <div id="rooms-list"></div>
-      <div class="btn-actions">
-        <button class="btn btn-outline" onclick="backToStep1()">← Voltar</button>
-        <button class="btn btn-blue" onclick="checkAvailability()">Verificar Disponibilidade →</button>
-      </div>
+      <div id="base-locals-section" style="display:none"><div style="font-weight:700;margin:14px 0 8px">Noites por Local</div><div id="base-locals-list"></div></div>
+      <div class="btn-actions"><button class="btn btn-outline" onclick="backStep(1)">← Voltar</button><button class="btn btn-blue" onclick="searchAvailableServices()">Pesquisar Disponibilidade →</button></div>
     </div>
-
-    <div id="step3-panel" class="card" style="display:none">
-      <div class="card-title">💰 Simulação e Confirmação</div>
+    <div id="r-step3" class="card" style="display:none">
+      <div class="card-title"><span>✈️</span> Selecionar Serviços</div>
+      <div id="flight-options-section"></div><div id="hotel-options-section"></div>
+      <div class="btn-actions"><button class="btn btn-outline" onclick="backStep(2)">← Voltar</button><button class="btn btn-blue" onclick="setServicesAndSimulate()">Simular Reserva →</button></div>
+    </div>
+    <div id="r-step4" class="card" style="display:none">
+      <div class="card-title"><span>💶</span> Simulação</div>
       <div id="simulation-result"></div>
-      <div class="form-grid" style="margin-top:16px">
-        <div class="form-group"><label>Nome do Cliente</label><input type="text" id="client-name" placeholder="Nome completo"></div>
-        <div class="form-group"><label>Email</label><input type="email" id="client-email" placeholder="email@exemplo.com"></div>
-      </div>
-      <div class="btn-actions">
-        <button class="btn btn-outline" onclick="backToStep2()">← Voltar</button>
-        <button class="btn btn-coral" onclick="createReservation()">✓ Confirmar Reserva</button>
-      </div>
+      <div class="btn-actions" id="btn-step4-actions" style="display:none"><button class="btn btn-outline" onclick="backStep(3)">← Alterar</button><button class="btn btn-coral" onclick="goToConfirm()">Prosseguir →</button></div>
     </div>
-
+    <div id="r-step5" class="card" style="display:none">
+      <div class="card-title"><span>👤</span> Dados dos Passageiros</div>
+      <div id="pax-form"></div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="form-group"><label>Referência Cliente</label><input type="text" id="r-clientref"></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Observações</label><input type="text" id="r-clientobs"></div>
+      </div>
+      <div class="btn-actions"><button class="btn btn-outline" onclick="backStep(4)">← Voltar</button><button class="btn btn-coral" onclick="createReservation()">✓ Confirmar Reserva</button></div>
+    </div>
     <div id="r-final" style="display:none"></div>
   </div>
 
+  <!-- MINHAS RESERVAS -->
+  <div id="panel-minhas-reservas" class="panel">
+    <div class="card">
+      <div class="card-title"><span>📁</span> Pesquisar Reservas</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Nº Reserva</label><input type="number" id="rl-reserve"></div>
+        <div class="form-group"><label>Estado</label><select id="rl-status"><option value="">Todos</option><option value="OK">Confirmada</option><option value="WL">Lista Espera</option><option value="CL">Cancelada</option></select></div>
+        <div class="form-group"><label>Partida de</label><input type="date" id="rl-depfrom"></div>
+        <div class="form-group"><label>Partida até</label><input type="date" id="rl-depto"></div>
+      </div>
+      <div class="btn-actions"><button class="btn btn-blue" onclick="listReserves()">🔍 Pesquisar</button></div>
+    </div>
+    <div id="reserves-status" class="status-bar"></div>
+    <div id="reserves-results"></div>
+  </div>
+
+  <!-- DIAGNÓSTICO -->
   <div id="panel-debug" class="panel">
     <div class="card">
-      <div class="card-title">🛠 Diagnóstico</div>
+      <div class="card-title"><span>🛠</span> Diagnóstico</div>
       <div class="btn-actions">
-        <button class="btn btn-blue" onclick="testConnection()">Testar Conexão</button>
-        <button class="btn btn-outline" onclick="clearLogs()">Limpar Logs</button>
+        <button class="btn btn-blue" onclick="testConnection()">📡 Testar Conexão</button>
+        <button class="btn btn-outline" onclick="testProductTypes()">📦 Listar Tipos</button>
+        <button class="btn btn-outline" onclick="clearLogs()">🗑 Limpar Logs</button>
       </div>
-      <div id="log-panel" class="log-panel">[INFO] Aguardando ação...</div>
+      <div id="debug-status" class="status-bar" style="margin-top:12px"></div>
+      <div id="log-panel" class="log-panel" style="margin-top:12px"><div class="log-entry log-info">Aguardando ação...</div></div>
     </div>
     <div class="card" id="xml-card" style="display:none">
-      <div class="card-title">📄 XML da Última Resposta</div>
+      <div class="card-title"><span>📄</span> XML Bruto da Última Resposta</div>
       <div id="raw-xml" class="xml-block"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>⚙️</span> Configuração</div>
+      <div style="font-size:13px;color:var(--muted);line-height:2">
+        <div><b>Endpoint:</b> https://www3.optitravel.net/optitravel/export/wbs/pkt/wbs_server.php</div>
+        <div><b>System:</b> 808 &nbsp;|&nbsp; <b>Client:</b> 289363 &nbsp;|&nbsp; <b>Username:</b> admin@apmviagens.pt</div>
+        <div style="margin-top:8px;padding:10px;background:#FFF3E0;border-radius:8px;color:#E65100;font-size:12px">⚠️ As chamadas SOAP utilizam a Edge Function <code>soltropico-proxy</code> do Supabase como proxy CORS.</div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
+// ── CONFIG ──
 const SUPABASE_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
 const PROXY_URL = `${SUPABASE_URL}/functions/v1/soltropico-proxy`
@@ -151,58 +202,65 @@ const CREDS = { System: 808, Client: 289363, Username: 'admin@apmviagens.pt', Pa
 
 let state = {
   sessionHash: null,
-  selectedProduct: null,
-  rooms: [{ num: 1, code: 'DBL', childAges: '' }],
-  simulationPrice: 0
+  selectedProduct: null,  // { code: int, name: string }
+  productParams: null,
+  rooms: [{ num: 1, code: 1, childAges: '' }],
+  roomTypes: [],
+  baseLocals: [],
+  simulationData: null,
+  paxCount: 1
 }
 
-function log(msg, type = 'info') {
-  const panel = document.getElementById('log-panel')
-  if (!panel) return
-  const time = new Date().toLocaleTimeString()
-  const cls = { error: 'log-error', success: 'log-success' }[type] || 'log-info'
-  panel.innerHTML += `<div class="log-entry ${cls}">[${time}] ${msg}</div>`
-  panel.scrollTop = panel.scrollHeight
+// ── LOGS ──
+function log(msg, type='info') {
+  const p = document.getElementById('log-panel')
+  if (!p) return
+  const t = new Date().toLocaleTimeString()
+  const cls = {error:'log-error',success:'log-success',warn:'log-warn'}[type] || 'log-info'
+  p.innerHTML += `<div class="log-entry ${cls}">[${t}] ${msg}</div>`
+  p.scrollTop = p.scrollHeight
 }
-
 function clearLogs() {
-  document.getElementById('log-panel').innerHTML = '<div class="log-entry log-info">[INFO] Logs limpos.</div>'
+  document.getElementById('log-panel').innerHTML = '<div class="log-entry log-info">Logs limpos.</div>'
   document.getElementById('xml-card').style.display = 'none'
 }
 
-function switchTab(tab) {
+// ── UI ──
+function switchTab(tab, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
-  document.getElementById(`panel-${tab}`).classList.add('active')
-  event.target.classList.add('active')
+  document.getElementById('panel-' + tab).classList.add('active')
+  if (btn) btn.classList.add('active')
 }
-
 function setStatus(id, type, msg) {
   const el = document.getElementById(id)
   if (!el) return
   if (!msg) { el.className = 'status-bar'; return }
   el.className = `status-bar show ${type}`
-  el.innerHTML = type === 'loading' ? `⏳ ${msg}` : msg
+  el.innerHTML = type === 'loading' ? `<span class="loader"></span>${msg}` : msg
 }
+function setStep(n) {
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('step' + i)
+    if (el) el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '')
+  }
+}
+function backStep(n) {
+  ['r-step1','r-step2','r-step3','r-step4','r-step5','r-final'].forEach(s => {
+    const el = document.getElementById(s); if (el) el.style.display = 'none'
+  })
+  const target = document.getElementById('r-step' + n)
+  if (target) target.style.display = 'block'
+  setStep(n)
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 
+// ── SOAP ──
 function credXML() {
-  return `<Credentials xsi:type="ns1:CredentialsStruct">
-    <System xsi:type="xsd:int">${CREDS.System}</System>
-    <Client xsi:type="xsd:int">${CREDS.Client}</Client>
-    <Username xsi:type="xsd:string">${CREDS.Username}</Username>
-    <Password xsi:type="xsd:string">${CREDS.Password}</Password>
-  </Credentials>`
+  return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">${CREDS.System}</System><Client xsi:type="xsd:int">${CREDS.Client}</Client><Username xsi:type="xsd:string">${CREDS.Username}</Username><Password xsi:type="xsd:string">${CREDS.Password}</Password></Credentials>`
 }
-
 function wrap(body) {
-  return `<?xml version="1.0" encoding="UTF-8"?>
-  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
-                    xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" 
-                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <soapenv:Header/>
-    <soapenv:Body>${body}</soapenv:Body>
-  </soapenv:Envelope>`
+  return `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
 }
 
 async function soapCall(action, body) {
@@ -215,334 +273,625 @@ async function soapCall(action, body) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const data = await res.json()
   if (data.error) throw new Error(data.error)
-  
-  const xmlStr = (data.xml || '').trim()
-  document.getElementById('raw-xml').textContent = xmlStr
-  document.getElementById('xml-card').style.display = 'block'
-  
+  const xmlStr = (data.xml || '').replace(/^\uFEFF/, '').trim()
+
+  // Mostrar XML no diagnóstico
+  const rawEl = document.getElementById('raw-xml')
+  const xmlCard = document.getElementById('xml-card')
+  if (rawEl) rawEl.textContent = xmlStr
+  if (xmlCard) xmlCard.style.display = 'block'
+
   const doc = new DOMParser().parseFromString(xmlStr, 'text/xml')
+  if (doc.querySelector('parsererror')) throw new Error('XML inválido na resposta')
   const fault = doc.querySelector('faultstring')
   if (fault) throw new Error(fault.textContent)
   return doc
 }
 
-function getText(el, tag) {
+// Encontrar texto de qualquer tag, ignorando namespace
+function txt(el, tag) {
   if (!el) return ''
-  const found = el.getElementsByTagName(tag)
-  return found.length ? found[0].textContent.trim() : ''
+  // 1. Procurar apenas nos filhos directos (evita apanhar Code de níveis superiores)
+  for (let i = 0; i < el.children.length; i++) {
+    const child = el.children[i]
+    const local = child.localName || child.tagName.split(':').pop()
+    if (local === tag) return child.textContent.trim()
+  }
+  // 2. querySelector (pode falhar com namespaces)
+  const direct = el.querySelector(tag)
+  if (direct) return direct.textContent.trim()
+  // 3. Fallback: percorrer todos os descendentes
+  const nodes = el.getElementsByTagName('*')
+  for (let i = 0; i < nodes.length; i++) {
+    const local = nodes[i].localName || nodes[i].tagName.split(':').pop()
+    if (local === tag) return nodes[i].textContent.trim()
+  }
+  return ''
+}
+function all(el, tag) {
+  let res = Array.from(el.querySelectorAll(tag))
+  if (!res.length) {
+    res = Array.from(el.getElementsByTagName('*')).filter(e => {
+      const local = e.localName || e.tagName.split(':').pop()
+      return local === tag
+    })
+  }
+  return res
 }
 
-// PESQUISA DE PRODUTOS
+// ── DIAGNÓSTICO ──
+async function testConnection() {
+  setStatus('debug-status','loading','A testar…')
+  log('🔌 Testando ligação…')
+  try {
+    const doc = await soapCall('SearchProductTypes',
+      `<ns1:SearchProductTypes><SearchProductTypesRequest>${credXML()}</SearchProductTypesRequest></ns1:SearchProductTypes>`)
+    const types = all(doc, 'ProductType')
+    log(`✅ Ligação OK — ${types.length} tipo(s)`, 'success')
+    setStatus('debug-status','ok',`✅ Ligação OK! ${types.length} tipo(s) de produto disponíveis.`)
+  } catch(e) {
+    log(`❌ ${e.message}`, 'error')
+    setStatus('debug-status','err',`❌ ${e.message}`)
+  }
+}
+async function testProductTypes() {
+  setStatus('debug-status','loading','A listar…')
+  try {
+    const doc = await soapCall('SearchProductTypes',
+      `<ns1:SearchProductTypes><SearchProductTypesRequest>${credXML()}</SearchProductTypesRequest></ns1:SearchProductTypes>`)
+    const types = all(doc, 'ProductType')
+    log(`✅ ${types.length} tipo(s):`, 'success')
+    types.forEach(t => log(`   • ${txt(t,'Code')} — ${txt(t,'Description')}`))
+    setStatus('debug-status','ok',`✓ ${types.length} tipo(s) encontrado(s)`)
+  } catch(e) {
+    log(`❌ ${e.message}`, 'error')
+    setStatus('debug-status','err',`❌ ${e.message}`)
+  }
+}
+
+// ── PESQUISA ──
 async function searchProducts() {
-  const name = document.getElementById('s-name').value
+  const name    = document.getElementById('s-name').value
   const depdate = document.getElementById('s-depdate').value
-  
-  setStatus('search-status', 'loading', 'A pesquisar produtos...')
-  
+  const pkttype = document.getElementById('s-pkttype').value
+  const country = document.getElementById('s-country').value
+
+  log(`🔍 Pesquisando: "${name||'(todos)'}"`)
+  setStatus('search-status','loading','A pesquisar…')
+  document.getElementById('search-results').innerHTML = ''
+
   let xml = `<ns1:SearchProducts><SearchProductsRequest>${credXML()}`
-  if (name) xml += `<Name>${name}</Name>`
+  if (name)    xml += `<Name>${name}</Name>`
+  if (country) xml += `<Country>${country}</Country>`
   if (depdate) xml += `<DepDate>${depdate}</DepDate>`
+  if (pkttype) xml += `<Pkt_type>${pkttype}</Pkt_type>`
   xml += `<PriceFrom>0</PriceFrom><PriceTo>99999</PriceTo></SearchProductsRequest></ns1:SearchProducts>`
 
   try {
     const doc = await soapCall('SearchProducts', xml)
-    const products = doc.getElementsByTagName('Product')
-    
-    if (!products.length) {
-      setStatus('search-status', 'err', 'Nenhum produto encontrado')
+
+    // Buscar items apenas dentro do ProductArray (não sub-arrays)
+    const productArray = all(doc, 'ProductArray')[0] || all(doc, 'ProductsList')[0]
+    let items = productArray
+      ? Array.from(productArray.children).filter(e => {
+          const local = e.localName || e.tagName.split(':').pop()
+          return local === 'item' || local === 'Product'
+        })
+      : all(doc, 'Product')
+    if (!items.length) items = all(doc, 'item').filter(e => {
+      return Array.from(e.children).some(c => (c.localName||c.tagName.split(':').pop()) === 'Name')
+    })
+    log(`📦 ${items.length} item(ns) bruto(s) recebido(s)`)
+
+    // ── EXTRACÇÃO ROBUSTA DO CÓDIGO ──
+    // Cada item pode ter o código em: Code, ProdCode, ProductCode
+    // Vamos inspeccionar o primeiro item para perceber a estrutura
+    if (items.length > 0) {
+      const firstTags = Array.from(items[0].children).map(c => c.tagName).join(', ')
+      log(`🔎 Tags do 1º produto: ${firstTags}`, 'info')
+    }
+
+    const products = items.map(p => {
+      // Tentar todas as variantes de código
+      let code = txt(p,'Code') || txt(p,'ProdCode') || txt(p,'ProductCode') || ''
+      // Remover espaços e garantir inteiro
+      code = code.trim()
+      const codeInt = parseInt(code)
+
+      const name  = txt(p,'Name') || txt(p,'ProdName') || txt(p,'Description') || ''
+      const price = txt(p,'PriceFrom') || txt(p,'PriceFromMin') || '0'
+      const pkt   = txt(p,'ProdType') || txt(p,'Pkt_type') || txt(p,'PackType') || ''
+      const img   = txt(p,'ImageUrl') || txt(p,'Image') || ''
+      const flight= txt(p,'HasFlights') || txt(p,'Flight') || 'NO'
+      const opFrom= txt(p,'OperationFrom') || ''
+      const opTo  = txt(p,'OperationTo') || ''
+
+      log(`  → code="${code}" (int=${codeInt}) | name="${name.substring(0,40)}"`)
+
+      return { code, codeInt, name, price, pkt, img, flight, opFrom, opTo, valid: !isNaN(codeInt) && codeInt > 0 && name !== '' }
+    }).filter(p => p.name && p.name !== 'TESTE OMNIBEES')
+
+    const valid = products.filter(p => p.valid)
+    const invalid = products.filter(p => !p.valid)
+
+    log(`📊 Válidos: ${valid.length} | Inválidos: ${invalid.length}`, valid.length ? 'success' : 'warn')
+    if (invalid.length) log(`⚠️ ${invalid.length} produto(s) sem código válido ignorados`, 'warn')
+
+    if (!valid.length) {
+      setStatus('search-status','err','⚠️ Nenhum produto com código válido encontrado. Verifique o Diagnóstico → XML Bruto.')
+      document.getElementById('search-results').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Sem resultados válidos. Consulte o painel Diagnóstico para ver o XML retornado.</div>'
       return
     }
-    
-    let html = '<div class="product-grid">'
-    for (let i = 0; i < Math.min(products.length, 20); i++) {
-      const p = products[i]
-      const code = getText(p, 'Code')
-      const name = getText(p, 'Name')
-      const price = getText(p, 'PriceFrom')
-      const pkt = getText(p, 'ProdType')
-      
-      if (code && name) {
-        html += `
-          <div class="product-card" onclick="selectProduct(${code}, '${escapeHtml(name)}', '${pkt}')">
-            <div class="product-img">🏝️</div>
-            <div class="product-info">
-              <div class="product-name">${escapeHtml(name)}</div>
-              <div class="product-meta">Código: ${code}</div>
-              <div class="product-price">${price ? '€' + parseFloat(price).toFixed(2) : 'Sob consulta'}</div>
-              <span class="badge badge-dyn">${pkt === 'DYNAMIC' ? 'Dinâmico' : 'Estático'}</span>
-            </div>
-          </div>
-        `
-      }
-    }
+
+    const simples  = valid.filter(p => true) // por agora todos iguais até a API distinguir
+    setStatus('search-status','ok',`✓ ${valid.length} produto(s) encontrado(s)`)
+
+    let html = `<div class="section-title">🏖️ Produtos <span style="font-size:13px;font-weight:400;color:var(--muted)">(${valid.length})</span></div><div class="product-grid">`
+    valid.forEach(p => { html += renderCard(p) })
     html += '</div>'
     document.getElementById('search-results').innerHTML = html
-    setStatus('search-status', 'ok', `✓ ${products.length} produtos encontrados`)
-    log(`✅ Pesquisa concluída: ${products.length} produtos`, 'success')
+
   } catch(e) {
-    log(`❌ Erro: ${e.message}`, 'error')
-    setStatus('search-status', 'err', e.message)
+    log(`❌ ${e.message}`, 'error')
+    setStatus('search-status','err',`❌ ${e.message}`)
   }
 }
 
-function escapeHtml(str) {
-  return String(str).replace(/[&<>]/g, function(m) {
-    if (m === '&') return '&amp;'
-    if (m === '<') return '&lt;'
-    if (m === '>') return '&gt;'
-    return m
-  })
+function renderCard(p) {
+  const priceVal = parseFloat(p.price) || 0
+  const hasFlight = p.flight === 'YES' || p.flight === '1'
+  const typeBadge = p.pkt === 'DYNAMIC' ? '<span class="badge badge-dyn">Dinâmico</span>'
+    : p.pkt === 'STATIC' ? '<span class="badge badge-sta">Estático</span>' : ''
+
+  return `<div class="product-card" onclick="selectProduct(${p.codeInt}, '${esc(p.name)}', '${p.pkt}')">
+    <div class="product-img">${p.img ? `<img src="${esc(p.img)}" onerror="this.parentElement.innerHTML='🌍'">` : '🌍'}</div>
+    <div class="product-info">
+      <div style="margin-bottom:6px">${typeBadge}${hasFlight ? '<span class="badge badge-flight">✈️ Voo</span>' : ''}</div>
+      <div class="product-name">${esc(p.name)}</div>
+      <div class="product-meta">Código: <strong>${p.code}</strong></div>
+      ${p.opFrom ? `<div class="product-meta">📅 ${p.opFrom} → ${p.opTo}</div>` : ''}
+      <div class="product-price">${priceVal > 0 ? `€${priceVal.toLocaleString('pt-PT',{minimumFractionDigits:2})}` : 'Sob consulta'}</div>
+      <button class="btn btn-blue btn-sm" style="width:100%;justify-content:center;margin-top:8px"
+        onclick="event.stopPropagation();selectProduct(${p.codeInt},'${esc(p.name)}','${p.pkt}')">Reservar →</button>
+    </div>
+  </div>`
 }
 
-function selectProduct(code, name, pkt) {
-  log(`✅ Produto selecionado: ${name} (${code})`, 'success')
-  state.selectedProduct = { code: parseInt(code), name, pkt }
-  document.getElementById('r-product-info').innerHTML = `<strong>${name}</strong> (código: ${code})`
-  switchTab('reserva')
+function selectProduct(codeInt, name, pkt) {
+  // VALIDAÇÃO FINAL: garantir int positivo
+  const code = parseInt(codeInt)
+  if (!code || isNaN(code) || code <= 0) {
+    log(`❌ Código inválido: "${codeInt}"`, 'error')
+    alert(`Não é possível reservar este produto.\nCódigo inválido: "${codeInt}"\n\nConsulte o painel Diagnóstico para verificar o XML retornado.`)
+    return
+  }
+  log(`✅ Produto selecionado: ${name} (código ${code})`, 'success')
+  state.selectedProduct = { code, name, pkt: pkt || 'DYNAMIC' }
+  document.getElementById('r-product-code').value = code
+  document.getElementById('r-product-info').innerHTML =
+    `<strong>${esc(name)}</strong> <span style="color:var(--muted)">(código: ${code})</span>`
+
+  // Mudar para tab de reserva
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  document.getElementById('panel-reserva').classList.add('active')
+  document.querySelectorAll('.tab')[1].classList.add('active')
+  setStep(1)
+  getProductParams()
 }
 
 function clearSearch() {
-  document.getElementById('s-name').value = ''
-  document.getElementById('s-depdate').value = ''
+  ['s-name','s-depdate','s-country'].forEach(id => { const el=document.getElementById(id); if(el) el.value='' })
+  document.getElementById('s-pkttype').value = ''
   document.getElementById('search-results').innerHTML = ''
-  setStatus('search-status', '', '')
+  setStatus('search-status','','')
 }
 
-// STEP 1 → 2
-async function goToStep2() {
-  if (!state.selectedProduct) {
-    alert('Selecione um produto primeiro!')
+// ── PARÂMETROS ──
+async function getProductParams() {
+  const raw = document.getElementById('r-product-code').value
+  const code = parseInt(raw)
+
+  if (!code || isNaN(code) || code <= 0) {
+    setStatus('reserva-status','err',`❌ Código "${raw}" inválido. Use um número inteiro positivo.`)
     return
   }
-  
-  setStatus('reserva-status', 'loading', 'A carregar parâmetros do produto...')
-  
+
+  log(`📦 Parâmetros do produto ${code}`)
+  setStatus('reserva-status','loading',`A obter parâmetros do produto ${code}…`)
+
   try {
-    // CORREÇÃO: Productcode com "c" minúsculo e adicionar Pkt_type
-    const doc = await soapCall('DynGetProductParameters',
-      `<ns1:DynGetProductParameters>
-        <DynProductParametersRequest>
-          ${credXML()}
-          <Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode>
-          <Pkt_type xsi:type="xsd:string">DYNAMIC</Pkt_type>
-        </DynProductParametersRequest>
-      </ns1:DynGetProductParameters>`)
-    
+    const pkt = state.selectedProduct?.pkt || 'DYNAMIC'
+    const isDynamic = pkt === 'DYNAMIC'
+    log(`📦 Tipo: ${pkt}`)
+
+    let doc
+    if (isDynamic) {
+      doc = await soapCall('DynGetProductParameters',
+        `<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${code}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+    } else {
+      doc = await soapCall('StaticGetProductParameters',
+        `<ns1:StaticGetProductParameters><StaticProductParametersRequest>${credXML()}<ProductCode xsi:type="xsd:int">${code}</ProductCode></StaticProductParametersRequest></ns1:StaticGetProductParameters>`)
+    }
+    state.isDynamic = isDynamic
+
+    const productName = txt(doc,'Name')
+    if (!productName) throw new Error(`Produto ${code} não encontrado ou sem nome na resposta`)
+
+    state.selectedProduct = { code, name: productName, pkt }
+    state.productParams = doc
+
     // Datas de partida
-    const dates = doc.getElementsByTagName('DynDepartureDate')
-    let dateHtml = '<option value="">Selecione uma data</option>'
-    for (let i = 0; i < dates.length; i++) {
-      dateHtml += `<option value="${dates[i].textContent}">${dates[i].textContent}</option>`
-    }
-    document.getElementById('r-depdate').innerHTML = dateHtml
-    
+    const dates = all(doc,'DynDepartureDate').concat(all(doc,'Date'))
+    if (!dates.length) throw new Error(`Produto ${code} sem datas de partida disponíveis`)
+    document.getElementById('r-depdate').innerHTML =
+      dates.map(d => `<option value="${d.textContent.trim()}">${d.textContent.trim()}</option>`).join('')
+
     // Locais de partida
-    const locals = doc.getElementsByTagName('DynDepartureLocal')
-    let localHtml = '<option value="LIS">Lisboa (LIS)</option>'
-    for (let i = 0; i < locals.length; i++) {
-      const code = getText(locals[i], 'Code')
-      const name = getText(locals[i], 'Name')
-      localHtml += `<option value="${code}">${name || code}</option>`
-    }
-    document.getElementById('r-deplocal').innerHTML = localHtml
-    
+    const locals = all(doc,'DynDepartureLocal')
+    document.getElementById('r-deplocal').innerHTML = locals.length
+      ? locals.map(l => `<option value="${txt(l,'Code')}">${txt(l,'Name')||txt(l,'Code')}</option>`).join('')
+      : '<option value="LIS">Lisboa (LIS)</option>'
+
     // Tipos de quarto
-    const roomTypes = doc.getElementsByTagName('DynRoomType')
-    let roomsHtml = ''
-    for (let i = 0; i < roomTypes.length; i++) {
-      const code = getText(roomTypes[i], 'Code')
-      const name = getText(roomTypes[i], 'Name')
-      roomsHtml += `<option value="${code}">${name}</option>`
-    }
-    document.getElementById('rooms-list').innerHTML = `
-      <div style="margin-top:12px">
-        <label style="font-weight:700">Tipo de Quarto</label>
-        <select id="room-code" style="width:100%;padding:9px;margin-top:4px;border-radius:8px;border:1.5px solid var(--border)">
-          ${roomsHtml}
-        </select>
-      </div>
-    `
-    
-    document.getElementById('step1-panel').style.display = 'none'
-    document.getElementById('step2-panel').style.display = 'block'
-    document.getElementById('step1').classList.add('done')
-    document.getElementById('step2').classList.add('active')
-    document.getElementById('step3').classList.remove('active', 'done')
-    setStatus('reserva-status', '', '')
-    log(`✅ Parâmetros carregados: ${dates.length} datas disponíveis`, 'success')
-    
+    state.roomTypes = all(doc,'DynRoomType').map(r => ({ code: txt(r,'Code'), name: txt(r,'Name') }))
+    state.baseLocals = all(doc,'DynBaseLocal').map(b => ({
+      code: txt(b,'Code'), name: txt(b,'Name'),
+      minNights: txt(b,'MinNights')||'1', maxNights: txt(b,'Maxnights')||'7'
+    }))
+
+    log(`✅ Parâmetros carregados: ${dates.length} data(s), ${locals.length} local(is), ${state.roomTypes.length} tipo(s) de quarto`, 'success')
+
+    renderRooms()
+    renderBaseLocals()
+    document.getElementById('r-step1').style.display = 'none'
+    document.getElementById('r-step2').style.display = 'block'
+    setStep(2)
+    setStatus('reserva-status','','')
+
   } catch(e) {
-    log(`❌ Erro ao carregar parâmetros: ${e.message}`, 'error')
-    setStatus('reserva-status', 'err', e.message)
+    log(`❌ ${e.message}`, 'error')
+    setStatus('reserva-status','err',`❌ ${e.message}`)
   }
 }
 
-function backToStep1() {
-  document.getElementById('step2-panel').style.display = 'none'
-  document.getElementById('step1-panel').style.display = 'block'
-  document.getElementById('step2').classList.remove('active')
-  document.getElementById('step1').classList.remove('done')
-  setStatus('reserva-status', '', '')
+function renderRooms() {
+  const c = document.getElementById('rooms-list')
+  c.innerHTML = state.rooms.map((r,i) => `
+    <div class="room-row">
+      <label style="min-width:70px">Quarto ${r.num}</label>
+      <select id="room-code-${i}" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px">
+        ${state.roomTypes.map(t=>`<option value="${t.code}" ${t.code==r.code?'selected':''}>${t.name}</option>`).join('')}
+      </select>
+      <input type="text" id="room-childages-${i}" placeholder="idades crianças (3,7)" value="${r.childAges}"
+        style="width:130px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
+      ${state.rooms.length>1?`<button class="btn btn-outline btn-sm" onclick="removeRoom(${i})">✕</button>`:''}
+    </div>`).join('')
+}
+function addRoom() { state.rooms.push({num:state.rooms.length+1,code:state.roomTypes[0]?.code||1,childAges:''}); renderRooms() }
+function removeRoom(i) { state.rooms.splice(i,1); state.rooms.forEach((r,idx)=>r.num=idx+1); renderRooms() }
+
+function renderBaseLocals() {
+  const sec = document.getElementById('base-locals-section')
+  const c   = document.getElementById('base-locals-list')
+  if (!state.baseLocals.length) { sec.style.display='none'; return }
+  sec.style.display='block'
+  c.innerHTML = state.baseLocals.map((b,i)=>`
+    <div class="room-row">
+      <label style="min-width:110px">${b.name||b.code}</label>
+      <input type="number" id="base-nights-${i}" value="${b.minNights}" min="${b.minNights}" max="${b.maxNights}"
+        style="width:70px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
+      <span style="font-size:12px;color:var(--muted)">noites (${b.minNights}–${b.maxNights})</span>
+    </div>`).join('')
 }
 
-function backToStep2() {
-  document.getElementById('step3-panel').style.display = 'none'
-  document.getElementById('step2-panel').style.display = 'block'
-  document.getElementById('step3').classList.remove('active')
-  document.getElementById('step2').classList.add('active')
-  setStatus('reserva-status', '', '')
-}
+// ── DISPONIBILIDADE ──
+async function searchAvailableServices() {
+  setStatus('reserva-status','loading','A pesquisar disponibilidade…')
+  state.rooms.forEach((r,i)=>{
+    r.code = parseInt(document.getElementById(`room-code-${i}`)?.value||r.code)
+    r.childAges = document.getElementById(`room-childages-${i}`)?.value||''
+  })
+  const depDate     = document.getElementById('r-depdate').value
+  const depLocal    = document.getElementById('r-deplocal').value
+  const extraNights = document.getElementById('r-extranights').value||'0'
+  const roomsXML    = state.rooms.map(r=>`<RoomTypeOption><RoomNum>${r.num}</RoomNum><Code>${r.code}</Code><ChildAges>${r.childAges}</ChildAges></RoomTypeOption>`).join('')
+  const baseXML     = state.baseLocals.length
+    ? state.baseLocals.map((b,i)=>`<Local><Code>${b.code}</Code><Nights>${document.getElementById(`base-nights-${i}`)?.value||b.minNights}</Nights></Local>`).join('')
+    : '<Local><Code>1</Code><Nights>3</Nights></Local>'
 
-// VERIFICAR DISPONIBILIDADE
-async function checkAvailability() {
-  const depDate = document.getElementById('r-depdate').value
-  if (!depDate) {
-    setStatus('reserva-status', 'err', 'Selecione uma data de partida')
-    return
-  }
-  
-  setStatus('reserva-status', 'loading', 'A verificar disponibilidade e preços...')
-  
-  const roomCode = document.getElementById('room-code')?.value || 'DBL'
-  const depLocal = document.getElementById('r-deplocal').value
-  const extraNights = document.getElementById('r-extranights').value || 0
-  
-  // CORREÇÃO CRÍTICA: Adicionar ProductKeyType e garantir todos os parâmetros
   try {
-    const doc = await soapCall('DynSearchProductAvailableServices',
-      `<ns1:DynSearchProductAvailableServices>
-        <DynProductAvailableServicesRequest>
-          ${credXML()}
-          <Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode>
-          <ProductKeyType xsi:type="xsd:int">1</ProductKeyType>
-          <Pkt_type xsi:type="xsd:string">DYNAMIC</Pkt_type>
-          <DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate>
-          <DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal>
-          <RoomTypes>
-            <RoomTypeOption>
-              <RoomNum>1</RoomNum>
-              <Code>${roomCode}</Code>
-              <ChildAges></ChildAges>
-            </RoomTypeOption>
-          </RoomTypes>
-          <ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights>
-        </DynProductAvailableServicesRequest>
-      </ns1:DynSearchProductAvailableServices>`)
-    
-    const sessionHash = getText(doc, 'SessionHash')
-    if (sessionHash) {
-      state.sessionHash = sessionHash
-      log(`✅ SessionHash obtido: ${sessionHash.substring(0,30)}...`, 'success')
+    let doc
+    if (state.isDynamic !== false) {
+      doc = await soapCall('DynSearchProductAvailableServices',
+        `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<Productcode xsi:type="xsd:int">${state.selectedProduct.code}</Productcode><Pktype xsi:type="xsd:int">1</Pktype><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+    } else {
+      doc = await soapCall('StaticGetRoomsStruct',
+        `<ns1:StaticGetRoomsStruct><StaticGetRoomsStructRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes></StaticGetRoomsStructRequest></ns1:StaticGetRoomsStruct>`)
     }
-    
-    // Obter simulação de preço
-    const simDoc = await soapCall('DynGetSimulation',
-      `<ns1:DynGetSimulation>
-        <DynGetSimulationRequest>
-          ${credXML()}
-          <SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash>
-        </DynGetSimulationRequest>
-      </ns1:DynGetSimulation>`)
-    
-    const totalPrice = parseFloat(getText(simDoc, 'TotalPrice') || 0).toFixed(2)
-    const status = getText(simDoc, 'AvailableStatus')
-    state.simulationPrice = totalPrice
-    
-    document.getElementById('simulation-result').innerHTML = `
-      <div style="text-align:center;padding:20px">
-        <div style="font-size:36px;color:var(--coral);font-weight:700">€${totalPrice}</div>
-        <div style="margin-top:10px;padding:8px;background:${status === 'OK' ? '#E8F5E9' : '#FFF3E0'};border-radius:8px">
-          ${status === 'OK' ? '✅ Disponível para reserva imediata' : '⏳ Sujeito a confirmação'}
-        </div>
-        <div style="margin-top:16px;font-size:12px;color:var(--muted)">
-          Preço inclui: Voos + Hotel + Transferes + Seguro
-        </div>
-      </div>
-    `
-    
-    document.getElementById('step2-panel').style.display = 'none'
-    document.getElementById('step3-panel').style.display = 'block'
-    document.getElementById('step2').classList.remove('active')
-    document.getElementById('step2').classList.add('done')
-    document.getElementById('step3').classList.add('active')
-    setStatus('reserva-status', '', '')
-    log(`✅ Simulação concluída: €${totalPrice}`, 'success')
-    
+
+    state.sessionHash = txt(doc,'SessionHash')
+    log(`✅ SessionHash: ${state.sessionHash}`, 'success')
+    renderServicesStep(doc)
+    document.getElementById('r-step2').style.display='none'
+    document.getElementById('r-step3').style.display='block'
+    setStep(3)
+    setStatus('reserva-status','','')
   } catch(e) {
-    log(`❌ Erro ao verificar disponibilidade: ${e.message}`, 'error')
-    setStatus('reserva-status', 'err', e.message)
+    log(`❌ ${e.message}`, 'error')
+    setStatus('reserva-status','err',`❌ ${e.message}`)
   }
 }
 
-// CRIAR RESERVA
-async function createReservation() {
-  const clientName = document.getElementById('client-name').value
-  if (!clientName) {
-    setStatus('reserva-status', 'err', 'Informe o nome do cliente')
-    return
+function renderServicesStep(doc) {
+  // Voos
+  const fs = document.getElementById('flight-options-section')
+  const flights = all(doc,'DynFlightOption')
+  if (flights.length) {
+    let h = '<div style="font-weight:700;margin-bottom:10px">✈️ Opções de Voo</div><div style="display:grid;gap:8px">'
+    flights.forEach((f,i) => {
+      const optCode = txt(f,'OptionCode')||i
+      const sup = parseFloat(txt(f,'SuplementsTotalVal')||0).toFixed(2)
+      h += `<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:8px;cursor:pointer">
+        <input type="radio" name="flight-opt" value="${optCode}" ${i===0?'checked':''}> Opção ${optCode} — suplemento +€${sup}</label>`
+    })
+    h += '</div>'
+    fs.innerHTML = h
+  } else fs.innerHTML = ''
+
+  // Hotéis
+  const hs = document.getElementById('hotel-options-section')
+  const itins = all(doc,'DynItinerary')
+  if (itins.length) {
+    let h = '<div style="font-weight:700;margin:16px 0 10px">🏨 Opções de Alojamento</div>'
+    itins.forEach((itin,ii) => {
+      const itinCode = txt(itin,'Code')||ii
+      const itinName = txt(itin,'Name')||`Destino ${ii+1}`
+      h += `<div style="font-weight:600;color:var(--blue);margin:10px 0 6px">${esc(itinName)}</div>`
+      all(itin,'DynHotelOption').forEach((hotel,hi) => {
+        const hCode   = txt(hotel,'Code')
+        const hName   = txt(hotel,'Name')
+        const hRating = txt(hotel,'Rating')
+        const hPrice  = txt(hotel,'PriceFrom')
+        const boards  = all(hotel,'DynBoards')
+        const boardHtml = boards.length
+          ? boards.map(b=>`<option value="${txt(b,'Code')}">${txt(b,'Name')}</option>`).join('')
+          : '<option value="1">Alojamento e Pequeno-almoço</option>'
+        h += `<div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:6px;border:2px solid transparent" id="hcard-${itinCode}-${hi}">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <input type="radio" name="hotel-itin-${itinCode}" value="${hCode}" data-itin="${itinCode}" data-idx="${hi}" ${hi===0?'checked':''}
+              onchange="selectHotelCard(this,'${itinCode}',${hi})">
+            <div style="flex:1">
+              <div style="font-weight:700">${esc(hName)} ${'★'.repeat(Math.min(parseInt(hRating)||0,5))}</div>
+              <div style="font-size:12px;color:var(--muted)">${hPrice?'desde €'+parseFloat(hPrice).toFixed(2):''}</div>
+            </div>
+            <div><label style="font-size:11px;display:block">Regime</label>
+              <select id="board-${itinCode}-${hCode}" style="padding:5px 8px;border-radius:6px;border:1.5px solid var(--border);font-size:12px">${boardHtml}</select>
+            </div>
+          </div>
+        </div>`
+      })
+    })
+    hs.innerHTML = h
+  } else {
+    hs.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">🏨 Sem hotéis disponíveis para estes parâmetros.</div>'
   }
-  
-  setStatus('reserva-status', 'loading', 'A criar reserva...')
-  
-  const paxXML = `<DynPax>
-    <RoomNum>1</RoomNum>
-    <Title>MR</Title>
-    <Name>${clientName.split(' ')[0] || ''}</Name>
-    <Surname>${clientName.split(' ').slice(1).join(' ') || clientName}</Surname>
-    <DateBirth>1990-01-01</DateBirth>
-    <Room>DBL</Room>
-  </DynPax>`
-  
+}
+
+function selectHotelCard(radio, itinCode, idx) {
+  document.querySelectorAll(`[id^="hcard-${itinCode}-"]`).forEach(c=>c.style.borderColor='transparent')
+  document.getElementById(`hcard-${itinCode}-${idx}`).style.borderColor='var(--blue)'
+}
+
+// ── SIMULAÇÃO ──
+async function setServicesAndSimulate() {
+  setStatus('reserva-status','loading','A simular…')
+  const flightRadio = document.querySelector('input[name="flight-opt"]:checked')
+  const flightsXML  = flightRadio ? `<FlightsSelected><OptionCode>${flightRadio.value}</OptionCode></FlightsSelected>` : ''
+
+  let hotelsXML = '<HotelsSelected>'
+  document.querySelectorAll('input[type=radio][data-itin]:checked').forEach(r => {
+    const itinCode = r.dataset.itin
+    const hCode    = r.value
+    const board    = document.getElementById(`board-${itinCode}-${hCode}`)?.value||'1'
+    const roomsXML = state.rooms.map(rm=>`<DynRoomsSelect><RoomNum>${rm.num}</RoomNum><RoomCode>${rm.code}</RoomCode></DynRoomsSelect>`).join('')
+    hotelsXML += `<DynHotelsSelect><ItineraryCode>${itinCode}</ItineraryCode><HotelSelected>${hCode}</HotelSelected><RoomsSelected>${roomsXML}</RoomsSelected><BoardSelected>${board}</BoardSelected></DynHotelsSelect>`
+  })
+  hotelsXML += '</HotelsSelected>'
+
+  try {
+    await soapCall('DynSetServicesSelected',
+      `<ns1:DynSetServicesSelected><DynServicesSelectedRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash>${flightsXML}${hotelsXML}</DynServicesSelectedRequest></ns1:DynSetServicesSelected>`)
+
+    const simDoc = await soapCall('DynGetSimulation',
+      `<ns1:DynGetSimulation><DynGetSimulationRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
+
+    state.simulationData = simDoc
+    renderSimulation(simDoc)
+    document.getElementById('r-step3').style.display='none'
+    document.getElementById('r-step4').style.display='block'
+    setStep(4)
+    setStatus('reserva-status','','')
+  } catch(e) {
+    log(`❌ ${e.message}`, 'error')
+    setStatus('reserva-status','err',`❌ ${e.message}`)
+  }
+}
+
+function renderSimulation(doc) {
+  const status = txt(doc,'AvailableStatus')
+  const price  = parseFloat(txt(doc,'TotalPrice')||0).toFixed(2)
+  const services = all(doc,'DynResService')
+  const badge = status==='OK'
+    ? '<span class="badge badge-ok">✅ Confirmação Imediata</span>'
+    : '<span class="badge badge-wl">⏳ Sujeito a Confirmação</span>'
+
+  let h = `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px">
+    ${badge}<div style="font-size:30px;font-weight:800;color:var(--coral);font-family:'Poppins',sans-serif">€${price}</div><div style="color:var(--muted)">Total</div></div>`
+
+  if (services.length) {
+    h += '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Tipo</th><th style="padding:8px;text-align:left">Descrição</th><th style="padding:8px;text-align:left">Período</th><th style="padding:8px">Estado</th></tr></thead><tbody>'
+    services.forEach(s => {
+      const st = txt(s,'Status')
+      h += `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:8px">${txt(s,'Type')}</td>
+        <td style="padding:8px">${txt(s,'Description')}</td>
+        <td style="padding:8px;font-size:12px">${txt(s,'DateFrom')} → ${txt(s,'DateTo')}</td>
+        <td style="padding:8px;text-align:center"><span class="badge ${st==='OK'?'badge-ok':'badge-wl'}">${st}</span></td>
+      </tr>`
+    })
+    h += '</tbody></table>'
+  }
+  document.getElementById('simulation-result').innerHTML = h
+  document.getElementById('btn-step4-actions').style.display='flex'
+}
+
+function goToConfirm() {
+  renderPaxForm(all(state.simulationData,'DynResPax'))
+  document.getElementById('r-step4').style.display='none'
+  document.getElementById('r-step5').style.display='block'
+  setStep(5)
+}
+
+function renderPaxForm(paxList) {
+  const c = document.getElementById('pax-form')
+  let h = '<div class="pax-grid">'
+  if (paxList.length) {
+    paxList.forEach((p,i) => {
+      const room    = txt(p,'Room')||'DBL1'
+      const type    = txt(p,'Type')||'ADT'
+      const roomNum = txt(p,'RoomNumber')||'1'
+      h += `<div class="pax-row">
+        <div class="pax-row-title">Passageiro ${i+1} — ${room} · ${type==='ADT'?'Adulto':'Criança'}</div>
+        <div class="form-group"><label>Tratamento</label><select id="pax-title-${i}"><option>MR</option><option>MRS</option><option>MISS</option><option>MSTR</option>${type==='CHD'?'<option selected>CHD</option>':''}</select></div>
+        <div class="form-group"><label>Nome</label><input type="text" id="pax-name-${i}"></div>
+        <div class="form-group"><label>Apelido</label><input type="text" id="pax-surname-${i}"></div>
+        <div class="form-group"><label>Data Nasc.</label><input type="date" id="pax-dob-${i}"></div>
+        <input type="hidden" id="pax-roomnum-${i}" value="${roomNum}">
+        <input type="hidden" id="pax-room-${i}" value="${room}">
+        ${type==='CHD'?`<div class="form-group"><label>Idade</label><input type="number" id="pax-childage-${i}" min="0" max="17"></div>`:''}
+      </div>`
+    })
+  } else {
+    state.rooms.forEach((r,i) => {
+      h += `<div class="pax-row">
+        <div class="pax-row-title">Quarto ${r.num} — Adulto</div>
+        <div class="form-group"><label>Tratamento</label><select id="pax-title-${i}"><option>MR</option><option>MRS</option><option>MISS</option></select></div>
+        <div class="form-group"><label>Nome</label><input type="text" id="pax-name-${i}"></div>
+        <div class="form-group"><label>Apelido</label><input type="text" id="pax-surname-${i}"></div>
+        <div class="form-group"><label>Data Nasc.</label><input type="date" id="pax-dob-${i}"></div>
+        <input type="hidden" id="pax-roomnum-${i}" value="${r.num}">
+        <input type="hidden" id="pax-room-${i}" value="DBL${r.num}">
+      </div>`
+    })
+  }
+  h += '</div>'
+  c.innerHTML = h
+  state.paxCount = paxList.length || state.rooms.length
+}
+
+// ── CRIAR RESERVA ──
+async function createReservation() {
+  setStatus('reserva-status','loading','A criar reserva…')
+  let paxXML = ''
+  for (let i = 0; i < state.paxCount; i++) {
+    const title   = document.getElementById(`pax-title-${i}`)?.value||'MR'
+    const name    = document.getElementById(`pax-name-${i}`)?.value||''
+    const surname = document.getElementById(`pax-surname-${i}`)?.value||''
+    const dob     = document.getElementById(`pax-dob-${i}`)?.value||'1990-01-01'
+    const roomNum = document.getElementById(`pax-roomnum-${i}`)?.value||'1'
+    const room    = document.getElementById(`pax-room-${i}`)?.value||'DBL1'
+    const childAge= document.getElementById(`pax-childage-${i}`)?.value||'0'
+    paxXML += `<DynPax><RoomNum>${roomNum}</RoomNum><Title>${title}</Title><Name>${name}</Name><Surname>${surname}</Surname><DateBirth>${dob}</DateBirth><Room>${room}</Room>${title==='CHD'?`<ChildAge>${childAge}</ChildAge>`:''}</DynPax>`
+  }
+  const ref = document.getElementById('r-clientref').value||''
+  const obs = document.getElementById('r-clientobs').value||''
+
   try {
     const doc = await soapCall('DynCreateReserve',
-      `<ns1:DynCreateReserve>
-        <DynCreateReserveRequest>
-          ${credXML()}
-          <SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash>
-          <PaxsStruct>${paxXML}</PaxsStruct>
-          <ClientRef>WEB_${Date.now()}</ClientRef>
-        </DynCreateReserveRequest>
-      </ns1:DynCreateReserve>`)
-    
-    const reserveNum = getText(doc, 'Reserve')
-    
-    document.getElementById('step3-panel').style.display = 'none'
-    document.getElementById('r-final').innerHTML = `
-      <div class="res-success">
-        <div style="font-size:40px">✅</div>
-        <div class="res-number">${reserveNum}</div>
-        <div style="margin-top:10px">Reserva criada com sucesso!</div>
-        <div style="margin-top:8px;color:var(--muted)">Total: €${state.simulationPrice}</div>
-        <button class="btn btn-blue" style="margin-top:20px" onclick="location.reload()">Nova Reserva</button>
+      `<ns1:DynCreateReserve><DynCreateReserveRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><PaxsStruct>${paxXML}</PaxsStruct>${ref?`<ClientRef>${ref}</ClientRef>`:''}${obs?`<ClientObs>${obs}</ClientObs>`:''}</DynCreateReserveRequest></ns1:DynCreateReserve>`)
+
+    const reserve   = txt(doc,'Reserve')
+    const sysStatus = txt(doc,'SystemStatus')
+    const statusAll = txt(doc,'StatusAll')
+
+    log(`✅ Reserva criada: ${reserve} — ${sysStatus}`, 'success')
+    document.getElementById('r-step5').style.display='none'
+    document.getElementById('r-final').style.display='block'
+    document.getElementById('r-final').innerHTML = `<div class="res-success">
+      <div style="font-size:40px;margin-bottom:8px">✅</div>
+      <div class="res-number">${reserve}</div>
+      <div style="color:var(--muted);margin-top:4px">Número de Reserva Optigest / Soltropico</div>
+      <div style="margin-top:14px">
+        <span class="badge ${sysStatus==='OK'?'badge-ok':'badge-wl'}">Sistema: ${sysStatus}</span>
+        <span class="badge ${statusAll==='OK'?'badge-ok':'badge-wl'}">Serviços: ${statusAll}</span>
       </div>
-    `
-    document.getElementById('r-final').style.display = 'block'
-    setStatus('reserva-status', '', '')
-    log(`✅ Reserva criada: ${reserveNum}`, 'success')
-    
+      <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-outline" onclick="viewReserve(${reserve})">Ver Detalhes</button>
+        <button class="btn btn-blue" onclick="location.reload()">Nova Reserva</button>
+      </div>
+    </div>`
+    setStatus('reserva-status','','')
   } catch(e) {
-    log(`❌ Erro ao criar reserva: ${e.message}`, 'error')
-    setStatus('reserva-status', 'err', e.message)
+    log(`❌ ${e.message}`, 'error')
+    setStatus('reserva-status','err',`❌ ${e.message}`)
   }
 }
 
-// TESTE DE CONEXÃO
-async function testConnection() {
-  setStatus('debug-status', 'loading', 'A testar...')
+// ── LISTA DE RESERVAS ──
+async function listReserves() {
+  setStatus('reserves-status','loading','A pesquisar…')
+  const reserve = document.getElementById('rl-reserve').value
+  const status  = document.getElementById('rl-status').value
+  const depFrom = document.getElementById('rl-depfrom').value
+  const depTo   = document.getElementById('rl-depto').value
+
+  let xml = `<ns1:ReserveList><ReserveListRequest>${credXML()}`
+  if (reserve) xml += `<Reserve>${reserve}</Reserve>`
+  if (status)  xml += `<Status>${status}</Status>`
+  if (depFrom) xml += `<DepDateFrom>${depFrom}</DepDateFrom>`
+  if (depTo)   xml += `<DepDateTo>${depTo}</DepDateTo>`
+  xml += `<MaxReg>50</MaxReg></ReserveListRequest></ns1:ReserveList>`
+
   try {
-    const doc = await soapCall('SearchProductTypes',
-      `<ns1:SearchProductTypes><SearchProductTypesRequest>${credXML()}</SearchProductTypesRequest></ns1:SearchProductTypes>`)
-    const types = doc.getElementsByTagName('ProductType')
-    log(`✅ Conexão OK! ${types.length} tipos de produto encontrados`, 'success')
-    setStatus('debug-status', 'ok', `Conectado com sucesso!`)
+    const doc = await soapCall('ReserveList', xml)
+    const list = all(doc,'ResList')
+    if (!list.length) {
+      setStatus('reserves-status','err','Nenhuma reserva encontrada.')
+      document.getElementById('reserves-results').innerHTML = ''
+      return
+    }
+    setStatus('reserves-status','ok',`✓ ${list.length} reserva(s)`)
+    let h = '<table style="width:100%;border-collapse:collapse;margin-top:12px"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Nº</th><th style="padding:8px;text-align:left">Cliente</th><th style="padding:8px;text-align:left">Partida</th><th style="padding:8px">Ações</th></tr></thead><tbody>'
+    list.forEach(r => {
+      const num    = txt(r,'Reserve')
+      const client = txt(r,'ClientName')
+      const dep    = txt(r,'DepDate')
+      h += `<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px"><strong>${num}</strong></td><td style="padding:8px">${esc(client)}</td><td style="padding:8px">${dep}</td><td style="padding:8px;text-align:center"><button class="btn btn-outline btn-sm" onclick="viewReserve(${num})">Ver</button></td></tr>`
+    })
+    h += '</tbody></table>'
+    document.getElementById('reserves-results').innerHTML = h
   } catch(e) {
-    log(`❌ Erro de conexão: ${e.message}`, 'error')
-    setStatus('debug-status', 'err', e.message)
+    log(`❌ ${e.message}`, 'error')
+    setStatus('reserves-status','err',`❌ ${e.message}`)
   }
 }
 
+async function viewReserve(num) {
+  try {
+    const doc = await soapCall('RetrieveReserve',
+      `<ns1:RetrieveReserve><RetrieveReserveRequest>${credXML()}<Reserve xsi:type="xsd:int">${num}</Reserve></RetrieveReserveRequest></ns1:RetrieveReserve>`)
+    const head  = doc.querySelector('Head') || doc.querySelector('ResHead')
+    const prod  = head ? txt(head,'Product') : ''
+    const dep   = head ? txt(head,'DepDate') : ''
+    const arr   = head ? txt(head,'ArrDate') : ''
+    const total = head ? parseFloat(txt(head,'TotalGrossVal')||0).toFixed(2) : '0.00'
+    alert(`Reserva ${num}\nProduto: ${prod}\nPartida: ${dep}\nRegresso: ${arr}\nTotal: €${total}`)
+  } catch(e) { alert('Erro: ' + e.message) }
+}
+
+// ── INIT ──
 document.getElementById('s-depdate').value = new Date().toISOString().split('T')[0]
-log('🚀 Sistema pronto. Pesquise um produto para começar.', 'success')
 </script>
 </body>
 </html>
