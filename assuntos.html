@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assuntos Pendentes — APM Viagens</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.07);--radius:12px;--radius-sm:8px;--shadow:0 2px 8px rgba(0,0,0,0.06);--pending:#FF9800;--resolved:#4CAF50;--inprogress:#2196F3}
+body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:var(--bg);min-height:100vh}
+header{background:var(--surface);border-bottom:3px solid var(--coral);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;box-shadow:var(--shadow)}
+.logo-area{display:flex;align-items:center;gap:14px}
+.logo-area img{height:44px;object-fit:contain}
+.logo-area h1{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700}
+.pending-badge{background:var(--pending);color:#fff;padding:5px 12px;border-radius:30px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer}
+.pending-badge span{background:#fff;color:var(--pending);border-radius:20px;padding:2px 8px;font-size:12px;font-weight:700}
+.pending-badge.highlight{background:var(--coral);animation:pulse 1s infinite}
+.container{max-width:1400px;margin:0 auto;padding:28px 20px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--surface);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);text-align:center;cursor:pointer;transition:all .2s}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-card .number{font-size:32px;font-weight:700;font-family:'Poppins',sans-serif}
+.stat-card .label{font-size:12px;color:var(--muted);margin-top:4px}
+.stat-card.pending .number{color:var(--pending)}
+.stat-card.inprogress .number{color:var(--inprogress)}
+.stat-card.resolved .number{color:var(--resolved)}
+.stat-card.total .number{color:var(--blue)}
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:6px;box-shadow:var(--shadow);margin-bottom:24px;flex-wrap:wrap}
+.tab{flex:1;min-width:120px;padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s;text-align:center}
+.tab.active{background:var(--blue);color:#fff}
+.tab:hover:not(.active){background:var(--bg);color:var(--navy)}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
+.card-title{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px;color:var(--navy);display:flex;align-items:center;gap:8px;border-bottom:2px solid var(--blue);padding-bottom:8px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.form-group input,.form-group select,.form-group textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;transition:border-color .15s;background:#fff}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--blue)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .18s}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#3251c4}
+.btn-success{background:var(--resolved);color:#fff}
+.btn-success:hover{background:#3d8b40}
+.btn-warning{background:var(--pending);color:#fff}
+.btn-warning:hover{background:#e68900}
+.btn-danger{background:var(--coral);color:#fff}
+.btn-danger:hover{background:#d02f4e}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--navy)}
+.btn-outline:hover{background:var(--bg)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;justify-content:flex-end}
+.ticket-list{display:flex;flex-direction:column;gap:12px}
+.ticket-item{background:var(--bg);border-radius:var(--radius-sm);padding:16px;border-left:4px solid;transition:all .2s;cursor:pointer}
+.ticket-item:hover{box-shadow:var(--shadow);transform:translateX(2px)}
+.ticket-item.pending{border-left-color:var(--pending)}
+.ticket-item.inprogress{border-left-color:var(--inprogress)}
+.ticket-item.resolved{border-left-color:var(--resolved)}
+.ticket-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.ticket-id{font-weight:700;color:var(--blue);font-size:12px}
+.ticket-status{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+.status-pending{background:#FFF3E0;color:var(--pending)}
+.status-inprogress{background:#E3F2FD;color:var(--inprogress)}
+.status-resolved{background:#E8F5E9;color:var(--resolved)}
+.ticket-title{font-weight:600;font-size:15px;margin-bottom:8px}
+.ticket-meta{display:flex;gap:15px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.ticket-meta span{display:flex;align-items:center;gap:4px}
+.ticket-category{background:#EEF2FF;padding:2px 8px;border-radius:12px;color:var(--blue)}
+.ticket-description{font-size:13px;color:var(--navy);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px}
+.search-box{flex:1;min-width:200px}
+.empty-state{text-align:center;padding:40px;color:var(--muted)}
+.empty-state-icon{font-size:48px;margin-bottom:12px}
+.loading-state{text-align:center;padding:40px}
+.loading-spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-content{background:var(--surface);border-radius:var(--radius);max-width:600px;width:90%;max-height:85vh;overflow-y:auto;padding:24px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--blue);position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700}
+.modal-close{cursor:pointer;font-size:24px;color:var(--muted);transition:color .2s}
+.modal-close:hover{color:var(--coral)}
+.comment-list{margin:16px 0;max-height:250px;overflow-y:auto}
+.comment-item{background:var(--bg);padding:10px;border-radius:8px;margin-bottom:8px}
+.comment-author{font-weight:600;font-size:12px;color:var(--blue)}
+.comment-date{font-size:10px;color:var(--muted);margin-left:8px}
+.comment-text{font-size:13px;margin-top:5px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy);color:#fff;padding:12px 20px;border-radius:8px;z-index:2000;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,0.15);animation:slideIn 0.3s ease}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-area">
+    <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM">
+    <div><h1>Assuntos Pendentes</h1><span>Sistema de Suporte APM Viagens</span></div>
+  </div>
+  <div class="pending-badge" id="pending-badge-header" onclick="switchTab('pendentes')">
+    📋 Assuntos <span id="pending-count">0</span>
+  </div>
+</header>
+
+<div class="container">
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card pending" onclick="switchTab('pendentes')">
+      <div class="number" id="stat-pending">0</div>
+      <div class="label">⏳ Pendentes</div>
+    </div>
+    <div class="stat-card inprogress" onclick="switchTab('andamento')">
+      <div class="number" id="stat-inprogress">0</div>
+      <div class="label">🔄 Em Andamento</div>
+    </div>
+    <div class="stat-card resolved" onclick="switchTab('resolvidos')">
+      <div class="number" id="stat-resolved">0</div>
+      <div class="label">✅ Resolvidos (hoje)</div>
+    </div>
+    <div class="stat-card total" onclick="switchTab('todos')">
+      <div class="number" id="stat-total">0</div>
+      <div class="label">📋 Total</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('todos',this)">📋 Todos</button>
+    <button class="tab" onclick="switchTab('pendentes',this)">⏳ Pendentes</button>
+    <button class="tab" onclick="switchTab('andamento',this)">🔄 Em Andamento</button>
+    <button class="tab" onclick="switchTab('resolvidos',this)">✅ Resolvidos</button>
+    <button class="tab" onclick="switchTab('novo',this)">➕ Novo Assunto</button>
+  </div>
+
+  <!-- Painel Todos -->
+  <div id="panel-todos" class="panel active">
+    <div class="card">
+      <div class="card-title"><span>📋</span> Todos os Assuntos</div>
+      <div class="filter-bar">
+        <input type="text" class="search-box" id="search-input" placeholder="🔍 Pesquisar por título, ID ou autor..." onkeyup="filterTickets()">
+        <select id="category-filter" onchange="filterTickets()">
+          <option value="">Todas as categorias</option>
+          <option value="Reserva">Reserva</option>
+          <option value="Pagamento">Pagamento</option>
+          <option value="Voo">Voo</option>
+          <option value="Hotel">Hotel</option>
+          <option value="Transfer">Transfer</option>
+          <option value="Sistema">Sistema</option>
+          <option value="Outro">Outro</option>
+        </select>
+        <select id="priority-filter" onchange="filterTickets()">
+          <option value="">Todas prioridades</option>
+          <option value="Alta">🔴 Alta</option>
+          <option value="Média">🟠 Média</option>
+          <option value="Baixa">🟢 Baixa</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="exportTickets()" title="Exportar para JSON">📤 Exportar</button>
+      </div>
+      <div id="ticket-list-todos" class="ticket-list">
+        <div class="loading-state"><div class="loading-spinner"></div>Carregando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel Pendentes -->
+  <div id="panel-pendentes" class="panel">
+    <div class="card">
+      <div class="card-title"><span>⏳</span> Assuntos Pendentes</div>
+      <div id="ticket-list-pendentes" class="ticket-list">
+        <div class="loading-state"><div class="loading-spinner"></div>Carregando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel Em Andamento -->
+  <div id="panel-andamento" class="panel">
+    <div class="card">
+      <div class="card-title"><span>🔄</span> Assuntos em Andamento</div>
+      <div id="ticket-list-andamento" class="ticket-list">
+        <div class="loading-state"><div class="loading-spinner"></div>Carregando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel Resolvidos -->
+  <div id="panel-resolvidos" class="panel">
+    <div class="card">
+      <div class="card-title"><span>✅</span> Assuntos Resolvidos</div>
+      <div id="ticket-list-resolvidos" class="ticket-list">
+        <div class="loading-state"><div class="loading-spinner"></div>Carregando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel Novo Assunto -->
+  <div id="panel-novo" class="panel">
+    <div class="card">
+      <div class="card-title"><span>➕</span> Abrir Novo Assunto</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Título *</label>
+          <input type="text" id="new-title" placeholder="Ex: Problema com reserva #12345">
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <select id="new-category">
+            <option value="Reserva">Reserva</option>
+            <option value="Pagamento">Pagamento</option>
+            <option value="Voo">Voo</option>
+            <option value="Hotel">Hotel</option>
+            <option value="Transfer">Transfer</option>
+            <option value="Sistema">Sistema</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prioridade</label>
+          <select id="new-priority">
+            <option value="Baixa">🟢 Baixa</option>
+            <option value="Média">🟠 Média</option>
+            <option value="Alta">🔴 Alta</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Seu Nome *</label>
+          <input type="text" id="new-author" placeholder="Seu nome">
+        </div>
+        <div class="form-group">
+          <label>E-mail (opcional)</label>
+          <input type="email" id="new-email" placeholder="para receber notificações">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Descrição *</label>
+          <textarea id="new-description" rows="5" placeholder="Descreva o problema em detalhe..."></textarea>
+        </div>
+      </div>
+      <div class="btn-actions">
+        <button class="btn btn-outline" onclick="clearNewForm()">Limpar</button>
+        <button class="btn btn-primary" onclick="createTicket()">📨 Enviar Assunto</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Detalhes -->
+<div id="ticket-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Assunto #<span id="modal-id"></span></div>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div id="modal-body"></div>
+    <div class="btn-actions" style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px">
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Fechar</button>
+      <button class="btn btn-warning btn-sm" id="modal-inprogress-btn" style="display:none" onclick="updateTicketStatus(getCurrentTicketId(), 'inprogress')">🔄 Marcar em Andamento</button>
+      <button class="btn btn-success btn-sm" id="modal-resolve-btn" style="display:none" onclick="updateTicketStatus(getCurrentTicketId(), 'resolved')">✅ Marcar Resolvido</button>
+      <button class="btn btn-primary btn-sm" id="modal-reopen-btn" style="display:none" onclick="updateTicketStatus(getCurrentTicketId(), 'pending')">📋 Reabrir</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Configuração Supabase
+const SUPABASE_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let tickets = [];
+let currentTicketId = null;
+let currentUser = null;
+let currentFilter = { search: '', category: '', priority: '' };
+
+const priorityConfig = {
+  'Alta': { icon: '🔴', color: '#E8395A' },
+  'Média': { icon: '🟠', color: '#FF9800' },
+  'Baixa': { icon: '🟢', color: '#4CAF50' }
+};
+
+// Inicialização
+async function init() {
+  // Verificar se está logado no sistema principal (via localStorage da mesma origem)
+  await loadCurrentUser();
+  await loadTickets();
+  setupRealtimeSubscription();
+}
+
+async function loadCurrentUser() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      currentUser = session.user;
+      document.getElementById('new-author').value = currentUser.email?.split('@')[0] || '';
+      document.getElementById('new-email').value = currentUser.email || '';
+    }
+  } catch(e) {
+    console.log('Não foi possível carregar sessão');
+  }
+}
+
+// Carregar tickets do Supabase
+async function loadTickets() {
+  showLoading(true);
+  
+  try {
+    const { data, error } = await supabase
+      .from('tickets')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    tickets = data || [];
+    renderStats();
+    renderTicketLists();
+    updatePendingBadge();
+  } catch (error) {
+    console.error('Erro ao carregar tickets:', error);
+    showToast('Erro ao carregar dados. Verifique a ligação.', 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+function showLoading(show) {
+  // Implementado nos containers
+}
+
+// Configurar subscrição em tempo real
+function setupRealtimeSubscription() {
+  supabase
+    .channel('tickets_changes')
+    .on('postgres_changes', 
+      { event: '*', schema: 'public', table: 'tickets' },
+      (payload) => {
+        console.log('Mudança em tempo real:', payload);
+        loadTickets();
+      }
+    )
+    .subscribe();
+}
+
+// Criar novo ticket
+async function createTicket() {
+  const title = document.getElementById('new-title').value.trim();
+  const category = document.getElementById('new-category').value;
+  const priority = document.getElementById('new-priority').value;
+  const author = document.getElementById('new-author').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+  const description = document.getElementById('new-description').value.trim();
+
+  if (!title || !author || !description) {
+    showToast('Preencha todos os campos obrigatórios', 'error');
+    return;
+  }
+
+  // Gerar ID sequencial
+  const maxId = tickets.reduce((max, t) => Math.max(max, t.id), 1000);
+  const newId = maxId + 1;
+
+  const newTicket = {
+    id: newId,
+    titulo: title,
+    descricao: description,
+    categoria: category,
+    prioridade: priority,
+    autor: author,
+    autor_email: email,
+    status: 'pending',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    comments: []
+  };
+
+  try {
+    const { error } = await supabase
+      .from('tickets')
+      .insert([newTicket]);
+    
+    if (error) throw error;
+    
+    showToast(`Assunto #${newId} criado com sucesso!`, 'success');
+    clearNewForm();
+    await loadTickets();
+    
+    // Mudar para aba de pendentes
+    switchTab('pendentes');
+    
+  } catch (error) {
+    console.error('Erro ao criar ticket:', error);
+    showToast('Erro ao criar assunto. Tente novamente.', 'error');
+  }
+}
+
+// Atualizar status do ticket
+async function updateTicketStatus(ticketId, newStatus) {
+  const ticket = tickets.find(t => t.id === ticketId);
+  if (!ticket) return;
+
+  const updateData = {
+    status: newStatus,
+    updated_at: new Date().toISOString()
+  };
+  
+  if (newStatus === 'resolved') {
+    updateData.resolved_at = new Date().toISOString();
+  }
+
+  // Adicionar comentário automático
+  const statusMessages = {
+    'inprogress': '✅ Ticket marcado como "Em Andamento" pelo suporte.',
+    'resolved': '✅ Ticket marcado como "Resolvido" pelo suporte.',
+    'pending': '📋 Ticket reaberto pelo suporte.'
+  };
+  
+  const comments = ticket.comments || [];
+  comments.push({
+    autor: 'Sistema',
+    texto: statusMessages[newStatus] || `Status alterado para ${newStatus}`,
+    data: new Date().toISOString()
+  });
+  updateData.comments = comments;
+
+  try {
+    const { error } = await supabase
+      .from('tickets')
+      .update(updateData)
+      .eq('id', ticketId);
+    
+    if (error) throw error;
+    
+    showToast(`Assunto #${ticketId} foi ${newStatus === 'resolved' ? 'resolvido' : newStatus === 'inprogress' ? 'marcado como em andamento' : 'reaberto'}`, 'success');
+    await loadTickets();
+    closeModal();
+    
+  } catch (error) {
+    console.error('Erro ao atualizar ticket:', error);
+    showToast('Erro ao atualizar status', 'error');
+  }
+}
+
+// Adicionar comentário
+async function addComment(ticketId, commentText) {
+  if (!commentText.trim()) return;
+  
+  const ticket = tickets.find(t => t.id === ticketId);
+  if (!ticket) return;
+  
+  const comments = ticket.comments || [];
+  comments.push({
+    autor: currentUser?.email?.split('@')[0] || 'Utilizador',
+    texto: commentText.trim(),
+    data: new Date().toISOString()
+  });
+  
+  try {
+    const { error } = await supabase
+      .from('tickets')
+      .update({
+        comments: comments,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', ticketId);
+    
+    if (error) throw error;
+    
+    showToast('Comentário adicionado', 'success');
+    await loadTickets();
+    
+    if (currentTicketId === ticketId) {
+      renderModalContent(ticketId);
+    }
+    
+  } catch (error) {
+    console.error('Erro ao adicionar comentário:', error);
+    showToast('Erro ao adicionar comentário', 'error');
+  }
+}
+
+// Renderizar estatísticas
+function renderStats() {
+  const pending = tickets.filter(t => t.status === 'pending').length;
+  const inprogress = tickets.filter(t => t.status === 'inprogress').length;
+  const resolvedToday = tickets.filter(t => {
+    if (t.status !== 'resolved' || !t.resolved_at) return false;
+    const resolvedDate = new Date(t.resolved_at).toDateString();
+    const today = new Date().toDateString();
+    return resolvedDate === today;
+  }).length;
+  const total = tickets.length;
+  
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-inprogress').textContent = inprogress;
+  document.getElementById('stat-resolved').textContent = resolvedToday;
+  document.getElementById('stat-total').textContent = total;
+}
+
+// Atualizar badge
+function updatePendingBadge() {
+  const pending = tickets.filter(t => t.status === 'pending' || t.status === 'inprogress').length;
+  const badgeSpan = document.getElementById('pending-count');
+  const headerBadge = document.getElementById('pending-badge-header');
+  
+  if (badgeSpan) badgeSpan.textContent = pending;
+  
+  if (headerBadge) {
+    if (pending > 0) {
+      headerBadge.classList.add('highlight');
+    } else {
+      headerBadge.classList.remove('highlight');
+    }
+  }
+}
+
+function filterTickets() {
+  currentFilter.search = document.getElementById('search-input')?.value.toLowerCase() || '';
+  currentFilter.category = document.getElementById('category-filter')?.value || '';
+  currentFilter.priority = document.getElementById('priority-filter')?.value || '';
+  renderTicketLists();
+}
+
+function getFilteredTickets(status = null) {
+  let filtered = [...tickets];
+  
+  if (status) {
+    filtered = filtered.filter(t => t.status === status);
+  }
+  
+  if (currentFilter.search) {
+    filtered = filtered.filter(t => 
+      t.titulo.toLowerCase().includes(currentFilter.search) || 
+      t.id.toString().includes(currentFilter.search) ||
+      t.autor.toLowerCase().includes(currentFilter.search)
+    );
+  }
+  
+  if (currentFilter.category) {
+    filtered = filtered.filter(t => t.categoria === currentFilter.category);
+  }
+  
+  if (currentFilter.priority) {
+    filtered = filtered.filter(t => t.prioridade === currentFilter.priority);
+  }
+  
+  return filtered;
+}
+
+function renderTicketLists() {
+  renderTicketList('ticket-list-todos', getFilteredTickets());
+  renderTicketList('ticket-list-pendentes', getFilteredTickets('pending'));
+  renderTicketList('ticket-list-andamento', getFilteredTickets('inprogress'));
+  renderTicketList('ticket-list-resolvidos', getFilteredTickets('resolved'));
+}
+
+function renderTicketList(containerId, ticketsToRender) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  if (ticketsToRender.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">📭</div>
+      <div>Nenhum assunto encontrado</div>
+    </div>`;
+    return;
+  }
+  
+  container.innerHTML = ticketsToRender.map(ticket => `
+    <div class="ticket-item ${ticket.status}" onclick="openTicketModal(${ticket.id})">
+      <div class="ticket-header">
+        <div class="ticket-id">#${ticket.id}</div>
+        <div class="ticket-status status-${ticket.status === 'pending' ? 'pending' : ticket.status === 'inprogress' ? 'inprogress' : 'resolved'}">
+          ${ticket.status === 'pending' ? '⏳ Pendente' : ticket.status === 'inprogress' ? '🔄 Em Andamento' : '✅ Resolvido'}
+        </div>
+      </div>
+      <div class="ticket-title">
+        ${priorityConfig[ticket.prioridade]?.icon || '📌'} ${escapeHtml(ticket.titulo)}
+      </div>
+      <div class="ticket-meta">
+        <span>👤 ${escapeHtml(ticket.autor)}</span>
+        <span>📅 ${formatDate(ticket.created_at)}</span>
+        <span class="ticket-category">${escapeHtml(ticket.categoria)}</span>
+        <span>${priorityConfig[ticket.prioridade]?.icon || ''} Prioridade ${escapeHtml(ticket.prioridade)}</span>
+      </div>
+      <div class="ticket-description">
+        ${escapeHtml(ticket.descricao.substring(0, 100))}${ticket.descricao.length > 100 ? '...' : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openTicketModal(ticketId) {
+  currentTicketId = ticketId;
+  renderModalContent(ticketId);
+  document.getElementById('ticket-modal').classList.add('active');
+}
+
+function renderModalContent(ticketId) {
+  const ticket = tickets.find(t => t.id === ticketId);
+  if (!ticket) return;
+  
+  document.getElementById('modal-id').textContent = ticket.id;
+  
+  const statusText = ticket.status === 'pending' ? '⏳ Pendente' : ticket.status === 'inprogress' ? '🔄 Em Andamento' : '✅ Resolvido';
+  const statusClass = ticket.status === 'pending' ? 'status-pending' : ticket.status === 'inprogress' ? 'status-inprogress' : 'status-resolved';
+  
+  const commentsHtml = ticket.comments && ticket.comments.length > 0 ? `
+    <div class="comment-list">
+      <strong>💬 Histórico de Respostas</strong>
+      ${ticket.comments.map(c => `
+        <div class="comment-item">
+          <div class="comment-author">${escapeHtml(c.autor)} <span class="comment-date">${formatDate(c.data)}</span></div>
+          <div class="comment-text">${escapeHtml(c.texto)}</div>
+        </div>
+      `).join('')}
+    </div>
+  ` : '<div style="color:var(--muted);margin:10px 0">💬 Sem respostas ainda.</div>';
+  
+  const modalBody = `
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px">
+        <span class="ticket-status ${statusClass}">${statusText}</span>
+        <span class="ticket-category">📁 ${escapeHtml(ticket.categoria)}</span>
+        <span>${priorityConfig[ticket.prioridade]?.icon || ''} Prioridade ${escapeHtml(ticket.prioridade)}</span>
+      </div>
+      <div style="margin-bottom:10px">
+        <strong>👤 Autor:</strong> ${escapeHtml(ticket.autor)} ${ticket.autor_email ? `(${escapeHtml(ticket.autor_email)})` : ''}
+      </div>
+      <div style="margin-bottom:10px">
+        <strong>📅 Criado em:</strong> ${formatDate(ticket.created_at)}
+      </div>
+      ${ticket.resolved_at ? `<div style="margin-bottom:10px"><strong>✅ Resolvido em:</strong> ${formatDate(ticket.resolved_at)}</div>` : ''}
+      <div style="margin:16px 0;padding:12px;background:var(--bg);border-radius:8px">
+        <strong>📝 Descrição:</strong><br>
+        ${escapeHtml(ticket.descricao)}
+      </div>
+      ${commentsHtml}
+      <div style="margin-top:16px">
+        <label><strong>✏️ Adicionar resposta:</strong></label>
+        <textarea id="comment-text" rows="3" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;margin-top:8px" placeholder="Escreva sua resposta aqui..."></textarea>
+        <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="addComment(${ticket.id}, document.getElementById('comment-text').value)">Enviar Resposta</button>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('modal-body').innerHTML = modalBody;
+  
+  // Configurar botões
+  const inprogressBtn = document.getElementById('modal-inprogress-btn');
+  const resolveBtn = document.getElementById('modal-resolve-btn');
+  const reopenBtn = document.getElementById('modal-reopen-btn');
+  
+  if (ticket.status === 'pending') {
+    inprogressBtn.style.display = 'inline-flex';
+    resolveBtn.style.display = 'inline-flex';
+    reopenBtn.style.display = 'none';
+  } else if (ticket.status === 'inprogress') {
+    inprogressBtn.style.display = 'none';
+    resolveBtn.style.display = 'inline-flex';
+    reopenBtn.style.display = 'inline-flex';
+  } else {
+    inprogressBtn.style.display = 'none';
+    resolveBtn.style.display = 'none';
+    reopenBtn.style.display = 'inline-flex';
+  }
+}
+
+function getCurrentTicketId() { return currentTicketId; }
+
+function closeModal() {
+  document.getElementById('ticket-modal').classList.remove('active');
+  currentTicketId = null;
+}
+
+function clearNewForm() {
+  document.getElementById('new-title').value = '';
+  document.getElementById('new-category').value = 'Reserva';
+  document.getElementById('new-priority').value = 'Média';
+  document.getElementById('new-author').value = currentUser?.email?.split('@')[0] || '';
+  document.getElementById('new-email').value = currentUser?.email || '';
+  document.getElementById('new-description').value = '';
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  
+  if (tab !== 'todos') {
+    document.getElementById('search-input').value = '';
+    document.getElementById('category-filter').value = '';
+    document.getElementById('priority-filter').value = '';
+    currentFilter = { search: '', category: '', priority: '' };
+    renderTicketLists();
+  }
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.style.background = type === 'error' ? 'var(--coral)' : 'var(--navy)';
+  toast.innerHTML = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = now - date;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  
+  if (days === 0) {
+    return `Hoje às ${date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`;
+  } else if (days === 1) {
+    return `Ontem às ${date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`;
+  } else {
+    return date.toLocaleDateString('pt-PT') + ' ' + date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+  }
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function exportTickets() {
+  const dataStr = JSON.stringify(tickets, null, 2);
+  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+  const exportFileDefaultName = `apm_tickets_${new Date().toISOString().split('T')[0]}.json`;
+  const linkElement = document.createElement('a');
+  linkElement.setAttribute('href', dataUri);
+  linkElement.setAttribute('download', exportFileDefaultName);
+  linkElement.click();
+  showToast('Exportação concluída!', 'success');
+}
+
+// Inicializar
+init();
+</script>
+</body>
+</html>
