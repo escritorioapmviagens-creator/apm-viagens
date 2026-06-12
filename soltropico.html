@@ -658,7 +658,32 @@ async function searchAvailableServices() {
 
     state.sessionHash = txt(doc,'SessionHash')
     log(`✅ SessionHash: ${state.sessionHash}`, 'success')
-    renderServicesStep(doc)
+
+    // Guardar itinerários (necessário p/ pesquisa de hotéis em produtos htl_hub)
+    state.itinerarios = all(doc,'DynItinerary').map(it => ({
+      code: txt(it,'Code'),
+      name: txt(it,'Name'),
+      htlSession: txt(it,'HtlSession'),
+      iface: txt(it,'Interface'),
+      hotelCount: all(it,'DynHotelOption').length
+    }))
+    log(`🧭 ${state.itinerarios.length} itinerário(s); hotéis embebidos: ${state.itinerarios.reduce((a,i)=>a+i.hotelCount,0)}`)
+
+    // Se o itinerário não trouxe hotéis, tentar pesquisar alojamento
+    const precisaHoteis = state.itinerarios.some(i => i.hotelCount === 0)
+    if (precisaHoteis) {
+      log('🔎 HotelOption vazio — a tentar pesquisar alojamento...')
+      try {
+        const merged = await pesquisarHoteisItinerarios(doc)
+        renderServicesStep(merged || doc)
+      } catch(eh) {
+        log(`⚠️ Pesquisa de hotéis falhou: ${eh.message}`, 'error')
+        renderServicesStep(doc)
+      }
+    } else {
+      renderServicesStep(doc)
+    }
+
     document.getElementById('r-step2').style.display='none'
     document.getElementById('r-step3').style.display='block'
     setStep(3)
@@ -667,6 +692,54 @@ async function searchAvailableServices() {
     log(`❌ ${e.message}`, 'error')
     setStatus('reserva-status','err',`❌ ${e.message}`)
   }
+}
+
+// Tenta pesquisar hotéis para itinerários htl_hub.
+// Como o nome exato do método não é conhecido, tenta candidatos em cascata.
+async function pesquisarHoteisItinerarios(availDoc) {
+  const depDate = document.getElementById('r-depdate').value
+  const roomsXML = state.rooms.map(rm =>
+    `<DynRoomsSelect xsi:type="ns1:DynRoomsSelect"><RoomNum xsi:type="xsd:int">${rm.num}</RoomNum><RoomCode xsi:type="xsd:string">${rm.code}</RoomCode></DynRoomsSelect>`
+  ).join('')
+
+  for (const itin of state.itinerarios) {
+    if (itin.hotelCount > 0) continue
+    let hotelDoc = null
+
+    // Candidato 1: DynSearchHotels
+    const candidatos = [
+      { action: 'DynSearchHotels', body:
+        `<ns1:DynSearchHotels><DynSearchHotelsRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><ItineraryCode xsi:type="xsd:string">${itin.code}</ItineraryCode><RoomsSelected>${roomsXML}</RoomsSelected></DynSearchHotelsRequest></ns1:DynSearchHotels>` },
+      // Candidato 2: DynSearchAccommodation
+      { action: 'DynSearchAccommodation', body:
+        `<ns1:DynSearchAccommodation><DynSearchAccommodationRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><ItineraryCode xsi:type="xsd:string">${itin.code}</ItineraryCode><RoomsSelected>${roomsXML}</RoomsSelected></DynSearchAccommodationRequest></ns1:DynSearchAccommodation>` },
+      // Candidato 3: DynGetItineraryHotels
+      { action: 'DynGetItineraryHotels', body:
+        `<ns1:DynGetItineraryHotels><DynGetItineraryHotelsRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><ItineraryCode xsi:type="xsd:string">${itin.code}</ItineraryCode></DynGetItineraryHotelsRequest></ns1:DynGetItineraryHotels>` },
+      // Candidato 4: DynItinerarySearch
+      { action: 'DynItinerarySearch', body:
+        `<ns1:DynItinerarySearch><DynItinerarySearchRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><ItineraryCode xsi:type="xsd:string">${itin.code}</ItineraryCode></DynItinerarySearchRequest></ns1:DynItinerarySearch>` },
+    ]
+
+    for (const c of candidatos) {
+      try {
+        log(`   → a tentar ${c.action}...`)
+        hotelDoc = await soapCall(c.action, c.body)
+        const found = all(hotelDoc,'DynHotelOption').length
+        if (found > 0) {
+          log(`   ✅ ${c.action} devolveu ${found} hotel(éis)!`, 'success')
+          // Guardar para o renderServicesStep usar
+          state.hotelDoc = hotelDoc
+          return hotelDoc
+        } else {
+          log(`   ${c.action}: 0 hotéis (sem erro, mas vazio)`)
+        }
+      } catch(e) {
+        log(`   ${c.action}: ${e.message}`)
+      }
+    }
+  }
+  return availDoc
 }
 
 function renderServicesStep(doc) {
@@ -687,7 +760,9 @@ function renderServicesStep(doc) {
 
   // Hotéis
   const hs = document.getElementById('hotel-options-section')
-  const itins = all(doc,'DynItinerary')
+  // Usar o doc de pesquisa de hotéis se existir, senão o de disponibilidade
+  const hotelSource = state.hotelDoc || doc
+  const itins = all(hotelSource,'DynItinerary')
   if (itins.length) {
     let h = '<div style="font-weight:700;margin:16px 0 10px">🏨 Opções de Alojamento</div>'
     itins.forEach((itin,ii) => {
