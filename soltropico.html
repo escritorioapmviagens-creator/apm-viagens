@@ -521,26 +521,47 @@ async function getProductParams() {
     state.selectedProduct = { code, name: productName, pkt }
     state.productParams = doc
 
-    // Datas de partida
-    const dates = all(doc,'DynDepartureDate').concat(all(doc,'Date'))
+    // Helper: obter os <item> dentro de um array-contentor (ex: DepartureLocals > item)
+    function arrayItems(container) {
+      const wrap = all(doc, container)[0]
+      if (!wrap) return []
+      const items = []
+      for (let i = 0; i < wrap.children.length; i++) {
+        const local = wrap.children[i].localName || wrap.children[i].tagName.split(':').pop()
+        if (local === 'item') items.push(wrap.children[i])
+      }
+      return items
+    }
+
+    // Datas de partida — DepartureDates > item > Date
+    const dateItems = arrayItems('DepartureDates')
+    const dates = dateItems.map(it => txt(it, 'Date')).filter(Boolean)
     if (!dates.length) throw new Error(`Produto ${code} sem datas de partida disponíveis`)
     document.getElementById('r-depdate').innerHTML =
-      dates.map(d => `<option value="${d.textContent.trim()}">${d.textContent.trim()}</option>`).join('')
+      dates.map(d => `<option value="${d}">${d}</option>`).join('')
 
-    // Locais de partida
-    const locals = all(doc,'DynDepartureLocal')
+    // Locais de partida — DepartureLocals > item > Code/Name
+    const localItems = arrayItems('DepartureLocals')
+    const locals = localItems.map(it => ({ code: txt(it,'Code'), name: txt(it,'Name') })).filter(l => l.code)
     document.getElementById('r-deplocal').innerHTML = locals.length
-      ? locals.map(l => `<option value="${txt(l,'Code')}">${txt(l,'Name')||txt(l,'Code')}</option>`).join('')
+      ? locals.map(l => `<option value="${l.code}">${l.name||l.code}</option>`).join('')
       : '<option value="LIS">Lisboa (LIS)</option>'
 
-    // Tipos de quarto
-    state.roomTypes = all(doc,'DynRoomType').map(r => ({ code: txt(r,'Code'), name: txt(r,'Name') }))
-    state.baseLocals = all(doc,'DynBaseLocal').map(b => ({
-      code: txt(b,'Code'), name: txt(b,'Name'),
-      minNights: txt(b,'MinNights')||'1', maxNights: txt(b,'Maxnights')||'7'
-    }))
+    // Tipos de quarto — RoomTypes > item > Code/Name
+    const roomItems = arrayItems('RoomTypes')
+    state.roomTypes = roomItems.map(r => ({
+      code: txt(r,'Code'), name: txt(r,'Name'),
+      numAdults: txt(r,'NumAdults'), numChilds: txt(r,'NumChilds')
+    })).filter(r => r.code)
 
-    log(`✅ Parâmetros carregados: ${dates.length} data(s), ${locals.length} local(is), ${state.roomTypes.length} tipo(s) de quarto`, 'success')
+    // Locais base (hotéis) — BaseLocals > item > Code/Name
+    const baseItems = arrayItems('BaseLocals')
+    state.baseLocals = baseItems.map(b => ({
+      code: txt(b,'Code'), name: txt(b,'Name'),
+      minNights: txt(b,'MinNights')||'1', maxNights: txt(b,'MaxNights')||'7'
+    })).filter(b => b.code)
+
+    log(`✅ Parâmetros carregados: ${dates.length} data(s), ${locals.length} local(is), ${state.roomTypes.length} tipo(s) de quarto, ${state.baseLocals.length} hotel(éis)`, 'success')
 
     renderRooms()
     renderBaseLocals()
