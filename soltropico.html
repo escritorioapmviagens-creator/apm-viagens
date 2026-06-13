@@ -744,7 +744,10 @@ async function setServicesAndSimulate() {
     const roomSel = document.getElementById(`room-${itinCode}-${hotelCode}`)
     const roomCode = roomSel ? roomSel.value : '0'
     const boardCode = (roomSel && roomSel.selectedOptions[0]?.dataset.board) || 'TI'
-    const meta = (state.itinMeta && state.itinMeta[itinCode]) || { iface: 'htl_hub', connector: 'HTL_HUB', htlSession: state.sessionHash }
+    const meta = (state.itinMeta && state.itinMeta[itinCode]) || { iface: 'htl_hub', connector: 'HTL_HUB' }
+    // HtlSession deve ser SEMPRE o da sessão atual (igual ao SessionHash da disponibilidade)
+    const htlSession = state.sessionHash
+    log(`🏨 A selecionar: hotel ${hotelCode}, quarto ${roomCode} (${boardCode}), itin ${itinCode}, sessão ${htlSession}`, 'info')
     // RoomsSelected: um por quarto pedido
     const roomsSelXML = state.rooms.map((r, idx) =>
       `<item xsi:type="ns1:DynRoomsSelect"><RoomNum xsi:type="xsd:string">${idx}</RoomNum><RoomCode xsi:type="xsd:string">${roomCode}</RoomCode><BoardCode xsi:type="xsd:string">${boardCode}</BoardCode></item>`
@@ -755,7 +758,7 @@ async function setServicesAndSimulate() {
           `<ItineraryCode xsi:type="xsd:string">${itinCode}</ItineraryCode>` +
           `<Interface xsi:type="xsd:string">${meta.iface}</Interface>` +
           `<Connector xsi:type="xsd:string">${meta.connector}</Connector>` +
-          `<HtlSession xsi:type="xsd:string">${meta.htlSession}</HtlSession>` +
+          `<HtlSession xsi:type="xsd:string">${htlSession}</HtlSession>` +
           `<HotelRPH xsi:nil="true"/>` +
           `<HotelSelected xsi:type="xsd:string">${hotelCode}</HotelSelected>` +
           `<HotelSelectedPrice xsi:nil="true"/>` +
@@ -764,6 +767,10 @@ async function setServicesAndSimulate() {
           `<SuplementSelected xsi:type="xsd:string"/>` +
         `</item>` +
       `</HotelsSelected>`
+  } else {
+    log('⚠️ Nenhum hotel disponível para selecionar — a simulação vai falhar.', 'warn')
+    setStatus('reserva-status', 'err', '❌ Selecione um hotel antes de simular.')
+    return
   }
 
   // Estrutura completa na ordem exata da Sandbox (campos não usados a nil)
