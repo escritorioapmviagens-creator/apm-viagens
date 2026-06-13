@@ -4,65 +4,69 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Soltropico · Destinos por País | APM Viagens</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.07);--radius:14px;--radius-sm:10px;--shadow:0 2px 12px rgba(0,0,0,0.07);--shadow-md:0 6px 24px rgba(0,0,0,0.10)}
+:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F8F9FC;--surface:#fff;--muted:#6B7280;--border:#E5E7EB;--radius:16px;--radius-sm:12px;--shadow:0 1px 3px rgba(0,0,0,0.05);--shadow-md:0 4px 12px rgba(0,0,0,0.08)}
 body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:var(--bg);min-height:100vh}
-.topbar{background:var(--surface);border-bottom:3px solid var(--coral);padding:13px 28px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);flex-wrap:wrap}
-.topbar img{height:40px;object-fit:contain}
-.topbar-brand{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar img{height:38px;object-fit:contain}
+.topbar-brand{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600}
 .topbar-sub{font-size:11px;color:var(--muted)}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.consultor-chip{background:var(--bg);border:1.5px solid var(--border);border-radius:999px;padding:6px 14px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
-.btn-back{background:transparent;border:1.5px solid var(--border);color:var(--navy);padding:7px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter';transition:.15s}
+.consultor-chip{background:var(--bg);border:1px solid var(--border);border-radius:40px;padding:5px 12px;font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px}
+.btn-back{background:transparent;border:1px solid var(--border);color:var(--navy);padding:6px 14px;border-radius:40px;font-size:12px;font-weight:500;cursor:pointer;transition:.2s}
 .btn-back:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
-.container{max-width:1280px;margin:0 auto;padding:28px 20px 60px}
-.stats-bar{background:linear-gradient(135deg,var(--navy),#2C3A6E);border-radius:var(--radius);padding:16px 24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;color:#fff}
-.stats-item{display:flex;align-items:center;gap:12px}
-.stats-number{font-family:'Poppins',sans-serif;font-size:28px;font-weight:700}
-.stats-label{font-size:12px;opacity:.8}
-.stats-icon{font-size:24px}
-.continent-section{margin-bottom:40px}
-.continent-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:8px;border-bottom:3px solid var(--coral)}
-.continent-icon{font-size:28px}
-.continent-title{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;color:var(--navy)}
-.continent-count{background:var(--bg);padding:4px 12px;border-radius:30px;font-size:12px;font-weight:600;color:var(--muted)}
-.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:32px}
-.country-card{background:var(--surface);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .2s;border:1.5px solid var(--border);display:flex;align-items:center;gap:12px}
+.container{max-width:1280px;margin:0 auto;padding:24px 20px 60px}
+
+/* Stats Cards - Versão Light */
+.stats-grid{display:flex;gap:16px;margin-bottom:32px;flex-wrap:wrap}
+.stat-card{background:var(--surface);border-radius:var(--radius-sm);padding:20px 24px;flex:1;min-width:140px;border:1px solid var(--border);box-shadow:var(--shadow);transition:all .2s}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.stat-value{font-family:'Poppins',sans-serif;font-size:32px;font-weight:700;color:var(--navy);line-height:1.2}
+.stat-label{font-size:13px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:6px}
+.stat-icon{font-size:18px}
+
+.continent-section{margin-bottom:48px}
+.continent-header{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
+.continent-icon{font-size:24px}
+.continent-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:600;color:var(--navy)}
+.continent-count{font-size:12px;color:var(--muted);background:var(--bg);padding:3px 10px;border-radius:30px}
+.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.country-card{background:var(--surface);border-radius:var(--radius-sm);padding:12px 16px;cursor:pointer;transition:all .2s;border:1px solid var(--border);display:flex;align-items:center;gap:12px}
 .country-card:hover{transform:translateY(-2px);border-color:var(--blue);box-shadow:var(--shadow-md)}
-.country-flag{font-size:28px}
-.country-name{font-weight:600;font-size:15px;flex:1}
-.country-badge{background:var(--bg);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;color:var(--blue)}
+.country-flag{font-size:26px}
+.country-name{font-weight:500;font-size:14px;flex:1;color:var(--navy)}
+.country-badge{background:var(--bg);padding:3px 9px;border-radius:30px;font-size:11px;font-weight:500;color:var(--blue)}
 .empty-continent{text-align:center;padding:20px;color:var(--muted);font-style:italic}
-.products-panel{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-top:20px;display:none}
+
+.products-panel{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-top:24px;display:none}
 .products-panel.show{display:block}
-.panel-header{background:var(--navy);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-.panel-header h3{font-family:'Poppins',sans-serif;font-size:16px}
-.close-panel{background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 14px;border-radius:30px;cursor:pointer;font-size:12px;transition:.15s}
-.close-panel:hover{background:var(--coral)}
+.panel-header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.panel-header h3{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;color:var(--navy)}
+.close-panel{background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:30px;cursor:pointer;font-size:12px;transition:.2s}
+.close-panel:hover{background:var(--coral);color:#fff;border-color:var(--coral)}
 .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px}
-.product-card{background:var(--surface);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s;border:1px solid var(--border);box-shadow:var(--shadow)}
+.product-card{background:var(--surface);border-radius:var(--radius-sm);overflow:hidden;cursor:pointer;transition:all .2s;border:1px solid var(--border)}
 .product-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--blue)}
-.product-photo{height:160px;position:relative;overflow:hidden;background-size:cover;background-position:center}
-.product-photo img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
-.product-card:hover .product-photo img{transform:scale(1.05)}
-.product-photo-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px;background:linear-gradient(135deg,#EEF2FF,#FFE4E8)}
-.product-badge{position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);color:#FFD166;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;z-index:2}
+.product-photo{height:150px;position:relative;overflow:hidden;background:#F3F4F6;background-size:cover;background-position:center}
+.product-photo img{width:100%;height:100%;object-fit:cover}
+.product-photo-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(135deg,#F3F4F6,#E5E7EB)}
+.product-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);color:#FFD166;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
 .product-info{padding:14px}
-.product-name{font-weight:700;font-size:15px;margin-bottom:4px}
+.product-name{font-weight:600;font-size:14px;margin-bottom:4px;color:var(--navy)}
 .product-code{font-size:11px;color:var(--muted);margin-bottom:8px}
-.product-price{font-size:20px;font-weight:700;color:var(--coral);margin-top:8px}
-.product-price small{font-size:11px;font-weight:500;color:var(--muted)}
+.product-price{font-size:18px;font-weight:700;color:var(--coral);margin-top:8px}
+.product-price small{font-size:10px;font-weight:500;color:var(--muted)}
 .state-empty{text-align:center;padding:40px;color:var(--muted)}
 .skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.skel{background:var(--surface);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px}
-.skel .s-flag{width:40px;height:40px;background:linear-gradient(100deg,#f0f0f0 30%,#f8f8f8 50%,#f0f0f0 70%);background-size:200%;border-radius:50%;animation:sh 1.3s infinite}
-.skel .s-text{flex:1;height:16px;background:linear-gradient(100deg,#f0f0f0 30%,#f8f8f8 50%,#f0f0f0 70%);background-size:200%;border-radius:8px;animation:sh 1.3s infinite}
+.skel{background:var(--surface);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border)}
+.skel .s-flag{width:36px;height:36px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:50%;animation:sh 1.3s infinite}
+.skel .s-text{flex:1;height:14px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:8px;animation:sh 1.3s infinite}
 @keyframes sh{to{background-position:-200% 0}}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:12px 20px;border-radius:40px;font-size:13px;font-weight:600;box-shadow:var(--shadow-md);z-index:200;transition:transform .3s}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:10px 18px;border-radius:40px;font-size:13px;font-weight:500;box-shadow:var(--shadow-md);z-index:200;transition:transform .3s}
 .toast.show{transform:translateX(-50%) translateY(0)}
-.toast.ok{background:#2E7D32}.toast.err{background:var(--coral)}
+.toast.ok{background:#10B981}.toast.err{background:var(--coral)}
 </style>
 </head>
 <body>
@@ -76,10 +80,20 @@ body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:
 </div>
 
 <div class="container">
-  <div class="stats-bar">
-    <div class="stats-item"><span class="stats-icon">✈️🏨</span><div><div class="stats-number" id="total-count">0</div><div class="stats-label">Pacotes</div></div></div>
-    <div class="stats-item"><span class="stats-icon">🌍</span><div><div class="stats-number" id="country-count">0</div><div class="stats-label">Destinos c/ pacotes</div></div></div>
-    <div class="stats-item"><span class="stats-icon">⭐</span><div><div class="stats-number" id="best-price">—</div><div class="stats-label">Preço mais baixo</div></div></div>
+  <!-- Stats Cards - Light Version -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="total-count">0</div>
+      <div class="stat-label"><span class="stat-icon">✈️🏨</span> Pacotes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="country-count">0</div>
+      <div class="stat-label"><span class="stat-icon">🌍</span> Destinos c/ pacotes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="best-price">—</div>
+      <div class="stat-label"><span class="stat-icon">⭐</span> Preço mais baixo</div>
+    </div>
   </div>
 
   <div id="continents-container"></div>
@@ -103,7 +117,6 @@ const CREDS={System:808,Client:289363,Username:'admin@apmviagens.pt',Password:'J
 let allProducts = []
 let selectedCountry = null
 
-// Imagens por destino
 const countryImages = {
   "Cabo Verde": "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=400&h=300&fit=crop",
   "Egipto": "https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=400&h=300&fit=crop",
@@ -133,57 +146,44 @@ const countryImages = {
 
 function getCountryIcon(countryName){
   const icons = {
-    "Cabo Verde": "🇨🇻🏖️",
-    "Egipto": "🇪🇬🐪",
-    "Gâmbia": "🇬🇲🦩",
-    "Tunísia": "🇹🇳🏛️",
-    "Marrocos": "🇲🇦🏜️",
-    "Brasil": "🇧🇷🏖️",
-    "Tailândia": "🇹🇭🐘"
+    "Cabo Verde": "🇨🇻",
+    "Egipto": "🇪🇬",
+    "Gâmbia": "🇬🇲",
+    "Tunísia": "🇹🇳",
+    "Marrocos": "🇲🇦",
+    "Brasil": "🇧🇷",
+    "Tailândia": "🇹🇭"
   }
-  return icons[countryName] || "✈️🏨"
+  return icons[countryName] || "🏖️"
 }
 
-// Lista completa de países com todas as keywords (incluindo Djerba e outros)
 const countriesDefinition = [
-  { name: "Cabo Verde", flag: "🇨🇻", keywords: ["cabo verde", "boavista", "sal", "santiago", "são vicente", "mindelo", "ilha do sal", "ilha da boavista", "santo antão", "maio", "fogo"] },
-  { name: "Egipto", flag: "🇪🇬", keywords: ["egito", "cairo", "hurghada", "sharm", "luxor", "egipto", "marsa alam", "taba", "alexandria", "assuão"] },
-  { name: "Gâmbia", flag: "🇬🇲", keywords: ["gâmbia", "banjul", "kololi", "serekunda", "bakau"] },
-  { name: "Senegal", flag: "🇸🇳", keywords: ["senegal", "dakar", "saly", "mbour", "thiès", "saint louis"] },
-  { name: "Tunísia", flag: "🇹🇳", keywords: ["tunísia", "hammamet", "sousse", "djerba", "monastir", "tunes", "tabarka", "nabeul", "mahdia", "port el kantaoui", "tunisia"] },
-  { name: "São Tomé e Príncipe", flag: "🇸🇹", keywords: ["são tomé", "príncipe", "saotome", "ilha do príncipe"] },
-  { name: "Moçambique", flag: "🇲🇿", keywords: ["moçambique", "maputo", "vilanculos", "inhambane", "ponta do ouro", "tete", "beira"] },
-  { name: "Marrocos", flag: "🇲🇦", keywords: ["marrocos", "marraquexe", "agadir", "casablanca", "fez", "tânger", "essauira", "rabat", "tetuão", "saïdia"] },
-  { name: "Mauritânia", flag: "🇲🇷", keywords: ["mauritânia", "nouakchott", "nouadhibou"] },
-  { name: "Tanzânia", flag: "🇹🇿", keywords: ["tanzânia", "zanzibar", "dar es salaam", "arusha", "kilimanjaro", "serengeti", "pemba", "mombasa"] },
-  { name: "África do Sul", flag: "🇿🇦", keywords: ["áfrica do sul", "cidade do cabo", "joanesburgo", "durban", "port elizabeth", "pretória", "cape town", "south africa"] },
-  { name: "Quénia", flag: "🇰🇪", keywords: ["quénia", "kenya", "nairobi", "mombaça", "malindi", "watamu", "lago vitória"] },
-  { name: "Portugal", flag: "🇵🇹", keywords: ["portugal", "madeira", "açores", "algarve", "lisboa", "porto", "faro", "coimbra", "sintra", "cascais", "vila moura", "albufeira", "lagos"] },
-  { name: "Espanha", flag: "🇪🇸", keywords: ["espanha", "canárias", "barcelona", "madrid", "maiorca", "ibiza", "menorca", "valência", "sevilha", "gran canaria", "tenerife", "lanzarote", "fuertenventura", "palma"] },
-  { name: "Grécia", flag: "🇬🇷", keywords: ["grécia", "creta", "atenas", "santorini", "rhodes", "mykonos", "corfu", "zante", "cós", "salónica", "greek"] },
-  { name: "Itália", flag: "🇮🇹", keywords: ["itália", "roma", "veneza", "milão", "nápoles", "sicília", "sardenha", "florença", "bolonha", "costa amalfitana", "capri"] },
-  { name: "França", flag: "🇫🇷", keywords: ["frança", "paris", "nice", "côte d'azur", "marseille", "lyon", "bordéus", "cannes", "saint tropez"] },
-  { name: "Turquia", flag: "🇹🇷", keywords: ["turquia", "antália", "istambul", "bodrum", "marmaris", "fethiye", "kemer", "side", "alanya", "capadócia", "turkey"] },
-  { name: "Croácia", flag: "🇭🇷", keywords: ["croácia", "dubrovnik", "split", "zagreb", "hvar", "pula", "zadar", "croatia"] },
-  { name: "Chipre", flag: "🇨🇾", keywords: ["chipre", "ayia napa", "paphos", "larnaca", "limassol", "cyprus"] },
-  { name: "Brasil", flag: "🇧🇷", keywords: ["brasil", "salvador", "rio de janeiro", "fortaleza", "recife", "porto seguro", "natal", "maceió", "joão pessoa", "cabo frio", "angra", "ilha grande"] },
-  { name: "Cuba", flag: "🇨🇺", keywords: ["cuba", "varadero", "havana", "cayo coco", "trinidad", "santiago", "cayo largo", "holguín"] },
-  { name: "República Dominicana", flag: "🇩🇴", keywords: ["república dominicana", "punta cana", "la romana", "santo domingo", "puerto plata", "bávaro", "dominican republic"] },
-  { name: "México", flag: "🇲🇽", keywords: ["méxico", "cancún", "riviera maya", "playa del carmen", "cozumel", "puerto vallarta", "los cabos", "mexico"] },
-  { name: "Costa Rica", flag: "🇨🇷", keywords: ["costa rica", "san josé", "guanacaste", "tamarindo", "liberia"] },
-  { name: "Colômbia", flag: "🇨🇴", keywords: ["colômbia", "cartagena", "bogotá", "medellín", "santa marta"] },
-  { name: "Estados Unidos", flag: "🇺🇸", keywords: ["eua", "estados unidos", "orlando", "miami", "nova iorque", "los angeles", "las vegas", "san francisco", "boston", "chicago"] },
-  { name: "Argentina", flag: "🇦🇷", keywords: ["argentina", "buenos aires", "bariloche", "mendoza", "iguazú", "patagonia", "ushuaia"] },
-  { name: "Tailândia", flag: "🇹🇭", keywords: ["tailândia", "phuket", "banguecoque", "krabi", "koh samui", "chiang mai", "pattaya", "hua hin", "thailand"] },
-  { name: "Maldivas", flag: "🇲🇻", keywords: ["maldivas", "malé", "ari atol", "north male", "south male", "maldives"] },
-  { name: "Indonésia", flag: "🇮🇩", keywords: ["indonésia", "bali", "jacarta", "lombok", "gili", "ubud", "seminyak", "indonesia"] },
-  { name: "Emirados Árabes", flag: "🇦🇪", keywords: ["emirados", "dubai", "abu dhabi", "sharjah", "ajman", "emirates", "uae"] },
-  { name: "Vietname", flag: "🇻🇳", keywords: ["vietname", "hanói", "ho chi minh", "da nang", "halong", "nha trang", "hue", "vietnam"] },
-  { name: "Sri Lanka", flag: "🇱🇰", keywords: ["sri lanka", "colombo", "kandy", "bentota", "galle", "sri lanka"] },
-  { name: "China", flag: "🇨🇳", keywords: ["china", "pequim", "xangai", "hong kong", "macau"] }
+  { name: "Cabo Verde", flag: "🇨🇻", keywords: ["cabo verde", "boavista", "sal", "santiago", "são vicente", "mindelo", "ilha do sal", "ilha da boavista"] },
+  { name: "Egipto", flag: "🇪🇬", keywords: ["egito", "cairo", "hurghada", "sharm", "luxor", "egipto", "marsa alam"] },
+  { name: "Gâmbia", flag: "🇬🇲", keywords: ["gâmbia", "banjul", "kololi"] },
+  { name: "Senegal", flag: "🇸🇳", keywords: ["senegal", "dakar", "saly"] },
+  { name: "Tunísia", flag: "🇹🇳", keywords: ["tunísia", "hammamet", "sousse", "djerba", "monastir", "tunes"] },
+  { name: "São Tomé e Príncipe", flag: "🇸🇹", keywords: ["são tomé", "príncipe"] },
+  { name: "Moçambique", flag: "🇲🇿", keywords: ["moçambique", "maputo", "vilanculos"] },
+  { name: "Marrocos", flag: "🇲🇦", keywords: ["marrocos", "marraquexe", "agadir", "casablanca"] },
+  { name: "Tanzânia", flag: "🇹🇿", keywords: ["tanzânia", "zanzibar"] },
+  { name: "África do Sul", flag: "🇿🇦", keywords: ["áfrica do sul", "cidade do cabo"] },
+  { name: "Portugal", flag: "🇵🇹", keywords: ["portugal", "madeira", "açores", "algarve"] },
+  { name: "Espanha", flag: "🇪🇸", keywords: ["espanha", "canárias", "barcelona", "madrid"] },
+  { name: "Grécia", flag: "🇬🇷", keywords: ["grécia", "creta", "atenas", "santorini"] },
+  { name: "Itália", flag: "🇮🇹", keywords: ["itália", "roma", "veneza"] },
+  { name: "França", flag: "🇫🇷", keywords: ["frança", "paris"] },
+  { name: "Turquia", flag: "🇹🇷", keywords: ["turquia", "antália", "istambul"] },
+  { name: "Brasil", flag: "🇧🇷", keywords: ["brasil", "salvador", "rio", "fortaleza"] },
+  { name: "Cuba", flag: "🇨🇺", keywords: ["cuba", "varadero", "havana"] },
+  { name: "República Dominicana", flag: "🇩🇴", keywords: ["república dominicana", "punta cana"] },
+  { name: "México", flag: "🇲🇽", keywords: ["méxico", "cancún"] },
+  { name: "Tailândia", flag: "🇹🇭", keywords: ["tailândia", "phuket", "banguecoque"] },
+  { name: "Maldivas", flag: "🇲🇻", keywords: ["maldivas"] },
+  { name: "Indonésia", flag: "🇮🇩", keywords: ["indonésia", "bali"] },
+  { name: "Emirados Árabes", flag: "🇦🇪", keywords: ["emirados", "dubai", "abu dhabi"] }
 ]
 
-// Organização por continentes
 const continentsStructure = {
   "🌍 África": {
     icon: "🌍",
@@ -216,16 +216,11 @@ function itemsOf(c){return c?directChildren(c,'item'):[]}
 
 function extractCountryFromName(productName){
   const lowerName = productName.toLowerCase()
-  
-  // Dar prioridade a keywords mais específicas primeiro (ex: "djerba" deve ir para Tunísia)
   for(const country of countriesDefinition){
     for(const keyword of country.keywords){
-      if(lowerName.includes(keyword)) {
-        return country.name
-      }
+      if(lowerName.includes(keyword)) return country.name
     }
   }
-  
   return null
 }
 
@@ -238,7 +233,7 @@ async function init(){
     if(!items.length) items=all(doc,'Product')
     
     allProducts = []
-    const matchedProducts = new Map() // Para evitar duplicados
+    const matchedProducts = new Map()
     
     for(const p of items){
       const code=parseInt((txt(p,'Code')||txt(p,'ProdCode')||'0').trim());
@@ -252,12 +247,6 @@ async function init(){
         allProducts.push({code,nome,price:parseFloat(price),country,img})
       }
     }
-    
-    console.log(`Total de produtos: ${allProducts.length}`)
-    console.log('Produtos por país:', allProducts.reduce((acc, p) => {
-      acc[p.country] = (acc[p.country] || 0) + 1
-      return acc
-    }, {}))
     
     renderStats()
     renderContinents()
@@ -290,8 +279,8 @@ function renderContinents(){
       <div class="continent-section">
         <div class="continent-header">
           <span class="continent-icon">${data.icon}</span>
-          <span class="continent-title">${continentName}</span>
-          <span class="continent-count">${countriesWithPackages.length} países c/ pacotes</span>
+          <span class="continent-title">${continentName.replace(/[🌍🇪🇺🌎🌏]/g, '').trim() || continentName}</span>
+          <span class="continent-count">${countriesWithPackages.length} ${countriesWithPackages.length === 1 ? 'país c/ pacotes' : 'países c/ pacotes'}</span>
         </div>
         <div class="country-grid">
     `
@@ -305,7 +294,7 @@ function renderContinents(){
         <div class="country-card" onclick="selectCountry('${countryName}', '${flag}')">
           <span class="country-flag">${flag}</span>
           <span class="country-name">${countryName}</span>
-          <span class="country-badge">${productCount} pacote${productCount !== 1 ? 's' : ''}</span>
+          <span class="country-badge">${productCount}</span>
         </div>
       `
     }
@@ -333,7 +322,7 @@ function selectCountry(countryName, flag){
   const countryImage = countryImages[countryName] || ''
   const fallbackIcon = getCountryIcon(countryName)
   
-  document.getElementById('selected-country-title').innerHTML = `${flag} ${countryName} · ${sorted.length} pacote${sorted.length !== 1 ? 's' : ''} disponível(eis)`
+  document.getElementById('selected-country-title').innerHTML = `${flag} ${countryName} · ${sorted.length} ${sorted.length === 1 ? 'pacote' : 'pacotes'} disponível(eis)`
   document.getElementById('products-panel').classList.add('show')
   
   const productsHtml = sorted.map(p => {
