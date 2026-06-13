@@ -574,6 +574,7 @@ function renderServicesStep(doc) {
   let flightsHtml = '<div style="font-weight:700;margin-bottom:10px">✈️ Opções de Voo</div>'
   let flightOpts = []
   const fmgContainer = all(doc, 'FlightMainGroup')[0]
+  state.flightSegmentsByOption = {}
   itemsOf(fmgContainer).forEach(fmg => {
     // tentar SuperBB e Options
     ;['FlightOptionsSuperBB','FlightOptions','FlightOptionsFlightEngine'].forEach(key => {
@@ -583,11 +584,22 @@ function renderServicesStep(doc) {
         const rate = txt(opt, 'RateTaxVal')
         const tax = txt(opt, 'Tax')
         const sup = txt(opt, 'SuplementsTotalVal')
-        // descrição do 1º e último segmento
-        const segs = all(opt, 'DynFlight')
+        // Segmentos: cada DynFlightSegments tem SegmentCode; o grupo tem FlightGroupCode
+        const segContainer = directChildren(opt, 'FlightSegments')[0]
+        const segItems = itemsOf(segContainer)
+        const segList = segItems.map(seg => {
+          const segmentCode = txt(seg, 'SegmentCode')
+          const grpContainer = directChildren(seg, 'Flights')[0]
+          const grpItem = itemsOf(grpContainer)[0]
+          const flightGroupCode = grpItem ? txt(grpItem, 'FlightGroupCode') : '0'
+          return { segmentCode, flightGroupCode }
+        })
+        state.flightSegmentsByOption[optCode] = segList
+        // descrição do 1º e último voo
+        const flights = all(opt, 'DynFlight')
         let route = ''
-        if (segs.length) {
-          const first = segs[0], last = segs[segs.length-1]
+        if (flights.length) {
+          const first = flights[0], last = flights[flights.length-1]
           route = `${txt(first,'From')}→${txt(first,'To')} ${txt(first,'DepDate')} … ${txt(last,'From')}→${txt(last,'To')} ${txt(last,'DepDate')}`
         }
         flightOpts.push({ optCode, rate, tax, sup, route })
@@ -615,9 +627,16 @@ function renderServicesStep(doc) {
   const itinItems = itemsOf(itinContainer)
   if (!itinItems.length) { hsec.innerHTML = html + '<div style="padding:14px;color:var(--muted)">Nenhum itinerário encontrado.</div>'; return }
 
+  state.itinMeta = {}
   itinItems.forEach(itin => {
     const itinCode = txt(itin, 'Code') || '0'
     const itinName = txt(itin, 'Name') || 'Destino'
+    // Guardar metadados do itinerário, necessários para o DynSetServicesSelected
+    state.itinMeta[itinCode] = {
+      iface: txt(itin, 'Interface') || 'htl_hub',
+      connector: txt(itin, 'Connector') || 'HTL_HUB',
+      htlSession: txt(itin, 'HtlSession') || state.sessionHash
+    }
     html += `<div style="font-weight:600;color:var(--blue);margin:12px 0 8px">📌 ${esc(itinName)}</div>`
     const hotelContainer = directChildren(itin, 'HotelOption')[0]
     const hotels = itemsOf(hotelContainer)
@@ -698,13 +717,24 @@ function selectHotelCard(itinCode, idx, hotelCode) {
 async function setServicesAndSimulate() {
   setStatus('reserva-status', 'loading', 'A simular…')
 
-  // VOO selecionado (SuperBB). Se não houver voos, fica nil.
+  // VOO selecionado (SuperBB) — estrutura com SegmentLists, conforme a Sandbox.
   const flightRadio = document.querySelector('input[name="flight-opt"]:checked')
-  const flightsSuperBB = flightRadio
-    ? `<FlightsSelectedSuperBB SOAP-ENC:arrayType="ns1:DynFlightSelected[1]" xsi:type="ns1:DynFlightSelectedArray"><item xsi:type="ns1:DynFlightSelected"><OptionCode xsi:type="xsd:string">${flightRadio.value}</OptionCode></item></FlightsSelectedSuperBB>`
-    : `<FlightsSelectedSuperBB xsi:nil="true"/>`
+  let flightsSuperBB = `<FlightsSelectedSuperBB xsi:nil="true"/>`
+  if (flightRadio) {
+    const segs = (state.flightSegmentsByOption && state.flightSegmentsByOption[flightRadio.value]) || []
+    const segXML = segs.map(s =>
+      `<item xsi:type="ns1:DynFlightSegmentSel"><SegmentCode xsi:type="xsd:string">${s.segmentCode}</SegmentCode><FlightGroupCode xsi:type="xsd:string">${s.flightGroupCode}</FlightGroupCode></item>`
+    ).join('')
+    flightsSuperBB =
+      `<FlightsSelectedSuperBB SOAP-ENC:arrayType="ns1:DynFlightsSelected[1]" xsi:type="ns1:DynFlightsSelectedArray">` +
+        `<item xsi:type="ns1:DynFlightsSelected">` +
+          `<OptionCode xsi:type="xsd:string">${flightRadio.value}</OptionCode>` +
+          `<SegmentLists SOAP-ENC:arrayType="ns1:DynFlightSegmentSel[${segs.length}]" xsi:type="ns1:DynFlightSegmentSelArray">${segXML}</SegmentLists>` +
+        `</item>` +
+      `</FlightsSelectedSuperBB>`
+  }
 
-  // HOTEL selecionado
+  // HOTEL selecionado — estrutura exata da Sandbox (DynHotelsSelected)
   const card = document.querySelector('.hotel-card.selected') || document.querySelector('.hotel-card')
   let hotelsSelected = `<HotelsSelected xsi:nil="true"/>`
   if (card) {
@@ -713,20 +743,25 @@ async function setServicesAndSimulate() {
     const hotelCode = card.dataset.hotel
     const roomSel = document.getElementById(`room-${itinCode}-${hotelCode}`)
     const roomCode = roomSel ? roomSel.value : '0'
-    const roomName = roomSel ? (roomSel.selectedOptions[0]?.textContent || '').split(' — ')[0] : ''
     const boardCode = (roomSel && roomSel.selectedOptions[0]?.dataset.board) || 'TI'
-    // Array de quartos selecionados (1 por quarto pedido). count() incide aqui.
-    const roomsListXML = state.rooms.map((r, idx) =>
-      `<item xsi:type="ns1:RoomsList"><RoomNum xsi:type="xsd:string">${idx}</RoomNum><Name xsi:type="xsd:string">${esc(roomName)}</Name><Board xsi:type="xsd:string">${boardCode}</Board></item>`
+    const meta = (state.itinMeta && state.itinMeta[itinCode]) || { iface: 'htl_hub', connector: 'HTL_HUB', htlSession: state.sessionHash }
+    // RoomsSelected: um por quarto pedido
+    const roomsSelXML = state.rooms.map((r, idx) =>
+      `<item xsi:type="ns1:DynRoomsSelect"><RoomNum xsi:type="xsd:string">${idx}</RoomNum><RoomCode xsi:type="xsd:string">${roomCode}</RoomCode><BoardCode xsi:type="xsd:string">${boardCode}</BoardCode></item>`
     ).join('')
     hotelsSelected =
-      `<HotelsSelected SOAP-ENC:arrayType="ns1:DynHotelSelected[1]" xsi:type="ns1:DynHotelSelectedArray">` +
-        `<item xsi:type="ns1:DynHotelSelected">` +
+      `<HotelsSelected SOAP-ENC:arrayType="ns1:DynHotelsSelected[1]" xsi:type="ns1:DynHotelsSelectedArray">` +
+        `<item xsi:type="ns1:DynHotelsSelected">` +
           `<ItineraryCode xsi:type="xsd:string">${itinCode}</ItineraryCode>` +
+          `<Interface xsi:type="xsd:string">${meta.iface}</Interface>` +
+          `<Connector xsi:type="xsd:string">${meta.connector}</Connector>` +
+          `<HtlSession xsi:type="xsd:string">${meta.htlSession}</HtlSession>` +
+          `<HotelRPH xsi:nil="true"/>` +
           `<HotelSelected xsi:type="xsd:string">${hotelCode}</HotelSelected>` +
-          `<RoomSelected xsi:type="xsd:string">${roomCode}</RoomSelected>` +
+          `<HotelSelectedPrice xsi:nil="true"/>` +
+          `<RoomsSelected SOAP-ENC:arrayType="ns1:DynRoomsSelect[${state.rooms.length}]" xsi:type="ns1:DynRoomsSelectArray">${roomsSelXML}</RoomsSelected>` +
           `<BoardSelected xsi:type="xsd:string">${boardCode}</BoardSelected>` +
-          `<RoomsList SOAP-ENC:arrayType="ns1:RoomsList[${state.rooms.length}]" xsi:type="ns1:RoomsListArray">${roomsListXML}</RoomsList>` +
+          `<SuplementSelected xsi:type="xsd:string"/>` +
         `</item>` +
       `</HotelsSelected>`
   }
