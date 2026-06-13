@@ -19,7 +19,6 @@ body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:
 .btn-back:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
 .container{max-width:1280px;margin:0 auto;padding:24px 20px 60px}
 
-/* Stats Cards - Versão Light */
 .stats-grid{display:flex;gap:16px;margin-bottom:32px;flex-wrap:wrap}
 .stat-card{background:var(--surface);border-radius:var(--radius-sm);padding:20px 24px;flex:1;min-width:140px;border:1px solid var(--border);box-shadow:var(--shadow);transition:all .2s}
 .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
@@ -32,37 +31,38 @@ body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:
 .continent-icon{font-size:24px}
 .continent-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:600;color:var(--navy)}
 .continent-count{font-size:12px;color:var(--muted);background:var(--bg);padding:3px 10px;border-radius:30px}
-.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
-.country-card{background:var(--surface);border-radius:var(--radius-sm);padding:12px 16px;cursor:pointer;transition:all .2s;border:1px solid var(--border);display:flex;align-items:center;gap:12px}
-.country-card:hover{transform:translateY(-2px);border-color:var(--blue);box-shadow:var(--shadow-md)}
-.country-flag{font-size:26px}
-.country-name{font-weight:500;font-size:14px;flex:1;color:var(--navy)}
-.country-badge{background:var(--bg);padding:3px 9px;border-radius:30px;font-size:11px;font-weight:500;color:var(--blue)}
+.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.country-item{background:var(--surface);border-radius:var(--radius-sm);border:1px solid var(--border);overflow:hidden;transition:all .2s}
+.country-item:hover{box-shadow:var(--shadow-md)}
+.country-card{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;transition:background .2s}
+.country-card:hover{background:var(--bg)}
+.country-flag{font-size:28px}
+.country-name{font-weight:600;font-size:15px;flex:1;color:var(--navy)}
+.country-badge{background:var(--blue);color:#fff;padding:3px 10px;border-radius:30px;font-size:11px;font-weight:500}
+.country-arrow{color:var(--muted);font-size:14px;transition:transform .2s}
+.country-item.open .country-arrow{transform:rotate(90deg);color:var(--blue)}
+.country-products{padding:0 16px 16px 16px;background:var(--surface);border-top:1px solid var(--border);display:none}
+.country-item.open .country-products{display:block}
+.products-mini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:12px}
+.product-mini-card{background:var(--bg);border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;border:1px solid var(--border);display:flex;gap:12px;align-items:center}
+.product-mini-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--blue)}
+.product-mini-photo{width:60px;height:60px;border-radius:8px;overflow:hidden;background:#E5E7EB;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.product-mini-photo img{width:100%;height:100%;object-fit:cover}
+.product-mini-info{flex:1}
+.product-mini-name{font-weight:600;font-size:13px;margin-bottom:2px}
+.product-mini-code{font-size:10px;color:var(--muted)}
+.product-mini-price{font-size:14px;font-weight:700;color:var(--coral);margin-top:4px}
+.product-mini-price small{font-size:9px;font-weight:400}
+.empty-message{text-align:center;padding:20px;color:var(--muted);font-size:13px}
+.products-loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px;color:var(--muted);font-size:13px}
+.loader-small{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .empty-continent{text-align:center;padding:20px;color:var(--muted);font-style:italic}
-
-.products-panel{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-top:24px;display:none}
-.products-panel.show{display:block}
-.panel-header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-.panel-header h3{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;color:var(--navy)}
-.close-panel{background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:30px;cursor:pointer;font-size:12px;transition:.2s}
-.close-panel:hover{background:var(--coral);color:#fff;border-color:var(--coral)}
-.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px}
-.product-card{background:var(--surface);border-radius:var(--radius-sm);overflow:hidden;cursor:pointer;transition:all .2s;border:1px solid var(--border)}
-.product-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--blue)}
-.product-photo{height:150px;position:relative;overflow:hidden;background:#F3F4F6;background-size:cover;background-position:center}
-.product-photo img{width:100%;height:100%;object-fit:cover}
-.product-photo-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(135deg,#F3F4F6,#E5E7EB)}
-.product-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);color:#FFD166;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
-.product-info{padding:14px}
-.product-name{font-weight:600;font-size:14px;margin-bottom:4px;color:var(--navy)}
-.product-code{font-size:11px;color:var(--muted);margin-bottom:8px}
-.product-price{font-size:18px;font-weight:700;color:var(--coral);margin-top:8px}
-.product-price small{font-size:10px;font-weight:500;color:var(--muted)}
-.state-empty{text-align:center;padding:40px;color:var(--muted)}
-.skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.skel{background:var(--surface);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border)}
+.skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.skel-card{background:var(--surface);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;border:1px solid var(--border)}
 .skel .s-flag{width:36px;height:36px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:50%;animation:sh 1.3s infinite}
-.skel .s-text{flex:1;height:14px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:8px;animation:sh 1.3s infinite}
+.skel .s-text{flex:1;height:16px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:8px;animation:sh 1.3s infinite}
+.skel .s-badge{width:40px;height:22px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:20px;animation:sh 1.3s infinite}
 @keyframes sh{to{background-position:-200% 0}}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:10px 18px;border-radius:40px;font-size:13px;font-weight:500;box-shadow:var(--shadow-md);z-index:200;transition:transform .3s}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -80,7 +80,6 @@ body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:
 </div>
 
 <div class="container">
-  <!-- Stats Cards - Light Version -->
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-value" id="total-count">0</div>
@@ -97,13 +96,6 @@ body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:
   </div>
 
   <div id="continents-container"></div>
-  <div id="products-panel" class="products-panel">
-    <div class="panel-header">
-      <h3 id="selected-country-title"></h3>
-      <button class="close-panel" onclick="closeProductsPanel()">✕ Fechar</button>
-    </div>
-    <div id="products-list" class="products-grid"></div>
-  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -115,33 +107,33 @@ const PROXY_URL=`${SUPABASE_URL}/functions/v1/soltropico-proxy`
 const CREDS={System:808,Client:289363,Username:'admin@apmviagens.pt',Password:'JA622875'}
 
 let allProducts = []
-let selectedCountry = null
+let openCountry = null
 
 const countryImages = {
-  "Cabo Verde": "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=400&h=300&fit=crop",
-  "Egipto": "https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=400&h=300&fit=crop",
-  "Gâmbia": "https://images.unsplash.com/photo-1588796603-6f3a081b2605?w=400&h=300&fit=crop",
-  "Senegal": "https://images.unsplash.com/photo-1614680376739-414d95ffebdf?w=400&h=300&fit=crop",
-  "Tunísia": "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=400&h=300&fit=crop",
-  "São Tomé e Príncipe": "https://images.unsplash.com/photo-1534926074258-0d6eb96f7d7b?w=400&h=300&fit=crop",
-  "Moçambique": "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=400&h=300&fit=crop",
-  "Marrocos": "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=400&h=300&fit=crop",
-  "Tanzânia": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=400&h=300&fit=crop",
-  "África do Sul": "https://images.unsplash.com/photo-1580060839134-3e5c9e7d1b5a?w=400&h=300&fit=crop",
-  "Portugal": "https://images.unsplash.com/photo-1555881400-74d5acaacd8b?w=400&h=300&fit=crop",
-  "Espanha": "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=400&h=300&fit=crop",
-  "Grécia": "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=400&h=300&fit=crop",
-  "Itália": "https://images.unsplash.com/photo-1498349634479-7da89b7d86c1?w=400&h=300&fit=crop",
-  "França": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=300&fit=crop",
-  "Turquia": "https://images.unsplash.com/photo-1527838832700-5051c2f85810?w=400&h=300&fit=crop",
-  "Brasil": "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=400&h=300&fit=crop",
-  "Cuba": "https://images.unsplash.com/photo-1589550388638-b73e04da1729?w=400&h=300&fit=crop",
-  "República Dominicana": "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=400&h=300&fit=crop",
-  "México": "https://images.unsplash.com/photo-1512818114040-dac1e4a6d521?w=400&h=300&fit=crop",
-  "Tailândia": "https://images.unsplash.com/photo-1537956965359-76d1d79e3d3a?w=400&h=300&fit=crop",
-  "Maldivas": "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=400&h=300&fit=crop",
-  "Indonésia": "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&h=300&fit=crop",
-  "Emirados Árabes": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400&h=300&fit=crop"
+  "Cabo Verde": "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=120&h=80&fit=crop",
+  "Egipto": "https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=120&h=80&fit=crop",
+  "Gâmbia": "https://images.unsplash.com/photo-1588796603-6f3a081b2605?w=120&h=80&fit=crop",
+  "Senegal": "https://images.unsplash.com/photo-1614680376739-414d95ffebdf?w=120&h=80&fit=crop",
+  "Tunísia": "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=120&h=80&fit=crop",
+  "São Tomé e Príncipe": "https://images.unsplash.com/photo-1534926074258-0d6eb96f7d7b?w=120&h=80&fit=crop",
+  "Moçambique": "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=120&h=80&fit=crop",
+  "Marrocos": "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=120&h=80&fit=crop",
+  "Tanzânia": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=120&h=80&fit=crop",
+  "África do Sul": "https://images.unsplash.com/photo-1580060839134-3e5c9e7d1b5a?w=120&h=80&fit=crop",
+  "Portugal": "https://images.unsplash.com/photo-1555881400-74d5acaacd8b?w=120&h=80&fit=crop",
+  "Espanha": "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=120&h=80&fit=crop",
+  "Grécia": "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=120&h=80&fit=crop",
+  "Itália": "https://images.unsplash.com/photo-1498349634479-7da89b7d86c1?w=120&h=80&fit=crop",
+  "França": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=120&h=80&fit=crop",
+  "Turquia": "https://images.unsplash.com/photo-1527838832700-5051c2f85810?w=120&h=80&fit=crop",
+  "Brasil": "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=120&h=80&fit=crop",
+  "Cuba": "https://images.unsplash.com/photo-1589550388638-b73e04da1729?w=120&h=80&fit=crop",
+  "República Dominicana": "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=120&h=80&fit=crop",
+  "México": "https://images.unsplash.com/photo-1512818114040-dac1e4a6d521?w=120&h=80&fit=crop",
+  "Tailândia": "https://images.unsplash.com/photo-1537956965359-76d1d79e3d3a?w=120&h=80&fit=crop",
+  "Maldivas": "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=120&h=80&fit=crop",
+  "Indonésia": "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=120&h=80&fit=crop",
+  "Emirados Árabes": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=120&h=80&fit=crop"
 }
 
 function getCountryIcon(countryName){
@@ -158,30 +150,30 @@ function getCountryIcon(countryName){
 }
 
 const countriesDefinition = [
-  { name: "Cabo Verde", flag: "🇨🇻", keywords: ["cabo verde", "boavista", "sal", "santiago", "são vicente", "mindelo", "ilha do sal", "ilha da boavista"] },
-  { name: "Egipto", flag: "🇪🇬", keywords: ["egito", "cairo", "hurghada", "sharm", "luxor", "egipto", "marsa alam"] },
-  { name: "Gâmbia", flag: "🇬🇲", keywords: ["gâmbia", "banjul", "kololi"] },
-  { name: "Senegal", flag: "🇸🇳", keywords: ["senegal", "dakar", "saly"] },
-  { name: "Tunísia", flag: "🇹🇳", keywords: ["tunísia", "hammamet", "sousse", "djerba", "monastir", "tunes"] },
+  { name: "Cabo Verde", flag: "🇨🇻", keywords: ["cabo verde", "boavista", "sal", "santiago", "são vicente", "mindelo"] },
+  { name: "Egipto", flag: "🇪🇬", keywords: ["egito", "cairo", "hurghada", "sharm", "luxor", "egipto"] },
+  { name: "Gâmbia", flag: "🇬🇲", keywords: ["gâmbia", "banjul"] },
+  { name: "Senegal", flag: "🇸🇳", keywords: ["senegal", "dakar"] },
+  { name: "Tunísia", flag: "🇹🇳", keywords: ["tunísia", "hammamet", "sousse", "djerba"] },
   { name: "São Tomé e Príncipe", flag: "🇸🇹", keywords: ["são tomé", "príncipe"] },
-  { name: "Moçambique", flag: "🇲🇿", keywords: ["moçambique", "maputo", "vilanculos"] },
-  { name: "Marrocos", flag: "🇲🇦", keywords: ["marrocos", "marraquexe", "agadir", "casablanca"] },
+  { name: "Moçambique", flag: "🇲🇿", keywords: ["moçambique", "maputo"] },
+  { name: "Marrocos", flag: "🇲🇦", keywords: ["marrocos", "marraquexe", "agadir"] },
   { name: "Tanzânia", flag: "🇹🇿", keywords: ["tanzânia", "zanzibar"] },
   { name: "África do Sul", flag: "🇿🇦", keywords: ["áfrica do sul", "cidade do cabo"] },
   { name: "Portugal", flag: "🇵🇹", keywords: ["portugal", "madeira", "açores", "algarve"] },
-  { name: "Espanha", flag: "🇪🇸", keywords: ["espanha", "canárias", "barcelona", "madrid"] },
-  { name: "Grécia", flag: "🇬🇷", keywords: ["grécia", "creta", "atenas", "santorini"] },
+  { name: "Espanha", flag: "🇪🇸", keywords: ["espanha", "canárias", "barcelona"] },
+  { name: "Grécia", flag: "🇬🇷", keywords: ["grécia", "creta", "atenas"] },
   { name: "Itália", flag: "🇮🇹", keywords: ["itália", "roma", "veneza"] },
   { name: "França", flag: "🇫🇷", keywords: ["frança", "paris"] },
   { name: "Turquia", flag: "🇹🇷", keywords: ["turquia", "antália", "istambul"] },
-  { name: "Brasil", flag: "🇧🇷", keywords: ["brasil", "salvador", "rio", "fortaleza"] },
+  { name: "Brasil", flag: "🇧🇷", keywords: ["brasil", "salvador", "rio"] },
   { name: "Cuba", flag: "🇨🇺", keywords: ["cuba", "varadero", "havana"] },
   { name: "República Dominicana", flag: "🇩🇴", keywords: ["república dominicana", "punta cana"] },
   { name: "México", flag: "🇲🇽", keywords: ["méxico", "cancún"] },
-  { name: "Tailândia", flag: "🇹🇭", keywords: ["tailândia", "phuket", "banguecoque"] },
+  { name: "Tailândia", flag: "🇹🇭", keywords: ["tailândia", "phuket"] },
   { name: "Maldivas", flag: "🇲🇻", keywords: ["maldivas"] },
   { name: "Indonésia", flag: "🇮🇩", keywords: ["indonésia", "bali"] },
-  { name: "Emirados Árabes", flag: "🇦🇪", keywords: ["emirados", "dubai", "abu dhabi"] }
+  { name: "Emirados Árabes", flag: "🇦🇪", keywords: ["emirados", "dubai"] }
 ]
 
 const continentsStructure = {
@@ -265,6 +257,81 @@ function renderStats(){
   document.getElementById('best-price').innerHTML = minPrice ? money(minPrice) : '—'
 }
 
+function toggleCountry(countryName, flag){
+  const itemElement = document.getElementById(`country-item-${countryName.replace(/\s/g, '')}`)
+  const wasOpen = openCountry === countryName
+  
+  // Fechar o anterior se estiver aberto
+  if(openCountry && openCountry !== countryName){
+    const prevElement = document.getElementById(`country-item-${openCountry.replace(/\s/g, '')}`)
+    if(prevElement) prevElement.classList.remove('open')
+  }
+  
+  if(wasOpen){
+    itemElement.classList.remove('open')
+    openCountry = null
+  } else {
+    itemElement.classList.add('open')
+    openCountry = countryName
+    
+    // Carregar produtos se ainda não foram carregados
+    const productsContainer = document.getElementById(`products-${countryName.replace(/\s/g, '')}`)
+    if(productsContainer && productsContainer.getAttribute('data-loaded') !== 'true'){
+      renderProductsForCountry(countryName, flag)
+    }
+  }
+}
+
+function renderProductsForCountry(countryName, flag){
+  const products = allProducts.filter(p => p.country === countryName)
+  const container = document.getElementById(`products-${countryName.replace(/\s/g, '')}`)
+  
+  if(!container) return
+  
+  if(products.length === 0){
+    container.innerHTML = `<div class="empty-message">📭 Nenhum pacote disponível para ${countryName}</div>`
+    container.setAttribute('data-loaded', 'true')
+    return
+  }
+  
+  const sorted = [...products].sort((a,b) => (a.price || 9999) - (b.price || 9999))
+  const countryImage = countryImages[countryName] || ''
+  const fallbackIcon = getCountryIcon(countryName)
+  
+  const productsHtml = sorted.map(p => {
+    const imageUrl = p.img && p.img.startsWith('http') ? p.img : countryImage
+    
+    const imageHtml = imageUrl 
+      ? `<img src="${esc(imageUrl)}" onerror="this.parentElement.innerHTML='${fallbackIcon}'">`
+      : `<span>${fallbackIcon}</span>`
+    
+    return `
+      <div class="product-mini-card" onclick="event.stopPropagation();selectProduct(${p.code}, '${esc(p.nome)}')">
+        <div class="product-mini-photo">
+          ${imageHtml}
+        </div>
+        <div class="product-mini-info">
+          <div class="product-mini-name">${esc(p.nome.length > 40 ? p.nome.substring(0,40)+'...' : p.nome)}</div>
+          <div class="product-mini-code">Código: ${p.code}</div>
+          <div class="product-mini-price">${p.price > 0 ? money(p.price) : '—'} <small>por pessoa</small></div>
+        </div>
+      </div>
+    `
+  }).join('')
+  
+  container.innerHTML = `
+    <div class="products-mini-grid">
+      ${productsHtml}
+    </div>
+  `
+  container.setAttribute('data-loaded', 'true')
+}
+
+function selectProduct(code, name){
+  toast(`🔍 ${name} - Código ${code}`, 'ok')
+  alert(`Produto selecionado: ${name}\nCódigo: ${code}\n\nA funcionalidade de reserva será integrada aqui.`)
+}
+
 function renderContinents(){
   let html = ''
   
@@ -280,7 +347,7 @@ function renderContinents(){
         <div class="continent-header">
           <span class="continent-icon">${data.icon}</span>
           <span class="continent-title">${continentName.replace(/[🌍🇪🇺🌎🌏]/g, '').trim() || continentName}</span>
-          <span class="continent-count">${countriesWithPackages.length} ${countriesWithPackages.length === 1 ? 'país c/ pacotes' : 'países c/ pacotes'}</span>
+          <span class="continent-count">${countriesWithPackages.length} ${countriesWithPackages.length === 1 ? 'país' : 'países'}</span>
         </div>
         <div class="country-grid">
     `
@@ -289,12 +356,19 @@ function renderContinents(){
       const productCount = allProducts.filter(p => p.country === countryName).length
       const countryDef = countriesDefinition.find(c => c.name === countryName)
       const flag = countryDef ? countryDef.flag : '🏖️'
+      const safeId = countryName.replace(/\s/g, '')
       
       html += `
-        <div class="country-card" onclick="selectCountry('${countryName}', '${flag}')">
-          <span class="country-flag">${flag}</span>
-          <span class="country-name">${countryName}</span>
-          <span class="country-badge">${productCount}</span>
+        <div class="country-item" id="country-item-${safeId}">
+          <div class="country-card" onclick="toggleCountry('${countryName}', '${flag}')">
+            <span class="country-flag">${flag}</span>
+            <span class="country-name">${countryName}</span>
+            <span class="country-badge">${productCount}</span>
+            <span class="country-arrow">▶</span>
+          </div>
+          <div class="country-products" id="products-${safeId}">
+            <div class="products-loading"><div class="loader-small"></div> Carregando pacotes...</div>
+          </div>
         </div>
       `
     }
@@ -309,64 +383,12 @@ function renderContinents(){
   document.getElementById('continents-container').innerHTML = html
 }
 
-function selectCountry(countryName, flag){
-  selectedCountry = countryName
-  const products = allProducts.filter(p => p.country === countryName)
-  
-  if(products.length === 0){
-    toast(`Nenhum pacote encontrado para ${countryName}`, 'err')
-    return
-  }
-  
-  const sorted = [...products].sort((a,b) => (a.price || 9999) - (b.price || 9999))
-  const countryImage = countryImages[countryName] || ''
-  const fallbackIcon = getCountryIcon(countryName)
-  
-  document.getElementById('selected-country-title').innerHTML = `${flag} ${countryName} · ${sorted.length} ${sorted.length === 1 ? 'pacote' : 'pacotes'} disponível(eis)`
-  document.getElementById('products-panel').classList.add('show')
-  
-  const productsHtml = sorted.map(p => {
-    const imageUrl = p.img && p.img.startsWith('http') ? p.img : countryImage
-    
-    const imageHtml = imageUrl 
-      ? `<img src="${esc(imageUrl)}" onerror="this.parentElement.innerHTML='<div class=\\'product-photo-fallback\\'>${fallbackIcon}</div>'">`
-      : `<div class="product-photo-fallback">${fallbackIcon}</div>`
-    
-    return `
-      <div class="product-card" onclick="selectProduct(${p.code}, '${esc(p.nome)}')">
-        <div class="product-photo">
-          ${imageHtml}
-          <span class="product-badge">${p.price > 0 ? money(p.price) : 'Sob consulta'}</span>
-        </div>
-        <div class="product-info">
-          <div class="product-name">${esc(p.nome)}</div>
-          <div class="product-code">Código: ${p.code}</div>
-          <div class="product-price">${p.price > 0 ? money(p.price) : '—'} <small>por pessoa</small></div>
-        </div>
-      </div>
-    `
-  }).join('')
-  
-  document.getElementById('products-list').innerHTML = productsHtml
-  document.getElementById('products-panel').scrollIntoView({ behavior: 'smooth' })
-}
-
-function closeProductsPanel(){
-  document.getElementById('products-panel').classList.remove('show')
-  selectedCountry = null
-}
-
-function selectProduct(code, name){
-  toast(`🔍 ${name} - Código ${code}`, 'ok')
-  alert(`Produto selecionado: ${name}\nCódigo: ${code}\n\nA funcionalidade de reserva será integrada aqui.`)
-}
-
 function showSkeleton(){
   document.getElementById('continents-container').innerHTML = `
     <div class="continent-section">
       <div class="continent-header"><span class="continent-icon">🌍</span><span class="continent-title">A carregar destinos...</span></div>
-      <div class="country-grid">
-        ${Array(6).fill('<div class="skel"><div class="s-flag"></div><div class="s-text"></div></div>').join('')}
+      <div class="skel-grid">
+        ${Array(6).fill('<div class="skel-card"><div class="s-flag"></div><div class="s-text"></div><div class="s-badge"></div></div>').join('')}
       </div>
     </div>
   `
