@@ -759,7 +759,7 @@ async function setServicesAndSimulate() {
           `<Interface xsi:type="xsd:string">${meta.iface}</Interface>` +
           `<Connector xsi:type="xsd:string">${meta.connector}</Connector>` +
           `<HtlSession xsi:type="xsd:string">${htlSession}</HtlSession>` +
-          `<HotelRPH xsi:nil="true"/>` +
+          `<HotelRPH xsi:type="xsd:string">${hotelCode}</HotelRPH>` +
           `<HotelSelected xsi:type="xsd:string">${hotelCode}</HotelSelected>` +
           `<HotelSelectedPrice xsi:nil="true"/>` +
           `<RoomsSelected SOAP-ENC:arrayType="ns1:DynRoomsSelect[${state.rooms.length}]" xsi:type="ns1:DynRoomsSelectArray">${roomsSelXML}</RoomsSelected>` +
