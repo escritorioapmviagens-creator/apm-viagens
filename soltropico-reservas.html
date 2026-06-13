@@ -4,734 +4,406 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reservas Soltropico · APM Viagens</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --coral:#E8395A; --blue:#3B5BDB; --navy:#1A2238;
-  --sand:#FBF7F0; --sand2:#F4EDE1; --sun:#F2A65A; --sea:#2C7A9E; --teal:#0E7C7B;
-  --ink:#2A2E3C; --muted:#8A8579; --line:rgba(42,46,60,.10);
-  --surface:#fff; --radius:18px; --radius-sm:12px;
-  --shadow:0 6px 24px rgba(42,46,60,.08); --shadow-lg:0 16px 48px rgba(42,46,60,.16);
-}
-body{font-family:'Inter',sans-serif;font-size:15px;color:var(--ink);background:var(--sand);min-height:100vh;-webkit-font-smoothing:antialiased}
-.display{font-family:'Fraunces',serif}
-
-/* Top bar */
-.topbar{position:sticky;top:0;z-index:40;background:rgba(251,247,240,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:12px 28px;display:flex;align-items:center;gap:16px}
-.topbar img{height:38px}
-.topbar .brand{font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--navy)}
-.topbar .brand small{display:block;font-family:'Inter';font-weight:500;font-size:11px;color:var(--muted);letter-spacing:.02em}
-.btn-back{margin-left:auto;background:transparent;border:1.5px solid var(--line);color:var(--ink);padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter';transition:.15s}
+:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.07);--radius:14px;--radius-sm:10px;--shadow:0 2px 12px rgba(0,0,0,0.07);--shadow-md:0 6px 24px rgba(0,0,0,0.10)}
+body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:var(--bg);min-height:100vh}
+.topbar{background:var(--surface);border-bottom:3px solid var(--coral);padding:13px 28px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow)}
+.topbar img{height:40px;object-fit:contain}
+.topbar-brand{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700}
+.topbar-sub{font-size:11px;color:var(--muted)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.consultor-chip{background:var(--bg);border:1.5px solid var(--border);border-radius:999px;padding:6px 14px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.btn-back{background:transparent;border:1.5px solid var(--border);color:var(--navy);padding:7px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter';transition:.15s}
 .btn-back:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
-
-/* Hero */
-.hero{position:relative;padding:46px 28px 38px;max-width:1180px;margin:0 auto}
-.hero-eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--sea);margin-bottom:10px}
-.hero h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(30px,5vw,46px);line-height:1.05;color:var(--navy);max-width:16ch;letter-spacing:-.01em}
-.hero h1 em{font-style:italic;color:var(--coral)}
-.hero p{margin-top:14px;color:var(--muted);max-width:52ch;font-size:15px;line-height:1.6}
-
-/* Search bar */
-.searchwrap{max-width:1180px;margin:0 auto;padding:0 28px}
-.searchbar{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:8px;display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
-.search-field{flex:1;min-width:170px;display:flex;flex-direction:column;gap:3px;padding:10px 16px;border-radius:var(--radius-sm);transition:background .15s;position:relative}
-.search-field:hover{background:var(--sand)}
-.search-field label{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
-.search-field input,.search-field select{border:none;background:transparent;font-size:15px;font-family:'Inter';font-weight:600;color:var(--navy);outline:none;padding:0;cursor:pointer;width:100%}
-.search-field input::placeholder{color:#C4BFB4;font-weight:500}
-.search-field + .search-field{border-left:1px solid var(--line)}
-.btn-search{background:var(--coral);color:#fff;border:none;border-radius:var(--radius-sm);padding:0 26px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter';display:flex;align-items:center;gap:8px;transition:.15s;white-space:nowrap}
-.btn-search:hover{background:#d22e4f}
-.btn-search:disabled{opacity:.6;cursor:wait}
-
-/* Layout */
-.container{max-width:1180px;margin:0 auto;padding:34px 28px 80px}
-.section-label{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px}
-.section-label h2{font-family:'Fraunces',serif;font-weight:600;font-size:23px;color:var(--navy)}
-.section-label .count{font-size:13px;color:var(--muted);font-weight:600}
-
-/* Destination cards */
-.dest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
-.dest-card{background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s;border:1px solid transparent}
-.dest-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg)}
-.dest-photo{height:190px;position:relative;background:linear-gradient(135deg,var(--sea),var(--teal));overflow:hidden}
-.dest-photo img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
-.dest-card:hover .dest-photo img{transform:scale(1.06)}
-.dest-photo .tag{position:absolute;top:12px;left:12px;background:rgba(251,247,240,.92);backdrop-filter:blur(4px);color:var(--navy);font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px;letter-spacing:.02em}
-.dest-photo .heart{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:46px;color:rgba(255,255,255,.9)}
-.dest-body{padding:16px 18px 18px}
-.dest-body h3{font-family:'Fraunces',serif;font-weight:600;font-size:19px;color:var(--navy);margin-bottom:3px}
-.dest-loc{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:5px;margin-bottom:12px}
+.tab-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex}
+.tab-btn{padding:15px 22px;font-size:13px;font-weight:600;color:var(--muted);border:none;background:transparent;cursor:pointer;font-family:'Inter';border-bottom:3px solid transparent;margin-bottom:-1px;transition:.15s;display:flex;align-items:center;gap:7px}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab-btn:hover:not(.active){color:var(--navy)}
+.tab-badge{background:var(--bg);color:var(--muted);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700}
+.tab-btn.active .tab-badge{background:#EEF2FF;color:var(--blue)}
+.container{max-width:1180px;margin:0 auto;padding:28px 20px 80px}
+.dest-header{margin-bottom:20px}
+.dest-header h2{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;margin-bottom:4px}
+.dest-header p{font-size:13px;color:var(--muted)}
+.dest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.dest-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s;border:1.5px solid transparent}
+.dest-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--blue)}
+.dest-photo{height:160px;background:linear-gradient(135deg,#EEF2FF,#FFE4E8);position:relative;overflow:hidden}
+.dest-photo img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.dest-card:hover .dest-photo img{transform:scale(1.05)}
+.dest-photo-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px}
+.dest-badge{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.92);color:var(--navy);font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px}
+.dest-body{padding:14px 16px 16px}
+.dest-name{font-family:'Poppins',sans-serif;font-weight:600;font-size:15px;margin-bottom:2px}
+.dest-loc{font-size:12px;color:var(--muted);margin-bottom:10px}
 .dest-foot{display:flex;align-items:flex-end;justify-content:space-between}
-.dest-price{font-family:'Fraunces',serif}
-.dest-price .from{font-size:11px;color:var(--muted);display:block;font-family:'Inter';font-weight:600}
-.dest-price .val{font-size:24px;font-weight:700;color:var(--coral)}
-.dest-price .val small{font-size:13px;font-weight:600;color:var(--muted)}
-.dest-go{background:var(--navy);color:#fff;border:none;width:42px;height:42px;border-radius:50%;font-size:18px;cursor:pointer;transition:.15s;flex-shrink:0}
-.dest-card:hover .dest-go{background:var(--coral)}
-
-/* States */
-.placeholder{text-align:center;padding:70px 20px;color:var(--muted)}
-.placeholder .ico{font-size:52px;margin-bottom:14px;opacity:.5}
-.placeholder h3{font-family:'Fraunces',serif;font-size:21px;color:var(--navy);margin-bottom:6px;font-weight:600}
-.skeleton-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
+.dest-price .from{font-size:11px;color:var(--muted);font-weight:600;display:block}
+.dest-price .val{font-size:20px;font-weight:700;color:var(--coral);font-family:'Poppins'}
+.dest-cta{background:var(--navy);color:#fff;border:none;width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;transition:.15s}
+.dest-card:hover .dest-cta{background:var(--coral)}
+.state-empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.state-empty .ico{font-size:44px;margin-bottom:12px;opacity:.5}
+.state-empty h3{font-family:'Poppins',sans-serif;font-size:17px;color:var(--navy);margin-bottom:6px}
+.skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
 .skel{background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
-.skel .ph{height:190px;background:linear-gradient(100deg,#eee 30%,#f6f6f6 50%,#eee 70%);background-size:200% 100%;animation:sh 1.3s infinite}
-.skel .pb{padding:16px 18px}
-.skel .l{height:13px;border-radius:6px;background:#eee;margin-bottom:9px;animation:sh 1.3s infinite;background:linear-gradient(100deg,#eee 30%,#f6f6f6 50%,#eee 70%);background-size:200% 100%}
+.skel .s-img{height:160px;background:linear-gradient(100deg,#f0f0f0 30%,#f8f8f8 50%,#f0f0f0 70%);background-size:200%;animation:sh 1.3s infinite}
+.skel .s-body{padding:14px 16px}
+.skel .s-line{height:12px;border-radius:6px;margin-bottom:8px;background:linear-gradient(100deg,#f0f0f0 30%,#f8f8f8 50%,#f0f0f0 70%);background-size:200%;animation:sh 1.3s infinite}
 @keyframes sh{to{background-position:-200% 0}}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:13px 22px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:var(--shadow-lg);z-index:200;transition:transform .3s;display:flex;align-items:center;gap:9px;max-width:90vw}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.toast.err{background:var(--coral)}
-.toast.ok{background:var(--teal)}
-
-/* Booking flow overlay */
-.flow{position:fixed;inset:0;z-index:100;background:var(--sand);display:none;flex-direction:column;overflow:hidden}
+.flow{position:fixed;inset:0;z-index:100;background:var(--bg);display:none;flex-direction:column;overflow:hidden}
 .flow.show{display:flex}
-.flow-top{background:var(--surface);border-bottom:1px solid var(--line);padding:14px 28px;display:flex;align-items:center;gap:18px;flex-shrink:0}
-.flow-close{background:var(--sand);border:none;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;color:var(--ink);transition:.15s;flex-shrink:0}
-.flow-close:hover{background:var(--coral);color:#fff}
-.flow-title{font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--navy)}
-.flow-title small{display:block;font-family:'Inter';font-size:12px;font-weight:500;color:var(--muted)}
-.stepper{margin-left:auto;display:flex;align-items:center;gap:0}
-.stepper .st{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--muted)}
-.stepper .st .dot{width:26px;height:26px;border-radius:50%;background:var(--sand2);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transition:.2s}
-.stepper .st.active .dot{background:var(--coral);color:#fff}
-.stepper .st.done .dot{background:var(--teal);color:#fff}
-.stepper .st.active{color:var(--navy)}
-.stepper .sep{width:26px;height:2px;background:var(--line);margin:0 8px}
-@media(max-width:760px){.stepper .st span{display:none}.stepper .sep{width:14px}}
-.flow-body{flex:1;overflow-y:auto;padding:28px;scroll-behavior:smooth}
-.flow-inner{max-width:920px;margin:0 auto}
-.flow-foot{background:var(--surface);border-top:1px solid var(--line);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-shrink:0}
-.btn{border:none;border-radius:999px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter';transition:.15s;display:inline-flex;align-items:center;gap:8px}
-.btn-primary{background:var(--coral);color:#fff}.btn-primary:hover{background:#d22e4f}
+.flow-top{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 24px;display:flex;align-items:center;gap:14px;flex-shrink:0;box-shadow:var(--shadow)}
+.flow-close{background:var(--bg);border:1.5px solid var(--border);width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;color:var(--navy);display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0}
+.flow-close:hover{background:var(--coral);color:#fff;border-color:var(--coral)}
+.flow-prod{font-family:'Poppins',sans-serif;font-weight:700;font-size:15px}
+.flow-sub{font-size:11px;color:var(--muted)}
+.stepper{display:flex;align-items:center;gap:5px;margin-left:auto}
+.st-dot{width:26px;height:26px;border-radius:50%;background:var(--bg);border:2px solid var(--border);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
+.st-dot.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.st-dot.done{background:var(--blue);border-color:var(--blue);color:#fff;font-size:13px}
+.st-label{font-size:11px;font-weight:600;color:var(--muted)}
+.st-label.active{color:var(--blue)}
+.st-sep{width:16px;height:2px;background:var(--border);flex-shrink:0}
+@media(max-width:680px){.st-label{display:none}}
+.flow-body{flex:1;overflow-y:auto;padding:24px}
+.flow-inner{max-width:820px;margin:0 auto}
+.flow-foot{background:var(--surface);border-top:1px solid var(--border);padding:13px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.foot-price{font-family:'Poppins',sans-serif;font-weight:700;font-size:19px}
+.foot-price small{font-family:'Inter';font-size:11px;font-weight:600;color:var(--muted);display:block}
+.btn{border:none;border-radius:999px;padding:10px 22px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter';transition:.15s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#3251c4}
 .btn-primary:disabled{opacity:.55;cursor:not-allowed}
 .btn-ghost{background:transparent;color:var(--muted)}.btn-ghost:hover{color:var(--navy)}
-.foot-price{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--navy)}
-.foot-price small{font-family:'Inter';font-size:12px;font-weight:600;color:var(--muted);display:block}
-
-/* Flow content */
-.step-head{margin-bottom:22px}
-.step-head h2{font-family:'Fraunces',serif;font-weight:600;font-size:26px;color:var(--navy);margin-bottom:5px}
-.step-head p{color:var(--muted);font-size:14px}
-.field-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px}
-.fld{display:flex;flex-direction:column;gap:6px}
-.fld label{font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
-.fld input,.fld select{padding:12px 14px;border:1.5px solid var(--line);border-radius:var(--radius-sm);font-size:15px;font-family:'Inter';font-weight:500;color:var(--navy);background:var(--surface);outline:none;transition:border-color .15s}
+.step-head{margin-bottom:20px}
+.step-head h2{font-family:'Poppins',sans-serif;font-weight:700;font-size:19px;margin-bottom:4px}
+.step-head p{font-size:13px;color:var(--muted)}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin-bottom:14px}
+.card-title{font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;margin-bottom:14px;color:var(--navy);display:flex;align-items:center;gap:7px}
+.field-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:12px}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.fld input,.fld select{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:'Inter';font-weight:500;color:var(--navy);background:var(--surface);outline:none;transition:border-color .15s}
 .fld input:focus,.fld select:focus{border-color:var(--blue)}
-.room-line{display:flex;gap:10px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px}
-.room-line .rl-label{font-weight:700;font-size:13px;color:var(--navy);min-width:74px}
-.room-line select,.room-line input{flex:1;border:none;background:var(--sand);border-radius:8px;padding:9px 12px;font-size:14px;font-weight:500;font-family:'Inter';color:var(--navy);outline:none}
-.add-room{background:transparent;border:1.5px dashed var(--line);color:var(--sea);border-radius:var(--radius-sm);padding:11px;width:100%;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter';transition:.15s}
-.add-room:hover{border-color:var(--sea);background:rgba(44,122,158,.05)}
-
-/* Hotel result cards (big photos) */
-.hotel-list{display:flex;flex-direction:column;gap:16px}
-.hotel{background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:2px solid transparent;transition:.18s;display:grid;grid-template-columns:240px 1fr;cursor:pointer}
-@media(max-width:680px){.hotel{grid-template-columns:1fr}}
-.hotel:hover{box-shadow:var(--shadow-lg)}
-.hotel.sel{border-color:var(--coral)}
-.hotel-img{position:relative;min-height:180px;background:linear-gradient(135deg,var(--sea),var(--teal))}
-.hotel-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-.hotel-img .stars{position:absolute;bottom:10px;left:10px;background:rgba(26,34,56,.78);color:#FFCf6b;padding:4px 10px;border-radius:999px;font-size:12px;letter-spacing:1px}
-.hotel-img .selbadge{position:absolute;top:10px;right:10px;background:var(--coral);color:#fff;width:30px;height:30px;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:15px;font-weight:700}
-.hotel.sel .selbadge{display:flex}
-.hotel-info{padding:18px 20px;display:flex;flex-direction:column}
-.hotel-info h3{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--navy);margin-bottom:4px}
-.hotel-info .addr{font-size:12.5px;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:5px}
-.hotel-selectors{display:flex;gap:10px;margin-top:auto;flex-wrap:wrap}
-.hotel-selectors select{flex:1;min-width:140px;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:500;font-family:'Inter';color:var(--navy);background:var(--sand);outline:none}
-.hotel-price{text-align:right;margin-top:12px}
+.room-row{display:flex;align-items:center;gap:9px;padding:9px 12px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:8px}
+.room-row .rr-lbl{font-weight:600;font-size:13px;min-width:68px}
+.room-row select,.room-row input{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:'Inter';font-weight:500;background:var(--surface);outline:none;color:var(--navy)}
+.room-row .rr-rm{background:transparent;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:4px}
+.room-row .rr-rm:hover{color:var(--coral)}
+.add-room-btn{width:100%;background:transparent;border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:9px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Inter';transition:.15s}
+.add-room-btn:hover{border-color:var(--blue);color:var(--blue)}
+.hotel-list{display:flex;flex-direction:column;gap:10px}
+.hotel-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);border:2px solid transparent;overflow:hidden;display:grid;grid-template-columns:160px 1fr;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+@media(max-width:560px){.hotel-card{grid-template-columns:1fr}}
+.hotel-card:hover{box-shadow:var(--shadow-md)}
+.hotel-card.selected{border-color:var(--blue)}
+.hotel-photo{position:relative;min-height:140px;background:linear-gradient(135deg,#EEF2FF,#E8F5FF);overflow:hidden}
+.hotel-photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.hotel-photo .h-stars{position:absolute;bottom:7px;left:7px;background:rgba(26,29,46,.8);color:#FFD166;padding:3px 8px;border-radius:999px;font-size:11px;letter-spacing:1px}
+.hotel-photo .h-sel{position:absolute;top:7px;right:7px;background:var(--blue);color:#fff;width:24px;height:24px;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.hotel-card.selected .h-sel{display:flex}
+.hotel-body{padding:13px 15px;display:flex;flex-direction:column}
+.hotel-body h3{font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;margin-bottom:3px}
+.hotel-addr{font-size:12px;color:var(--muted);margin-bottom:8px}
+.hotel-selectors{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto}
+.hotel-selectors select{flex:1;min-width:120px;border:1.5px solid var(--border);border-radius:8px;padding:6px 9px;font-size:12px;font-weight:500;font-family:'Inter';background:var(--bg);outline:none;color:var(--navy)}
+.hotel-price{margin-top:8px}
 .hotel-price .from{font-size:11px;color:var(--muted);font-weight:600}
-.hotel-price .val{font-family:'Fraunces',serif;font-size:25px;font-weight:700;color:var(--coral)}
-
-/* Flights */
-.flight-opt{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.15s}
-.flight-opt:hover{border-color:var(--blue)}
-.flight-opt input{accent-color:var(--coral);width:18px;height:18px}
-.flight-opt .fl-route{font-weight:600;color:var(--navy);font-size:14px}
-.flight-opt .fl-sub{font-size:12px;color:var(--muted)}
-.flight-opt .fl-price{margin-left:auto;font-weight:700;color:var(--coral);font-family:'Fraunces',serif;font-size:17px}
-.note{background:rgba(44,122,158,.07);border-radius:var(--radius-sm);padding:14px 16px;color:var(--sea);font-size:13.5px;font-weight:500;display:flex;gap:9px;align-items:center}
-
-/* Simulation summary */
-.sim-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
-.sim-hero{padding:24px;background:linear-gradient(120deg,var(--navy),#2C3658);color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
-.sim-hero .big{font-family:'Fraunces',serif;font-size:38px;font-weight:700}
-.sim-hero .big small{font-size:15px;font-weight:600;opacity:.8}
-.sim-status{background:rgba(255,255,255,.16);padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600}
-.sim-rows{padding:8px 24px 18px}
-.sim-row{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);font-size:14px}
+.hotel-price .val{font-size:18px;font-weight:700;color:var(--coral);font-family:'Poppins'}
+.note-box{background:#EEF2FF;border-radius:var(--radius-sm);padding:11px 13px;color:var(--blue);font-size:13px;font-weight:500;display:flex;gap:7px;align-items:center;margin-bottom:12px}
+.flight-opt{display:flex;align-items:center;gap:11px;padding:11px 13px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;border:1.5px solid transparent;transition:.15s}
+.flight-opt:has(input:checked){border-color:var(--blue);background:#EEF2FF}
+.flight-opt input{accent-color:var(--blue);width:15px;height:15px}
+.flight-opt .f-route{font-weight:600;font-size:13px}
+.flight-opt .f-sub{font-size:11px;color:var(--muted)}
+.flight-opt .f-price{margin-left:auto;font-weight:700;color:var(--coral);font-size:14px}
+.sim-hero{background:linear-gradient(120deg,var(--navy),#2C3A6E);color:#fff;border-radius:var(--radius);padding:20px 22px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.sim-price{font-family:'Poppins',sans-serif;font-size:32px;font-weight:700}
+.sim-status{background:rgba(255,255,255,.15);padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600}
+.sim-rows{padding:4px 0}
+.sim-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
 .sim-row:last-child{border-bottom:none}
-.sim-row .lbl{color:var(--muted);font-weight:600}
-.sim-row .v{color:var(--navy);font-weight:600;text-align:right}
-.sim-block{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 22px;margin-bottom:14px}
-.sim-block h4{font-family:'Fraunces',serif;font-size:16px;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.sim-block .item{font-size:13.5px;color:var(--ink);padding:6px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:12px}
-.sim-block .item:last-child{border-bottom:none}
-.sim-block .muted{color:var(--muted)}
-.pax-card{background:var(--surface);border-radius:var(--radius-sm);border:1.5px solid var(--line);padding:16px;margin-bottom:12px}
-.pax-card .pax-h{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--sea);margin-bottom:12px}
-.success{text-align:center;padding:50px 20px}
-.success .circle{width:84px;height:84px;border-radius:50%;background:var(--teal);color:#fff;font-size:42px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
-.success .num{font-family:'Fraunces',serif;font-size:44px;font-weight:700;color:var(--navy)}
-.success .lbl{color:var(--muted);margin-top:4px}
+.sim-row .lbl{color:var(--muted);font-weight:500}
+.sim-row .val{font-weight:600;color:var(--navy)}
+.sim-block h4{font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;margin-bottom:10px}
+.sim-item{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--border);font-size:13px}
+.sim-item:last-child{border-bottom:none}
+.sim-item .si-lbl{color:var(--navy)}
+.sim-item .si-val{color:var(--muted);text-align:right}
+.pax-card{background:var(--surface);border-radius:var(--radius-sm);border:1.5px solid var(--border);padding:14px 16px;margin-bottom:10px}
+.pax-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--blue);margin-bottom:12px}
+.confirm-wrap{text-align:center;padding:36px 20px}
+.confirm-icon{width:68px;height:68px;border-radius:50%;background:#E8F5E9;color:#2E7D32;font-size:34px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.confirm-num{font-family:'Poppins',sans-serif;font-size:40px;font-weight:700;color:var(--navy);margin:4px 0}
+.confirm-lbl{font-size:13px;color:var(--muted);margin-bottom:20px}
+.confirm-detail{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;max-width:400px;margin:0 auto 22px;text-align:left}
+.cd-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.cd-row:last-child{border-bottom:none}
+.cd-lbl{color:var(--muted);font-weight:500}
+.cd-val{font-weight:600;color:var(--navy)}
+.confirm-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:var(--shadow-md);z-index:200;transition:transform .3s;display:flex;align-items:center;gap:8px;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.ok{background:#2E7D32}.toast.err{background:var(--coral)}
 </style>
 </head>
 <body>
-
 <div class="topbar">
-  <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM Viagens">
-  <div class="brand">APM Viagens<small>Motor de reservas · Soltropico</small></div>
-  <button class="btn-back" onclick="window.location.href='index.html'">← Painel</button>
-</div>
-
-<div class="hero">
-  <div class="hero-eyebrow">Pacotes dinâmicos · voo + hotel</div>
-  <h1 class="display">O próximo <em>destino de sonho</em> dos seus clientes começa aqui.</h1>
-  <p>Pesquise pacotes da Soltropico, compare hotéis com disponibilidade em tempo real e feche a reserva — tudo num só lugar.</p>
-</div>
-
-<div class="searchwrap">
-  <div class="searchbar">
-    <div class="search-field">
-      <label>Destino</label>
-      <input type="text" id="s-name" placeholder="Djerba, Alicante, Maiorca…">
-    </div>
-    <div class="search-field">
-      <label>Partida a partir de</label>
-      <input type="date" id="s-depdate">
-    </div>
-    <button class="btn-search" id="btn-search" onclick="searchProducts()">
-      <span>🔍</span> Pesquisar
-    </button>
+  <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM">
+  <div><div class="topbar-brand">Motor de Reservas · Soltropico</div><div class="topbar-sub">APM Viagens</div></div>
+  <div class="topbar-right">
+    <div class="consultor-chip" id="consultor-chip" style="display:none">👤 <span id="consultor-nome"></span></div>
+    <button class="btn-back" onclick="window.location.href='index.html'">← Painel</button>
   </div>
 </div>
-
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-dyn" onclick="switchTab('dyn')">✈️🏨 Pacotes Dinâmicos <span class="tab-badge" id="badge-dyn">—</span></button>
+  <button class="tab-btn" id="tab-sta" onclick="switchTab('sta')">📦 Pacotes Estáticos <span class="tab-badge" id="badge-sta">—</span></button>
+</div>
 <div class="container">
-  <div class="section-label" id="results-label" style="display:none">
-    <h2 class="display">Destinos disponíveis</h2>
-    <span class="count" id="results-count"></span>
+  <div id="dest-header" class="dest-header" style="display:none">
+    <h2 id="dest-title"></h2><p id="dest-sub"></p>
   </div>
-  <div id="results">
-    <div class="placeholder">
-      <div class="ico">🏖️</div>
-      <h3 class="display">Comece por pesquisar um destino</h3>
-      <p>Escreva o nome de um destino acima, ou deixe em branco para ver tudo o que a Soltropico tem disponível.</p>
-    </div>
-  </div>
+  <div id="dest-area"></div>
 </div>
-
-<!-- Booking flow -->
 <div class="flow" id="flow">
   <div class="flow-top">
-    <button class="flow-close" onclick="closeFlow()" title="Fechar">✕</button>
-    <div>
-      <div class="flow-title" id="flow-prod">Destino</div>
-      <small id="flow-sub">Configure a viagem</small>
-    </div>
-    <div class="stepper" id="stepper">
-      <div class="st active" data-s="1"><span class="dot">1</span><span>Viagem</span></div>
-      <div class="sep"></div>
-      <div class="st" data-s="2"><span class="dot">2</span><span>Hotel</span></div>
-      <div class="sep"></div>
-      <div class="st" data-s="3"><span class="dot">3</span><span>Resumo</span></div>
-      <div class="sep"></div>
-      <div class="st" data-s="4"><span class="dot">4</span><span>Passageiros</span></div>
-    </div>
+    <button class="flow-close" onclick="closeFlow()">✕</button>
+    <div><div class="flow-prod" id="flow-prod"></div><div class="flow-sub" id="flow-sub"></div></div>
+    <div class="stepper" id="stepper"></div>
   </div>
-  <div class="flow-body">
-    <div class="flow-inner" id="flow-content"></div>
-  </div>
+  <div class="flow-body"><div class="flow-inner" id="flow-content"></div></div>
   <div class="flow-foot">
     <button class="btn btn-ghost" id="foot-back" onclick="flowBack()" style="visibility:hidden">← Voltar</button>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:20px">
+    <div style="display:flex;align-items:center;gap:14px;margin-left:auto">
       <div class="foot-price" id="foot-price" style="display:none"></div>
       <button class="btn btn-primary" id="foot-next" onclick="flowNext()">Continuar →</button>
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
-
 <script>
-// ════ CONFIG ════
-const SUPABASE_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
-const PROXY_URL = `${SUPABASE_URL}/functions/v1/soltropico-proxy`
-const CREDS = { System: 808, Client: 289363, Username: 'admin@apmviagens.pt', Password: 'JA622875' }
-
-let state = {
-  sessionHash:null, product:null, productDoc:null,
-  rooms:[{num:1,code:437,childAges:''}], roomTypes:[], baseLocals:[],
-  dates:[], locals:[], hotels:[], itinMeta:{}, flightSegByOpt:{},
-  selectedHotel:null, availDoc:null, simDoc:null, step:1, paxCount:1, totalPrice:''
-}
-
-// ════ UTILS ════
+const SUPABASE_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const PROXY_URL=`${SUPABASE_URL}/functions/v1/soltropico-proxy`
+const REST_RES=`${SUPABASE_URL}/rest/v1/soltropico_reservas`
+const CREDS={System:808,Client:289363,Username:'admin@apmviagens.pt',Password:'JA622875'}
+const urlP=new URLSearchParams(location.search)
+const CONSULTOR={id:urlP.get('cid')||'',nome:decodeURIComponent(urlP.get('cnome')||'Consultor')}
+if(CONSULTOR.nome&&CONSULTOR.nome!=='Consultor'){document.getElementById('consultor-chip').style.display='flex';document.getElementById('consultor-nome').textContent=CONSULTOR.nome}
+let tab='dyn',allProducts=[],state={product:null,isDynamic:true,rooms:[{num:1,code:437,childAges:''}],roomTypes:[],baseLocals:[],dates:[],locals:[],hotels:[],itinMeta:{},flightSegByOpt:{},flights:[],selectedHotel:null,sessionHash:null,availDoc:null,simDoc:null,step:1,paxCount:1,totalPrice:'',depDate:'',hotelNome:'',roomNome:'',boardNome:'',statusSistema:''}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function toast(msg,type=''){const t=document.getElementById('toast');t.className='toast show '+type;t.innerHTML=msg;clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast '+type,3400)}
-function money(v){const n=parseFloat(v)||0;return '€'+n.toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})}
-
-// ════ SOAP CORE (reaproveitado do motor técnico) ════
+function money(v){return '€'+(parseFloat(v)||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function toast(msg,type=''){const t=document.getElementById('toast');t.className='toast show '+type;t.innerHTML=msg;clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',3400)}
+function fmtDate(d){try{return new Date(d+'T00:00').toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'})}catch{return d}}
 function credXML(){return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">${CREDS.System}</System><Client xsi:type="xsd:int">${CREDS.Client}</Client><Username xsi:type="xsd:string">${CREDS.Username}</Username><Password xsi:type="xsd:string">${CREDS.Password}</Password></Credentials>`}
 function wrap(body){return `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`}
-async function soapCall(action,body){
-  const res=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},body:JSON.stringify({soapAction:action,soapBody:wrap(body)})})
-  if(!res.ok)throw new Error(`Falha de comunicação (${res.status})`)
-  const data=await res.json()
-  if(data.error)throw new Error(data.error)
-  const xmlStr=(data.xml||'').replace(/^\uFEFF/,'').trim()
-  const doc=new DOMParser().parseFromString(xmlStr,'text/xml')
-  if(doc.querySelector('parsererror'))throw new Error('Resposta inválida do servidor')
-  const fault=doc.querySelector('faultstring');if(fault)throw new Error(fault.textContent)
-  return doc
-}
-function txt(el,tag){if(!el)return '';for(let i=0;i<el.children.length;i++){const c=el.children[i];const l=c.localName||c.tagName.split(':').pop();if(l===tag)return c.textContent.trim()}const n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)return n[i].textContent.trim()}return ''}
-function directChildren(el,tag){if(!el)return [];const o=[];for(let i=0;i<el.children.length;i++){const c=el.children[i];const l=c.localName||c.tagName.split(':').pop();if(l===tag)o.push(c)}return o}
-function all(el,tag){if(!el)return [];const o=[];const n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)o.push(n[i])}return o}
+async function soapCall(action,body){const res=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},body:JSON.stringify({soapAction:action,soapBody:wrap(body)})});if(!res.ok)throw new Error(`Falha (${res.status})`);const data=await res.json();if(data.error)throw new Error(data.error);const xmlStr=(data.xml||'').replace(/^\uFEFF/,'').trim();const doc=new DOMParser().parseFromString(xmlStr,'text/xml');if(doc.querySelector('parsererror'))throw new Error('Resposta inválida');const f=doc.querySelector('faultstring');if(f)throw new Error(f.textContent);return doc}
+function txt(el,tag){if(!el)return '';for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)return c.textContent.trim()}const n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)return n[i].textContent.trim()}return ''}
+function directChildren(el,tag){if(!el)return [];const o=[];for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)o.push(c)}return o}
+function all(el,tag){if(!el)return [];const o=[],n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)o.push(n[i])}return o}
 function itemsOf(c){return c?directChildren(c,'item'):[]}
-
-// ════ FOTOS DE DESTINO (fallback quando produto não traz imagem) ════
-const DEST_PHOTOS={
-  djerba:'https://images.unsplash.com/photo-1605651531144-51381895e23d?w=600&q=80',
-  alicante:'https://images.unsplash.com/photo-1562883676-8c7feb83f09b?w=600&q=80',
-  maiorca:'https://images.unsplash.com/photo-1591792447710-c5e0a8f9d8c6?w=600&q=80',
-  mallorca:'https://images.unsplash.com/photo-1591792447710-c5e0a8f9d8c6?w=600&q=80',
-  paris:'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80',
-  default:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80'
-}
-function destPhoto(name){const k=(name||'').toLowerCase();for(const key in DEST_PHOTOS){if(k.includes(key))return DEST_PHOTOS[key]}return DEST_PHOTOS.default}
-
-// ════ PESQUISA DE PRODUTOS ════
-async function searchProducts(){
-  const name=document.getElementById('s-name').value.trim()
-  const depdate=document.getElementById('s-depdate').value
-  const btn=document.getElementById('btn-search');btn.disabled=true
-  document.getElementById('results-label').style.display='none'
-  document.getElementById('results').innerHTML=skeletons()
-  let xml=`<ns1:SearchProducts><SearchProductsRequest>${credXML()}`
-  if(name)xml+=`<Name>${name}</Name>`
-  if(depdate)xml+=`<DepDate>${depdate}</DepDate>`
-  xml+=`<PriceFrom>0</PriceFrom><PriceTo>99999</PriceTo></SearchProductsRequest></ns1:SearchProducts>`
+const BOARD_PT={TI:'Tudo incluído',AI:'Tudo incluído',APA:'Aloj. e PA',BB:'Aloj. e PA',MP:'Meia pensão',HB:'Meia pensão',PC:'Pensão completa',FB:'Pensão completa',SA:'Só alojamento'}
+function switchTab(t){tab=t;document.getElementById('tab-dyn').classList.toggle('active',t==='dyn');document.getElementById('tab-sta').classList.toggle('active',t==='sta');renderDestinos()}
+async function init(){
+  showSkeleton()
   try{
-    const doc=await soapCall('SearchProducts',xml)
-    const arr=all(doc,'ProductArray')[0]
-    let items=arr?itemsOf(arr):[]
-    if(!items.length)items=all(doc,'Product')
-    const products=items.map(p=>{
-      const code=parseInt((txt(p,'Code')||txt(p,'ProdCode')||'').trim())
-      const nm=txt(p,'Name')||txt(p,'ProdName')||''
-      const price=txt(p,'PriceFrom')||'0'
-      const pkt=txt(p,'ProdType')||txt(p,'Pkt_type')||''
-      const img=txt(p,'ImageUrl')||txt(p,'Image')||''
-      return {code,name:nm,price,pkt,img}
-    }).filter(p=>p.code>0&&p.name&&p.name!=='TESTE OMNIBEES')
-    if(!products.length){
-      document.getElementById('results').innerHTML=emptyState('Sem resultados','Tente outro destino ou deixe o campo em branco para ver tudo.')
-      return
-    }
-    state.searchResults=products
-    document.getElementById('results-label').style.display='flex'
-    document.getElementById('results-count').textContent=`${products.length} destino(s)`
-    document.getElementById('results').innerHTML='<div class="dest-grid">'+products.map((p,i)=>destCard(p,i)).join('')+'</div>'
-  }catch(e){
-    document.getElementById('results').innerHTML=emptyState('Algo correu mal',e.message)
-    toast('❌ '+e.message,'err')
-  }finally{btn.disabled=false}
+    const doc=await soapCall('SearchProducts',`<ns1:SearchProducts><SearchProductsRequest>${credXML()}<PriceFrom>0</PriceFrom><PriceTo>99999</PriceTo></SearchProductsRequest></ns1:SearchProducts>`)
+    const arr=all(doc,'ProductArray')[0];let items=arr?itemsOf(arr):[];if(!items.length)items=all(doc,'Product')
+    allProducts=items.map(p=>{const code=parseInt((txt(p,'Code')||txt(p,'ProdCode')||'').trim()),nome=txt(p,'Name')||txt(p,'ProdName')||'',price=txt(p,'PriceFrom')||'0',pkt=(txt(p,'ProdType')||txt(p,'Pkt_type')||'DYNAMIC').toUpperCase(),img=txt(p,'ImageUrl')||txt(p,'Image')||'';return{code,nome,price,pkt,img}}).filter(p=>p.code>0&&p.nome&&p.nome!=='TESTE OMNIBEES')
+    document.getElementById('badge-dyn').textContent=allProducts.filter(p=>p.pkt==='DYNAMIC').length
+    document.getElementById('badge-sta').textContent=allProducts.filter(p=>p.pkt==='STATIC').length
+    renderDestinos()
+  }catch(e){document.getElementById('dest-area').innerHTML=`<div class="state-empty"><div class="ico">⚠️</div><h3>Erro ao carregar</h3><p>${esc(e.message)}</p></div>`}
 }
-
-function destCard(p,i){
-  const price=parseFloat(p.price)||0
-  const photo=p.img||destPhoto(p.name)
-  return `<div class="dest-card" onclick="startBooking(${i})">
-    <div class="dest-photo">
-      <img src="${esc(photo)}" onerror="this.style.display='none';this.parentElement.querySelector('.heart').style.display='flex'" alt="${esc(p.name)}">
-      <div class="heart" style="display:none">🏝️</div>
-      <span class="tag">Voo + Hotel</span>
-    </div>
-    <div class="dest-body">
-      <h3 class="display">${esc(p.name)}</h3>
-      <div class="dest-loc">📍 Pacote dinâmico Soltropico</div>
-      <div class="dest-foot">
-        <div class="dest-price">
-          <span class="from">desde</span>
-          <span class="val">${price>0?money(price).replace('€','€ '):'sob consulta'}<small>${price>0?' /pessoa':''}</small></span>
-        </div>
-        <button class="dest-go" onclick="event.stopPropagation();startBooking(${i})">→</button>
-      </div>
-    </div>
-  </div>`
+function renderDestinos(){
+  const filtered=allProducts.filter(p=>tab==='dyn'?p.pkt==='DYNAMIC':p.pkt==='STATIC')
+  document.getElementById('dest-header').style.display='block'
+  document.getElementById('dest-title').textContent=tab==='dyn'?'Pacotes Dinâmicos':'Pacotes Estáticos'
+  document.getElementById('dest-sub').textContent=tab==='dyn'?'Voo + hotel em tempo real. Clique num destino para avançar.':'Pacotes fixos pré-definidos. Clique num destino para avançar.'
+  if(!filtered.length){document.getElementById('dest-area').innerHTML=`<div class="state-empty"><div class="ico">🧭</div><h3>Sem destinos</h3><p>Nenhum pacote ${tab==='dyn'?'dinâmico':'estático'} disponível.</p></div>`;return}
+  document.getElementById('dest-area').innerHTML='<div class="dest-grid">'+filtered.map((p,i)=>`<div class="dest-card" onclick="startBooking(${i})"><div class="dest-photo">${p.img?`<img src="${esc(p.img)}" onerror="this.style.display='none'" alt="">`:'<div class="dest-photo-empty">🏖️</div>'}<span class="dest-badge">${p.pkt==='DYNAMIC'?'Voo + Hotel':'Pacote Fixo'}</span></div><div class="dest-body"><div class="dest-name">${esc(p.nome)}</div><div class="dest-loc">Soltropico · Cód. ${p.code}</div><div class="dest-foot"><div class="dest-price"><span class="from">desde</span><span class="val">${parseFloat(p.price)>0?money(p.price):'—'}</span></div><button class="dest-cta" onclick="event.stopPropagation();startBooking(${i})">→</button></div></div></div>`).join('')+'</div>'
 }
-function skeletons(){return '<div class="skeleton-grid">'+Array(6).fill('<div class="skel"><div class="ph"></div><div class="pb"><div class="l" style="width:70%"></div><div class="l" style="width:45%"></div><div class="l" style="width:30%;height:20px"></div></div></div>').join('')+'</div>'}
-function emptyState(t,s){return `<div class="placeholder"><div class="ico">🧭</div><h3 class="display">${esc(t)}</h3><p>${esc(s)}</p></div>`}
-
-// ════ ARRANQUE DA RESERVA ════
+function showSkeleton(){document.getElementById('dest-header').style.display='none';document.getElementById('dest-area').innerHTML='<div class="skel-grid">'+Array(8).fill('<div class="skel"><div class="s-img"></div><div class="s-body"><div class="s-line" style="width:65%"></div><div class="s-line" style="width:40%"></div><div class="s-line" style="width:80%;height:16px"></div></div></div>').join('')+'</div>'}
+function getProduct(i){return allProducts.filter(p=>tab==='dyn'?p.pkt==='DYNAMIC':p.pkt==='STATIC')[i]}
 async function startBooking(i){
-  const p=state.searchResults[i]
-  state.product={code:p.code,name:p.name,pkt:p.pkt||'DYNAMIC',img:p.img||destPhoto(p.name)}
-  state.rooms=[{num:1,code:437,childAges:''}]
-  state.selectedHotel=null;state.step=1
-  document.getElementById('flow-prod').textContent=p.name
-  document.getElementById('flow-sub').textContent='A carregar opções…'
-  document.getElementById('flow').classList.add('show')
-  document.body.style.overflow='hidden'
-  setStep(1)
-  document.getElementById('flow-content').innerHTML='<div style="text-align:center;padding:60px"><div class="ico" style="font-size:40px">⏳</div><p style="color:var(--muted);margin-top:10px">A obter datas e quartos disponíveis…</p></div>'
-  document.getElementById('foot-next').style.visibility='hidden'
+  const p=getProduct(i);if(!p)return
+  Object.assign(state,{product:{...p},isDynamic:p.pkt==='DYNAMIC',rooms:[{num:1,code:437,childAges:''}],selectedHotel:null,step:1,totalPrice:'',simDoc:null,availDoc:null,depDate:'',hotelNome:'',roomNome:'',boardNome:''})
+  document.getElementById('flow-prod').textContent=p.nome
+  document.getElementById('flow-sub').textContent=state.isDynamic?'Voo + Hotel · Dinâmico':'Pacote Fixo · Estático'
+  buildStepper();document.getElementById('flow').classList.add('show');document.body.style.overflow='hidden'
+  setFlowStep(1);showLoading('A carregar opções…')
   try{
-    const doc=await soapCall('DynGetProductParameters',`<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${p.code}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
-    state.productDoc=doc
-    const ai=(c)=>{const w=all(doc,c)[0];return w?itemsOf(w):[]}
+    let doc
+    if(state.isDynamic)doc=await soapCall('DynGetProductParameters',`<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${p.code}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+    else doc=await soapCall('StaticGetProductParameters',`<ns1:StaticGetProductParameters><StaticProductParametersRequest>${credXML()}<ProductCode xsi:type="xsd:int">${p.code}</ProductCode></StaticProductParametersRequest></ns1:StaticGetProductParameters>`)
+    const ai=c=>{const w=all(doc,c)[0];return w?itemsOf(w):[]}
     state.dates=ai('DepartureDates').map(it=>txt(it,'Date')).filter(Boolean)
     state.locals=ai('DepartureLocals').map(it=>({code:txt(it,'Code'),name:txt(it,'Name')})).filter(l=>l.code)
     if(!state.locals.length)state.locals=[{code:'LIS',name:'Lisboa'}]
     state.roomTypes=ai('RoomTypes').map(r=>({code:txt(r,'Code'),name:txt(r,'Name')})).filter(r=>r.code)
-    state.baseLocals=ai('BaseLocals').map(b=>({code:txt(b,'Code'),name:txt(b,'Name'),minNights:txt(b,'MinNights')||'7',maxNights:txt(b,'MaxNights')||'7'})).filter(b=>b.code)
+    state.baseLocals=ai('BaseLocals').map(b=>({code:txt(b,'Code'),name:txt(b,'Name'),min:txt(b,'MinNights')||'7',max:txt(b,'MaxNights')||'14'})).filter(b=>b.code)
     if(state.roomTypes.length)state.rooms[0].code=state.roomTypes[0].code
-    document.getElementById('flow-sub').textContent='Configure a viagem'
-    document.getElementById('foot-next').style.visibility='visible'
     renderStep1()
-  }catch(e){
-    document.getElementById('flow-content').innerHTML=emptyState('Não foi possível carregar',e.message)
-    toast('❌ '+e.message,'err')
-  }
+  }catch(e){showError(e.message)}
 }
-
 function closeFlow(){document.getElementById('flow').classList.remove('show');document.body.style.overflow=''}
-
-function setStep(n){
-  state.step=n
-  document.querySelectorAll('.stepper .st').forEach(el=>{
-    const s=parseInt(el.dataset.s)
-    el.classList.toggle('active',s===n)
-    el.classList.toggle('done',s<n)
-  })
+const STEPS_DYN=[{n:1,lbl:'Viagem'},{n:2,lbl:'Hotel'},{n:3,lbl:'Resumo'},{n:4,lbl:'Passageiros'}]
+const STEPS_STA=[{n:1,lbl:'Viagem'},{n:2,lbl:'Quarto'},{n:3,lbl:'Passageiros'}]
+function buildStepper(){const steps=state.isDynamic?STEPS_DYN:STEPS_STA;document.getElementById('stepper').innerHTML=steps.map((s,i)=>`${i>0?'<div class="st-sep"></div>':''}<div class="st-dot" id="sd-${s.n}"><span>${s.n}</span></div><div class="st-label" id="sl-${s.n}">${s.lbl}</div>`).join('')}
+function setFlowStep(n){
+  state.step=n;const steps=state.isDynamic?STEPS_DYN:STEPS_STA
+  steps.forEach(s=>{const d=document.getElementById('sd-'+s.n),l=document.getElementById('sl-'+s.n);if(d)d.className='st-dot'+(s.n===n?' active':s.n<n?' done':'');if(l)l.className='st-label'+(s.n===n?' active':'')})
   document.getElementById('foot-back').style.visibility=n>1?'visible':'hidden'
-  const fp=document.getElementById('foot-price')
-  fp.style.display=(n>=3&&state.totalPrice)?'block':'none'
-}
-
-// ════ STEP 1 — VIAGEM ════
-function renderStep1(){
-  const c=document.getElementById('flow-content')
-  c.innerHTML=`
-    <div class="step-head"><h2 class="display">Quando e como?</h2><p>Escolha a data de partida, o aeroporto e a ocupação dos quartos.</p></div>
-    <div class="field-row">
-      <div class="fld"><label>Data de partida</label><select id="f-depdate">${state.dates.map(d=>`<option value="${d}">${fmtDate(d)}</option>`).join('')}</select></div>
-      <div class="fld"><label>Partida de</label><select id="f-deplocal">${state.locals.map(l=>`<option value="${l.code}">${esc(l.name||l.code)}</option>`).join('')}</select></div>
-      ${state.baseLocals.length?`<div class="fld"><label>Noites</label><input type="number" id="f-nights" value="${state.baseLocals[0].minNights}" min="${state.baseLocals[0].minNights}"></div>`:''}
-    </div>
-    <div style="margin:6px 0 10px;font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)">Quartos & ocupação</div>
-    <div id="rooms"></div>
-    <button class="add-room" onclick="addRoom()">+ Adicionar quarto</button>`
-  renderRooms()
-  document.getElementById('foot-next').textContent='Procurar hotéis →'
-  document.getElementById('foot-next').onclick=flowNext
-}
-function fmtDate(d){try{return new Date(d+'T00:00').toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'})}catch{return d}}
-function renderRooms(){
-  document.getElementById('rooms').innerHTML=state.rooms.map((r,i)=>`
-    <div class="room-line">
-      <span class="rl-label">Quarto ${r.num}</span>
-      <select id="rc-${i}">${state.roomTypes.map(t=>`<option value="${t.code}" ${t.code==r.code?'selected':''}>${esc(t.name)}</option>`).join('')}</select>
-      <input type="text" id="rca-${i}" placeholder="idades das crianças (ex: 4,8)" value="${r.childAges}">
-      ${state.rooms.length>1?`<button class="flow-close" style="width:34px;height:34px;font-size:14px" onclick="removeRoom(${i})">✕</button>`:''}
-    </div>`).join('')
-}
-function addRoom(){syncRooms();state.rooms.push({num:state.rooms.length+1,code:state.roomTypes[0]?.code||437,childAges:''});renderRooms()}
-function removeRoom(i){syncRooms();state.rooms.splice(i,1);state.rooms.forEach((r,x)=>r.num=x+1);renderRooms()}
-function syncRooms(){state.rooms.forEach((r,i)=>{const cs=document.getElementById('rc-'+i),ca=document.getElementById('rca-'+i);if(cs)r.code=parseInt(cs.value);if(ca)r.childAges=ca.value})}
-
-// ════ STEP 2 — DISPONIBILIDADE/HOTÉIS ════
-async function searchAvailability(){
-  syncRooms()
-  const depDate=document.getElementById('f-depdate').value
-  const depLocal=document.getElementById('f-deplocal').value
-  const nights=document.getElementById('f-nights')?.value||(state.baseLocals[0]?.minNights||'7')
-  const roomsXML=state.rooms.map(r=>`<RoomTypeOption><RoomNum>${r.num-1}</RoomNum><Code>${r.code}</Code><ChildAges>${r.childAges}</ChildAges></RoomTypeOption>`).join('')
-  const baseXML=state.baseLocals.length?state.baseLocals.map(b=>`<Local><Code>${b.code}</Code><Nights>${nights}</Nights></Local>`).join(''):'<Local><Code>2234</Code><Nights>7</Nights></Local>'
-  document.getElementById('flow-content').innerHTML='<div style="text-align:center;padding:60px"><div class="ico" style="font-size:40px">🏨</div><p style="color:var(--muted);margin-top:10px">A consultar hotéis com disponibilidade…</p></div>'
-  document.getElementById('foot-next').style.visibility='hidden'
-  try{
-    const doc=await soapCall('DynSearchProductAvailableServices',`<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.product.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
-    state.sessionHash=txt(doc,'SessionHash')
-    state.availDoc=doc
-    parseHotelsAndFlights(doc)
-    renderStep2()
-    setStep(2)
-    document.getElementById('foot-next').style.visibility='visible'
-  }catch(e){
-    document.getElementById('flow-content').innerHTML=emptyState('Sem disponibilidade',e.message)
-    document.getElementById('foot-next').style.visibility='visible'
-    toast('❌ '+e.message,'err')
-  }
-}
-
-function parseHotelsAndFlights(doc){
-  // voos
-  state.flightSegByOpt={};state.flights=[]
-  const fmg=all(doc,'FlightMainGroup')[0]
-  itemsOf(fmg).forEach(g=>{
-    ['FlightOptionsSuperBB','FlightOptions','FlightOptionsFlightEngine'].forEach(key=>{
-      const cont=directChildren(g,key)[0]
-      itemsOf(cont).forEach(opt=>{
-        const optCode=txt(opt,'OptionCode')
-        const rate=txt(opt,'RateTaxVal'),sup=txt(opt,'SuplementsTotalVal')
-        const segC=directChildren(opt,'FlightSegments')[0]
-        const segs=itemsOf(segC).map(s=>{const g2=itemsOf(directChildren(s,'Flights')[0])[0];return {segmentCode:txt(s,'SegmentCode'),flightGroupCode:g2?txt(g2,'FlightGroupCode'):'0'}})
-        state.flightSegByOpt[optCode]=segs
-        const fl=all(opt,'DynFlight');let route=''
-        if(fl.length){const f=fl[0],l=fl[fl.length-1];route=`${txt(f,'From')}→${txt(f,'To')} · ${txt(f,'DepDate')}`}
-        state.flights.push({optCode,rate,sup,route})
-      })
-    })
-  })
-  // hotéis
-  state.hotels=[];state.itinMeta={}
-  const itinC=all(doc,'Itinerary')[0]
-  itemsOf(itinC).forEach(itin=>{
-    const itinCode=txt(itin,'Code')||'0'
-    state.itinMeta[itinCode]={iface:txt(itin,'Interface')||'htl_hub',connector:txt(itin,'Connector')||'HTL_HUB'}
-    const hc=directChildren(itin,'HotelOption')[0]
-    itemsOf(hc).forEach(h=>{
-      const occ=directChildren(h,'RoomsOccupancy')[0]
-      const occItem=itemsOf(occ)[0]
-      const roomsC=occItem?directChildren(occItem,'Rooms')[0]:null
-      const rooms=itemsOf(roomsC).filter(rm=>txt(rm,'AvailStatus')==='OK').map(rm=>({code:txt(rm,'Code'),name:txt(rm,'Name'),sell:parseFloat(txt(rm,'SellValue'))||0,board:txt(rm,'BoardCode')||'TI'}))
-      const boards=itemsOf(directChildren(h,'Boards')[0]).map(b=>({code:txt(b,'Code'),name:txt(b,'Name')}))
-      state.hotels.push({itinCode,code:txt(h,'Code'),name:txt(h,'Name'),rating:parseInt(txt(h,'Rating'))||0,price:parseFloat(txt(h,'PriceFrom'))||0,img:txt(h,'Image'),addr:txt(h,'Address'),local:txt(h,'Local'),rooms,boards})
-    })
-  })
-}
-
-const BOARD_PT={TI:'Tudo incluído',AI:'Tudo incluído',APA:'Alojamento e PA',MP:'Meia pensão',PC:'Pensão completa',HB:'Meia pensão',FB:'Pensão completa',BB:'Alojamento e PA',SA:'Só alojamento'}
-function renderStep2(){
-  const c=document.getElementById('flow-content')
-  let flightsHtml=''
-  if(state.flights.length){
-    flightsHtml=`<div class="step-head" style="margin-top:8px"><h2 class="display" style="font-size:21px">Voo</h2></div>`+
-      state.flights.map((f,i)=>`<label class="flight-opt"><input type="radio" name="fl" value="${f.optCode}" ${i===0?'checked':''}><div><div class="fl-route">Opção ${f.optCode}</div><div class="fl-sub">${esc(f.route||'Voo incluído no pacote')}</div></div>${f.rate?`<span class="fl-price">${money(f.rate)}</span>`:''}</label>`).join('')
-  }else{
-    flightsHtml=`<div class="note">✈️ O voo já está incluído neste pacote.</div>`
-  }
-  c.innerHTML=`
-    <div class="step-head"><h2 class="display">Escolha o hotel</h2><p>${state.hotels.length} hotéis disponíveis para as datas escolhidas. Toque para selecionar.</p></div>
-    ${flightsHtml}
-    <div class="step-head" style="margin-top:22px"><h2 class="display" style="font-size:21px">Hotéis</h2></div>
-    <div class="hotel-list">${state.hotels.map((h,i)=>hotelCard(h,i)).join('')}</div>`
-  // pré-selecionar primeiro
-  if(state.hotels.length)selectHotel(0)
-  document.getElementById('foot-next').textContent='Ver resumo e preço →'
-  document.getElementById('foot-next').onclick=flowNext
-}
-function hotelCard(h,i){
-  const stars='★'.repeat(Math.min(h.rating,5))+'☆'.repeat(Math.max(0,5-h.rating))
-  const photo=h.img||destPhoto(state.product.name)
-  const roomOpts=h.rooms.length?h.rooms.map(r=>`<option value="${r.code}" data-board="${r.board}" data-sell="${r.sell}">${esc(r.name)} · ${money(r.sell)}</option>`).join(''):'<option value="0" data-board="TI">Quarto standard</option>'
-  const boardOpts=h.boards.length?h.boards.map(b=>`<option value="${b.code}">${esc(BOARD_PT[b.code]||b.name)}</option>`).join(''):'<option value="TI">Tudo incluído</option>'
-  return `<div class="hotel" id="h-${i}" onclick="selectHotel(${i})">
-    <div class="hotel-img"><img src="${esc(photo)}" onerror="this.style.display='none'" alt=""><span class="stars">${stars}</span><span class="selbadge">✓</span></div>
-    <div class="hotel-info">
-      <h3 class="display">${esc(h.name)}</h3>
-      <div class="addr">📍 ${esc(h.addr||'')}${h.local?' · '+esc(h.local):''}</div>
-      <div class="hotel-selectors" onclick="event.stopPropagation()">
-        <select id="hr-${i}" onchange="selectHotel(${i})">${roomOpts}</select>
-        <select id="hb-${i}">${boardOpts}</select>
-      </div>
-      <div class="hotel-price"><span class="from">desde </span><span class="val">${money(h.price)}</span></div>
-    </div>
-  </div>`
-}
-function selectHotel(i){
-  document.querySelectorAll('.hotel').forEach(el=>el.classList.remove('sel'))
-  const card=document.getElementById('h-'+i)
-  if(card){card.classList.add('sel');state.selectedHotel=i}
-}
-
-// ════ STEP 3 — SIMULAÇÃO ════
-async function runSimulation(){
-  const flRadio=document.querySelector('input[name="fl"]:checked')
-  let flightsSuperBB='<FlightsSelectedSuperBB xsi:nil="true"/>'
-  if(flRadio){
-    const segs=state.flightSegByOpt[flRadio.value]||[]
-    const segXML=segs.map(s=>`<item xsi:type="ns1:DynFlightSegmentSel"><SegmentCode xsi:type="xsd:string">${s.segmentCode}</SegmentCode><FlightGroupCode xsi:type="xsd:string">${s.flightGroupCode}</FlightGroupCode></item>`).join('')
-    flightsSuperBB=`<FlightsSelectedSuperBB SOAP-ENC:arrayType="ns1:DynFlightsSelected[1]" xsi:type="ns1:DynFlightsSelectedArray"><item xsi:type="ns1:DynFlightsSelected"><OptionCode xsi:type="xsd:string">${flRadio.value}</OptionCode><SegmentLists SOAP-ENC:arrayType="ns1:DynFlightSegmentSel[${segs.length}]" xsi:type="ns1:DynFlightSegmentSelArray">${segXML}</SegmentLists></item></FlightsSelectedSuperBB>`
-  }
-  const hi=state.selectedHotel
-  if(hi===null||hi===undefined){toast('Selecione um hotel primeiro','err');return false}
-  const h=state.hotels[hi]
-  const roomSel=document.getElementById('hr-'+hi)
-  const roomCode=roomSel?roomSel.value:'0'
-  const boardCode=(roomSel&&roomSel.selectedOptions[0]?.dataset.board)||'TI'
-  const meta=state.itinMeta[h.itinCode]||{iface:'htl_hub',connector:'HTL_HUB'}
-  const roomsSelXML=state.rooms.map((r,idx)=>`<item xsi:type="ns1:DynRoomsSelect"><RoomNum xsi:type="xsd:string">${idx}</RoomNum><RoomCode xsi:type="xsd:string">${roomCode}</RoomCode><BoardCode xsi:type="xsd:string">${boardCode}</BoardCode></item>`).join('')
-  const hotelsSelected=`<HotelsSelected SOAP-ENC:arrayType="ns1:DynHotelsSelected[1]" xsi:type="ns1:DynHotelsSelectedArray"><item xsi:type="ns1:DynHotelsSelected"><ItineraryCode xsi:type="xsd:string">${h.itinCode}</ItineraryCode><Interface xsi:type="xsd:string">${meta.iface}</Interface><Connector xsi:type="xsd:string">${meta.connector}</Connector><HtlSession xsi:type="xsd:string">${state.sessionHash}</HtlSession><HotelRPH xsi:type="xsd:string">${h.code}</HotelRPH><HotelSelected xsi:type="xsd:string">${h.code}</HotelSelected><HotelSelectedPrice xsi:nil="true"/><RoomsSelected SOAP-ENC:arrayType="ns1:DynRoomsSelect[${state.rooms.length}]" xsi:type="ns1:DynRoomsSelectArray">${roomsSelXML}</RoomsSelected><BoardSelected xsi:type="xsd:string">${boardCode}</BoardSelected><SuplementSelected xsi:type="xsd:string"/></item></HotelsSelected>`
-  const setBody=`<ns1:DynSetServicesSelected><DynServicesSelectedRequest xsi:type="ns1:DynServicesSelectedRequest">${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><Reserve xsi:nil="true"/><Local xsi:nil="true"/><Regime xsi:nil="true"/><Connector xsi:nil="true"/><Skeleton_id xsi:nil="true"/><Action xsi:nil="true"/><DepLocal xsi:nil="true"/><OptionId xsi:nil="true"/><FlightsSelected xsi:nil="true"/>${flightsSuperBB}<FlightsSelectedFlightEngine xsi:nil="true"/><FlightsSelectedAirAvailFlightEngine xsi:nil="true"/><BusSelected xsi:nil="true"/>${hotelsSelected}<OptionalsSelected xsi:nil="true"/><RoomsOfi xsi:nil="true"/><RoomsSeniorOfi xsi:nil="true"/><RoomsPktStatic xsi:nil="true"/><RoomsSeniorPktStatic xsi:nil="true"/></DynServicesSelectedRequest></ns1:DynSetServicesSelected>`
-  document.getElementById('flow-content').innerHTML='<div style="text-align:center;padding:60px"><div class="ico" style="font-size:40px">💶</div><p style="color:var(--muted);margin-top:10px">A calcular o preço final…</p></div>'
-  document.getElementById('foot-next').style.visibility='hidden'
-  try{
-    await soapCall('DynSetServicesSelected',setBody)
-    const sim=await soapCall('DynGetSimulation',`<ns1:DynGetSimulation><DynGetSimulationRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
-    state.simDoc=sim
-    renderStep3(sim)
-    setStep(3)
-    document.getElementById('foot-next').style.visibility='visible'
-    return true
-  }catch(e){
-    document.getElementById('flow-content').innerHTML=emptyState('Não foi possível simular',e.message)
-    document.getElementById('foot-next').style.visibility='visible'
-    toast('❌ '+e.message,'err')
-    return false
-  }
-}
-
-function renderStep3(doc){
-  const price=txt(doc,'TotalPrice')
-  const status=txt(doc,'AvailableStatus')||'OK'
-  state.totalPrice=price
-  const h=state.hotels[state.selectedHotel]
-  const roomSel=document.getElementById('hr-'+state.selectedHotel)
-  const roomName=roomSel?roomSel.selectedOptions[0].textContent.split(' · ')[0]:''
-  const boardSel=document.getElementById('hb-'+state.selectedHotel)
-  const boardName=boardSel?boardSel.selectedOptions[0].textContent:''
-  const statusTxt=status==='OK'?'✓ Confirmação imediata':'⏳ Sujeito a confirmação'
-  // serviços
-  const servs=all(doc,'DynResService').map(s=>({type:txt(s,'Type'),desc:txt(s,'Description'),from:txt(s,'DateFrom'),to:txt(s,'DateTo')}))
-  // políticas de cancelamento
-  const policies=all(doc,'Policies').concat(all(doc,'RoomsPenalties'))
-  let polHtml=''
-  const polItems=itemsOf(all(doc,'Policies')[0]).concat(itemsOf(all(doc,'RoomsPenalties')[0]))
-  if(polItems.length){
-    polHtml=`<div class="sim-block"><h4 class="display">📅 Condições de cancelamento</h4>`+polItems.map(p=>{
-      const d=txt(p,'DateFrom')||txt(p,'Date')||txt(p,'DateTo');const v=txt(p,'Value')||txt(p,'Amount')||txt(p,'Penalty');const desc=txt(p,'Description')||txt(p,'Desc')
-      return `<div class="item"><span>${esc(desc||(d?'A partir de '+d:'Penalização'))}</span><span class="${v?'':'muted'}">${v?money(v):'—'}</span></div>`
-    }).join('')+`</div>`
-  }
-  // avisos hotel
-  const warnItems=itemsOf(all(doc,'HotelWarnings')[0])
-  let warnHtml=''
-  if(warnItems.length){
-    warnHtml=`<div class="sim-block"><h4 class="display">ℹ️ Avisos do hotel</h4>`+warnItems.map(w=>`<div class="item"><span>${esc(txt(w,'Description')||txt(w,'Text')||w.textContent.trim())}</span></div>`).join('')+`</div>`
-  }
-  // condições gerais
-  const condItems=itemsOf(all(doc,'Conditions')[0])
-  let condHtml=''
-  if(condItems.length){
-    condHtml=`<div class="sim-block"><h4 class="display">📋 Condições</h4>`+condItems.slice(0,8).map(cd=>`<div class="item"><span>${esc(txt(cd,'Description')||txt(cd,'Text')||cd.textContent.trim())}</span></div>`).join('')+`</div>`
-  }
-  document.getElementById('flow-content').innerHTML=`
-    <div class="step-head"><h2 class="display">Resumo da viagem</h2><p>Confirme os detalhes antes de avançar para os dados dos passageiros.</p></div>
-    <div class="sim-card">
-      <div class="sim-hero">
-        <div><div style="font-size:13px;opacity:.8;margin-bottom:4px">Preço total</div><div class="big">${price?money(price):'—'}</div></div>
-        <div class="sim-status">${statusTxt}</div>
-      </div>
-      <div class="sim-rows">
-        <div class="sim-row"><span class="lbl">Destino</span><span class="v">${esc(state.product.name)}</span></div>
-        <div class="sim-row"><span class="lbl">Hotel</span><span class="v">${esc(h.name)} ${'★'.repeat(h.rating)}</span></div>
-        <div class="sim-row"><span class="lbl">Quarto</span><span class="v">${esc(roomName)}</span></div>
-        <div class="sim-row"><span class="lbl">Regime</span><span class="v">${esc(boardName)}</span></div>
-        <div class="sim-row"><span class="lbl">Ocupação</span><span class="v">${state.rooms.length} quarto(s)</span></div>
-      </div>
-    </div>
-    ${servs.length?`<div class="sim-block"><h4 class="display">🧾 Serviços incluídos</h4>${servs.map(s=>`<div class="item"><span>${esc(s.desc||s.type)}</span><span class="muted">${s.from?s.from+(s.to?' → '+s.to:''):''}</span></div>`).join('')}</div>`:''}
-    ${polHtml}${warnHtml}${condHtml}`
-  document.getElementById('foot-price').innerHTML=`<small>Total</small>${price?money(price):'—'}`
-  document.getElementById('foot-price').style.display='block'
-  document.getElementById('foot-next').textContent='Dados dos passageiros →'
-  document.getElementById('foot-next').onclick=flowNext
-}
-
-// ════ STEP 4 — PASSAGEIROS ════
-function renderStep4(){
-  const paxList=all(state.simDoc,'DynResPax')
-  let list=paxList.length?paxList.map(p=>({room:txt(p,'Room')||'DBL1',type:txt(p,'Type')||'ADT',roomNum:txt(p,'RoomNumber')||'1'})):state.rooms.flatMap(r=>[{room:'DBL'+r.num,type:'ADT',roomNum:r.num},{room:'DBL'+r.num,type:'ADT',roomNum:r.num}])
-  state.paxCount=list.length
-  const c=document.getElementById('flow-content')
-  c.innerHTML=`
-    <div class="step-head"><h2 class="display">Dados dos passageiros</h2><p>Preencha os dados de cada viajante para concluir a reserva.</p></div>
-    ${list.map((p,i)=>`
-      <div class="pax-card">
-        <div class="pax-h">Passageiro ${i+1} · ${p.type==='ADT'?'Adulto':'Criança'} · Quarto ${p.roomNum}</div>
-        <div class="field-row" style="margin-bottom:0">
-          <div class="fld"><label>Tratamento</label><select id="px-t-${i}"><option>MR</option><option>MRS</option><option>MISS</option><option>CHD</option></select></div>
-          <div class="fld"><label>Nome próprio</label><input type="text" id="px-n-${i}" placeholder="Maria"></div>
-          <div class="fld"><label>Apelido</label><input type="text" id="px-s-${i}" placeholder="Silva"></div>
-          <div class="fld"><label>Data de nascimento</label><input type="date" id="px-d-${i}"></div>
-        </div>
-        <input type="hidden" id="px-rn-${i}" value="${p.roomNum}"><input type="hidden" id="px-rm-${i}" value="${p.room}">
-      </div>`).join('')}
-    <div class="field-row" style="margin-top:6px">
-      <div class="fld"><label>Referência do cliente (opcional)</label><input type="text" id="f-ref" placeholder="Nome do cliente ou nº interno"></div>
-      <div class="fld" style="grid-column:1/-1"><label>Observações (opcional)</label><input type="text" id="f-obs" placeholder="Pedidos especiais, notas…"></div>
-    </div>`
-  document.getElementById('foot-next').textContent='✓ Confirmar reserva'
-  document.getElementById('foot-next').onclick=flowNext
-}
-
-async function createReservation(){
-  let paxXML=''
-  for(let i=0;i<state.paxCount;i++){
-    const t=document.getElementById('px-t-'+i)?.value||'MR'
-    const n=document.getElementById('px-n-'+i)?.value||''
-    const s=document.getElementById('px-s-'+i)?.value||''
-    const d=document.getElementById('px-d-'+i)?.value||'1990-01-01'
-    const rn=document.getElementById('px-rn-'+i)?.value||'1'
-    const rm=document.getElementById('px-rm-'+i)?.value||'DBL1'
-    if(!n||!s){toast('Preencha o nome e apelido de todos os passageiros','err');return}
-    paxXML+=`<DynPax><RoomNum>${rn}</RoomNum><Title>${t}</Title><Name>${esc(n)}</Name><Surname>${esc(s)}</Surname><DateBirth>${d}</DateBirth><Room>${rm}</Room></DynPax>`
-  }
-  const ref=document.getElementById('f-ref')?.value||''
-  const obs=document.getElementById('f-obs')?.value||''
-  document.getElementById('flow-content').innerHTML='<div style="text-align:center;padding:60px"><div class="ico" style="font-size:40px">📨</div><p style="color:var(--muted);margin-top:10px">A criar a reserva na Soltropico…</p></div>'
-  document.getElementById('foot-next').style.visibility='hidden'
-  document.getElementById('foot-back').style.visibility='hidden'
-  try{
-    const doc=await soapCall('DynCreateReserve',`<ns1:DynCreateReserve><DynCreateReserveRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><PaxsStruct>${paxXML}</PaxsStruct>${ref?`<ClientRef>${esc(ref)}</ClientRef>`:''}${obs?`<ClientObs>${esc(obs)}</ClientObs>`:''}</DynCreateReserveRequest></ns1:DynCreateReserve>`)
-    const reserve=txt(doc,'Reserve')
-    const sys=txt(doc,'SystemStatus')
-    document.getElementById('foot-price').style.display='none'
-    document.getElementById('flow-content').innerHTML=`
-      <div class="success">
-        <div class="circle">✓</div>
-        <div style="color:var(--muted);font-weight:600;margin-bottom:6px">Reserva criada com sucesso</div>
-        <div class="num display">${esc(reserve)}</div>
-        <div class="lbl">Localizador Soltropico · ${esc(state.product.name)}</div>
-        <div style="margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-          <button class="btn btn-ghost" onclick="closeFlow()">Voltar à pesquisa</button>
-          <button class="btn btn-primary" onclick="closeFlow();window.scrollTo(0,0)">Nova reserva</button>
-        </div>
-      </div>`
-    document.querySelectorAll('.stepper .st').forEach(el=>el.classList.add('done'))
-    toast('🎉 Reserva '+reserve+' criada!','ok')
-  }catch(e){
-    document.getElementById('flow-content').innerHTML=emptyState('Não foi possível criar a reserva',e.message)
-    document.getElementById('foot-next').style.visibility='visible'
-    document.getElementById('foot-back').style.visibility='visible'
-    toast('❌ '+e.message,'err')
-  }
-}
-
-// ════ NAVEGAÇÃO DO FLUXO ════
-function flowNext(){
-  if(state.step===1)return searchAvailability()
-  if(state.step===2)return runSimulation()
-  if(state.step===3){setStep(4);renderStep4();document.querySelector('.flow-body').scrollTop=0;return}
-  if(state.step===4)return createReservation()
-}
-function flowBack(){
-  if(state.step===2){setStep(1);renderStep1();document.getElementById('foot-price').style.display='none'}
-  else if(state.step===3){setStep(2);renderStep2()}
-  else if(state.step===4){setStep(3);renderStep3(state.simDoc)}
+  document.getElementById('foot-price').style.display=(state.totalPrice&&n>=3)?'block':'none'
   document.querySelector('.flow-body').scrollTop=0
 }
-
-// data mínima = hoje
-document.getElementById('s-depdate').min=new Date().toISOString().split('T')[0]
+function showLoading(msg){document.getElementById('flow-content').innerHTML=`<div style="text-align:center;padding:60px"><div style="font-size:36px;margin-bottom:12px">⏳</div><p style="color:var(--muted)">${esc(msg)}</p></div>`;document.getElementById('foot-next').style.visibility='hidden'}
+function showError(msg){document.getElementById('flow-content').innerHTML=`<div class="state-empty"><div class="ico">⚠️</div><h3>Algo correu mal</h3><p>${esc(msg)}</p></div>`;document.getElementById('foot-next').style.visibility='visible'}
+function renderStep1(){
+  const bl=state.baseLocals[0]
+  document.getElementById('flow-content').innerHTML=`
+    <div class="step-head"><h2>Configurar a viagem</h2><p>Escolha as datas, aeroporto e ocupação dos quartos.</p></div>
+    <div class="card"><div class="card-title">📅 Data e partida</div><div class="field-row">
+      <div class="fld"><label>Data de partida</label><select id="f-date">${state.dates.map(d=>`<option value="${d}">${fmtDate(d)}</option>`).join('')}</select></div>
+      <div class="fld"><label>Aeroporto</label><select id="f-local">${state.locals.map(l=>`<option value="${l.code}">${esc(l.name||l.code)}</option>`).join('')}</select></div>
+      ${bl?`<div class="fld"><label>Noites</label><input type="number" id="f-nights" value="${bl.min}" min="${bl.min}" max="${bl.max}"></div>`:''}
+    </div></div>
+    <div class="card"><div class="card-title" style="justify-content:space-between"><span>🛏️ Quartos</span><button class="add-room-btn" style="width:auto;padding:5px 12px;font-size:11px" onclick="addRoom()">+ Quarto</button></div><div id="rooms-list"></div></div>`
+  renderRooms();document.getElementById('foot-next').style.visibility='visible';document.getElementById('foot-next').textContent='Ver disponibilidade →';document.getElementById('foot-next').onclick=flowNext
+}
+function renderRooms(){const c=document.getElementById('rooms-list');if(!c)return;c.innerHTML=state.rooms.map((r,i)=>`<div class="room-row"><span class="rr-lbl">Quarto ${r.num}</span><select id="rc-${i}">${state.roomTypes.map(t=>`<option value="${t.code}" ${t.code==r.code?'selected':''}>${esc(t.name)}</option>`).join('')}</select><input type="text" id="rca-${i}" placeholder="idades crianças (4,8)" value="${r.childAges}" style="max-width:160px">${state.rooms.length>1?`<button class="rr-rm" onclick="removeRoom(${i})">✕</button>`:''}</div>`).join('')}
+function syncRooms(){state.rooms.forEach((r,i)=>{const cs=document.getElementById('rc-'+i),ca=document.getElementById('rca-'+i);if(cs)r.code=parseInt(cs.value)||r.code;if(ca)r.childAges=ca.value})}
+function addRoom(){syncRooms();state.rooms.push({num:state.rooms.length+1,code:state.roomTypes[0]?.code||437,childAges:''});renderRooms()}
+function removeRoom(i){syncRooms();state.rooms.splice(i,1);state.rooms.forEach((r,x)=>r.num=x+1);renderRooms()}
+async function searchAvailability(){
+  syncRooms()
+  const depDate=document.getElementById('f-date')?.value||state.dates[0]||'',depLocal=document.getElementById('f-local')?.value||'LIS',nights=document.getElementById('f-nights')?.value||(state.baseLocals[0]?.min||'7')
+  state.depDate=depDate
+  const roomsXML=state.rooms.map(r=>`<RoomTypeOption><RoomNum>${r.num-1}</RoomNum><Code>${r.code}</Code><ChildAges>${r.childAges}</ChildAges></RoomTypeOption>`).join('')
+  const baseXML=state.baseLocals.length?state.baseLocals.map(b=>`<Local><Code>${b.code}</Code><Nights>${nights}</Nights></Local>`).join(''):`<Local><Code>2234</Code><Nights>${nights}</Nights></Local>`
+  showLoading('A pesquisar hotéis e disponibilidade…')
+  try{
+    if(state.isDynamic){
+      const doc=await soapCall('DynSearchProductAvailableServices',`<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.product.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+      state.sessionHash=txt(doc,'SessionHash');state.availDoc=doc;parseHotelsAndFlights(doc)
+    }else{
+      const doc=await soapCall('StaticGetRoomsStruct',`<ns1:StaticGetRoomsStruct><StaticRoomsStructRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.product.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals></StaticRoomsStructRequest></ns1:StaticGetRoomsStruct>`)
+      state.availDoc=doc;parseStaticRooms(doc)
+    }
+    renderStep2();setFlowStep(2);document.getElementById('foot-next').style.visibility='visible'
+  }catch(e){showError(e.message);document.getElementById('foot-next').style.visibility='visible'}
+}
+function parseHotelsAndFlights(doc){
+  state.flights=[];state.flightSegByOpt={};state.hotels=[];state.itinMeta={}
+  const fmg=all(doc,'FlightMainGroup')[0];itemsOf(fmg).forEach(g=>{['FlightOptionsSuperBB','FlightOptions','FlightOptionsFlightEngine'].forEach(key=>{const cont=directChildren(g,key)[0];itemsOf(cont).forEach(opt=>{const optCode=txt(opt,'OptionCode'),rate=txt(opt,'RateTaxVal'),sup=txt(opt,'SuplementsTotalVal'),segC=directChildren(opt,'FlightSegments')[0],segs=itemsOf(segC).map(s=>{const g2=itemsOf(directChildren(s,'Flights')[0])[0];return{segmentCode:txt(s,'SegmentCode'),flightGroupCode:g2?txt(g2,'FlightGroupCode'):'0'}});state.flightSegByOpt[optCode]=segs;const fl=all(opt,'DynFlight');let route='';if(fl.length){const f=fl[0];route=`${txt(f,'From')}→${txt(f,'To')} ${fmtDate(txt(f,'DepDate'))}`}state.flights.push({optCode,rate,sup,route})})})})
+  const itinC=all(doc,'Itinerary')[0];itemsOf(itinC).forEach(itin=>{const itinCode=txt(itin,'Code')||'0';state.itinMeta[itinCode]={iface:txt(itin,'Interface')||'htl_hub',connector:txt(itin,'Connector')||'HTL_HUB'};const hc=directChildren(itin,'HotelOption')[0];itemsOf(hc).forEach(h=>{const occ=directChildren(h,'RoomsOccupancy')[0],occI=itemsOf(occ)[0],roomsC=occI?directChildren(occI,'Rooms')[0]:null,rooms=itemsOf(roomsC).filter(rm=>txt(rm,'AvailStatus')==='OK').map(rm=>({code:txt(rm,'Code'),name:txt(rm,'Name'),sell:parseFloat(txt(rm,'SellValue'))||0,board:txt(rm,'BoardCode')||'TI'})),boards=itemsOf(directChildren(h,'Boards')[0]).map(b=>({code:txt(b,'Code'),name:txt(b,'Name')}));state.hotels.push({itinCode,code:txt(h,'Code'),name:txt(h,'Name'),rating:parseInt(txt(h,'Rating'))||0,price:parseFloat(txt(h,'PriceFrom'))||0,img:txt(h,'Image'),addr:txt(h,'Address'),local:txt(h,'Local'),rooms,boards})})})
+}
+function parseStaticRooms(doc){state.hotels=[];const rooms=all(doc,'RoomOption');if(!rooms.length){state.hotels=[{itinCode:'0',code:'0',name:'Quarto padrão',rating:0,price:0,img:'',addr:'',local:'',rooms:[{code:'0',name:'Standard',sell:0,board:'TI'}],boards:[{code:'TI',name:'Tudo incluído'}]}];return}rooms.forEach(r=>{state.hotels.push({itinCode:'0',code:txt(r,'Code'),name:txt(r,'Name')||txt(r,'Description'),rating:0,price:parseFloat(txt(r,'Price')||txt(r,'Value'))||0,img:'',addr:'',local:'',rooms:[{code:txt(r,'Code'),name:txt(r,'Name'),sell:parseFloat(txt(r,'Price')||txt(r,'Value'))||0,board:txt(r,'Board')||'TI'}],boards:[{code:txt(r,'Board')||'TI',name:BOARD_PT[txt(r,'Board')||'TI']||'Standard'}]})})}
+function renderStep2(){
+  let flightsHtml=state.isDynamic?(state.flights.length?'<div class="card"><div class="card-title">✈️ Voo</div>'+state.flights.map((f,i)=>`<label class="flight-opt"><input type="radio" name="fl" value="${f.optCode}" ${i===0?'checked':''}><div><div class="f-route">Opção ${f.optCode}${f.route?' · '+esc(f.route):''}</div></div>${f.rate?`<span class="f-price">${money(f.rate)}</span>`:''}</label>`).join('')+'</div>':'<div class="note-box">✈️ Voo incluído no pacote.</div>'):''
+  document.getElementById('flow-content').innerHTML=`<div class="step-head"><h2>${state.isDynamic?'Hotel e voo':'Quarto e regime'}</h2><p>${state.hotels.length} opção(ões) disponíveis.</p></div>${flightsHtml}<div class="card"><div class="card-title">🏨 ${state.isDynamic?'Selecione o hotel':'Selecione o quarto'}</div><div class="hotel-list">${state.hotels.map((h,i)=>hotelCard(h,i)).join('')||'<p style="color:var(--muted)">Sem opções disponíveis.</p>'}</div></div>`
+  if(state.hotels.length)selectHotel(0)
+  document.getElementById('foot-next').textContent='Ver resumo →';document.getElementById('foot-next').onclick=flowNext
+}
+function hotelCard(h,i){const stars='★'.repeat(Math.min(h.rating,5))+'☆'.repeat(Math.max(0,5-h.rating)),roomOpts=h.rooms.map(r=>`<option value="${r.code}" data-board="${r.board}" data-sell="${r.sell}">${esc(r.name)}${r.sell>0?' — '+money(r.sell):''}</option>`).join(''),boardOpts=h.boards.map(b=>`<option value="${b.code}">${esc(BOARD_PT[b.code]||b.name)}</option>`).join('');return `<div class="hotel-card" id="hc-${i}" onclick="selectHotel(${i})"><div class="hotel-photo">${h.img?`<img src="${esc(h.img)}" onerror="this.style.display='none'" alt="">`:''  }${h.rating?`<span class="h-stars">${stars}</span>`:''}<span class="h-sel">✓</span></div><div class="hotel-body"><h3>${esc(h.name)}</h3>${h.addr||h.local?`<div class="hotel-addr">📍 ${esc(h.addr||'')}${h.local?' · '+esc(h.local):''}</div>`:''}<div class="hotel-selectors" onclick="event.stopPropagation()"><select id="hr-${i}">${roomOpts}</select>${boardOpts?`<select id="hb-${i}">${boardOpts}</select>`:''}</div>${h.price>0?`<div class="hotel-price"><span class="from">desde </span><span class="val">${money(h.price)}</span></div>`:''}</div></div>`}
+function selectHotel(i){document.querySelectorAll('.hotel-card').forEach(c=>c.classList.remove('selected'));const c=document.getElementById('hc-'+i);if(c){c.classList.add('selected');state.selectedHotel=i}}
+async function runSimulation(){
+  const hi=state.selectedHotel;if(hi===null||hi===undefined){toast('Selecione um hotel.','err');return}
+  const h=state.hotels[hi],flRadio=document.querySelector('input[name="fl"]:checked')
+  let flightsSuperBB='<FlightsSelectedSuperBB xsi:nil="true"/>'
+  if(flRadio){const segs=state.flightSegByOpt[flRadio.value]||[],segXML=segs.map(s=>`<item xsi:type="ns1:DynFlightSegmentSel"><SegmentCode xsi:type="xsd:string">${s.segmentCode}</SegmentCode><FlightGroupCode xsi:type="xsd:string">${s.flightGroupCode}</FlightGroupCode></item>`).join('');flightsSuperBB=`<FlightsSelectedSuperBB SOAP-ENC:arrayType="ns1:DynFlightsSelected[1]" xsi:type="ns1:DynFlightsSelectedArray"><item xsi:type="ns1:DynFlightsSelected"><OptionCode xsi:type="xsd:string">${flRadio.value}</OptionCode><SegmentLists SOAP-ENC:arrayType="ns1:DynFlightSegmentSel[${segs.length}]" xsi:type="ns1:DynFlightSegmentSelArray">${segXML}</SegmentLists></item></FlightsSelectedSuperBB>`}
+  const roomSel=document.getElementById('hr-'+hi),roomCode=roomSel?roomSel.value:'0',boardCode=(roomSel&&roomSel.selectedOptions[0]?.dataset.board)||'TI',meta=state.itinMeta[h.itinCode]||{iface:'htl_hub',connector:'HTL_HUB'},roomsSelXML=state.rooms.map((r,idx)=>`<item xsi:type="ns1:DynRoomsSelect"><RoomNum xsi:type="xsd:string">${idx}</RoomNum><RoomCode xsi:type="xsd:string">${roomCode}</RoomCode><BoardCode xsi:type="xsd:string">${boardCode}</BoardCode></item>`).join('')
+  showLoading('A calcular preço…')
+  try{
+    await soapCall('DynSetServicesSelected',`<ns1:DynSetServicesSelected><DynServicesSelectedRequest xsi:type="ns1:DynServicesSelectedRequest">${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><Reserve xsi:nil="true"/><Local xsi:nil="true"/><Regime xsi:nil="true"/><Connector xsi:nil="true"/><Skeleton_id xsi:nil="true"/><Action xsi:nil="true"/><DepLocal xsi:nil="true"/><OptionId xsi:nil="true"/><FlightsSelected xsi:nil="true"/>${flightsSuperBB}<FlightsSelectedFlightEngine xsi:nil="true"/><FlightsSelectedAirAvailFlightEngine xsi:nil="true"/><BusSelected xsi:nil="true"/><HotelsSelected SOAP-ENC:arrayType="ns1:DynHotelsSelected[1]" xsi:type="ns1:DynHotelsSelectedArray"><item xsi:type="ns1:DynHotelsSelected"><ItineraryCode xsi:type="xsd:string">${h.itinCode}</ItineraryCode><Interface xsi:type="xsd:string">${meta.iface}</Interface><Connector xsi:type="xsd:string">${meta.connector}</Connector><HtlSession xsi:type="xsd:string">${state.sessionHash}</HtlSession><HotelRPH xsi:type="xsd:string">${h.code}</HotelRPH><HotelSelected xsi:type="xsd:string">${h.code}</HotelSelected><HotelSelectedPrice xsi:nil="true"/><RoomsSelected SOAP-ENC:arrayType="ns1:DynRoomsSelect[${state.rooms.length}]" xsi:type="ns1:DynRoomsSelectArray">${roomsSelXML}</RoomsSelected><BoardSelected xsi:type="xsd:string">${boardCode}</BoardSelected><SuplementSelected xsi:type="xsd:string"/></item></HotelsSelected><OptionalsSelected xsi:nil="true"/><RoomsOfi xsi:nil="true"/><RoomsSeniorOfi xsi:nil="true"/><RoomsPktStatic xsi:nil="true"/><RoomsSeniorPktStatic xsi:nil="true"/></DynServicesSelectedRequest></ns1:DynSetServicesSelected>`)
+    const sim=await soapCall('DynGetSimulation',`<ns1:DynGetSimulation><DynGetSimulationRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
+    state.simDoc=sim;state.hotelNome=h.name;state.statusSistema=txt(sim,'AvailableStatus')||'OK'
+    const rs=document.getElementById('hr-'+hi),bs=document.getElementById('hb-'+hi);state.roomNome=rs?rs.selectedOptions[0]?.textContent.split(' —')[0]:'';state.boardNome=bs?bs.selectedOptions[0]?.textContent:(BOARD_PT[boardCode]||boardCode)
+    renderStep3(sim);setFlowStep(3)
+  }catch(e){showError(e.message);document.getElementById('foot-next').style.visibility='visible'}
+}
+function renderStep3(doc){
+  const price=txt(doc,'TotalPrice');state.totalPrice=price;const status=txt(doc,'AvailableStatus')||'OK'
+  const servs=all(doc,'DynResService').map(s=>({type:txt(s,'Type'),desc:txt(s,'Description'),from:txt(s,'DateFrom'),to:txt(s,'DateTo')}))
+  const polItems=itemsOf(all(doc,'Policies')[0]).concat(itemsOf(all(doc,'RoomsPenalties')[0]))
+  const warnItems=itemsOf(all(doc,'HotelWarnings')[0])
+  let polHtml='',warnHtml=''
+  if(polItems.length)polHtml=`<div class="card"><div class="sim-block"><h4>📅 Cancelamento</h4>${polItems.map(p=>{const d=txt(p,'DateFrom')||txt(p,'Date'),v=txt(p,'Value')||txt(p,'Amount'),desc=txt(p,'Description')||txt(p,'Desc');return `<div class="sim-item"><span class="si-lbl">${esc(desc||(d?'A partir de '+fmtDate(d):'Penalização'))}</span><span class="si-val">${v?money(v):'—'}</span></div>`}).join('')}</div></div>`
+  if(warnItems.length)warnHtml=`<div class="card"><div class="sim-block"><h4>ℹ️ Avisos</h4>${warnItems.map(w=>`<div class="sim-item"><span class="si-lbl">${esc(txt(w,'Description')||w.textContent.trim())}</span></div>`).join('')}</div></div>`
+  document.getElementById('flow-content').innerHTML=`
+    <div class="step-head"><h2>Resumo</h2><p>Confirme os detalhes antes de avançar.</p></div>
+    <div class="sim-hero"><div><div style="font-size:11px;opacity:.8;margin-bottom:2px">Preço total</div><div class="sim-price">${price?money(price):'—'}</div></div><span class="sim-status">${status==='OK'?'✓ Confirmação imediata':'⏳ Sujeito a confirmação'}</span></div>
+    <div class="card"><div class="sim-rows">
+      <div class="sim-row"><span class="lbl">Destino</span><span class="val">${esc(state.product.nome)}</span></div>
+      <div class="sim-row"><span class="lbl">Hotel</span><span class="val">${esc(state.hotelNome)}</span></div>
+      <div class="sim-row"><span class="lbl">Quarto</span><span class="val">${esc(state.roomNome)}</span></div>
+      <div class="sim-row"><span class="lbl">Regime</span><span class="val">${esc(state.boardNome)}</span></div>
+      <div class="sim-row"><span class="lbl">Partida</span><span class="val">${fmtDate(state.depDate)}</span></div>
+      <div class="sim-row"><span class="lbl">Consultor</span><span class="val" style="color:var(--blue)">👤 ${esc(CONSULTOR.nome)}</span></div>
+    </div></div>
+    ${servs.length?`<div class="card"><div class="sim-block"><h4>🧾 Serviços incluídos</h4>${servs.map(s=>`<div class="sim-item"><span class="si-lbl">${esc(s.desc||s.type)}</span><span class="si-val">${s.from?fmtDate(s.from)+(s.to?' → '+fmtDate(s.to):''):''}</span></div>`).join('')}</div></div>`:''}
+    ${polHtml}${warnHtml}`
+  document.getElementById('foot-price').innerHTML=`<small>Total</small>${price?money(price):''}`;document.getElementById('foot-price').style.display=price?'block':'none'
+  document.getElementById('foot-next').textContent='Dados dos passageiros →';document.getElementById('foot-next').style.visibility='visible';document.getElementById('foot-next').onclick=flowNext
+}
+function renderStepPax(){
+  const paxList=state.simDoc?all(state.simDoc,'DynResPax'):[]
+  let list=paxList.length?paxList.map(p=>({room:txt(p,'Room')||'DBL1',type:txt(p,'Type')||'ADT',roomNum:txt(p,'RoomNumber')||'1'})):state.rooms.flatMap(r=>[{room:`DBL${r.num}`,type:'ADT',roomNum:String(r.num)},{room:`DBL${r.num}`,type:'ADT',roomNum:String(r.num)}])
+  state.paxCount=list.length
+  document.getElementById('flow-content').innerHTML=`
+    <div class="step-head"><h2>Passageiros</h2><p>Preencha os dados de cada viajante.</p></div>
+    ${list.map((p,i)=>`<div class="pax-card"><div class="pax-head">Passageiro ${i+1} · ${p.type==='ADT'?'Adulto':'Criança'} · Quarto ${p.roomNum}</div><div class="field-row" style="margin-bottom:0"><div class="fld"><label>Tratamento</label><select id="px-t-${i}"><option>MR</option><option>MRS</option><option>MISS</option><option>CHD</option></select></div><div class="fld"><label>Nome próprio</label><input type="text" id="px-n-${i}" placeholder="Maria"></div><div class="fld"><label>Apelido</label><input type="text" id="px-s-${i}" placeholder="Silva"></div><div class="fld"><label>Data de nasc.</label><input type="date" id="px-d-${i}"></div></div><input type="hidden" id="px-rn-${i}" value="${p.roomNum}"><input type="hidden" id="px-rm-${i}" value="${p.room}"></div>`).join('')}
+    <div class="card" style="margin-top:4px"><div class="field-row" style="margin-bottom:0"><div class="fld"><label>Referência (opc.)</label><input type="text" id="f-ref" placeholder="Nome ou nº do cliente"></div><div class="fld"><label>Observações (opc.)</label><input type="text" id="f-obs" placeholder="Pedidos especiais…"></div></div></div>`
+  document.getElementById('foot-next').textContent='✓ Confirmar reserva';document.getElementById('foot-next').style.visibility='visible';document.getElementById('foot-next').onclick=flowNext
+}
+async function createReservation(){
+  let paxXML='';for(let i=0;i<state.paxCount;i++){const t=document.getElementById(`px-t-${i}`)?.value||'MR',n=(document.getElementById(`px-n-${i}`)?.value||'').trim(),s=(document.getElementById(`px-s-${i}`)?.value||'').trim(),d=document.getElementById(`px-d-${i}`)?.value||'1990-01-01',rn=document.getElementById(`px-rn-${i}`)?.value||'1',rm=document.getElementById(`px-rm-${i}`)?.value||'DBL1';if(!n||!s){toast('Preencha nome e apelido de todos os passageiros.','err');return}paxXML+=`<DynPax><RoomNum>${rn}</RoomNum><Title>${t}</Title><Name>${esc(n)}</Name><Surname>${esc(s)}</Surname><DateBirth>${d}</DateBirth><Room>${rm}</Room></DynPax>`}
+  const ref=document.getElementById('f-ref')?.value||'',obs=document.getElementById('f-obs')?.value||''
+  showLoading('A criar a reserva…');document.getElementById('foot-back').style.visibility='hidden'
+  try{
+    const doc=await soapCall('DynCreateReserve',`<ns1:DynCreateReserve><DynCreateReserveRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><PaxsStruct>${paxXML}</PaxsStruct>${ref?`<ClientRef>${esc(ref)}</ClientRef>`:''}${obs?`<ClientObs>${esc(obs)}</ClientObs>`:''}</DynCreateReserveRequest></ns1:DynCreateReserve>`)
+    const localizador=txt(doc,'Reserve'),sysStatus=txt(doc,'SystemStatus')||'OK'
+    await guardarNoSupabase(localizador,sysStatus);renderConfirmacao(localizador,sysStatus);toast('🎉 Reserva '+localizador+' criada!','ok')
+  }catch(e){showError(e.message);document.getElementById('foot-back').style.visibility='visible'}
+}
+async function guardarNoSupabase(localizador,status){
+  const h=state.selectedHotel!==null?state.hotels[state.selectedHotel]:null
+  try{await fetch(REST_RES,{method:'POST',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({localizador,consultor_id:CONSULTOR.id||null,consultor_nome:CONSULTOR.nome,produto_codigo:String(state.product.code),produto_nome:state.product.nome,hotel_codigo:h?.code||null,hotel_nome:h?.name||null,data_partida:state.depDate||null,preco_total:parseFloat(state.totalPrice)||null,regime:state.boardNome||null,quarto:state.roomNome||null,estado_sistema:status,pax_count:state.paxCount})})}catch(e){console.warn('Supabase:',e)}
+}
+function renderConfirmacao(localizador,status){
+  const h=state.selectedHotel!==null?state.hotels[state.selectedHotel]:null
+  document.getElementById('foot-price').style.display='none';document.getElementById('foot-next').style.display='none';document.getElementById('foot-back').style.visibility='hidden'
+  document.querySelectorAll('.st-dot').forEach(d=>d.className='st-dot done')
+  document.getElementById('flow-content').innerHTML=`
+    <div class="confirm-wrap">
+      <div class="confirm-icon">✓</div>
+      <div style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:4px">Reserva criada com sucesso</div>
+      <div class="confirm-num">${esc(localizador)}</div>
+      <div class="confirm-lbl">Localizador Soltropico · ${esc(state.product.nome)}</div>
+      <div class="confirm-detail">
+        ${h?`<div class="cd-row"><span class="cd-lbl">Hotel</span><span class="cd-val">${esc(h.name)}</span></div>`:''}
+        ${state.roomNome?`<div class="cd-row"><span class="cd-lbl">Quarto</span><span class="cd-val">${esc(state.roomNome)}</span></div>`:''}
+        ${state.boardNome?`<div class="cd-row"><span class="cd-lbl">Regime</span><span class="cd-val">${esc(state.boardNome)}</span></div>`:''}
+        ${state.depDate?`<div class="cd-row"><span class="cd-lbl">Partida</span><span class="cd-val">${fmtDate(state.depDate)}</span></div>`:''}
+        ${state.totalPrice?`<div class="cd-row"><span class="cd-lbl">Total</span><span class="cd-val" style="color:var(--coral)">${money(state.totalPrice)}</span></div>`:''}
+        <div class="cd-row"><span class="cd-lbl">Estado</span><span class="cd-val">${status==='OK'?'✓ Confirmada':'⏳ A aguardar confirmação'}</span></div>
+        <div class="cd-row" style="background:#EEF2FF;border-radius:8px;margin:8px -4px -4px;padding:10px 8px">
+          <span class="cd-lbl">Consultor</span>
+          <span class="cd-val" style="color:var(--blue)">👤 ${esc(CONSULTOR.nome)}</span>
+        </div>
+      </div>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" onclick="closeFlow()">Fechar</button>
+        <button class="btn btn-primary" onclick="closeFlow()">Nova pesquisa</button>
+      </div>
+    </div>`
+}
+function flowNext(){const s=state.step,d=state.isDynamic;if(s===1)return searchAvailability();if(s===2)return d?runSimulation():goToPax();if(s===3&&d){goToPax();return}if((s===3&&!d)||(s===4&&d))return createReservation()}
+function goToPax(){const n=state.isDynamic?4:3;setFlowStep(n);renderStepPax()}
+function flowBack(){const s=state.step,d=state.isDynamic;if(s===2){setFlowStep(1);renderStep1()}else if(s===3&&d){setFlowStep(2);renderStep2()}else if(s===3&&!d){setFlowStep(2);renderStep2()}else if(s===4){setFlowStep(3);renderStep3(state.simDoc)}}
+init()
 </script>
 </body>
 </html>
