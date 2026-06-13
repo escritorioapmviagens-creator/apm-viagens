@@ -26,47 +26,50 @@ body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:
 .stat-label{font-size:13px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:6px}
 .stat-icon{font-size:18px}
 
+.search-bar{background:var(--surface);border-radius:var(--radius-sm);padding:14px 20px;margin-bottom:32px;border:1px solid var(--border);display:flex;gap:12px;align-items:center}
+.search-icon{font-size:18px;color:var(--muted)}
+.search-input{flex:1;padding:10px 0;border:none;outline:none;font-size:14px;font-family:'Inter';background:transparent}
+.search-input::placeholder{color:var(--muted)}
+.search-clear{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px 8px;border-radius:30px}
+.search-clear:hover{color:var(--coral)}
+.search-info{font-size:12px;color:var(--blue);background:var(--bg);padding:4px 12px;border-radius:30px}
+
 .continent-section{margin-bottom:48px}
 .continent-header{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
 .continent-icon{font-size:24px}
 .continent-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:600;color:var(--navy)}
 .continent-count{font-size:12px;color:var(--muted);background:var(--bg);padding:3px 10px;border-radius:30px}
-.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-.country-item{background:var(--surface);border-radius:var(--radius-sm);border:1px solid var(--border);overflow:hidden;transition:all .2s}
-.country-item:hover{box-shadow:var(--shadow-md)}
-.country-card{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;transition:background .2s}
-.country-card:hover{background:var(--bg)}
-.country-flag{font-size:28px}
-.country-name{font-weight:600;font-size:15px;flex:1;color:var(--navy)}
-.country-badge{background:var(--blue);color:#fff;padding:3px 10px;border-radius:30px;font-size:11px;font-weight:500}
-.country-arrow{color:var(--muted);font-size:14px;transition:transform .2s}
-.country-item.open .country-arrow{transform:rotate(90deg);color:var(--blue)}
-.country-products{padding:0 16px 16px 16px;background:var(--surface);border-top:1px solid var(--border);display:none}
-.country-item.open .country-products{display:block}
-.products-mini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:12px}
-.product-mini-card{background:var(--bg);border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;border:1px solid var(--border);display:flex;gap:12px;align-items:center}
-.product-mini-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--blue)}
-.product-mini-photo{width:60px;height:60px;border-radius:8px;overflow:hidden;background:#E5E7EB;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
-.product-mini-photo img{width:100%;height:100%;object-fit:cover}
-.product-mini-info{flex:1}
-.product-mini-name{font-weight:600;font-size:13px;margin-bottom:2px}
-.product-mini-code{font-size:10px;color:var(--muted)}
-.product-mini-price{font-size:14px;font-weight:700;color:var(--coral);margin-top:4px}
-.product-mini-price small{font-size:9px;font-weight:400}
-.empty-message{text-align:center;padding:20px;color:var(--muted);font-size:13px}
-.products-loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px;color:var(--muted);font-size:13px}
-.loader-small{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.empty-continent{text-align:center;padding:20px;color:var(--muted);font-style:italic}
-.skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-.skel-card{background:var(--surface);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;border:1px solid var(--border)}
-.skel .s-flag{width:36px;height:36px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:50%;animation:sh 1.3s infinite}
-.skel .s-text{flex:1;height:16px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:8px;animation:sh 1.3s infinite}
-.skel .s-badge{width:40px;height:22px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:20px;animation:sh 1.3s infinite}
+.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.country-card{background:var(--surface);border-radius:var(--radius-sm);padding:16px 18px;cursor:pointer;transition:all .2s;border:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.country-card:hover{transform:translateY(-2px);border-color:var(--blue);box-shadow:var(--shadow-md);background:var(--bg)}
+.country-flag{font-size:32px}
+.country-name{font-weight:600;font-size:16px;flex:1;color:var(--navy)}
+.country-badge{background:var(--blue);color:#fff;padding:4px 12px;border-radius:30px;font-size:12px;font-weight:500}
+.country-products{grid-column:1/-1;background:var(--surface);border-radius:var(--radius-sm);padding:20px;margin-top:8px;border:1px solid var(--border);display:none}
+.country-products.show{display:block}
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.product-card{background:var(--bg);border-radius:10px;padding:12px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s;border:1px solid var(--border)}
+.product-card:hover{transform:translateX(4px);border-color:var(--blue);box-shadow:var(--shadow-md);background:var(--surface)}
+.product-img{width:55px;height:55px;border-radius:8px;background:linear-gradient(135deg,#E5E7EB,#F3F4F6);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden}
+.product-img img{width:100%;height:100%;object-fit:cover}
+.product-info{flex:1;min-width:0}
+.product-name{font-weight:600;font-size:13px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.product-code{font-size:10px;color:var(--muted);margin-bottom:4px}
+.product-price{font-size:15px;font-weight:700;color:var(--coral)}
+.product-price small{font-size:10px;font-weight:400;color:var(--muted)}
+.empty-message{text-align:center;padding:30px;color:var(--muted);font-size:13px}
+.skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.skel-card{background:var(--surface);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:12px;border:1px solid var(--border)}
+.skel-flag{width:36px;height:36px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:50%;animation:sh 1.3s infinite}
+.skel-text{flex:1;height:18px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:8px;animation:sh 1.3s infinite}
+.skel-badge{width:50px;height:28px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:20px;animation:sh 1.3s infinite}
 @keyframes sh{to{background-position:-200% 0}}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .ico{font-size:48px;margin-bottom:12px;opacity:0.5}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:10px 18px;border-radius:40px;font-size:13px;font-weight:500;box-shadow:var(--shadow-md);z-index:200;transition:transform .3s}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.ok{background:#10B981}.toast.err{background:var(--coral)}
+.highlight{background-color:#FEF3C7;color:#D97706;font-weight:500}
 </style>
 </head>
 <body>
@@ -81,18 +84,16 @@ body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:
 
 <div class="container">
   <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-value" id="total-count">0</div>
-      <div class="stat-label"><span class="stat-icon">✈️🏨</span> Pacotes</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="country-count">0</div>
-      <div class="stat-label"><span class="stat-icon">🌍</span> Destinos c/ pacotes</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="best-price">—</div>
-      <div class="stat-label"><span class="stat-icon">⭐</span> Preço mais baixo</div>
-    </div>
+    <div class="stat-card"><div class="stat-value" id="total-count">0</div><div class="stat-label"><span class="stat-icon">✈️🏨</span> Pacotes</div></div>
+    <div class="stat-card"><div class="stat-value" id="country-count">0</div><div class="stat-label"><span class="stat-icon">🌍</span> Destinos</div></div>
+    <div class="stat-card"><div class="stat-value" id="best-price">—</div><div class="stat-label"><span class="stat-icon">⭐</span> Preço mais baixo</div></div>
+  </div>
+
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-input" id="search-input" placeholder="Pesquisar destino... (ex: Djerba, Sal, Rio, Salvador)">
+    <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none">✕</button>
+    <span class="search-info" id="search-info"></span>
   </div>
 
   <div id="continents-container"></div>
@@ -107,93 +108,7 @@ const PROXY_URL=`${SUPABASE_URL}/functions/v1/soltropico-proxy`
 const CREDS={System:808,Client:289363,Username:'admin@apmviagens.pt',Password:'JA622875'}
 
 let allProducts = []
-let openCountry = null
-
-const countryImages = {
-  "Cabo Verde": "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=120&h=80&fit=crop",
-  "Egipto": "https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=120&h=80&fit=crop",
-  "Gâmbia": "https://images.unsplash.com/photo-1588796603-6f3a081b2605?w=120&h=80&fit=crop",
-  "Senegal": "https://images.unsplash.com/photo-1614680376739-414d95ffebdf?w=120&h=80&fit=crop",
-  "Tunísia": "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=120&h=80&fit=crop",
-  "São Tomé e Príncipe": "https://images.unsplash.com/photo-1534926074258-0d6eb96f7d7b?w=120&h=80&fit=crop",
-  "Moçambique": "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=120&h=80&fit=crop",
-  "Marrocos": "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=120&h=80&fit=crop",
-  "Tanzânia": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=120&h=80&fit=crop",
-  "África do Sul": "https://images.unsplash.com/photo-1580060839134-3e5c9e7d1b5a?w=120&h=80&fit=crop",
-  "Portugal": "https://images.unsplash.com/photo-1555881400-74d5acaacd8b?w=120&h=80&fit=crop",
-  "Espanha": "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=120&h=80&fit=crop",
-  "Grécia": "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=120&h=80&fit=crop",
-  "Itália": "https://images.unsplash.com/photo-1498349634479-7da89b7d86c1?w=120&h=80&fit=crop",
-  "França": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=120&h=80&fit=crop",
-  "Turquia": "https://images.unsplash.com/photo-1527838832700-5051c2f85810?w=120&h=80&fit=crop",
-  "Brasil": "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=120&h=80&fit=crop",
-  "Cuba": "https://images.unsplash.com/photo-1589550388638-b73e04da1729?w=120&h=80&fit=crop",
-  "República Dominicana": "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=120&h=80&fit=crop",
-  "México": "https://images.unsplash.com/photo-1512818114040-dac1e4a6d521?w=120&h=80&fit=crop",
-  "Tailândia": "https://images.unsplash.com/photo-1537956965359-76d1d79e3d3a?w=120&h=80&fit=crop",
-  "Maldivas": "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=120&h=80&fit=crop",
-  "Indonésia": "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=120&h=80&fit=crop",
-  "Emirados Árabes": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=120&h=80&fit=crop"
-}
-
-function getCountryIcon(countryName){
-  const icons = {
-    "Cabo Verde": "🇨🇻",
-    "Egipto": "🇪🇬",
-    "Gâmbia": "🇬🇲",
-    "Tunísia": "🇹🇳",
-    "Marrocos": "🇲🇦",
-    "Brasil": "🇧🇷",
-    "Tailândia": "🇹🇭"
-  }
-  return icons[countryName] || "🏖️"
-}
-
-const countriesDefinition = [
-  { name: "Cabo Verde", flag: "🇨🇻", keywords: ["cabo verde", "boavista", "sal", "santiago", "são vicente", "mindelo"] },
-  { name: "Egipto", flag: "🇪🇬", keywords: ["egito", "cairo", "hurghada", "sharm", "luxor", "egipto"] },
-  { name: "Gâmbia", flag: "🇬🇲", keywords: ["gâmbia", "banjul"] },
-  { name: "Senegal", flag: "🇸🇳", keywords: ["senegal", "dakar"] },
-  { name: "Tunísia", flag: "🇹🇳", keywords: ["tunísia", "hammamet", "sousse", "djerba"] },
-  { name: "São Tomé e Príncipe", flag: "🇸🇹", keywords: ["são tomé", "príncipe"] },
-  { name: "Moçambique", flag: "🇲🇿", keywords: ["moçambique", "maputo"] },
-  { name: "Marrocos", flag: "🇲🇦", keywords: ["marrocos", "marraquexe", "agadir"] },
-  { name: "Tanzânia", flag: "🇹🇿", keywords: ["tanzânia", "zanzibar"] },
-  { name: "África do Sul", flag: "🇿🇦", keywords: ["áfrica do sul", "cidade do cabo"] },
-  { name: "Portugal", flag: "🇵🇹", keywords: ["portugal", "madeira", "açores", "algarve"] },
-  { name: "Espanha", flag: "🇪🇸", keywords: ["espanha", "canárias", "barcelona"] },
-  { name: "Grécia", flag: "🇬🇷", keywords: ["grécia", "creta", "atenas"] },
-  { name: "Itália", flag: "🇮🇹", keywords: ["itália", "roma", "veneza"] },
-  { name: "França", flag: "🇫🇷", keywords: ["frança", "paris"] },
-  { name: "Turquia", flag: "🇹🇷", keywords: ["turquia", "antália", "istambul"] },
-  { name: "Brasil", flag: "🇧🇷", keywords: ["brasil", "salvador", "rio"] },
-  { name: "Cuba", flag: "🇨🇺", keywords: ["cuba", "varadero", "havana"] },
-  { name: "República Dominicana", flag: "🇩🇴", keywords: ["república dominicana", "punta cana"] },
-  { name: "México", flag: "🇲🇽", keywords: ["méxico", "cancún"] },
-  { name: "Tailândia", flag: "🇹🇭", keywords: ["tailândia", "phuket"] },
-  { name: "Maldivas", flag: "🇲🇻", keywords: ["maldivas"] },
-  { name: "Indonésia", flag: "🇮🇩", keywords: ["indonésia", "bali"] },
-  { name: "Emirados Árabes", flag: "🇦🇪", keywords: ["emirados", "dubai"] }
-]
-
-const continentsStructure = {
-  "🌍 África": {
-    icon: "🌍",
-    countries: ["Cabo Verde", "Egipto", "Gâmbia", "Senegal", "Tunísia", "São Tomé e Príncipe", "Moçambique", "Marrocos", "Tanzânia", "África do Sul"]
-  },
-  "🇪🇺 Europa": {
-    icon: "🇪🇺",
-    countries: ["Portugal", "Espanha", "Grécia", "Itália", "França", "Turquia"]
-  },
-  "🌎 América": {
-    icon: "🌎",
-    countries: ["Brasil", "Cuba", "República Dominicana", "México"]
-  },
-  "🌏 Ásia": {
-    icon: "🌏",
-    countries: ["Tailândia", "Maldivas", "Indonésia", "Emirados Árabes"]
-  }
-}
+let currentSearch = ''
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function money(v){return '€'+(parseFloat(v)||0).toLocaleString('pt-PT',{minimumFractionDigits:2})}
@@ -202,22 +117,238 @@ function credXML(){return `<Credentials xsi:type="ns1:CredentialsStruct"><System
 function wrap(body){return `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`}
 async function soapCall(action,body){const res=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},body:JSON.stringify({soapAction:action,soapBody:wrap(body)})});if(!res.ok)throw new Error(`Falha (${res.status})`);const data=await res.json();if(data.error)throw new Error(data.error);const xmlStr=(data.xml||'').replace(/^\uFEFF/,'').trim();const doc=new DOMParser().parseFromString(xmlStr,'text/xml');if(doc.querySelector('parsererror'))throw new Error('Resposta inválida');const f=doc.querySelector('faultstring');if(f)throw new Error(f.textContent);return doc}
 function txt(el,tag){if(!el)return '';for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)return c.textContent.trim()}const n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)return n[i].textContent.trim()}return ''}
-function directChildren(el,tag){if(!el)return [];const o=[];for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)o.push(c)}return o}
 function all(el,tag){if(!el)return [];const o=[],n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)o.push(n[i])}return o}
-function itemsOf(c){return c?directChildren(c,'item'):[]}
+function itemsOf(c){return c?Array.from(c.children).filter(child=>{const l=child.localName||child.tagName.split(':').pop(); return l==='item'}):[]}
 
-function extractCountryFromName(productName){
-  const lowerName = productName.toLowerCase()
-  for(const country of countriesDefinition){
-    for(const keyword of country.keywords){
-      if(lowerName.includes(keyword)) return country.name
+const countryImages = {
+  "Cabo Verde": "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=100&h=70&fit=crop",
+  "Egipto": "https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=100&h=70&fit=crop",
+  "Gâmbia": "https://images.unsplash.com/photo-1588796603-6f3a081b2605?w=100&h=70&fit=crop",
+  "Tunísia": "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=100&h=70&fit=crop",
+  "Marrocos": "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=100&h=70&fit=crop",
+  "Brasil": "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=100&h=70&fit=crop",
+  "Tailândia": "https://images.unsplash.com/photo-1537956965359-76d1d79e3d3a?w=100&h=70&fit=crop",
+  "Portugal": "https://images.unsplash.com/photo-1555881400-74d5acaacd8b?w=100&h=70&fit=crop",
+  "Espanha": "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=100&h=70&fit=crop"
+}
+
+// Lista de países com keywords PRIORITÁRIAS (palavras mais longas primeiro)
+const countriesList = [
+  // Brasil primeiro porque tem palavras mais longas como "salvador", "rio de janeiro"
+  { name: "Brasil", flag: "🇧🇷", keywords: ["salvador", "rio de janeiro", "rio", "fortaleza", "recife", "porto seguro", "brasil", "costa do sauípe"] },
+  { name: "Cabo Verde", flag: "🇨🇻", keywords: ["cabo verde", "boavista", "sal", "santiago", "são vicente", "mindelo", "ilha do sal", "santo antão", "maio", "fogo"] },
+  { name: "Egipto", flag: "🇪🇬", keywords: ["egito", "cairo", "hurghada", "sharm el sheikh", "luxor", "marsa alam", "taba"] },
+  { name: "Gâmbia", flag: "🇬🇲", keywords: ["gâmbia", "banjul", "kololi", "serekunda"] },
+  { name: "Senegal", flag: "🇸🇳", keywords: ["senegal", "dakar", "saly", "mbour"] },
+  { name: "Tunísia", flag: "🇹🇳", keywords: ["tunísia", "hammamet", "sousse", "djerba", "monastir", "tunes"] },
+  { name: "São Tomé e Príncipe", flag: "🇸🇹", keywords: ["são tomé", "príncipe"] },
+  { name: "Moçambique", flag: "🇲🇿", keywords: ["moçambique", "maputo", "vilanculos", "inhambane"] },
+  { name: "Marrocos", flag: "🇲🇦", keywords: ["marrocos", "marraquexe", "agadir", "casablanca", "fez", "tânger"] },
+  { name: "Tanzânia", flag: "🇹🇿", keywords: ["tanzânia", "zanzibar", "dar es salaam", "arusha"] },
+  { name: "África do Sul", flag: "🇿🇦", keywords: ["áfrica do sul", "cidade do cabo", "joanesburgo", "durban"] },
+  { name: "Portugal", flag: "🇵🇹", keywords: ["portugal", "madeira", "açores", "algarve", "lisboa", "porto", "cascais"] },
+  { name: "Espanha", flag: "🇪🇸", keywords: ["espanha", "canárias", "barcelona", "madrid", "maiorca", "ibiza", "tenerife", "gran canaria"] },
+  { name: "Grécia", flag: "🇬🇷", keywords: ["grécia", "creta", "atenas", "santorini", "rhodes", "mykonos", "corfu"] },
+  { name: "Itália", flag: "🇮🇹", keywords: ["itália", "roma", "veneza", "milão", "nápoles", "sicília"] },
+  { name: "França", flag: "🇫🇷", keywords: ["frança", "paris", "nice", "côte d'azur"] },
+  { name: "Turquia", flag: "🇹🇷", keywords: ["turquia", "antália", "istambul", "bodrum", "marmaris"] },
+  { name: "Cuba", flag: "🇨🇺", keywords: ["cuba", "varadero", "havana", "cayo coco"] },
+  { name: "República Dominicana", flag: "🇩🇴", keywords: ["república dominicana", "punta cana", "la romana", "santo domingo"] },
+  { name: "México", flag: "🇲🇽", keywords: ["méxico", "cancún", "riviera maya", "playa del carmen"] },
+  { name: "Tailândia", flag: "🇹🇭", keywords: ["tailândia", "phuket", "banguecoque", "krabi", "koh samui", "pattaya"] },
+  { name: "Maldivas", flag: "🇲🇻", keywords: ["maldivas", "malé", "ari atol"] },
+  { name: "Indonésia", flag: "🇮🇩", keywords: ["indonésia", "bali", "jacarta", "lombok", "ubud"] },
+  { name: "Emirados Árabes", flag: "🇦🇪", keywords: ["emirados", "dubai", "abu dhabi", "sharjah"] }
+]
+
+const continents = {
+  "🌍 África": { icon: "🌍", countries: ["Cabo Verde", "Egipto", "Gâmbia", "Senegal", "Tunísia", "São Tomé e Príncipe", "Moçambique", "Marrocos", "Tanzânia", "África do Sul"] },
+  "🇪🇺 Europa": { icon: "🇪🇺", countries: ["Portugal", "Espanha", "Grécia", "Itália", "França", "Turquia"] },
+  "🌎 América": { icon: "🌎", countries: ["Brasil", "Cuba", "República Dominicana", "México"] },
+  "🌏 Ásia": { icon: "🌏", countries: ["Tailândia", "Maldivas", "Indonésia", "Emirados Árabes"] }
+}
+
+function getCountry(name){
+  return countriesList.find(c => c.name === name)
+}
+
+function extractCountry(productName){
+  const lower = productName.toLowerCase()
+  
+  // Ordenar keywords por tamanho (maiores primeiro) para dar prioridade a palavras mais específicas
+  const allKeywords = []
+  for(const c of countriesList){
+    for(const kw of c.keywords){
+      allKeywords.push({ country: c.name, keyword: kw, length: kw.length })
     }
   }
+  allKeywords.sort((a,b) => b.length - a.length)
+  
+  // Verificar keywords por ordem de tamanho
+  for(const item of allKeywords){
+    if(lower.includes(item.keyword)){
+      return item.country
+    }
+  }
+  
   return null
 }
 
+function filterProducts(){
+  const term = currentSearch.toLowerCase().trim()
+  const searchInfo = document.getElementById('search-info')
+  const clearBtn = document.getElementById('search-clear')
+  
+  if(!term){
+    searchInfo.textContent = ''
+    clearBtn.style.display = 'none'
+    renderAll()
+    return
+  }
+  
+  clearBtn.style.display = 'flex'
+  
+  const filtered = allProducts.filter(p => 
+    p.nome.toLowerCase().includes(term) || 
+    p.country.toLowerCase().includes(term)
+  )
+  
+  searchInfo.textContent = `${filtered.length} res.`
+  renderAll(filtered)
+  
+  if(filtered.length === 0){
+    toast(`🔍 Nenhum resultado para "${term}"`, 'err')
+  } else {
+    toast(`🔍 ${filtered.length} pacote(s) encontrado(s)`, 'ok')
+  }
+}
+
+function clearSearch(){
+  document.getElementById('search-input').value = ''
+  currentSearch = ''
+  filterProducts()
+}
+
+function toggleCountry(countryName, event){
+  event.stopPropagation()
+  const el = document.getElementById(`prods-${countryName.replace(/\s/g,'')}`)
+  if(el){
+    el.classList.toggle('show')
+  }
+}
+
+function highlightText(text, searchTerm){
+  if(!searchTerm) return esc(text)
+  const regex = new RegExp(`(${esc(searchTerm)})`, 'gi')
+  return esc(text).replace(regex, `<span class="highlight">$1</span>`)
+}
+
+function renderProducts(countryName, searchTerm = ''){
+  const products = allProducts.filter(p => p.country === countryName)
+  const sorted = [...products].sort((a,b) => (a.price||9999) - (b.price||9999))
+  const container = document.getElementById(`prods-${countryName.replace(/\s/g,'')}`)
+  const countryImg = countryImages[countryName] || ''
+  const flag = getCountry(countryName)?.flag || '🏖️'
+  
+  if(!container) return
+  
+  if(products.length === 0){
+    container.innerHTML = `<div class="empty-message">📭 Nenhum pacote disponível</div>`
+    return
+  }
+  
+  container.innerHTML = `
+    <div class="products-grid">
+      ${sorted.map(p => {
+        const imgUrl = p.img && p.img.startsWith('http') ? p.img : countryImg
+        const displayName = searchTerm ? highlightText(p.nome, searchTerm) : esc(p.nome)
+        return `
+          <div class="product-card" onclick="event.stopPropagation();selectProduct(${p.code},'${esc(p.nome)}')">
+            <div class="product-img">
+              ${imgUrl ? `<img src="${esc(imgUrl)}" onerror="this.parentElement.innerHTML='${flag}'">` : flag}
+            </div>
+            <div class="product-info">
+              <div class="product-name">${displayName.length > 45 ? displayName.substring(0,45)+'...' : displayName}</div>
+              <div class="product-code">Código ${p.code}</div>
+              <div class="product-price">${p.price > 0 ? money(p.price) : '—'} <small>/pessoa</small></div>
+            </div>
+          </div>
+        `
+      }).join('')}
+    </div>
+  `
+}
+
+function selectProduct(code, name){
+  toast(`📦 ${name}`, 'ok')
+  alert(`Produto: ${name}\nCódigo: ${code}\n\nReserva será integrada aqui.`)
+}
+
+function renderAll(filteredProducts = null){
+  const data = filteredProducts || allProducts
+  const searchTerm = currentSearch
+  let html = ''
+  
+  for(const [contName, contData] of Object.entries(continents)){
+    const countriesInCont = []
+    for(const countryName of contData.countries){
+      const count = data.filter(p => p.country === countryName).length
+      if(count > 0){
+        countriesInCont.push({ name: countryName, count })
+      }
+    }
+    
+    if(countriesInCont.length === 0) continue
+    
+    html += `<div class="continent-section">
+      <div class="continent-header">
+        <span class="continent-icon">${contData.icon}</span>
+        <span class="continent-title">${contName.replace(/[🌍🇪🇺🌎🌏]/g,'')}</span>
+        <span class="continent-count">${countriesInCont.length} países</span>
+      </div>
+      <div class="country-grid">`
+    
+    for(const c of countriesInCont){
+      const country = getCountry(c.name)
+      const flag = country ? country.flag : '🏖️'
+      const safeId = c.name.replace(/\s/g,'')
+      
+      html += `
+        <div style="grid-column:1/-1">
+          <div class="country-card" onclick="toggleCountry('${c.name}', event)">
+            <span class="country-flag">${flag}</span>
+            <span class="country-name">${c.name}</span>
+            <span class="country-badge">${c.count}</span>
+          </div>
+          <div class="country-products" id="prods-${safeId}"></div>
+        </div>
+      `
+    }
+    html += `</div></div>`
+  }
+  
+  if(html === '' && searchTerm !== ''){
+    html = `<div class="empty-state"><div class="ico">🔍</div><h3>Nenhum resultado</h3><p>Não encontramos "${esc(searchTerm)}"</p></div>`
+  } else if(html === ''){
+    html = `<div class="empty-state"><div class="ico">🌍</div><h3>A carregar...</h3></div>`
+  }
+  
+  document.getElementById('continents-container').innerHTML = html
+  
+  for(const cont of Object.values(continents)){
+    for(const countryName of cont.countries){
+      if(data.some(p => p.country === countryName)){
+        renderProducts(countryName, searchTerm)
+      }
+    }
+  }
+}
+
 async function init(){
-  showSkeleton()
+  document.getElementById('continents-container').innerHTML = `
+    <div class="continent-section"><div class="continent-header"><span class="continent-icon">🌍</span><span class="continent-title">A carregar...</span></div>
+    <div class="skel-grid">${Array(8).fill('<div class="skel-card"><div class="skel-flag"></div><div class="skel-text"></div><div class="skel-badge"></div></div>').join('')}</div></div>`
+  
   try{
     const doc=await soapCall('SearchProducts',`<ns1:SearchProducts><SearchProductsRequest>${credXML()}<PriceFrom>0</PriceFrom><PriceTo>99999</PriceTo></SearchProductsRequest></ns1:SearchProducts>`)
     const arr=all(doc,'ProductArray')[0];
@@ -225,174 +356,36 @@ async function init(){
     if(!items.length) items=all(doc,'Product')
     
     allProducts = []
-    const matchedProducts = new Map()
-    
+    const seen = new Set()
     for(const p of items){
-      const code=parseInt((txt(p,'Code')||txt(p,'ProdCode')||'0').trim());
+      const code=parseInt(txt(p,'Code')||txt(p,'ProdCode')||'0');
       const nome=txt(p,'Name')||txt(p,'ProdName')||'';
-      const price=txt(p,'PriceFrom')||'0';
+      const price=parseFloat(txt(p,'PriceFrom')||'0');
       let img = txt(p,'ImageUrl') || txt(p,'Image') || '';
-      const country = extractCountryFromName(nome);
-      
-      if(code>0 && nome && nome!=='TESTE OMNIBEES' && country && !matchedProducts.has(code)){
-        matchedProducts.set(code, true)
-        allProducts.push({code,nome,price:parseFloat(price),country,img})
+      const country = extractCountry(nome);
+      if(code>0 && nome && country && !seen.has(code)){
+        seen.add(code)
+        allProducts.push({code,nome,price,country,img})
       }
     }
     
-    renderStats()
-    renderContinents()
+    document.getElementById('total-count').textContent = allProducts.length
+    const uniqueCountries = new Set(allProducts.map(p=>p.country))
+    document.getElementById('country-count').textContent = uniqueCountries.size
+    const minPrice = Math.min(...allProducts.map(p=>p.price).filter(p=>p>0))
+    document.getElementById('best-price').innerHTML = minPrice ? money(minPrice) : '—'
+    
+    renderAll()
   }catch(e){
+    toast('Erro ao carregar', 'err')
     console.error(e)
-    document.getElementById('continents-container').innerHTML=`<div class="state-empty"><div class="ico">⚠️</div><h3>Erro ao carregar</h3><p>${esc(e.message)}</p><button class="btn-back" style="margin-top:16px" onclick="init()">Tentar novamente</button></div>`
-    toast('Erro ao carregar pacotes', 'err')
   }
 }
 
-function renderStats(){
-  const uniqueCountries = new Set(allProducts.map(p => p.country))
-  const minPrice = Math.min(...allProducts.map(p => p.price).filter(p => p > 0))
-  document.getElementById('total-count').textContent = allProducts.length
-  document.getElementById('country-count').textContent = uniqueCountries.size
-  document.getElementById('best-price').innerHTML = minPrice ? money(minPrice) : '—'
-}
-
-function toggleCountry(countryName, flag){
-  const itemElement = document.getElementById(`country-item-${countryName.replace(/\s/g, '')}`)
-  const wasOpen = openCountry === countryName
-  
-  // Fechar o anterior se estiver aberto
-  if(openCountry && openCountry !== countryName){
-    const prevElement = document.getElementById(`country-item-${openCountry.replace(/\s/g, '')}`)
-    if(prevElement) prevElement.classList.remove('open')
-  }
-  
-  if(wasOpen){
-    itemElement.classList.remove('open')
-    openCountry = null
-  } else {
-    itemElement.classList.add('open')
-    openCountry = countryName
-    
-    // Carregar produtos se ainda não foram carregados
-    const productsContainer = document.getElementById(`products-${countryName.replace(/\s/g, '')}`)
-    if(productsContainer && productsContainer.getAttribute('data-loaded') !== 'true'){
-      renderProductsForCountry(countryName, flag)
-    }
-  }
-}
-
-function renderProductsForCountry(countryName, flag){
-  const products = allProducts.filter(p => p.country === countryName)
-  const container = document.getElementById(`products-${countryName.replace(/\s/g, '')}`)
-  
-  if(!container) return
-  
-  if(products.length === 0){
-    container.innerHTML = `<div class="empty-message">📭 Nenhum pacote disponível para ${countryName}</div>`
-    container.setAttribute('data-loaded', 'true')
-    return
-  }
-  
-  const sorted = [...products].sort((a,b) => (a.price || 9999) - (b.price || 9999))
-  const countryImage = countryImages[countryName] || ''
-  const fallbackIcon = getCountryIcon(countryName)
-  
-  const productsHtml = sorted.map(p => {
-    const imageUrl = p.img && p.img.startsWith('http') ? p.img : countryImage
-    
-    const imageHtml = imageUrl 
-      ? `<img src="${esc(imageUrl)}" onerror="this.parentElement.innerHTML='${fallbackIcon}'">`
-      : `<span>${fallbackIcon}</span>`
-    
-    return `
-      <div class="product-mini-card" onclick="event.stopPropagation();selectProduct(${p.code}, '${esc(p.nome)}')">
-        <div class="product-mini-photo">
-          ${imageHtml}
-        </div>
-        <div class="product-mini-info">
-          <div class="product-mini-name">${esc(p.nome.length > 40 ? p.nome.substring(0,40)+'...' : p.nome)}</div>
-          <div class="product-mini-code">Código: ${p.code}</div>
-          <div class="product-mini-price">${p.price > 0 ? money(p.price) : '—'} <small>por pessoa</small></div>
-        </div>
-      </div>
-    `
-  }).join('')
-  
-  container.innerHTML = `
-    <div class="products-mini-grid">
-      ${productsHtml}
-    </div>
-  `
-  container.setAttribute('data-loaded', 'true')
-}
-
-function selectProduct(code, name){
-  toast(`🔍 ${name} - Código ${code}`, 'ok')
-  alert(`Produto selecionado: ${name}\nCódigo: ${code}\n\nA funcionalidade de reserva será integrada aqui.`)
-}
-
-function renderContinents(){
-  let html = ''
-  
-  for(const [continentName, data] of Object.entries(continentsStructure)){
-    const countriesWithPackages = data.countries.filter(country => {
-      return allProducts.some(p => p.country === country)
-    })
-    
-    if(countriesWithPackages.length === 0) continue
-    
-    html += `
-      <div class="continent-section">
-        <div class="continent-header">
-          <span class="continent-icon">${data.icon}</span>
-          <span class="continent-title">${continentName.replace(/[🌍🇪🇺🌎🌏]/g, '').trim() || continentName}</span>
-          <span class="continent-count">${countriesWithPackages.length} ${countriesWithPackages.length === 1 ? 'país' : 'países'}</span>
-        </div>
-        <div class="country-grid">
-    `
-    
-    for(const countryName of countriesWithPackages){
-      const productCount = allProducts.filter(p => p.country === countryName).length
-      const countryDef = countriesDefinition.find(c => c.name === countryName)
-      const flag = countryDef ? countryDef.flag : '🏖️'
-      const safeId = countryName.replace(/\s/g, '')
-      
-      html += `
-        <div class="country-item" id="country-item-${safeId}">
-          <div class="country-card" onclick="toggleCountry('${countryName}', '${flag}')">
-            <span class="country-flag">${flag}</span>
-            <span class="country-name">${countryName}</span>
-            <span class="country-badge">${productCount}</span>
-            <span class="country-arrow">▶</span>
-          </div>
-          <div class="country-products" id="products-${safeId}">
-            <div class="products-loading"><div class="loader-small"></div> Carregando pacotes...</div>
-          </div>
-        </div>
-      `
-    }
-    
-    html += `</div></div>`
-  }
-  
-  if(html === ''){
-    html = `<div class="empty-continent">Nenhum destino com pacotes disponível no momento.</div>`
-  }
-  
-  document.getElementById('continents-container').innerHTML = html
-}
-
-function showSkeleton(){
-  document.getElementById('continents-container').innerHTML = `
-    <div class="continent-section">
-      <div class="continent-header"><span class="continent-icon">🌍</span><span class="continent-title">A carregar destinos...</span></div>
-      <div class="skel-grid">
-        ${Array(6).fill('<div class="skel-card"><div class="s-flag"></div><div class="s-text"></div><div class="s-badge"></div></div>').join('')}
-      </div>
-    </div>
-  `
-}
+document.getElementById('search-input').addEventListener('input', (e) => {
+  currentSearch = e.target.value
+  filterProducts()
+})
 
 const urlP=new URLSearchParams(location.search)
 const CONSULTOR={id:urlP.get('cid')||'',nome:decodeURIComponent(urlP.get('cnome')||'Consultor')}
