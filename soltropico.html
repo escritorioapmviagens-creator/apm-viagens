@@ -83,17 +83,13 @@ body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:
 </div>
 
 <div class="container">
-  <!-- Stats -->
   <div class="stats-bar">
     <div class="stats-item"><span class="stats-icon">✈️🏨</span><div><div class="stats-number" id="total-count">0</div><div class="stats-label">Pacotes</div></div></div>
     <div class="stats-item"><span class="stats-icon">🌍</span><div><div class="stats-number" id="country-count">0</div><div class="stats-label">Destinos c/ pacotes</div></div></div>
     <div class="stats-item"><span class="stats-icon">⭐</span><div><div class="stats-number" id="best-price">—</div><div class="stats-label">Preço mais baixo</div></div></div>
   </div>
 
-  <!-- Continents and Countries -->
   <div id="continents-container"></div>
-
-  <!-- Products Panel -->
   <div id="products-panel" class="products-panel">
     <div class="panel-header">
       <h3 id="selected-country-title"></h3>
@@ -116,11 +112,11 @@ let selectedCountry = null
 
 // Imagens por destino
 const countryImages = {
+  "Cabo Verde": "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=400&h=300&fit=crop",
   "Egipto": "https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=400&h=300&fit=crop",
   "Gâmbia": "https://images.unsplash.com/photo-1588796603-6f3a081b2605?w=400&h=300&fit=crop",
   "Senegal": "https://images.unsplash.com/photo-1614680376739-414d95ffebdf?w=400&h=300&fit=crop",
   "Tunísia": "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=400&h=300&fit=crop",
-  "Cabo Verde": "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=400&h=300&fit=crop",
   "São Tomé e Príncipe": "https://images.unsplash.com/photo-1534926074258-0d6eb96f7d7b?w=400&h=300&fit=crop",
   "Moçambique": "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=400&h=300&fit=crop",
   "Marrocos": "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=400&h=300&fit=crop",
@@ -142,54 +138,62 @@ const countryImages = {
   "Emirados Árabes": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400&h=300&fit=crop"
 }
 
-// Ícones para fallback
-const countryIcons = {
-  "Egipto": "🇪🇬🐪",
-  "Gâmbia": "🇬🇲🦩",
-  "Cabo Verde": "🇨🇻🏖️",
-  "Marrocos": "🇲🇦🏜️",
-  "Brasil": "🇧🇷🏖️",
-  "Tailândia": "🇹🇭🐘",
-  "default": "✈️🏨"
-}
-
 function getCountryIcon(countryName){
-  return countryIcons[countryName] || countryIcons.default
+  const icons = {
+    "Cabo Verde": "🇨🇻🏖️",
+    "Egipto": "🇪🇬🐪",
+    "Gâmbia": "🇬🇲🦩",
+    "Marrocos": "🇲🇦🏜️",
+    "Brasil": "🇧🇷🏖️",
+    "Tailândia": "🇹🇭🐘"
+  }
+  return icons[countryName] || "✈️🏨"
 }
 
-// Lista completa de países (para referência)
-const allCountriesList = {
-  "Egipto": { flag: "🇪🇬", keywords: ["egito", "cairo", "hurghada", "sharm", "luxor"] },
-  "Gâmbia": { flag: "🇬🇲", keywords: ["gâmbia", "banjul"] },
-  "Senegal": { flag: "🇸🇳", keywords: ["senegal", "dakar"] },
-  "Tunísia": { flag: "🇹🇳", keywords: ["tunísia", "hammamet", "sousse"] },
-  "Cabo Verde": { flag: "🇨🇻", keywords: ["cabo verde", "boavista", "sal", "santiago"] },
-  "São Tomé e Príncipe": { flag: "🇸🇹", keywords: ["são tomé", "príncipe"] },
-  "Moçambique": { flag: "🇲🇿", keywords: ["moçambique", "maputo"] },
-  "Marrocos": { flag: "🇲🇦", keywords: ["marrocos", "marraquexe", "agadir"] },
-  "Tanzânia": { flag: "🇹🇿", keywords: ["tanzânia", "zanzibar"] },
-  "África do Sul": { flag: "🇿🇦", keywords: ["áfrica do sul", "cidade do cabo"] },
-  "Portugal": { flag: "🇵🇹", keywords: ["portugal", "madeira", "açores", "algarve"] },
-  "Espanha": { flag: "🇪🇸", keywords: ["espanha", "canárias", "barcelona"] },
-  "Grécia": { flag: "🇬🇷", keywords: ["grécia", "creta", "atenas"] },
-  "Itália": { flag: "🇮🇹", keywords: ["itália", "roma", "veneza"] },
-  "França": { flag: "🇫🇷", keywords: ["frança", "paris"] },
-  "Turquia": { flag: "🇹🇷", keywords: ["turquia", "antália", "istambul"] },
-  "Brasil": { flag: "🇧🇷", keywords: ["brasil", "salvador", "rio"] },
-  "Cuba": { flag: "🇨🇺", keywords: ["cuba", "varadero", "havana"] },
-  "República Dominicana": { flag: "🇩🇴", keywords: ["república dominicana", "punta cana"] },
-  "México": { flag: "🇲🇽", keywords: ["méxico", "cancún"] },
-  "Tailândia": { flag: "🇹🇭", keywords: ["tailândia", "phuket", "banguecoque"] },
-  "Maldivas": { flag: "🇲🇻", keywords: ["maldivas"] },
-  "Indonésia": { flag: "🇮🇩", keywords: ["indonésia", "bali"] },
-  "Emirados Árabes": { flag: "🇦🇪", keywords: ["emirados", "dubai", "abu dhabi"] }
-}
+// Definição de países com keywords específicas (ordem de prioridade importante)
+const countriesDefinition = [
+  // Cabo Verde tem prioridade alta porque pode ter "Sal" que também é palavra em espanhol/português
+  { name: "Cabo Verde", flag: "🇨🇻", keywords: ["cabo verde", "boavista", "sal", "santiago", "são vicente", "mindelo", "ilha do sal"] },
+  { name: "Egipto", flag: "🇪🇬", keywords: ["egito", "cairo", "hurghada", "sharm", "luxor", "egipto"] },
+  { name: "Gâmbia", flag: "🇬🇲", keywords: ["gâmbia", "banjul"] },
+  { name: "Senegal", flag: "🇸🇳", keywords: ["senegal", "dakar"] },
+  { name: "Tunísia", flag: "🇹🇳", keywords: ["tunísia", "hammamet", "sousse", "tunisia"] },
+  { name: "São Tomé e Príncipe", flag: "🇸🇹", keywords: ["são tomé", "príncipe", "saotome"] },
+  { name: "Moçambique", flag: "🇲🇿", keywords: ["moçambique", "maputo", "vilanculos"] },
+  { name: "Marrocos", flag: "🇲🇦", keywords: ["marrocos", "marraquexe", "agadir", "casablanca", "fez"] },
+  { name: "Mauritânia", flag: "🇲🇷", keywords: ["mauritânia", "nouakchott"] },
+  { name: "Tanzânia", flag: "🇹🇿", keywords: ["tanzânia", "zanzibar"] },
+  { name: "África do Sul", flag: "🇿🇦", keywords: ["áfrica do sul", "cidade do cabo", "joanesburgo"] },
+  { name: "Quénia", flag: "🇰🇪", keywords: ["quénia", "kenya", "nairobi", "mombaça"] },
+  { name: "Portugal", flag: "🇵🇹", keywords: ["portugal", "madeira", "açores", "algarve", "lisboa", "porto"] },
+  { name: "Espanha", flag: "🇪🇸", keywords: ["espanha", "canárias", "barcelona", "madrid", "maiorca", "ibiza"] },
+  { name: "Grécia", flag: "🇬🇷", keywords: ["grécia", "creta", "atenas", "santorini", "rhodes", "mykonos"] },
+  { name: "Itália", flag: "🇮🇹", keywords: ["itália", "roma", "veneza", "milão", "nápoles", "sicília"] },
+  { name: "França", flag: "🇫🇷", keywords: ["frança", "paris", "nice", "côte d'azur"] },
+  { name: "Turquia", flag: "🇹🇷", keywords: ["turquia", "antália", "istambul", "bodrum", "marmaris"] },
+  { name: "Croácia", flag: "🇭🇷", keywords: ["croácia", "dubrovnik", "split"] },
+  { name: "Brasil", flag: "🇧🇷", keywords: ["brasil", "salvador", "rio de janeiro", "fortaleza", "recife", "porto seguro"] },
+  { name: "Cuba", flag: "🇨🇺", keywords: ["cuba", "varadero", "havana", "cayo coco"] },
+  { name: "República Dominicana", flag: "🇩🇴", keywords: ["república dominicana", "punta cana", "la romana"] },
+  { name: "México", flag: "🇲🇽", keywords: ["méxico", "cancún", "riviera maya", "playa del carmen"] },
+  { name: "Costa Rica", flag: "🇨🇷", keywords: ["costa rica", "san josé"] },
+  { name: "Colômbia", flag: "🇨🇴", keywords: ["colômbia", "cartagena", "bogotá"] },
+  { name: "Estados Unidos", flag: "🇺🇸", keywords: ["eua", "estados unidos", "orlando", "miami", "nova iorque"] },
+  { name: "Argentina", flag: "🇦🇷", keywords: ["argentina", "buenos aires", "bariloche"] },
+  { name: "Tailândia", flag: "🇹🇭", keywords: ["tailândia", "phuket", "banguecoque", "krabi", "koh samui"] },
+  { name: "Maldivas", flag: "🇲🇻", keywords: ["maldivas", "malé"] },
+  { name: "Indonésia", flag: "🇮🇩", keywords: ["indonésia", "bali", "jacarta"] },
+  { name: "Emirados Árabes", flag: "🇦🇪", keywords: ["emirados", "dubai", "abu dhabi"] },
+  { name: "Vietname", flag: "🇻🇳", keywords: ["vietname", "hanói", "ho chi minh"] },
+  { name: "Sri Lanka", flag: "🇱🇰", keywords: ["sri lanka", "colombo"] },
+  { name: "China", flag: "🇨🇳", keywords: ["china", "pequim", "xangai"] }
+]
 
-// Organização por continentes (apenas países que podem ter pacotes)
+// Organização por continentes
 const continentsStructure = {
   "🌍 África": {
     icon: "🌍",
-    countries: ["Egipto", "Gâmbia", "Senegal", "Tunísia", "Cabo Verde", "São Tomé e Príncipe", "Moçambique", "Marrocos", "Tanzânia", "África do Sul"]
+    countries: ["Cabo Verde", "Egipto", "Gâmbia", "Senegal", "Tunísia", "São Tomé e Príncipe", "Moçambique", "Marrocos", "Tanzânia", "África do Sul"]
   },
   "🇪🇺 Europa": {
     icon: "🇪🇺",
@@ -218,11 +222,25 @@ function itemsOf(c){return c?directChildren(c,'item'):[]}
 
 function extractCountryFromName(productName){
   const lowerName = productName.toLowerCase()
-  for(const [countryName, data] of Object.entries(allCountriesList)){
-    for(const keyword of data.keywords){
-      if(lowerName.includes(keyword)) return countryName
+  
+  // Tentar encontrar match exato primeiro (prioridade máxima para Cabo Verde)
+  for(const country of countriesDefinition){
+    for(const keyword of country.keywords){
+      if(lowerName === keyword || lowerName.startsWith(keyword + " ") || lowerName.includes(" " + keyword + " ")) {
+        return country.name
+      }
     }
   }
+  
+  // Depois tentar matches parciais
+  for(const country of countriesDefinition){
+    for(const keyword of country.keywords){
+      if(lowerName.includes(keyword)) {
+        return country.name
+      }
+    }
+  }
+  
   return null
 }
 
@@ -234,14 +252,18 @@ async function init(){
     let items=arr?itemsOf(arr):[];
     if(!items.length) items=all(doc,'Product')
     
-    allProducts = items.map(p=>{
+    allProducts = []
+    for(const p of items){
       const code=parseInt((txt(p,'Code')||txt(p,'ProdCode')||'0').trim());
       const nome=txt(p,'Name')||txt(p,'ProdName')||'';
       const price=txt(p,'PriceFrom')||'0';
       let img = txt(p,'ImageUrl') || txt(p,'Image') || '';
       const country = extractCountryFromName(nome);
-      return {code,nome,price:parseFloat(price),country,img}
-    }).filter(p=>p.code>0 && p.nome && p.nome!=='TESTE OMNIBEES' && p.country !== null)
+      
+      if(code>0 && nome && nome!=='TESTE OMNIBEES' && country){
+        allProducts.push({code,nome,price:parseFloat(price),country,img})
+      }
+    }
     
     renderStats()
     renderContinents()
@@ -263,12 +285,10 @@ function renderContinents(){
   let html = ''
   
   for(const [continentName, data] of Object.entries(continentsStructure)){
-    // Filtrar apenas países que têm pacotes
     const countriesWithPackages = data.countries.filter(country => {
       return allProducts.some(p => p.country === country)
     })
     
-    // Se não houver países com pacotes neste continente, não mostrar o continente
     if(countriesWithPackages.length === 0) continue
     
     html += `
@@ -283,8 +303,8 @@ function renderContinents(){
     
     for(const countryName of countriesWithPackages){
       const productCount = allProducts.filter(p => p.country === countryName).length
-      const countryInfo = allCountriesList[countryName]
-      const flag = countryInfo ? countryInfo.flag : '🏖️'
+      const countryDef = countriesDefinition.find(c => c.name === countryName)
+      const flag = countryDef ? countryDef.flag : '🏖️'
       
       html += `
         <div class="country-card" onclick="selectCountry('${countryName}', '${flag}')">
@@ -298,7 +318,6 @@ function renderContinents(){
     html += `</div></div>`
   }
   
-  // Se não houver nenhum país com pacotes
   if(html === ''){
     html = `<div class="empty-continent">Nenhum destino com pacotes disponível no momento.</div>`
   }
