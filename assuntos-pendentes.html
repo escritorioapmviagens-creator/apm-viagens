@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assuntos Pendentes — APM Viagens</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.08);--radius:12px;--radius-sm:8px;--shadow:0 2px 8px rgba(0,0,0,0.06)}
+body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:var(--bg);min-height:100vh}
+header{background:var(--surface);border-bottom:3px solid var(--coral);padding:14px 28px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);flex-wrap:wrap}
+header img{height:42px;object-fit:contain}
+header h1{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px}
+.notif-badge{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 7px;background:var(--coral);color:#fff;border-radius:20px;font-size:13px;font-weight:700;font-family:'Inter',sans-serif}
+.notif-badge.zero{display:none}
+header span{font-size:12px;color:var(--muted)}
+.container{max-width:1500px;margin:0 auto;padding:24px 20px 60px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .18s}
+.btn-coral{background:var(--coral);color:#fff}.btn-coral:hover{background:#d02f4e}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--navy)}.btn-outline:hover{background:#fff}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start}
+@media(max-width:1100px){.board{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.board{grid-template-columns:1fr}}
+.column{background:#eef0f6;border-radius:var(--radius);padding:12px;min-height:200px;transition:background .15s}
+.column.drag-over{background:#e0e6fb;outline:2px dashed var(--blue)}
+.col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 4px}
+.col-title{font-family:'Poppins',sans-serif;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+.col-dot{width:10px;height:10px;border-radius:50%}
+.col-count{background:var(--surface);color:var(--muted);border-radius:20px;padding:1px 9px;font-size:12px;font-weight:600}
+.col-entrada .col-dot{background:#8B92A5}
+.col-a_tratar .col-dot{background:var(--blue)}
+.col-aguardar .col-dot{background:#E8A23B}
+.col-resolvido .col-dot{background:#2E9E5B}
+.card{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:13px;margin-bottom:10px;cursor:grab;border-left:4px solid var(--muted);transition:box-shadow .15s,transform .1s}
+.card:hover{box-shadow:0 4px 14px rgba(0,0,0,0.12)}
+.card.dragging{opacity:.5;cursor:grabbing}
+.card.prio-alta{border-left-color:var(--coral)}
+.card.prio-baixa{border-left-color:#8B92A5}
+.card.prio-normal{border-left-color:var(--blue)}
+.card-title{font-weight:600;font-size:14px;margin-bottom:6px;line-height:1.35}
+.card-desc{font-size:12.5px;color:#5a6072;margin-bottom:10px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.card-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.card-person{font-size:11.5px;color:var(--blue);font-weight:600;display:flex;align-items:center;gap:4px}
+.card-time{font-size:11px;color:var(--muted)}
+.card-actions{display:flex;gap:6px;margin-top:8px}
+.icon-btn{background:transparent;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:2px 4px;border-radius:4px}
+.icon-btn:hover{background:var(--bg);color:var(--navy)}
+.prio-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:20px}
+.prio-tag.alta{background:#FFEBEE;color:var(--coral)}
+.prio-tag.baixa{background:#EEF0F6;color:var(--muted)}
+.prio-tag.normal{background:#EEF2FF;color:var(--blue)}
+.empty-col{text-align:center;color:var(--muted);font-size:12px;padding:24px 8px;font-style:italic}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(20,24,40,.45);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.25);padding:24px;width:100%;max-width:460px}
+.modal h2{font-family:'Poppins',sans-serif;font-size:17px;margin-bottom:16px}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-group label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.form-group input,.form-group textarea,.form-group select{padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;background:#fff}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--blue)}
+.form-group textarea{resize:vertical;min-height:80px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+.status-bar{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;margin-bottom:16px;display:none}
+.status-bar.show{display:block}
+.status-bar.loading{background:#EEF2FF;color:#3251c4}
+.status-bar.err{background:#FFEBEE;color:#C62828}
+.move-select{font-size:11px;padding:3px 6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;color:var(--navy);font-family:'Inter',sans-serif;cursor:pointer}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader{display:inline-block;width:13px;height:13px;border:2px solid rgba(59,91,219,.3);border-top-color:#3B5BDB;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+.hint{font-size:12px;color:var(--muted);margin-bottom:16px}
+</style>
+</head>
+<body>
+<header>
+  <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM">
+  <div>
+    <h1>📌 Assuntos Pendentes <span class="notif-badge zero" id="notif-badge">0</span></h1>
+    <span>Passagem de casos entre o suporte · APM Viagens</span>
+  </div>
+</header>
+
+<div class="container">
+  <div id="status" class="status-bar"></div>
+  <div class="toolbar">
+    <div class="hint">Arraste os cartões entre as colunas. Ao mover para <b>A Ser Tratado</b>, registe o seu nome. Quando passar para <b>Resolvido</b>, a notificação desaparece.</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" onclick="abrirModalMembros()">👥 Gerir Equipa</button>
+      <button class="btn btn-outline" onclick="carregarTickets()">🔄 Atualizar</button>
+      <button class="btn btn-coral" onclick="abrirModalNovo()">+ Novo Assunto</button>
+    </div>
+  </div>
+
+  <div class="board" id="board">
+    <div class="column col-entrada" data-estado="entrada">
+      <div class="col-head"><span class="col-title"><span class="col-dot"></span>Entrada</span><span class="col-count" id="count-entrada">0</span></div>
+      <div class="col-body" id="col-entrada"></div>
+    </div>
+    <div class="column col-a_tratar" data-estado="a_tratar">
+      <div class="col-head"><span class="col-title"><span class="col-dot"></span>A Ser Tratado</span><span class="col-count" id="count-a_tratar">0</span></div>
+      <div class="col-body" id="col-a_tratar"></div>
+    </div>
+    <div class="column col-aguardar" data-estado="aguardar">
+      <div class="col-head"><span class="col-title"><span class="col-dot"></span>A Aguardar Resolução</span><span class="col-count" id="count-aguardar">0</span></div>
+      <div class="col-body" id="col-aguardar"></div>
+    </div>
+    <div class="column col-resolvido" data-estado="resolvido">
+      <div class="col-head"><span class="col-title"><span class="col-dot"></span>Resolvido</span><span class="col-count" id="count-resolvido">0</span></div>
+      <div class="col-body" id="col-resolvido"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: novo / editar assunto -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h2 id="modal-title">Novo Assunto</h2>
+    <input type="hidden" id="f-id">
+    <div class="form-group">
+      <label>Título *</label>
+      <input type="text" id="f-titulo" placeholder="Ex: Reserva 12345 a aguardar resposta do operador">
+    </div>
+    <div class="form-group">
+      <label>Descrição / Notas</label>
+      <textarea id="f-descricao" placeholder="Detalhes do caso, o que já foi feito, o que falta…"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Prioridade</label>
+      <select id="f-prioridade">
+        <option value="baixa">Baixa</option>
+        <option value="normal" selected>Normal</option>
+        <option value="alta">Alta</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-coral" id="modal-save" onclick="guardarTicket()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: escolher nome ao mover para "A Ser Tratado" -->
+<div class="modal-bg" id="modal-nome">
+  <div class="modal" style="max-width:380px">
+    <h2>Quem vai tratar este caso?</h2>
+    <div class="form-group">
+      <label>Membro do suporte</label>
+      <select id="f-nome"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="cancelarNome()">Cancelar</button>
+      <button class="btn btn-coral" onclick="confirmarNome()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: gerir membros do suporte -->
+<div class="modal-bg" id="modal-membros">
+  <div class="modal" style="max-width:420px">
+    <h2>👥 Equipa de Suporte</h2>
+    <div class="hint" style="margin-bottom:14px">Adicione ou remova os membros que aparecem na lista ao atribuir casos.</div>
+    <div class="form-group" style="flex-direction:row;align-items:flex-end;gap:8px">
+      <div style="flex:1">
+        <label>Adicionar membro</label>
+        <input type="text" id="f-novo-membro" placeholder="Nome do membro" onkeydown="if(event.key==='Enter')adicionarMembro()">
+      </div>
+      <button class="btn btn-coral" onclick="adicionarMembro()" style="height:42px">+ Adicionar</button>
+    </div>
+    <div id="lista-membros" style="margin:10px 0 4px;max-height:280px;overflow-y:auto"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="fecharModalMembros()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const REST = `${SUPABASE_URL}/rest/v1/assuntos_pendentes`
+const REST_MEMBROS = `${SUPABASE_URL}/rest/v1/suporte_membros`
+const HEADERS = { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json' }
+
+// Membros do suporte — carregados do Supabase (geridos na própria página)
+let EQUIPA_SUPORTE = []
+let membros = []
+
+const ESTADOS = ['entrada', 'a_tratar', 'aguardar', 'resolvido']
+let tickets = []
+let dragId = null
+let movePendente = null  // { id, novoEstado } enquanto se escolhe o nome
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+
+function setStatus(type, msg){
+  const el = document.getElementById('status')
+  if(!msg){ el.className = 'status-bar'; return }
+  el.className = `status-bar show ${type}`
+  el.innerHTML = type === 'loading' ? `<span class="loader"></span>${msg}` : msg
+}
+
+function tempoRelativo(iso){
+  if(!iso) return ''
+  const d = new Date(iso), now = new Date()
+  const min = Math.floor((now - d) / 60000)
+  if(min < 1) return 'agora mesmo'
+  if(min < 60) return `há ${min} min`
+  const h = Math.floor(min/60)
+  if(h < 24) return `há ${h}h`
+  const dias = Math.floor(h/24)
+  return `há ${dias}d`
+}
+
+async function carregarMembros(){
+  try{
+    const res = await fetch(`${REST_MEMBROS}?order=nome.asc`, { headers: HEADERS })
+    if(!res.ok) throw new Error(`HTTP ${res.status}`)
+    membros = await res.json()
+    EQUIPA_SUPORTE = membros.map(m => m.nome)
+  }catch(e){
+    console.warn('Erro ao carregar membros:', e.message)
+    EQUIPA_SUPORTE = []
+  }
+}
+
+function abrirModalMembros(){
+  renderMembros()
+  document.getElementById('modal-membros').classList.add('show')
+  setTimeout(() => document.getElementById('f-novo-membro').focus(), 50)
+}
+function fecharModalMembros(){ document.getElementById('modal-membros').classList.remove('show') }
+
+function renderMembros(){
+  const c = document.getElementById('lista-membros')
+  if(!membros.length){ c.innerHTML = '<div class="empty-col">Sem membros. Adicione o primeiro acima.</div>'; return }
+  c.innerHTML = membros.map(m => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background:var(--bg);border-radius:8px;margin-bottom:6px">
+      <span style="font-weight:600;font-size:13.5px">👤 ${esc(m.nome)}</span>
+      <button class="icon-btn" title="Remover" onclick="removerMembro('${m.id}','${esc(m.nome)}')">🗑️</button>
+    </div>`).join('')
+}
+
+async function adicionarMembro(){
+  const input = document.getElementById('f-novo-membro')
+  const nome = input.value.trim()
+  if(!nome) return
+  if(membros.some(m => m.nome.toLowerCase() === nome.toLowerCase())){ alert('Esse membro já existe.'); return }
+  try{
+    const res = await fetch(REST_MEMBROS, { method:'POST', headers:{...HEADERS,'Prefer':'return=minimal'}, body: JSON.stringify({ nome }) })
+    if(!res.ok) throw new Error(`HTTP ${res.status}`)
+    input.value = ''
+    await carregarMembros()
+    renderMembros()
+  }catch(e){ alert(`Erro ao adicionar: ${e.message}`) }
+}
+
+async function removerMembro(id, nome){
+  if(!confirm(`Remover ${nome} da equipa?`)) return
+  try{
+    const res = await fetch(`${REST_MEMBROS}?id=eq.${id}`, { method:'DELETE', headers:{...HEADERS,'Prefer':'return=minimal'} })
+    if(!res.ok) throw new Error(`HTTP ${res.status}`)
+    await carregarMembros()
+    renderMembros()
+  }catch(e){ alert(`Erro ao remover: ${e.message}`) }
+}
+
+async function carregarTickets(){
+  setStatus('loading', 'A carregar assuntos…')
+  try{
+    const res = await fetch(`${REST}?order=criado_em.asc`, { headers: HEADERS })
+    if(!res.ok) throw new Error(`HTTP ${res.status}`)
+    tickets = await res.json()
+    setStatus('', '')
+    render()
+  }catch(e){
+    setStatus('err', `❌ Erro ao carregar: ${e.message}`)
+  }
+}
+
+function render(){
+  ESTADOS.forEach(estado => {
+    const body = document.getElementById('col-' + estado)
+    const lista = tickets.filter(t => t.estado === estado)
+    document.getElementById('count-' + estado).textContent = lista.length
+    if(!lista.length){
+      body.innerHTML = '<div class="empty-col">Sem assuntos</div>'
+      return
+    }
+    body.innerHTML = lista.map(t => cardHTML(t)).join('')
+  })
+  // contador de notificações = tudo o que NÃO está resolvido
+  const pendentes = tickets.filter(t => t.estado !== 'resolvido').length
+  const badge = document.getElementById('notif-badge')
+  badge.textContent = pendentes
+  badge.classList.toggle('zero', pendentes === 0)
+  // título da página com contador
+  document.title = pendentes > 0 ? `(${pendentes}) Assuntos Pendentes — APM` : 'Assuntos Pendentes — APM'
+  attachDragHandlers()
+}
+
+function cardHTML(t){
+  const prio = t.prioridade || 'normal'
+  const pessoa = t.iniciado_por
+    ? `<span class="card-person">👤 ${esc(t.iniciado_por)}</span>`
+    : '<span class="card-time">— por atribuir</span>'
+  return `
+    <div class="card prio-${prio}" draggable="true" data-id="${t.id}">
+      <div class="card-title">${esc(t.titulo)}</div>
+      ${t.descricao ? `<div class="card-desc">${esc(t.descricao)}</div>` : ''}
+      <div class="card-meta">
+        ${pessoa}
+        <span class="prio-tag ${prio}">${prio}</span>
+      </div>
+      <div class="card-meta" style="margin-top:6px">
+        <span class="card-time">🕒 ${tempoRelativo(t.criado_em)}</span>
+        <div class="card-actions">
+          <button class="icon-btn" title="Editar" onclick="abrirModalEditar('${t.id}')">✏️</button>
+          <button class="icon-btn" title="Eliminar" onclick="eliminarTicket('${t.id}')">🗑️</button>
+        </div>
+      </div>
+    </div>`
+}
+
+// ---- Drag and drop ----
+function attachDragHandlers(){
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      dragId = card.dataset.id
+      card.classList.add('dragging')
+      e.dataTransfer.effectAllowed = 'move'
+    })
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging')
+      dragId = null
+    })
+  })
+  document.querySelectorAll('.column').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over') })
+    col.addEventListener('dragleave', () => col.classList.remove('drag-over'))
+    col.addEventListener('drop', e => {
+      e.preventDefault()
+      col.classList.remove('drag-over')
+      const novoEstado = col.dataset.estado
+      if(dragId) moverTicket(dragId, novoEstado)
+    })
+  })
+}
+
+function moverTicket(id, novoEstado){
+  const t = tickets.find(x => x.id === id)
+  if(!t || t.estado === novoEstado) return
+  // Se mover para "A Ser Tratado" e ainda não tem responsável, pedir nome
+  if(novoEstado === 'a_tratar' && !t.iniciado_por){
+    movePendente = { id, novoEstado }
+    abrirModalNome()
+    return
+  }
+  aplicarMovimento(id, novoEstado)
+}
+
+async function aplicarMovimento(id, novoEstado, nome){
+  const patch = { estado: novoEstado, atualizado_em: new Date().toISOString() }
+  if(nome) patch.iniciado_por = nome
+  if(novoEstado === 'resolvido') patch.resolvido_em = new Date().toISOString()
+  // otimista
+  const t = tickets.find(x => x.id === id)
+  const anterior = { ...t }
+  Object.assign(t, patch)
+  render()
+  try{
+    const res = await fetch(`${REST}?id=eq.${id}`, {
+      method: 'PATCH', headers: { ...HEADERS, 'Prefer': 'return=minimal' }, body: JSON.stringify(patch)
+    })
+    if(!res.ok) throw new Error(`HTTP ${res.status}`)
+  }catch(e){
+    Object.assign(t, anterior); render()
+    setStatus('err', `❌ Não foi possível mover: ${e.message}`)
+  }
+}
+
+// ---- Modal nome ----
+function abrirModalNome(){
+  if(!EQUIPA_SUPORTE.length){
+    alert('Ainda não há membros do suporte. Adicione membros em "Gerir Equipa" primeiro.')
+    movePendente = null
+    render()
+    return
+  }
+  const sel = document.getElementById('f-nome')
+  sel.innerHTML = EQUIPA_SUPORTE.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')
+  document.getElementById('modal-nome').classList.add('show')
+}
+function cancelarNome(){
+  document.getElementById('modal-nome').classList.remove('show')
+  movePendente = null
+  render() // repõe o card na coluna original
+}
+function confirmarNome(){
+  if(!movePendente) return
+  const nome = document.getElementById('f-nome').value
+  document.getElementById('modal-nome').classList.remove('show')
+  aplicarMovimento(movePendente.id, movePendente.novoEstado, nome)
+  movePendente = null
+}
+
+// ---- Modal novo/editar ----
+function abrirModalNovo(){
+  document.getElementById('modal-title').textContent = 'Novo Assunto'
+  document.getElementById('f-id').value = ''
+  document.getElementById('f-titulo').value = ''
+  document.getElementById('f-descricao').value = ''
+  document.getElementById('f-prioridade').value = 'normal'
+  document.getElementById('modal-bg').classList.add('show')
+  setTimeout(() => document.getElementById('f-titulo').focus(), 50)
+}
+function abrirModalEditar(id){
+  const t = tickets.find(x => x.id === id)
+  if(!t) return
+  document.getElementById('modal-title').textContent = 'Editar Assunto'
+  document.getElementById('f-id').value = t.id
+  document.getElementById('f-titulo').value = t.titulo || ''
+  document.getElementById('f-descricao').value = t.descricao || ''
+  document.getElementById('f-prioridade').value = t.prioridade || 'normal'
+  document.getElementById('modal-bg').classList.add('show')
+}
+function fecharModal(){ document.getElementById('modal-bg').classList.remove('show') }
+
+async function guardarTicket(){
+  const id = document.getElementById('f-id').value
+  const titulo = document.getElementById('f-titulo').value.trim()
+  const descricao = document.getElementById('f-descricao').value.trim()
+  const prioridade = document.getElementById('f-prioridade').value
+  if(!titulo){ alert('Indique um título.'); return }
+
+  const btn = document.getElementById('modal-save')
+  btn.disabled = true; btn.textContent = 'A guardar…'
+  try{
+    if(id){
+      const patch = { titulo, descricao, prioridade, atualizado_em: new Date().toISOString() }
+      const res = await fetch(`${REST}?id=eq.${id}`, { method:'PATCH', headers:{...HEADERS,'Prefer':'return=minimal'}, body: JSON.stringify(patch) })
+      if(!res.ok) throw new Error(`HTTP ${res.status}`)
+    }else{
+      const novo = { titulo, descricao, prioridade, estado: 'entrada' }
+      const res = await fetch(REST, { method:'POST', headers:{...HEADERS,'Prefer':'return=minimal'}, body: JSON.stringify(novo) })
+      if(!res.ok) throw new Error(`HTTP ${res.status}`)
+    }
+    fecharModal()
+    await carregarTickets()
+  }catch(e){
+    setStatus('err', `❌ Erro ao guardar: ${e.message}`)
+  }finally{
+    btn.disabled = false; btn.textContent = 'Guardar'
+  }
+}
+
+async function eliminarTicket(id){
+  if(!confirm('Eliminar este assunto?')) return
+  try{
+    const res = await fetch(`${REST}?id=eq.${id}`, { method:'DELETE', headers:{...HEADERS,'Prefer':'return=minimal'} })
+    if(!res.ok) throw new Error(`HTTP ${res.status}`)
+    await carregarTickets()
+  }catch(e){
+    setStatus('err', `❌ Erro ao eliminar: ${e.message}`)
+  }
+}
+
+// Fechar modais ao clicar fora
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if(e.target === bg){ bg.classList.remove('show'); if(bg.id==='modal-nome'){movePendente=null;render()} } })
+})
+
+// Atualização automática a cada 30s
+setInterval(carregarTickets, 30000)
+
+// Arranque: carregar membros e depois tickets
+carregarMembros().then(carregarTickets)
+</script>
+</body>
+</html>
