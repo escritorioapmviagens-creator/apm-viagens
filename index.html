@@ -411,7 +411,7 @@ textarea.finput{resize:vertical;min-height:72px}
 
       <div class="nav-section" data-s="recursos">Recursos</div>
       <div class="nav-item" onclick="navTo('recursos',this)"><span class="nav-icon">🧰</span> Central de Recursos</div>
-      <div class="nav-item" onclick="window.open('assuntos-pendentes.html','_blank')"><span class="nav-icon">📌</span> Assuntos Pendentes <span class="nav-badge" id="assuntos-badge" style="display:none">0</span></div>
+      <div class="nav-item" onclick="navTo('tickets',this)"><span class="nav-icon">🎫</span> Suporte / Tickets <span class="nav-badge" id="tickets-badge" style="display:none">0</span></div>
 
       <div class="nav-section" data-s="captar">1 · Captar</div>
       <div class="nav-item" onclick="navTo('pedidos-orcamento',this)" id="nav-pedidos-orc"><span class="nav-icon">📋</span> Pedidos de Orçamento <span class="nav-badge" id="pedidos-orc-badge" style="display:none">0</span></div>
@@ -438,6 +438,7 @@ textarea.finput{resize:vertical;min-height:72px}
 
       <div id="admin-nav" style="display:none">
         <div class="nav-section" data-s="admin">Administração</div>
+        <div class="nav-item" onclick="window.open('assuntos-pendentes.html','_blank')"><span class="nav-icon">📌</span> Assuntos Pendentes <span class="nav-badge" id="assuntos-badge" style="display:none">0</span></div>
         <div class="nav-item" onclick="navTo('equipa',this)"><span class="nav-icon">◉</span> Equipa</div>
         <div class="nav-item" onclick="window.open('mensalidades.html','_blank')" id="nav-mensalidades"><span class="nav-icon">💳</span> Mensalidades</div>
         <div class="nav-item" onclick="navTo('financeiro',this)"><span class="nav-icon">€</span> Financeiro</div>
@@ -2305,6 +2306,11 @@ textarea.finput{resize:vertical;min-height:72px}
       </div>
       <!-- ═══ FIM AVALIAÇÕES ════════════════════════════════════ -->
 
+      <!-- ═══ SUPORTE / TICKETS (embutido via iframe — código em tickets.html) ══════ -->
+      <div class="page" id="page-tickets">
+        <iframe id="tickets-frame" style="width:100%;height:calc(100vh - 90px);border:none;border-radius:12px;background:#fff" title="Suporte / Tickets"></iframe>
+      </div>
+
       <!-- ═══ REFERÊNCIAS ══════════════════════════════════════ -->
       <div class="page" id="page-referencias">
         <div style="max-width:900px">
@@ -3761,6 +3767,7 @@ function enterApp() {
   carregarTemplatesParaSelects()
   atualizarRecrutamentoBadge()
   atualizarAssuntosBadge()
+  atualizarTicketsBadge()
   if(currentPerfil.role === 'admin') atualizarBadgeEliminacoes()
   if(currentPerfil.role !== 'admin') renderDashIndividual()
   checkAlertasClientes()
@@ -3888,10 +3895,11 @@ function navTo(page, el) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
   sessionStorage.setItem('apm_page', page)
-  const titles={dashboard:'Dashboard',recursos:'Central de Recursos',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',lembretes:'Lembretes em Destaque',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
+  const titles={dashboard:'Dashboard',recursos:'Central de Recursos',tickets:'Suporte',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',lembretes:'Lembretes em Destaque',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
   document.getElementById('tb-title').textContent = titles[page]||page
   document.getElementById('tb-sub').textContent = page==='dashboard'?(currentPerfil?.role==='admin'?'Visão global da agência':'Visão geral das tuas reservas'):''
   if(page==='recursos') loadRecursos()
+  if(page==='tickets') carregarTicketsFrame()
   if(page==='dashboard') renderDash()
   if(page==='reservas') renderTable()
   if(page==='pipeline') loadPipeline()
@@ -15216,6 +15224,30 @@ async function atualizarAssuntosBadge() {
     const badge = document.getElementById('assuntos-badge')
     if(badge) { badge.textContent = count || 0; badge.style.display = (count > 0) ? 'inline-flex' : 'none' }
   } catch(e) { console.warn('assuntos badge exception:', e) }
+}
+
+// ═══ TICKETS (embutido via iframe — lógica completa em tickets.html) ═══
+function carregarTicketsFrame(){
+  const f = document.getElementById('tickets-frame')
+  if(!f) return
+  const cid = encodeURIComponent(currentPerfil.id || '')
+  const cnome = encodeURIComponent(currentPerfil.nome || '')
+  const role = currentPerfil.role === 'admin' ? 'admin' : 'consultor'
+  const src = `tickets.html?cid=${cid}&cnome=${cnome}&role=${role}`
+  // só recarrega se ainda não estiver carregado (evita perder estado)
+  if(f.getAttribute('data-loaded') !== src){ f.src = src; f.setAttribute('data-loaded', src) }
+}
+
+async function atualizarTicketsBadge(){
+  try{
+    if(currentPerfil.role === 'admin') return // admin gere no Kanban
+    const { count, error } = await sb.from('assuntos_pendentes')
+      .select('id',{count:'exact',head:true})
+      .eq('origem','consultor').eq('consultor_id', currentPerfil.id).neq('estado','resolvido')
+    if(error) return
+    const badge = document.getElementById('tickets-badge')
+    if(badge){ badge.textContent = count || 0; badge.style.display = (count>0) ? 'inline-flex' : 'none' }
+  }catch(e){}
 }
 
 // ════════════════════════════════════════════════════════════
