@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suporte / Tickets · APM</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.07);--radius:12px;--shadow:0 2px 8px rgba(0,0,0,0.06);--shadow-md:0 4px 16px rgba(0,0,0,0.08)}
+body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:transparent;padding:4px}
+.wrap{max-width:860px;margin:0 auto}
+.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+.head h1{font-size:1.4rem;font-weight:700;color:var(--navy);font-family:'Poppins',sans-serif}
+.head .sub{font-size:.85rem;color:var(--muted);margin-top:2px}
+.btn{border:none;border-radius:999px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter';transition:.15s;min-height:42px}
+.btn-coral{background:var(--coral);color:#fff}.btn-coral:hover{background:#d02f4e}
+.btn-ghost{background:transparent;color:var(--muted)}.btn-ghost:hover{color:var(--navy)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+input,textarea,select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;margin-top:5px;font-family:inherit;outline:none;transition:border-color .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--blue)}
+textarea{resize:vertical}
+.fld{margin-bottom:12px}
+.status{flex-shrink:0;font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:20px}
+.status.recv{color:#8B92A5;background:#F0F1F5}
+.status.prog{color:#3B5BDB;background:#EEF2FF}
+.status.ok{color:#2E9E5B;background:#E8F5E9}
+.empty{text-align:center;padding:46px 20px;color:var(--muted)}
+.empty .ico{font-size:40px;opacity:.4;margin-bottom:10px}
+.empty h3{font-weight:600;color:var(--navy);margin-bottom:4px;font-family:'Poppins',sans-serif}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--navy);color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:var(--shadow-md);transition:transform .3s;z-index:100}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.ok{background:#2E9E5B}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>🎫 Suporte</h1>
+      <div class="sub" id="head-sub">Abra um pedido ao suporte e acompanhe o estado.</div>
+    </div>
+    <button class="btn btn-coral" onclick="abrirNovo()">+ Novo pedido</button>
+  </div>
+
+  <div id="form" class="card" style="display:none;margin:18px 0">
+    <div style="font-weight:700;font-family:'Poppins',sans-serif;margin-bottom:14px">Novo pedido ao suporte</div>
+    <div class="fld"><label class="lbl">Assunto</label><input type="text" id="f-titulo" placeholder="Ex: Erro ao gerar proposta da reserva 1234"></div>
+    <div class="fld"><label class="lbl">Descrição</label><textarea id="f-desc" rows="4" placeholder="Descreva o problema ou o pedido com o máximo de detalhe possível…"></textarea></div>
+    <div class="fld"><label class="lbl">Prioridade</label><select id="f-prio"><option value="baixa">Baixa</option><option value="normal" selected>Normal</option><option value="alta">Alta — bloqueia o meu trabalho</option></select></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="cancelar()">Cancelar</button>
+      <button class="btn btn-coral" id="submit" onclick="enviar()">Enviar pedido</button>
+    </div>
+  </div>
+
+  <div id="lista" style="margin-top:18px"><div class="empty">A carregar…</div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+
+const p = new URLSearchParams(location.search)
+const CONSULTOR = { id: p.get('cid')||'', nome: decodeURIComponent(p.get('cnome')||'Consultor'), role: p.get('role')||'consultor' }
+if(CONSULTOR.role === 'admin') document.getElementById('head-sub').textContent = 'Pedidos abertos pelos consultores (vista de administração).'
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function toast(msg,type=''){const t=document.getElementById('toast');t.className='toast show '+type;t.textContent=msg;clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',3000)}
+
+function estadoVisivel(estado){
+  if(estado === 'resolvido') return {txt:'Resolvido', cls:'ok'}
+  if(estado === 'a_tratar' || estado === 'aguardar') return {txt:'Em resolução', cls:'prog'}
+  return {txt:'Recebido', cls:'recv'}
+}
+
+function abrirNovo(){
+  document.getElementById('form').style.display='block'
+  document.getElementById('f-titulo').value=''
+  document.getElementById('f-desc').value=''
+  document.getElementById('f-prio').value='normal'
+  setTimeout(()=>document.getElementById('f-titulo').focus(),50)
+}
+function cancelar(){document.getElementById('form').style.display='none'}
+
+async function enviar(){
+  const titulo=document.getElementById('f-titulo').value.trim()
+  const desc=document.getElementById('f-desc').value.trim()
+  const prio=document.getElementById('f-prio').value
+  if(!titulo){alert('Indique o assunto do pedido.');return}
+  const btn=document.getElementById('submit')
+  btn.disabled=true;btn.textContent='A enviar…'
+  try{
+    const {error}=await sb.from('assuntos_pendentes').insert({
+      titulo,descricao:desc,prioridade:prio,estado:'entrada',
+      origem:'consultor',consultor_id:CONSULTOR.id||null,consultor_nome:CONSULTOR.nome
+    })
+    if(error) throw error
+    document.getElementById('form').style.display='none'
+    toast('Pedido enviado ao suporte ✓','ok')
+    carregar()
+  }catch(e){alert('Não foi possível enviar: '+(e.message||e))}
+  finally{btn.disabled=false;btn.textContent='Enviar pedido'}
+}
+
+async function carregar(){
+  const cont=document.getElementById('lista')
+  try{
+    let q=sb.from('assuntos_pendentes').select('*').eq('origem','consultor').order('criado_em',{ascending:false})
+    if(CONSULTOR.role!=='admin') q=q.eq('consultor_id',CONSULTOR.id)
+    const {data,error}=await q
+    if(error) throw error
+    if(!data||!data.length){
+      cont.innerHTML='<div class="empty"><div class="ico">🎫</div><h3>Ainda não há pedidos</h3><div style="font-size:13px">Clique em “+ Novo pedido” para contactar o suporte.</div></div>'
+      return
+    }
+    cont.innerHTML=data.map(t=>{
+      const ev=estadoVisivel(t.estado)
+      const df=new Date(t.criado_em).toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'})
+      const adminInfo=(CONSULTOR.role==='admin'&&t.consultor_nome)?`<span style="font-size:11.5px;color:var(--muted)"> · ${esc(t.consultor_nome)}</span>`:''
+      return `<div class="card" style="margin-bottom:10px;padding:16px 18px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:14px;color:var(--navy);margin-bottom:3px">${esc(t.titulo)}${adminInfo}</div>
+            ${t.descricao?`<div style="font-size:13px;color:#5a6072;line-height:1.5;margin-bottom:6px;white-space:pre-wrap">${esc(t.descricao)}</div>`:''}
+            <div style="font-size:11.5px;color:var(--muted)">🕒 ${df}${t.prioridade==='alta'?' · <span style="color:#E8395A;font-weight:700">prioridade alta</span>':''}</div>
+            ${t.resposta?`<div style="margin-top:10px;background:#F0F1F5;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#3a4055"><b>Resposta do suporte:</b> ${esc(t.resposta)}</div>`:''}
+          </div>
+          <span class="status ${ev.cls}">${ev.txt}</span>
+        </div>
+      </div>`
+    }).join('')
+  }catch(e){
+    cont.innerHTML=`<div class="empty" style="color:var(--coral)">Erro ao carregar: ${esc(e.message||e)}</div>`
+  }
+}
+
+carregar()
+</script>
+</body>
+</html>
