@@ -270,7 +270,9 @@ async function removerMembro(id, nome){
 async function carregarTickets(){
   setStatus('loading', 'A carregar assuntos…')
   try{
-    const res = await fetch(`${REST}?order=criado_em.asc`, { headers: HEADERS })
+    // Só assuntos internos (passagem de turno) — os tickets de consultores
+    // têm origem=consultor e aparecem no quadro "Assuntos Suporte".
+    const res = await fetch(`${REST}?or=(origem.is.null,origem.neq.consultor)&order=criado_em.asc`, { headers: HEADERS })
     if(!res.ok) throw new Error(`HTTP ${res.status}`)
     tickets = await res.json()
     setStatus('', '')
@@ -306,8 +308,12 @@ function cardHTML(t){
   const pessoa = t.iniciado_por
     ? `<span class="card-person">👤 ${esc(t.iniciado_por)}</span>`
     : '<span class="card-time">— por atribuir</span>'
+  const ticketTag = t.origem === 'consultor'
+    ? `<div style="display:inline-flex;align-items:center;gap:5px;background:#EEF2FF;color:#3B5BDB;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:8px">🎫 Ticket de ${esc(t.consultor_nome||'consultor')}</div>`
+    : ''
   return `
     <div class="card prio-${prio}" draggable="true" data-id="${t.id}">
+      ${ticketTag}
       <div class="card-title">${esc(t.titulo)}</div>
       ${t.descricao ? `<div class="card-desc">${esc(t.descricao)}</div>` : ''}
       <div class="card-meta">
