@@ -439,6 +439,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div id="admin-nav" style="display:none">
         <div class="nav-section" data-s="admin">Administração</div>
         <div class="nav-item" onclick="window.open('assuntos-pendentes.html','_blank')"><span class="nav-icon">📌</span> Assuntos Pendentes <span class="nav-badge" id="assuntos-badge" style="display:none">0</span></div>
+        <div class="nav-item" onclick="window.open('assuntos-suporte.html','_blank')"><span class="nav-icon">🎫</span> Assuntos Suporte <span class="nav-badge" id="assuntos-sup-badge" style="display:none">0</span></div>
         <div class="nav-item" onclick="navTo('equipa',this)"><span class="nav-icon">◉</span> Equipa</div>
         <div class="nav-item" onclick="window.open('mensalidades.html','_blank')" id="nav-mensalidades"><span class="nav-icon">💳</span> Mensalidades</div>
         <div class="nav-item" onclick="navTo('financeiro',this)"><span class="nav-icon">€</span> Financeiro</div>
@@ -3767,6 +3768,7 @@ function enterApp() {
   carregarTemplatesParaSelects()
   atualizarRecrutamentoBadge()
   atualizarAssuntosBadge()
+  atualizarAssuntosSuporteBadge()
   atualizarTicketsBadge()
   if(currentPerfil.role === 'admin') atualizarBadgeEliminacoes()
   if(currentPerfil.role !== 'admin') renderDashIndividual()
@@ -15217,13 +15219,28 @@ async function atualizarFollowupBadge() {
 
 async function atualizarAssuntosBadge() {
   try {
+    // Só assuntos internos (origem != consultor)
     const { count, error } = await sb.from('assuntos_pendentes')
       .select('id', { count:'exact', head:true })
       .neq('estado', 'resolvido')
+      .or('origem.is.null,origem.neq.consultor')
     if(error) { console.warn('assuntos badge error:', error.message); return }
     const badge = document.getElementById('assuntos-badge')
     if(badge) { badge.textContent = count || 0; badge.style.display = (count > 0) ? 'inline-flex' : 'none' }
   } catch(e) { console.warn('assuntos badge exception:', e) }
+}
+
+async function atualizarAssuntosSuporteBadge() {
+  try {
+    // Só tickets de consultores (origem = consultor) por resolver
+    const { count, error } = await sb.from('assuntos_pendentes')
+      .select('id', { count:'exact', head:true })
+      .neq('estado', 'resolvido')
+      .eq('origem', 'consultor')
+    if(error) { console.warn('assuntos suporte badge error:', error.message); return }
+    const badge = document.getElementById('assuntos-sup-badge')
+    if(badge) { badge.textContent = count || 0; badge.style.display = (count > 0) ? 'inline-flex' : 'none' }
+  } catch(e) { console.warn('assuntos suporte badge exception:', e) }
 }
 
 // ═══ TICKETS (embutido via iframe — lógica completa em tickets.html) ═══
