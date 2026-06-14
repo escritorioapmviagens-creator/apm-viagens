@@ -498,15 +498,32 @@ footer {
 }
 .fade-up.in { opacity: 1; transform: translateY(0); }
 
+/* ── MENU MOBILE (hambúrguer) ── */
+#nav-burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;background:none;border:1px solid var(--border);border-radius:6px;cursor:pointer;padding:0 10px}
+#nav-burger span{display:block;height:2px;width:100%;background:var(--dark);border-radius:2px;transition:.25s}
+#nav-burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+#nav-burger.open span:nth-child(2){opacity:0}
+#nav-burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+#nav-mobile-panel{display:none;position:fixed;top:0;right:0;bottom:0;width:78%;max-width:320px;background:var(--white);z-index:300;flex-direction:column;padding:84px 24px 24px;gap:4px;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 32px rgba(0,0,0,.12);overflow-y:auto}
+#nav-mobile-panel.open{transform:translateX(0)}
+#nav-mobile-panel a{padding:14px 12px;font-size:16px;font-weight:600;color:var(--text);text-decoration:none;border-radius:8px;transition:background .15s}
+#nav-mobile-panel a:active{background:var(--light)}
+#nav-mobile-panel .nmp-login{margin-top:12px;border:1px solid var(--border);text-align:center;color:var(--muted)}
+#nav-mobile-panel .nmp-cta{margin-top:8px;background:var(--coral);color:#fff;text-align:center}
+#nav-mobile-overlay{display:none;position:fixed;inset:0;background:rgba(26,26,46,.5);z-index:250;opacity:0;transition:opacity .25s}
+#nav-mobile-overlay.open{opacity:1}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 960px) {
   nav { padding: 0 24px; }
   .nav-links { display: none; }
+  #nav-burger { display: flex; }
+  #nav-mobile-panel { display: flex; }
+  #nav-mobile-overlay.open { display: block; }
   .hero-inner {
   position: relative; z-index: 1;
-  max-width: 1200px; margin: 0 auto; padding: 100px 60px;
-  display: grid; grid-template-columns: 55% 45%;
-  width: 100%;
+  max-width: 1200px; margin: 0 auto; padding: 88px 24px 48px;
+  display: block; width: 100%;
 }
   .hero-panel { display: none; }
   .container { padding: 0 24px; }
@@ -523,6 +540,14 @@ footer {
   footer { flex-direction: column; gap: 10px; text-align: center; padding: 24px; }
   .hero-stats { flex-direction: column; gap: 24px; }
   .hstat { border: none !important; padding: 0 !important; }
+}
+
+@media (max-width: 600px) {
+  .steps-wrap { grid-template-columns: 1fr !important; }
+  .step-item, .step-item:nth-child(odd) { border-right: none !important; border-bottom: 1px solid var(--border); }
+  .hero-inner { padding: 80px 18px 40px; }
+  .comp-row { grid-template-columns: 1fr auto !important; font-size: 13px; }
+  .container { padding: 0 18px; }
 }
 
 .plan-featured .plan-price { color: white; }
@@ -547,7 +572,18 @@ footer {
     <a href="https://escritorioapmviagens-creator.github.io/apm-viagens" style="color:var(--muted);font-size:13px;font-weight:500;text-decoration:none;border:1px solid var(--border);padding:9px 20px;border-radius:4px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--coral)';this.style.color='var(--coral)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Já sou consultor →</a>
     <a href="https://escritorioapmviagens-creator.github.io/apm-viagens/inscricao" class="nav-btn">Efectuar Inscrição</a>
   </div>
+  <button id="nav-burger" aria-label="Menu" onclick="toggleNavMobile()"><span></span><span></span><span></span></button>
 </nav>
+<div id="nav-mobile-panel">
+  <a href="#como-funciona" onclick="fecharNavMobile()">Como funciona</a>
+  <a href="#planos" onclick="fecharNavMobile()">Planos</a>
+  <a href="#faq" onclick="fecharNavMobile()">FAQ</a>
+  <a href="https://escritorioapmviagens-creator.github.io/apm-viagens/destinos-reserva.html">Destinos</a>
+  <a href="https://escritorioapmviagens-creator.github.io/apm-viagens/destinos-reserva.html">Reservar</a>
+  <a href="https://escritorioapmviagens-creator.github.io/apm-viagens" class="nmp-login">Já sou consultor →</a>
+  <a href="https://escritorioapmviagens-creator.github.io/apm-viagens/inscricao" class="nmp-cta">Efectuar Inscrição</a>
+</div>
+<div id="nav-mobile-overlay" onclick="fecharNavMobile()"></div>
 
 <!-- HERO -->
 <section class="hero">
@@ -837,6 +873,21 @@ footer {
 </footer>
 
 <script>
+function toggleNavMobile(){
+  var p=document.getElementById('nav-mobile-panel');
+  var o=document.getElementById('nav-mobile-overlay');
+  var b=document.getElementById('nav-burger');
+  var aberto=p.classList.toggle('open');
+  o.classList.toggle('open',aberto);
+  b.classList.toggle('open',aberto);
+  document.body.style.overflow=aberto?'hidden':'';
+}
+function fecharNavMobile(){
+  document.getElementById('nav-mobile-panel').classList.remove('open');
+  document.getElementById('nav-mobile-overlay').classList.remove('open');
+  document.getElementById('nav-burger').classList.remove('open');
+  document.body.style.overflow='';
+}
 function calc() {
   const r = +document.getElementById('sR').value;
   const v = +document.getElementById('sV').value;
