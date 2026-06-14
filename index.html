@@ -16064,10 +16064,18 @@ body{font-family:'DM Sans',sans-serif;background:transparent}
     .nav-item{padding:13px 1.25rem;font-size:14px}
     /* Cards e grelhas empilham */
     .stat-card,.card{padding:1rem}
-    /* KPIs / grelhas de estatística em 2 colunas */
-    .stats-grid,.kpi-grid,.dash-grid{grid-template-columns:1fr 1fr!important;gap:10px!important}
-    /* Grelhas de 3+ colunas colapsam para 1 */
-    .grid-3,.grid-4,.cols-3,.cols-4{grid-template-columns:1fr!important}
+    /* GRELHAS INLINE: forçar empilhamento em mobile (os estilos inline têm prioridade,
+       por isso usamos seletor de atributo + !important para os apanhar) */
+    [style*="repeat(4"]{grid-template-columns:1fr 1fr!important;gap:10px!important}
+    [style*="repeat(3"],[style*="1fr 1fr 1fr"]{grid-template-columns:1fr 1fr!important;gap:10px!important}
+    [style*="repeat(5"],[style*="repeat(7"],[style*="repeat(12"]{grid-template-columns:1fr 1fr!important;gap:10px!important}
+    [style*="2fr 1fr"],[style*="1fr 2fr"]{grid-template-columns:1fr!important}
+    [style*="grid-template-columns"][id]{gap:10px!important}
+    /* IDs específicos do dashboard e outras secções */
+    #dash-fin-grid,#dash-ind-stats,#dash-consultor-charts,#rec-cards-fluxo,
+    #comissao-cards,#meq-stats,#rv-opcoes,#pr-pv-sinal,#pay-options{grid-template-columns:1fr 1fr!important;gap:10px!important}
+    /* o cartão grande (gráfico) e similares ocupam largura toda */
+    .bar-chart{overflow-x:auto;-webkit-overflow-scrolling:touch}
     /* Tabelas: scroll horizontal suave em vez de cortar */
     .table-wrap,.table-responsive,.tabela-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--radius)}
     table{font-size:12px}
@@ -16082,7 +16090,10 @@ body{font-family:'DM Sans',sans-serif;background:transparent}
   }
   @media(max-width:480px){
     /* KPIs passam a 1 coluna em ecrãs muito pequenos */
-    .stats-grid,.kpi-grid,.dash-grid{grid-template-columns:1fr!important}
+    [style*="repeat(4"],[style*="repeat(3"],[style*="1fr 1fr 1fr"],
+    [style*="repeat(5"],[style*="repeat(7"],[style*="repeat(12"],
+    #dash-fin-grid,#dash-ind-stats,#dash-consultor-charts,#rec-cards-fluxo,
+    #comissao-cards,#meq-stats,#rv-opcoes,#pr-pv-sinal,#pay-options{grid-template-columns:1fr!important}
   }
   </style>
 
