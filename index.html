@@ -417,23 +417,20 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-item" onclick="navTo('recursos',this)"><span class="nav-icon">🧰</span> Central de Recursos</div>
       <div class="nav-item" onclick="navTo('tickets',this)"><span class="nav-icon">🎫</span> Suporte / Tickets <span class="nav-badge" id="tickets-badge" style="display:none">0</span></div>
 
-      <div class="nav-section nav-section-click" data-s="captar" onclick="navTo('captar',null)" title="Ver o fluxo desta fase">1 · Captar</div>
-      <div class="nav-item" onclick="navTo('pedidos-orcamento',this)" id="nav-pedidos-orc"><span class="nav-icon">📋</span> Pedidos de Orçamento <span class="nav-badge" id="pedidos-orc-badge" style="display:none">0</span></div>
-      <div class="nav-item" id="nav-pipeline-item" onclick="navTo('pipeline',this)"><span class="nav-icon">🎯</span> Gestão de Orçamentos <span class="nav-badge" id="pipeline-badge" style="display:none">0</span></div>
-      <div class="nav-item" id="nav-followups-item" onclick="navTo('followups',this)"><span class="nav-icon">⏰</span> Follow-ups <span class="nav-badge" id="followup-badge" style="display:none">0</span></div>
-
-      <div class="nav-section nav-section-click" data-s="vender" onclick="navTo('vender',null)" title="Ver o fluxo desta fase">2 · Vender</div>
-      <div class="nav-item" id="nav-nova-item" onclick="navTo('nova',this)"><span class="nav-icon">＋</span> Nova Reserva</div>
-      <div class="nav-item" id="nav-cst-item" onclick="window.open('cst.html','_blank')"><span class="nav-icon">📝</span> CST / Contrato</div>
-      <div class="nav-item" id="nav-aceites-item" onclick="navTo('aceites',this)"><span class="nav-icon">⏳</span> Contratos Pendentes <span class="nav-badge" id="aceites-badge" style="display:none">0</span></div>
-      <div class="nav-item" id="nav-reservas-item" onclick="navTo('reservas',this)"><span class="nav-icon">✈</span> Reservas</div>
-
-      <div class="nav-section nav-section-click" data-s="acompanhar" onclick="navTo('acompanhar',null)" title="Ver o fluxo desta fase">3 · Acompanhar</div>
-      <div class="nav-item" id="nav-clientes-item" onclick="navTo('clientes',this)"><span class="nav-icon">👥</span> Clientes</div>
-      <div class="nav-item" id="nav-completar-item" onclick="window.open('reserva-complementar.html','_blank')"><span class="nav-icon">🧾</span> Completar Reserva</div>
-      <div class="nav-item" id="nav-lembretes-item" onclick="navTo('lembretes',this)"><span class="nav-icon">🎂</span> Lembretes em Destaque <span class="nav-badge" id="lembretes-badge" style="display:none">0</span></div>
-      <div class="nav-item" id="nav-avaliacoes" style="display:none" onclick="navTo('avaliacoes',this)"><span class="nav-icon">⭐</span> Avaliações</div>
-      <div class="nav-item" id="nav-comissoes-item" onclick="navTo('comissoes',this)"><span class="nav-icon">💶</span> As Minhas Comissões</div>
+      <div class="nav-section" data-s="fluxo">Jornada de venda</div>
+      <div class="nav-item" onclick="navTo('captar',this)" data-fase="captar"><span class="nav-icon">📥</span> 1 · Captar <span class="nav-badge" id="fase-captar-badge" style="display:none">0</span></div>
+      <div class="nav-item" onclick="navTo('vender',this)" data-fase="vender"><span class="nav-icon">🤝</span> 2 · Vender <span class="nav-badge" id="fase-vender-badge" style="display:none">0</span></div>
+      <div class="nav-item" onclick="navTo('acompanhar',this)" data-fase="acompanhar"><span class="nav-icon">📈</span> 3 · Acompanhar <span class="nav-badge" id="fase-acompanhar-badge" style="display:none">0</span></div>
+      <!-- itens ocultos: alvos de navegação usados pelos cards das fases (mantêm os badges internos) -->
+      <div style="display:none">
+        <span id="nav-pedidos-orc"></span>
+        <span class="nav-badge" id="pedidos-orc-badge">0</span>
+        <span class="nav-badge" id="pipeline-badge">0</span>
+        <span class="nav-badge" id="followup-badge">0</span>
+        <span class="nav-badge" id="aceites-badge">0</span>
+        <span class="nav-badge" id="lembretes-badge">0</span>
+        <span id="nav-avaliacoes"></span>
+      </div>
 
       <div class="nav-item" onclick="navTo('minha-equipa',this)" style="margin-top:8px"><span class="nav-icon">👥</span> A Minha Equipa</div>
       <div class="nav-section" data-s="recrutamento">Recrutamento</div>
@@ -2364,7 +2361,7 @@ textarea.finput{resize:vertical;min-height:72px}
             <div style="font-size:.88rem;color:var(--muted);margin-top:6px">Do registo da reserva à confirmação do contrato. Siga os passos por ordem.</div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px" id="vender-cards">
-            <div class="rec-card" onclick="navTo('nova',document.getElementById('nav-nova-item'))">
+            <div class="rec-card" onclick="navTo('nova',null)">
               <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">＋</span></div></div>
               <div class="rec-card-title">Nova Reserva</div>
               <div class="rec-card-desc">Registe uma nova reserva e os respetivos dados.</div>
@@ -2376,13 +2373,13 @@ textarea.finput{resize:vertical;min-height:72px}
               <div class="rec-card-desc">Gere e envie o Contrato de Serviço Turístico ao cliente para aceitação.</div>
               <div class="rec-card-footer"><span class="rec-card-metric" style="opacity:0">—</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
             </div>
-            <div class="rec-card" onclick="navTo('aceites',document.getElementById('nav-aceites-item'))">
+            <div class="rec-card" onclick="navTo('aceites',null)">
               <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">⏳</span></div></div>
               <div class="rec-card-title">Contratos Pendentes</div>
               <div class="rec-card-desc">Acompanhe os contratos enviados a aguardar aceitação do cliente.</div>
               <div class="rec-card-footer"><span class="rec-card-metric" id="vender-aceites-metric" style="opacity:0">—</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
             </div>
-            <div class="rec-card" onclick="navTo('reservas',document.getElementById('nav-reservas-item'))">
+            <div class="rec-card" onclick="navTo('reservas',null)">
               <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">✈</span></div></div>
               <div class="rec-card-title">Reservas</div>
               <div class="rec-card-desc">Veja e faça a gestão de todas as reservas.</div>
@@ -2401,19 +2398,19 @@ textarea.finput{resize:vertical;min-height:72px}
             <div style="font-size:.88rem;color:var(--muted);margin-top:6px">Receba pedidos, trabalhe os orçamentos e faça o acompanhamento dos leads.</div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px">
-            <div class="rec-card" onclick="navTo('pedidos-orcamento',document.getElementById('nav-pedidos-orc'))">
+            <div class="rec-card" onclick="navTo('pedidos-orcamento',null)">
               <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">📋</span></div></div>
               <div class="rec-card-title">Pedidos de Orçamento</div>
               <div class="rec-card-desc">Os pedidos que entram, à espera de serem trabalhados.</div>
               <div class="rec-card-footer"><span class="rec-card-metric" style="background:var(--coral-light);color:var(--coral)">Passo 1</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
             </div>
-            <div class="rec-card" onclick="navTo('pipeline',document.getElementById('nav-pipeline-item'))">
+            <div class="rec-card" onclick="navTo('pipeline',null)">
               <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">🎯</span></div></div>
               <div class="rec-card-title">Gestão de Orçamentos</div>
               <div class="rec-card-desc">Acompanhe os orçamentos no funil, da entrada à conversão.</div>
               <div class="rec-card-footer"><span class="rec-card-metric" style="background:var(--coral-light);color:var(--coral)">Passo 2</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
             </div>
-            <div class="rec-card" onclick="navTo('followups',document.getElementById('nav-followups-item'))">
+            <div class="rec-card" onclick="navTo('followups',null)">
               <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">⏰</span></div></div>
               <div class="rec-card-title">Follow-ups</div>
               <div class="rec-card-desc">Contactos a fazer para não deixar nenhum lead esfriar.</div>
@@ -2438,19 +2435,19 @@ textarea.finput{resize:vertical;min-height:72px}
               <div class="rec-card-desc">Adicione localizador, fornecedor e valores para confirmar a reserva.</div>
               <div class="rec-card-footer"><span class="rec-card-metric" style="background:#E8F5E9;color:#2E9E5B">Passo 1</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
             </div>
-            <div class="rec-card" onclick="navTo('clientes',document.getElementById('nav-clientes-item'))">
+            <div class="rec-card" onclick="navTo('clientes',null)">
               <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">👥</span></div></div>
               <div class="rec-card-title">Clientes</div>
               <div class="rec-card-desc">Histórico e dados dos clientes para um acompanhamento próximo.</div>
               <div class="rec-card-footer"><span class="rec-card-metric" style="background:#E8F5E9;color:#2E9E5B">Passo 2</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
             </div>
-            <div class="rec-card" onclick="navTo('lembretes',document.getElementById('nav-lembretes-item'))">
+            <div class="rec-card" onclick="navTo('lembretes',null)">
               <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">🎂</span></div></div>
               <div class="rec-card-title">Lembretes em Destaque</div>
               <div class="rec-card-desc">Aniversários e datas para reforçar a relação com o cliente.</div>
               <div class="rec-card-footer"><span class="rec-card-metric" style="background:#E8F5E9;color:#2E9E5B">Passo 3</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
             </div>
-            <div class="rec-card" onclick="navTo('comissoes',document.getElementById('nav-comissoes-item'))">
+            <div class="rec-card" onclick="navTo('comissoes',null)">
               <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">💶</span></div></div>
               <div class="rec-card-title">As Minhas Comissões</div>
               <div class="rec-card-desc">Veja o que ganhou com as reservas concretizadas.</div>
@@ -3918,6 +3915,9 @@ function enterApp() {
   atualizarAssuntosBadge()
   atualizarAssuntosSuporteBadge()
   atualizarTicketsBadge()
+  // agregar badges por fase (depois de os internos carregarem)
+  setTimeout(atualizarBadgesFases, 1500)
+  setInterval(atualizarBadgesFases, 30000)
   if(currentPerfil.role === 'admin') atualizarBadgeEliminacoes()
   if(currentPerfil.role !== 'admin') renderDashIndividual()
   checkAlertasClientes()
@@ -15413,6 +15413,28 @@ async function atualizarTicketsBadge(){
     const badge = document.getElementById('tickets-badge')
     if(badge){ badge.textContent = count || 0; badge.style.display = (count>0) ? 'inline-flex' : 'none' }
   }catch(e){}
+}
+
+// Agrega os contadores internos no badge de cada fase da jornada
+function valBadge(id){
+  const el = document.getElementById(id)
+  if(!el) return 0
+  const n = parseInt(el.textContent, 10)
+  return isNaN(n) ? 0 : n
+}
+function setFaseBadge(id, total){
+  const b = document.getElementById(id)
+  if(!b) return
+  b.textContent = total
+  b.style.display = total > 0 ? 'inline-flex' : 'none'
+}
+function atualizarBadgesFases(){
+  // Captar = pedidos de orçamento + follow-ups
+  setFaseBadge('fase-captar-badge', valBadge('pedidos-orc-badge') + valBadge('followup-badge'))
+  // Vender = contratos pendentes
+  setFaseBadge('fase-vender-badge', valBadge('aceites-badge'))
+  // Acompanhar = lembretes em destaque
+  setFaseBadge('fase-acompanhar-badge', valBadge('lembretes-badge'))
 }
 
 // ════════════════════════════════════════════════════════════
