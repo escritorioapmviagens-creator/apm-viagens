@@ -20,13 +20,15 @@
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
   font-family: 'Montserrat', sans-serif;
   color: var(--text);
   background: var(--white);
   line-height: 1.6;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* ── NAV ── */
@@ -520,6 +522,9 @@ footer {
   #nav-burger { display: flex; }
   #nav-mobile-panel { display: flex; }
   #nav-mobile-overlay.open { display: block; }
+  /* rede de segurança: nada ultrapassa a largura do ecrã */
+  .hero, .hero-inner, .container, section, footer { max-width: 100%; overflow-x: hidden; }
+  img { max-width: 100%; height: auto; }
   .hero-inner {
   position: relative; z-index: 1;
   max-width: 1200px; margin: 0 auto; padding: 88px 24px 48px;
@@ -546,6 +551,7 @@ footer {
   .steps-wrap { grid-template-columns: 1fr !important; }
   .step-item, .step-item:nth-child(odd) { border-right: none !important; border-bottom: 1px solid var(--border); }
   .hero-inner { padding: 80px 18px 40px; }
+  .hero-title { font-size: clamp(30px, 8vw, 42px) !important; }
   .comp-row { grid-template-columns: 1fr auto !important; font-size: 13px; }
   .container { padding: 0 18px; }
 }
