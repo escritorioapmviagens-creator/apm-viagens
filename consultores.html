@@ -1036,7 +1036,9 @@ let crabStarted = false;
 function crabOpen(){
   document.getElementById('crab-launch').classList.add('hide');
   document.getElementById('crab-win').classList.add('open');
-  if(!crabStarted){ crabStarted = true; crabShow('menu'); }
+  if(!crabStarted){ crabStarted = true; crabShow('menu', true); }
+  // garantir que a primeira mensagem aparece a partir do topo
+  setTimeout(() => { document.getElementById('crab-body').scrollTop = 0; }, 60);
 }
 function crabClose(){
   document.getElementById('crab-win').classList.remove('open');
@@ -1050,7 +1052,7 @@ function crabAddMsg(text, who){
   body.appendChild(m);
   body.scrollTop = body.scrollHeight;
 }
-function crabShow(key){
+function crabShow(key, isFirst){
   const t = crabTopics[key];
   if(!t) return;
   crabAddMsg(t.intro, 'bot');
@@ -1065,7 +1067,8 @@ function crabShow(key){
     opts.appendChild(b);
   });
   body.appendChild(opts);
-  body.scrollTop = body.scrollHeight;
+  // na abertura inicial, fica no topo; nas navegações seguintes, rola para ver o novo conteúdo
+  if(isFirst){ body.scrollTop = 0; } else { body.scrollTop = body.scrollHeight; }
 }
 function crabChoose(label, target){
   // remover os botões antigos (mantém o histórico de mensagens)
