@@ -942,5 +942,144 @@ const refParam = new URLSearchParams(location.search).get('ref') || '';
 const navDestinos = document.getElementById('nav-destinos');
 if(navDestinos && refParam) navDestinos.href = 'https://escritorioapmviagens-creator.github.io/apm-viagens/destinos.html?ref=' + refParam;
 </script>
+
+<!-- ═══════════ CHATBOT CRUSTÁCEO ═══════════ -->
+<style>
+#crab-launch{position:fixed;bottom:22px;right:22px;z-index:900;display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--border);border-radius:999px;padding:8px 18px 8px 8px;box-shadow:0 8px 28px rgba(26,26,46,.18);cursor:pointer;font-family:'Montserrat',sans-serif;transition:transform .2s,box-shadow .2s;animation:crabIn .5s ease}
+#crab-launch:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(26,26,46,.24)}
+@keyframes crabIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+#crab-launch img{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#fff;border:2px solid var(--coral-light)}
+#crab-launch .cl-txt{display:flex;flex-direction:column;line-height:1.15}
+#crab-launch .cl-txt b{font-size:14px;color:var(--dark);font-weight:700}
+#crab-launch .cl-txt span{font-size:11px;color:var(--muted)}
+#crab-launch .cl-pulse{position:absolute;top:6px;right:14px;width:10px;height:10px;background:#2ecc71;border-radius:50%;border:2px solid #fff}
+#crab-launch.hide{display:none}
+
+#crab-win{position:fixed;bottom:22px;right:22px;z-index:901;width:380px;max-width:calc(100vw - 24px);height:560px;max-height:calc(100vh - 40px);background:var(--white);border-radius:18px;box-shadow:0 20px 60px rgba(26,26,46,.3);display:none;flex-direction:column;overflow:hidden;font-family:'Montserrat',sans-serif}
+#crab-win.open{display:flex;animation:crabIn .3s ease}
+.crab-head{background:var(--coral);color:#fff;padding:16px 18px;display:flex;align-items:center;gap:12px}
+.crab-head img{width:46px;height:46px;border-radius:50%;object-fit:cover;background:#fff;border:2px solid rgba(255,255,255,.5)}
+.crab-head .ch-info{flex:1}
+.crab-head .ch-info b{display:block;font-size:15px;font-weight:700}
+.crab-head .ch-info span{font-size:11.5px;opacity:.9}
+.crab-head .ch-close{background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:17px;cursor:pointer;line-height:1}
+.crab-body{flex:1;overflow-y:auto;padding:18px;background:#faf9fb;display:flex;flex-direction:column;gap:12px}
+.crab-msg{max-width:85%;padding:12px 15px;border-radius:14px;font-size:13.5px;line-height:1.55;white-space:pre-wrap}
+.crab-msg.bot{background:#fff;border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px;align-self:flex-start}
+.crab-msg.user{background:var(--coral);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.crab-opts{display:flex;flex-direction:column;gap:8px;margin-top:2px}
+.crab-opt{background:#fff;border:1.5px solid var(--coral-light);color:var(--coral);font-weight:600;font-size:13px;padding:11px 14px;border-radius:10px;cursor:pointer;text-align:left;transition:.15s;font-family:inherit}
+.crab-opt:hover{background:var(--coral-light);border-color:var(--coral)}
+.crab-opt.cta{background:var(--coral);color:#fff;text-align:center;border-color:var(--coral)}
+.crab-opt.cta:hover{background:var(--coral-dark)}
+.crab-opt.back{border-color:var(--border);color:var(--muted);font-weight:500}
+.crab-foot{padding:9px 14px;text-align:center;font-size:10.5px;color:var(--muted);border-top:1px solid var(--border);background:#fff}
+</style>
+
+<button id="crab-launch" onclick="crabOpen()" aria-label="Falar com o Crustáceo">
+  <img src="https://escritorioapmviagens-creator.github.io/apm-viagens/crustaceo.jpg" alt="Crustáceo" onerror="this.style.display='none'">
+  <span class="cl-pulse"></span>
+  <span class="cl-txt"><b>Fala comigo!</b><span>Tira as tuas dúvidas 🦀</span></span>
+</button>
+
+<div id="crab-win" role="dialog" aria-label="Assistente Crustáceo">
+  <div class="crab-head">
+    <img src="https://escritorioapmviagens-creator.github.io/apm-viagens/crustaceo.jpg" alt="Crustáceo" onerror="this.style.display='none'">
+    <div class="ch-info"><b>Crustáceo</b><span>Assistente APM Viagens</span></div>
+    <button class="ch-close" onclick="crabClose()" aria-label="Fechar">×</button>
+  </div>
+  <div class="crab-body" id="crab-body"></div>
+  <div class="crab-foot">APM Viagens · RNAVT 12286</div>
+</div>
+
+<script>
+const CRAB_INSCR = 'https://escritorioapmviagens-creator.github.io/apm-viagens/inscricao';
+const crabTopics = {
+  menu: {
+    intro: 'Olá! 🦀 Sou o Crustáceo, o assistente da APM Viagens. Estou aqui para te explicar como podes construir o teu negócio nas viagens connosco. Sobre o que queres saber?',
+    options: [
+      ['💼 O que é a APM Viagens?', 'apm'],
+      ['🧭 Como funciona ser consultor?', 'consultor'],
+      ['💰 Quanto posso ganhar?', 'ganhar'],
+      ['🛠️ Que ferramentas tenho?', 'ferramentas'],
+      ['🏖️ E o autoconsumo?', 'autoconsumo'],
+      ['📋 Como me inscrevo?', 'inscrever']
+    ]
+  },
+  apm: {
+    intro: 'A APM Viagens (Andar nas Praias do Mundo, Lda.) é uma agência de viagens portuguesa legalmente constituída, com RNAVT 12286.\n\nFuncionamos através de uma rede de consultores independentes: pessoas como tu que vendem viagens com o apoio total da agência — sem precisares de loja, sem stock e sem complicações burocráticas. A APM trata da parte legal, dos operadores e da plataforma; tu tratas de vender e acompanhar os teus clientes.',
+    options: [['🧭 Como funciona ser consultor?', 'consultor'], ['💰 Quanto posso ganhar?', 'ganhar'], ['↩ Voltar ao início', 'menu']]
+  },
+  consultor: {
+    intro: 'Como consultor APM trabalhas de onde quiseres e à tua maneira:\n\n• Vendes viagens dos principais operadores, com a APM a dar-te o suporte e a estrutura legal.\n• Tens uma plataforma própria para gerir tudo — pedidos, orçamentos, reservas, contratos e clientes.\n• Não tens horários nem chefe: defines o teu ritmo.\n• Tens formação e acompanhamento para começares mesmo sem experiência.\n\nÉ ideal para quem quer um part-time flexível ou para construir um negócio a sério nas viagens.',
+    options: [['💰 Quanto posso ganhar?', 'ganhar'], ['🛠️ Que ferramentas tenho?', 'ferramentas'], ['↩ Voltar ao início', 'menu']]
+  },
+  ganhar: {
+    intro: 'Ganhas de duas formas: com as tuas vendas e com o teu próprio consumo.\n\n💼 NAS VENDAS: recebes 80% da margem negociada em cada reserva que fazes. Quanto mais vendes, mais ganhas — sem limite. A APM fica só com uma pequena parte para sustentar o suporte e a estrutura.\n\nNão há tetos: o teu rendimento depende de ti. Há consultores a fazer disto um part-time e outros a construir um rendimento a tempo inteiro.',
+    options: [['🏖️ E o autoconsumo?', 'autoconsumo'], ['🛠️ Que ferramentas tenho?', 'ferramentas'], ['📋 Como me inscrevo?', 'inscrever'], ['↩ Voltar ao início', 'menu']]
+  },
+  autoconsumo: {
+    intro: '🏖️ AUTOCONSUMO — talvez a melhor parte!\n\nComo consultor, as TUAS próprias viagens passam a ser feitas ao preço de operador. Ou seja, viajas com a margem a teu favor em vez de a pagares a uma agência.\n\nNa prática: a viagem que farias na mesma fica-te mais barata, e a "comissão" que normalmente ficaria para a agência fica para ti. Muitas pessoas aderem só por isto — e depois acabam a vender também aos amigos e família.',
+    options: [['💰 E quanto ganho nas vendas?', 'ganhar'], ['📋 Como me inscrevo?', 'inscrever'], ['↩ Voltar ao início', 'menu']]
+  },
+  ferramentas: {
+    intro: 'Esta é a grande mais-valia da APM: não estás sozinho. Tens uma plataforma completa que faz o trabalho pesado por ti:\n\n• Gestão de pedidos de orçamento e seguimento de leads\n• Criação de propostas e contratos (CST) prontos a enviar ao cliente\n• Gestão de reservas, clientes e comissões num só sítio\n• Acesso aos operadores e ferramentas de pesquisa\n• Materiais de marketing, blog e apoio à divulgação\n• Formação e suporte sempre que precisas\n\nTudo pensado para fechares mais reservas em menos passos — basta-te focar no cliente.',
+    options: [['💰 Quanto posso ganhar?', 'ganhar'], ['📋 Como me inscrevo?', 'inscrever'], ['↩ Voltar ao início', 'menu']]
+  },
+  inscrever: {
+    intro: 'Inscrever-te é simples e rápido. Carregas no botão abaixo, preenches os teus dados e a equipa da APM entra em contacto para te dar as boas-vindas e a formação inicial.\n\nA partir daí, tens acesso à plataforma e podes começar a vender (e a poupar nas tuas próprias viagens) desde o primeiro dia. 🦀',
+    options: [['✈️ Quero inscrever-me!', 'GO_INSCR'], ['💰 Rever quanto posso ganhar', 'ganhar'], ['↩ Voltar ao início', 'menu']]
+  }
+};
+
+let crabStarted = false;
+function crabOpen(){
+  document.getElementById('crab-launch').classList.add('hide');
+  document.getElementById('crab-win').classList.add('open');
+  if(!crabStarted){ crabStarted = true; crabShow('menu'); }
+}
+function crabClose(){
+  document.getElementById('crab-win').classList.remove('open');
+  document.getElementById('crab-launch').classList.remove('hide');
+}
+function crabAddMsg(text, who){
+  const body = document.getElementById('crab-body');
+  const m = document.createElement('div');
+  m.className = 'crab-msg ' + who;
+  m.textContent = text;
+  body.appendChild(m);
+  body.scrollTop = body.scrollHeight;
+}
+function crabShow(key){
+  const t = crabTopics[key];
+  if(!t) return;
+  crabAddMsg(t.intro, 'bot');
+  const body = document.getElementById('crab-body');
+  const opts = document.createElement('div');
+  opts.className = 'crab-opts';
+  t.options.forEach(([label, target]) => {
+    const b = document.createElement('button');
+    b.className = 'crab-opt' + (target==='GO_INSCR'?' cta':'') + (label.startsWith('↩')?' back':'');
+    b.textContent = label;
+    b.onclick = () => crabChoose(label, target);
+    opts.appendChild(b);
+  });
+  body.appendChild(opts);
+  body.scrollTop = body.scrollHeight;
+}
+function crabChoose(label, target){
+  // remover os botões antigos (mantém o histórico de mensagens)
+  const body = document.getElementById('crab-body');
+  const allOpts = body.querySelectorAll('.crab-opts');
+  if(allOpts.length) allOpts[allOpts.length-1].remove();
+  crabAddMsg(label.replace(/^[^\wÀ-ú]+\s*/,''), 'user');
+  if(target === 'GO_INSCR'){
+    const ref = new URLSearchParams(location.search).get('ref') || '';
+    window.location.href = CRAB_INSCR + (ref ? '?ref='+ref : '');
+    return;
+  }
+  setTimeout(() => crabShow(target), 250);
+}
+</script>
 </body>
 </html>
