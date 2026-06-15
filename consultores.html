@@ -996,39 +996,44 @@ if(navDestinos && refParam) navDestinos.href = 'https://escritorioapmviagens-cre
 const CRAB_INSCR = 'https://escritorioapmviagens-creator.github.io/apm-viagens/inscricao';
 const crabTopics = {
   menu: {
-    intro: 'Olá! 🦀 Sou o Crustáceo, o assistente da APM Viagens. Posso explicar como funciona angariar clientes para a agência e receber comissões por isso. Sobre o que gostaria de saber?',
+    intro: 'Olá! 🦀 Sou o Crustáceo, o assistente da APM Viagens. Posso explicar como funciona ser consultor, a formação, quanto se ganha e que ferramentas vai ter. Sobre o que gostaria de saber?',
     options: [
       ['💼 O que é a APM Viagens?', 'apm'],
       ['🧭 Como funciona ser consultor?', 'consultor'],
-      ['💰 Como ganho comissões?', 'ganhar'],
+      ['🎓 Tenho formação?', 'formacao'],
+      ['💰 Quanto ganho?', 'ganhar'],
       ['🛠️ Que ferramentas tenho?', 'ferramentas'],
       ['🏖️ E o autoconsumo?', 'autoconsumo'],
       ['📋 Como me inscrevo?', 'inscrever']
     ]
   },
   apm: {
-    intro: 'A APM Viagens (Andar nas Praias do Mundo, Lda.) é uma agência de viagens portuguesa legalmente constituída, com RNAVT 12286.\n\nÉ a agência que efetua as reservas e fica responsável por elas — os clientes são da APM. O papel do consultor é angariar novos clientes para a agência e acompanhá-los, recebendo comissões por essa angariação. A APM trata da parte legal, dos operadores e da plataforma; o consultor foca-se em trazer e cuidar dos clientes.',
-    options: [['🧭 Como funciona ser consultor?', 'consultor'], ['💰 Como ganho comissões?', 'ganhar'], ['↩ Voltar ao início', 'menu']]
+    intro: 'A APM Viagens (Andar nas Praias do Mundo, Lda.) é uma agência de viagens portuguesa, com RNAVT 12286.\n\nDá a estrutura e o apoio para que qualquer pessoa possa trabalhar no mundo das viagens como consultor — sem precisar de loja, sem horários fixos e sem complicações. A APM trata da retaguarda (operadores, estrutura e plataforma); o consultor trata de angariar e acompanhar clientes, recebendo comissões por isso.',
+    options: [['🧭 Como funciona ser consultor?', 'consultor'], ['💰 Quanto ganho?', 'ganhar'], ['↩ Voltar ao início', 'menu']]
   },
   consultor: {
-    intro: 'O consultor APM angaria clientes para a agência e acompanha-os ao longo do processo, com todo o apoio da APM:\n\n• Apresenta as viagens dos principais operadores e angaria clientes para a agência.\n• A reserva é efetuada pela APM, que é a entidade responsável; o consultor recebe comissão por cada cliente que traz.\n• Tem uma plataforma própria para gerir pedidos, orçamentos, propostas e o acompanhamento dos clientes.\n• Trabalha de onde quiser e no seu ritmo, sem horários nem chefe.\n• Tem formação e acompanhamento, mesmo para quem começa sem experiência.\n\nÉ ideal para quem quer uma atividade flexível ou construir uma fonte de rendimento nas viagens.',
-    options: [['💰 Como ganho comissões?', 'ganhar'], ['🛠️ Que ferramentas tenho?', 'ferramentas'], ['↩ Voltar ao início', 'menu']]
+    intro: 'Ser consultor APM é trabalhar nas viagens de forma flexível e com apoio:\n\n• Trabalha de onde quiser e no seu próprio ritmo — sem horários nem chefe.\n• Angaria clientes e acompanha-os no processo, com a APM a dar todo o suporte por trás.\n• Tem acesso aos principais operadores e a uma plataforma própria para gerir tudo.\n• Pode fazê-lo como atividade complementar ou como ocupação a tempo inteiro.\n• Não precisa de experiência prévia: a formação e o acompanhamento estão incluídos.\n\nÉ uma forma simples de entrar no setor das viagens com uma estrutura já montada.',
+    options: [['🎓 Tenho formação?', 'formacao'], ['💰 Quanto ganho?', 'ganhar'], ['🛠️ Que ferramentas tenho?', 'ferramentas'], ['↩ Voltar ao início', 'menu']]
+  },
+  formacao: {
+    intro: '🎓 Sim, a formação está incluída.\n\nNão é preciso ter experiência no setor para começar. A APM dá formação inicial e acompanhamento contínuo, para aprender a usar a plataforma, a lidar com os operadores e a acompanhar os clientes com confiança.\n\nHá sempre apoio disponível para tirar dúvidas ao longo do caminho — nunca se está sozinho.',
+    options: [['🧭 Como funciona ser consultor?', 'consultor'], ['🛠️ Que ferramentas tenho?', 'ferramentas'], ['📋 Como me inscrevo?', 'inscrever'], ['↩ Voltar ao início', 'menu']]
   },
   ganhar: {
-    intro: 'O consultor recebe uma comissão por cada cliente que angaria para a agência.\n\n💼 A comissão corresponde a 80% da margem negociada em cada reserva concretizada através de um cliente angariado. A APM fica com a parte restante, que sustenta o suporte, a estrutura e a responsabilidade legal da agência.\n\nNão há limites: quanto mais clientes angariar, maior o rendimento. Há quem o faça como atividade complementar e quem construa com isto um rendimento a tempo inteiro.',
-    options: [['🏖️ E o autoconsumo?', 'autoconsumo'], ['🛠️ Que ferramentas tenho?', 'ferramentas'], ['📋 Como me inscrevo?', 'inscrever'], ['↩ Voltar ao início', 'menu']]
+    intro: '💰 O consultor recebe comissões pelos clientes que angaria.\n\nA comissão corresponde a 80% da margem negociada em cada reserva concretizada. Quanto mais clientes angariar, maior o rendimento — não há limites.\n\nHá quem o faça como complemento ao rendimento e quem construa com isto uma ocupação a tempo inteiro. O ritmo é definido por cada um.',
+    options: [['🏖️ E o autoconsumo?', 'autoconsumo'], ['🎓 Tenho formação?', 'formacao'], ['📋 Como me inscrevo?', 'inscrever'], ['↩ Voltar ao início', 'menu']]
   },
   autoconsumo: {
-    intro: '🏖️ AUTOCONSUMO — uma das grandes vantagens!\n\nAo ser consultor, as suas próprias viagens passam a contar como angariação para a agência. Na prática, a margem que normalmente ficaria para a agência reverte a seu favor em forma de comissão.\n\nResultado: a viagem que faria na mesma fica-lhe mais vantajosa. Muitas pessoas aderem por esta razão — e acabam depois por angariar também amigos e família como clientes da agência.',
-    options: [['💰 E as comissões das angariações?', 'ganhar'], ['📋 Como me inscrevo?', 'inscrever'], ['↩ Voltar ao início', 'menu']]
+    intro: '🏖️ AUTOCONSUMO — uma das grandes vantagens!\n\nAs próprias viagens do consultor passam a ser muito mais vantajosas: a margem que normalmente ficaria para a agência reverte a seu favor em forma de comissão.\n\nNa prática, a viagem que faria na mesma fica-lhe mais barata. Muitas pessoas começam só por esta razão — e acabam depois por angariar também amigos e família.',
+    options: [['💰 Quanto ganho?', 'ganhar'], ['📋 Como me inscrevo?', 'inscrever'], ['↩ Voltar ao início', 'menu']]
   },
   ferramentas: {
-    intro: 'Esta é a grande mais-valia da APM: o consultor não está sozinho. A plataforma faz o trabalho pesado:\n\n• Gestão de pedidos de orçamento e seguimento dos clientes angariados\n• Criação de propostas e contratos (CST) prontos a apresentar\n• Gestão de reservas, clientes da agência e comissões num só sítio\n• Acesso aos operadores e ferramentas de pesquisa\n• Materiais de marketing, blog e apoio à divulgação\n• Formação e suporte sempre que precisar\n\nTudo pensado para que o consultor se concentre em angariar e acompanhar clientes, com o processo simplificado ao máximo.',
-    options: [['💰 Como ganho comissões?', 'ganhar'], ['📋 Como me inscrevo?', 'inscrever'], ['↩ Voltar ao início', 'menu']]
+    intro: 'A grande mais-valia da APM é a plataforma — faz o trabalho pesado e deixa o consultor focado nos clientes:\n\n• Gestão de pedidos de orçamento e seguimento dos clientes\n• Criação de propostas e contratos prontos a apresentar\n• Gestão de reservas, clientes e comissões num só sítio\n• Acesso aos operadores e ferramentas de pesquisa\n• Materiais de marketing, blog e apoio à divulgação\n• Formação e suporte sempre disponíveis\n\nTudo num só sistema, simples de usar e pensado para poupar tempo.',
+    options: [['🎓 Tenho formação?', 'formacao'], ['💰 Quanto ganho?', 'ganhar'], ['📋 Como me inscrevo?', 'inscrever'], ['↩ Voltar ao início', 'menu']]
   },
   inscrever: {
-    intro: 'Inscrever-se é simples e rápido. Basta carregar no botão abaixo e preencher os dados — a equipa da APM entra em contacto para dar as boas-vindas e a formação inicial.\n\nA partir daí, fica com acesso à plataforma e pode começar a angariar clientes (e a aproveitar o autoconsumo nas suas próprias viagens). 🦀',
-    options: [['✈️ Quero inscrever-me!', 'GO_INSCR'], ['💰 Rever como ganho comissões', 'ganhar'], ['↩ Voltar ao início', 'menu']]
+    intro: 'Inscrever-se é simples e rápido. Basta carregar no botão abaixo e preencher os dados — a equipa da APM entra em contacto para dar as boas-vindas e a formação inicial.\n\nA partir daí, fica com acesso à plataforma e ao apoio necessário para começar. 🦀',
+    options: [['✈️ Quero inscrever-me!', 'GO_INSCR'], ['💰 Rever quanto ganho', 'ganhar'], ['🎓 E a formação?', 'formacao'], ['↩ Voltar ao início', 'menu']]
   }
 };
 
@@ -1071,7 +1076,9 @@ function crabShow(key, isFirst){
   if(isFirst){
     body.scrollTop = 0;
   } else {
-    requestAnimationFrame(() => { body.scrollTop = msg.offsetTop - 12; });
+    requestAnimationFrame(() => {
+      msg.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
   }
 }
 function crabChoose(label, target){
