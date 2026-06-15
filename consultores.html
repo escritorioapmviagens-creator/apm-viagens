@@ -1050,13 +1050,13 @@ function crabAddMsg(text, who){
   m.className = 'crab-msg ' + who;
   m.textContent = text;
   body.appendChild(m);
-  body.scrollTop = body.scrollHeight;
+  return m;
 }
 function crabShow(key, isFirst){
   const t = crabTopics[key];
   if(!t) return;
-  crabAddMsg(t.intro, 'bot');
   const body = document.getElementById('crab-body');
+  const msg = crabAddMsg(t.intro, 'bot');
   const opts = document.createElement('div');
   opts.className = 'crab-opts';
   t.options.forEach(([label, target]) => {
@@ -1067,8 +1067,12 @@ function crabShow(key, isFirst){
     opts.appendChild(b);
   });
   body.appendChild(opts);
-  // na abertura inicial, fica no topo; nas navegações seguintes, rola para ver o novo conteúdo
-  if(isFirst){ body.scrollTop = 0; } else { body.scrollTop = body.scrollHeight; }
+  // alinhar o topo da nova mensagem ao topo da janela, para se ler do início
+  if(isFirst){
+    body.scrollTop = 0;
+  } else {
+    requestAnimationFrame(() => { body.scrollTop = msg.offsetTop - 12; });
+  }
 }
 function crabChoose(label, target){
   // remover os botões antigos (mantém o histórico de mensagens)
