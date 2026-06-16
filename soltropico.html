@@ -3,398 +3,946 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Soltropico · Destinos por País | APM Viagens</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Soltropico — Motor de Reservas APM Viagens</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F8F9FC;--surface:#fff;--muted:#6B7280;--border:#E5E7EB;--radius:16px;--radius-sm:12px;--shadow:0 1px 3px rgba(0,0,0,0.05);--shadow-md:0 4px 12px rgba(0,0,0,0.08)}
+:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.07);--radius:12px;--radius-sm:8px;--shadow:0 2px 8px rgba(0,0,0,0.06)}
 body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:var(--bg);min-height:100vh}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.topbar img{height:38px;object-fit:contain}
-.topbar-brand{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600}
-.topbar-sub{font-size:11px;color:var(--muted)}
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.consultor-chip{background:var(--bg);border:1px solid var(--border);border-radius:40px;padding:5px 12px;font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px}
-.btn-back{background:transparent;border:1px solid var(--border);color:var(--navy);padding:6px 14px;border-radius:40px;font-size:12px;font-weight:500;cursor:pointer;transition:.2s}
-.btn-back:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
-.container{max-width:1280px;margin:0 auto;padding:24px 20px 60px}
-
-.stats-grid{display:flex;gap:16px;margin-bottom:32px;flex-wrap:wrap}
-.stat-card{background:var(--surface);border-radius:var(--radius-sm);padding:20px 24px;flex:1;min-width:140px;border:1px solid var(--border);box-shadow:var(--shadow);transition:all .2s}
-.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
-.stat-value{font-family:'Poppins',sans-serif;font-size:32px;font-weight:700;color:var(--navy);line-height:1.2}
-.stat-label{font-size:13px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:6px}
-.stat-icon{font-size:18px}
-
-.search-bar{background:var(--surface);border-radius:var(--radius-sm);padding:14px 20px;margin-bottom:32px;border:1px solid var(--border);display:flex;gap:12px;align-items:center}
-.search-icon{font-size:18px;color:var(--muted)}
-.search-input{flex:1;padding:10px 0;border:none;outline:none;font-size:14px;font-family:'Inter';background:transparent}
-.search-input::placeholder{color:var(--muted)}
-.search-clear{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px 8px;border-radius:30px}
-.search-clear:hover{color:var(--coral)}
-.search-info{font-size:12px;color:var(--blue);background:var(--bg);padding:4px 12px;border-radius:30px}
-
-.continent-section{margin-bottom:48px}
-.continent-header{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
-.continent-icon{font-size:24px}
-.continent-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:600;color:var(--navy)}
-.continent-count{font-size:12px;color:var(--muted);background:var(--bg);padding:3px 10px;border-radius:30px}
-.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.country-card{background:var(--surface);border-radius:var(--radius-sm);padding:16px 18px;cursor:pointer;transition:all .2s;border:1px solid var(--border);display:flex;align-items:center;gap:12px}
-.country-card:hover{transform:translateY(-2px);border-color:var(--blue);box-shadow:var(--shadow-md);background:var(--bg)}
-.country-flag{font-size:32px}
-.country-name{font-weight:600;font-size:16px;flex:1;color:var(--navy)}
-.country-badge{background:var(--blue);color:#fff;padding:4px 12px;border-radius:30px;font-size:12px;font-weight:500}
-.country-products{grid-column:1/-1;background:var(--surface);border-radius:var(--radius-sm);padding:20px;margin-top:8px;border:1px solid var(--border);display:none}
-.country-products.show{display:block}
-.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
-.product-card{background:var(--bg);border-radius:10px;padding:12px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s;border:1px solid var(--border)}
-.product-card:hover{transform:translateX(4px);border-color:var(--blue);box-shadow:var(--shadow-md);background:var(--surface)}
-.product-img{width:55px;height:55px;border-radius:8px;background:linear-gradient(135deg,#E5E7EB,#F3F4F6);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden}
+header{background:var(--surface);border-bottom:3px solid var(--coral);padding:14px 28px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);flex-wrap:wrap}
+header img{height:44px;object-fit:contain}
+header h1{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700}
+header span{font-size:12px;color:var(--muted)}
+.container{max-width:1200px;margin:0 auto;padding:28px 20px 60px}
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:6px;box-shadow:var(--shadow);margin-bottom:24px;flex-wrap:wrap}
+.tab{flex:1;min-width:140px;padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s;text-align:center}
+.tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,91,219,0.3)}
+.tab:hover:not(.active){background:var(--bg);color:var(--navy)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
+.card-title{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:16px;color:var(--navy);display:flex;align-items:center;gap:8px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.form-group input,.form-group select{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;transition:border-color .15s;background:#fff}
+.form-group input:focus,.form-group select:focus{border-color:var(--blue)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .18s}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#3251c4}
+.btn-coral{background:var(--coral);color:#fff}.btn-coral:hover{background:#d02f4e}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--navy)}.btn-outline:hover{background:var(--bg)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.status-bar{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;margin-bottom:16px;display:none}
+.status-bar.show{display:block}
+.status-bar.loading{background:#EEF2FF;color:#3251c4;border:1px solid #c7d2fe}
+.status-bar.ok{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
+.status-bar.err{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2}
+.section-title{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;margin:24px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--blue)}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.product-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.product-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.12);transform:translateY(-2px);border-color:var(--blue)}
+.product-img{width:100%;height:130px;object-fit:cover;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:36px}
 .product-img img{width:100%;height:100%;object-fit:cover}
-.product-info{flex:1;min-width:0}
-.product-name{font-weight:600;font-size:13px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.product-code{font-size:10px;color:var(--muted);margin-bottom:4px}
-.product-price{font-size:15px;font-weight:700;color:var(--coral)}
-.product-price small{font-size:10px;font-weight:400;color:var(--muted)}
-.empty-message{text-align:center;padding:30px;color:var(--muted);font-size:13px}
-.skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.skel-card{background:var(--surface);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:12px;border:1px solid var(--border)}
-.skel-flag{width:36px;height:36px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:50%;animation:sh 1.3s infinite}
-.skel-text{flex:1;height:18px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:8px;animation:sh 1.3s infinite}
-.skel-badge{width:50px;height:28px;background:linear-gradient(100deg,#F3F4F6 30%,#E5E7EB 50%,#F3F4F6 70%);background-size:200%;border-radius:20px;animation:sh 1.3s infinite}
-@keyframes sh{to{background-position:-200% 0}}
-.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
-.empty-state .ico{font-size:48px;margin-bottom:12px;opacity:0.5}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:10px 18px;border-radius:40px;font-size:13px;font-weight:500;box-shadow:var(--shadow-md);z-index:200;transition:transform .3s}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.toast.ok{background:#10B981}.toast.err{background:var(--coral)}
-.highlight{background-color:#FEF3C7;color:#D97706;font-weight:500}
+.product-info{padding:12px}
+.product-name{font-weight:700;font-size:14px;margin-bottom:4px}
+.product-meta{font-size:12px;color:var(--muted)}
+.product-price{font-size:17px;font-weight:700;color:var(--coral);margin:6px 0}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;margin:2px}
+.badge-dyn{background:#EEF2FF;color:#3B5BDB}.badge-sta{background:#F3E5F5;color:#6A1B9A}
+.badge-ok{background:#E8F5E9;color:#2E7D32}.badge-wl{background:#FFF3E0;color:#E65100}
+.badge-flight{background:#E8F5E9;color:#2E7D32}
+.log-panel{background:#1e1e2e;color:#a6e3a1;font-family:monospace;font-size:12px;padding:16px;border-radius:8px;max-height:400px;overflow-y:auto;white-space:pre-wrap}
+.log-entry{margin:3px 0;padding:3px 0;border-bottom:1px solid #334155}
+.log-error{color:#f87171}.log-success{color:#4ade80}.log-info{color:#60a5fa}.log-warn{color:#fbbf24}
+.xml-block{background:#1e1e2e;color:#cdd6f4;font-family:monospace;font-size:11px;padding:14px;border-radius:8px;overflow-x:auto;max-height:350px;overflow-y:auto;white-space:pre-wrap;margin-top:8px}
+.steps{display:flex;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.step{flex:1;padding:10px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--muted);border-right:1px solid var(--border)}
+.step:last-child{border-right:none}.step.done{background:#EEF2FF;color:var(--blue)}.step.active{background:var(--blue);color:#fff}
+.step-num{display:block;font-size:16px;font-weight:700}
+.room-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.pax-row{background:var(--bg);border-radius:var(--radius-sm);padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:8px}
+.pax-row-title{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;grid-column:1/-1;margin-bottom:4px}
+.res-success{background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:1.5px solid #A5D6A7;border-radius:var(--radius);padding:24px;text-align:center}
+.res-number{font-family:'Poppins',sans-serif;font-size:40px;font-weight:700;color:#2E7D32}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader{display:inline-block;width:13px;height:13px;border:2px solid rgba(59,91,219,.3);border-top-color:#3B5BDB;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+.hotel-card{background:var(--bg);border-radius:8px;padding:15px;margin-bottom:12px;border:2px solid transparent;transition:all .2s;cursor:pointer}
+.hotel-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.hotel-card.selected{border-color:var(--blue);background:#EEF2FF}
+.hotel-name{font-weight:700;font-size:16px;margin-bottom:5px}
+.hotel-rating{color:#f5a623;margin-left:5px;font-size:14px}
+.hotel-price{font-size:18px;font-weight:700;color:var(--coral);margin:8px 0}
+.hotel-address{font-size:12px;color:var(--muted);margin-bottom:8px}
+.hotel-image{width:80px;height:80px;object-fit:cover;border-radius:8px;margin-right:12px}
+.hotel-selectors{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.hotel-selectors select{padding:6px 10px;border-radius:6px;border:1.5px solid var(--border);font-size:12px}
 </style>
 </head>
 <body>
-<div class="topbar">
+<div id="treino-banner" style="display:none;background:#fef3c7;color:#92660b;text-align:center;padding:10px 16px;font-weight:700;font-size:13px;font-family:sans-serif;border-bottom:2px solid #f59e0b">🎓 MODO TREINO — pode pesquisar e simular livremente. As reservas NÃO são efetuadas.</div>
+<header>
   <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM">
-  <div><div class="topbar-brand">Soltropico · Destinos</div><div class="topbar-sub">APM Viagens · Pacotes Dinâmicos</div></div>
-  <div class="topbar-right">
-    <div class="consultor-chip" id="consultor-chip" style="display:none">👤 <span id="consultor-nome"></span></div>
-    <button class="btn-back" onclick="location.reload()">⟳ Atualizar</button>
-  </div>
-</div>
-
+  <div><h1 id="solt-title">Soltropico — Motor de Reservas</h1><span id="solt-sub">Integração Optigest SOAP · APM Viagens</span></div>
+</header>
 <div class="container">
-  <div class="stats-grid">
-    <div class="stat-card"><div class="stat-value" id="total-count">0</div><div class="stat-label"><span class="stat-icon">✈️🏨</span> Pacotes</div></div>
-    <div class="stat-card"><div class="stat-value" id="country-count">0</div><div class="stat-label"><span class="stat-icon">🌍</span> Destinos</div></div>
-    <div class="stat-card"><div class="stat-value" id="best-price">—</div><div class="stat-label"><span class="stat-icon">⭐</span> Preço mais baixo</div></div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('pesquisa',this)">🔍 Pesquisar Produtos</button>
+    <button class="tab" onclick="switchTab('reserva',this)">📋 Fazer Reserva</button>
+    <button class="tab" onclick="switchTab('minhas-reservas',this)">📁 Minhas Reservas</button>
+    <button class="tab" onclick="switchTab('debug',this)">🛠 Diagnóstico</button>
   </div>
 
-  <div class="search-bar">
-    <span class="search-icon">🔍</span>
-    <input type="text" class="search-input" id="search-input" placeholder="Pesquisar destino... (ex: Djerba, Sal, Rio, Salvador)">
-    <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none">✕</button>
-    <span class="search-info" id="search-info"></span>
+  <div id="panel-pesquisa" class="panel active">
+    <div class="card">
+      <div class="card-title"><span>🔍</span> Pesquisa de Produtos</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Nome</label><input type="text" id="s-name" placeholder="DIS, MAL, PARIS…"></div>
+        <div class="form-group"><label>Data Partida</label><input type="date" id="s-depdate"></div>
+        <div class="form-group"><label>Tipo</label><select id="s-pkttype"><option value="">Todos</option><option value="DYNAMIC">Dinâmico</option><option value="STATIC">Estático</option></select></div>
+        <div class="form-group"><label>País (ISO)</label><input type="text" id="s-country" placeholder="PT, FR…" maxlength="2"></div>
+      </div>
+      <div class="btn-actions">
+        <button class="btn btn-blue" onclick="searchProducts()">🔍 Pesquisar</button>
+        <button class="btn btn-outline" onclick="clearSearch()">Limpar</button>
+      </div>
+    </div>
+    <div id="search-status" class="status-bar"></div>
+    <div id="search-results"></div>
   </div>
 
-  <div id="continents-container"></div>
+  <div id="panel-reserva" class="panel">
+    <div class="steps">
+      <div class="step done" id="step1"><span class="step-num">1</span>Produto</div>
+      <div class="step" id="step2"><span class="step-num">2</span>Parâmetros</div>
+      <div class="step" id="step3"><span class="step-num">3</span>Serviços</div>
+      <div class="step" id="step4"><span class="step-num">4</span>Simulação</div>
+      <div class="step" id="step5"><span class="step-num">5</span>Confirmar</div>
+    </div>
+    <div id="reserva-status" class="status-bar"></div>
+    <div id="r-step1" class="card">
+      <div class="card-title"><span>📦</span> Produto Selecionado</div>
+      <div id="r-product-info" style="font-size:14px;margin-bottom:16px;color:var(--muted)">Nenhum produto selecionado. Volte à pesquisa.</div>
+      <div class="form-group" style="max-width:300px"><label>Ou introduza o código manualmente</label><input type="number" id="r-product-code" placeholder="ex: 261" min="1"></div>
+      <div class="btn-actions"><button class="btn btn-blue" onclick="getProductParams()">Obter Parâmetros →</button></div>
+    </div>
+    <div id="r-step2" class="card" style="display:none">
+      <div class="card-title"><span>⚙️</span> Parâmetros</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Data Partida</label><select id="r-depdate"></select></div>
+        <div class="form-group"><label>Local Partida</label><select id="r-deplocal"></select></div>
+        <div class="form-group"><label>Noites Extra</label><input type="number" id="r-extranights" value="0" min="0"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px"><span style="font-weight:700">Quartos</span><button class="btn btn-outline btn-sm" onclick="addRoom()">+ Quarto</button></div>
+      <div id="rooms-list"></div>
+      <div id="base-locals-section" style="display:none"><div style="font-weight:700;margin:14px 0 8px">Noites por Local</div><div id="base-locals-list"></div></div>
+      <div class="btn-actions"><button class="btn btn-outline" onclick="backStep(1)">← Voltar</button><button class="btn btn-blue" onclick="searchAvailableServices()">Pesquisar Disponibilidade →</button></div>
+    </div>
+    <div id="r-step3" class="card" style="display:none">
+      <div class="card-title"><span>✈️🏨</span> Selecionar Serviços</div>
+      <div id="flight-options-section"></div>
+      <div id="hotel-options-section"></div>
+      <div class="btn-actions"><button class="btn btn-outline" onclick="backStep(2)">← Voltar</button><button class="btn btn-blue" onclick="setServicesAndSimulate()">Simular Reserva →</button></div>
+    </div>
+    <div id="r-step4" class="card" style="display:none">
+      <div class="card-title"><span>💶</span> Simulação</div>
+      <div id="simulation-result"></div>
+      <div class="btn-actions" id="btn-step4-actions" style="display:none"><button class="btn btn-outline" onclick="backStep(3)">← Alterar</button><button class="btn btn-coral" onclick="goToConfirm()">Prosseguir →</button></div>
+    </div>
+    <div id="r-step5" class="card" style="display:none">
+      <div class="card-title"><span>👤</span> Dados dos Passageiros</div>
+      <div id="pax-form"></div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="form-group"><label>Referência Cliente</label><input type="text" id="r-clientref"></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Observações</label><input type="text" id="r-clientobs"></div>
+      </div>
+      <div class="btn-actions"><button class="btn btn-outline" onclick="backStep(4)">← Voltar</button><button class="btn btn-coral" onclick="createReservation()">✓ Confirmar Reserva</button></div>
+    </div>
+    <div id="r-final" style="display:none"></div>
+  </div>
+
+  <div id="panel-minhas-reservas" class="panel">
+    <div class="card">
+      <div class="card-title"><span>📁</span> Pesquisar Reservas</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Nº Reserva</label><input type="number" id="rl-reserve"></div>
+        <div class="form-group"><label>Estado</label><select id="rl-status"><option value="">Todos</option><option value="OK">Confirmada</option><option value="WL">Lista Espera</option><option value="CL">Cancelada</option></select></div>
+        <div class="form-group"><label>Partida de</label><input type="date" id="rl-depfrom"></div>
+        <div class="form-group"><label>Partida até</label><input type="date" id="rl-depto"></div>
+      </div>
+      <div class="btn-actions"><button class="btn btn-blue" onclick="listReserves()">🔍 Pesquisar</button></div>
+    </div>
+    <div id="reserves-status" class="status-bar"></div>
+    <div id="reserves-results"></div>
+  </div>
+
+  <div id="panel-debug" class="panel">
+    <div class="card">
+      <div class="card-title"><span>🛠</span> Diagnóstico</div>
+      <div class="btn-actions">
+        <button class="btn btn-blue" onclick="testConnection()">📡 Testar Conexão</button>
+        <button class="btn btn-outline" onclick="testProductTypes()">📦 Listar Tipos</button>
+        <button class="btn btn-outline" onclick="clearLogs()">🗑 Limpar Logs</button>
+      </div>
+      <div id="debug-status" class="status-bar" style="margin-top:12px"></div>
+      <div id="log-panel" class="log-panel" style="margin-top:12px"><div class="log-entry log-info">Aguardando ação...</div></div>
+    </div>
+    <div class="card" id="xml-card" style="display:none">
+      <div class="card-title"><span>📄</span> XML Bruto das Respostas</div>
+      <select id="xml-selector" onchange="showXmlFromHistory()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;margin-bottom:10px"></select>
+      <div id="raw-xml" class="xml-block"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>⚙️</span> Configuração</div>
+      <div style="font-size:13px;color:var(--muted);line-height:2">
+        <div><b>Endpoint:</b> https://www3.optitravel.net/optitravel/export/wbs/pkt/wbs_server.php</div>
+        <div><b>System:</b> 808 &nbsp;|&nbsp; <b>Client:</b> 289363 &nbsp;|&nbsp; <b>Username:</b> admin@apmviagens.pt</div>
+      </div>
+    </div>
+  </div>
 </div>
-
-<div class="toast" id="toast"></div>
-
 <script>
-const SUPABASE_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
-const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
-const PROXY_URL=`${SUPABASE_URL}/functions/v1/soltropico-proxy`
-const CREDS={System:808,Client:289363,Username:'admin@apmviagens.pt',Password:'JA622875'}
+const MODO_TREINO = new URLSearchParams(location.search).get('modo') === 'treino'
+if(MODO_TREINO){ document.addEventListener('DOMContentLoaded', () => {
+  const b=document.getElementById('treino-banner'); if(b) b.style.display='block'
+  const t=document.getElementById('solt-title'); if(t) t.textContent='Soltrópico Treino'
+  const s=document.getElementById('solt-sub'); if(s) s.textContent='Ambiente de treino · sem reservas reais'
+  document.title = 'Soltrópico Treino · APM'
+}) }
+const SUPABASE_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const PROXY_URL = `${SUPABASE_URL}/functions/v1/soltropico-proxy`
+const CREDS = { System: 808, Client: 289363, Username: 'admin@apmviagens.pt', Password: 'JA622875' }
 
-let allProducts = []
-let currentSearch = ''
-
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function money(v){return '€'+(parseFloat(v)||0).toLocaleString('pt-PT',{minimumFractionDigits:2})}
-function toast(msg,type=''){const t=document.getElementById('toast');t.className='toast show '+type;t.innerHTML=msg;clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',3000)}
-function credXML(){return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">${CREDS.System}</System><Client xsi:type="xsd:int">${CREDS.Client}</Client><Username xsi:type="xsd:string">${CREDS.Username}</Username><Password xsi:type="xsd:string">${CREDS.Password}</Password></Credentials>`}
-function wrap(body){return `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`}
-async function soapCall(action,body){const res=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},body:JSON.stringify({soapAction:action,soapBody:wrap(body)})});if(!res.ok)throw new Error(`Falha (${res.status})`);const data=await res.json();if(data.error)throw new Error(data.error);const xmlStr=(data.xml||'').replace(/^\uFEFF/,'').trim();const doc=new DOMParser().parseFromString(xmlStr,'text/xml');if(doc.querySelector('parsererror'))throw new Error('Resposta inválida');const f=doc.querySelector('faultstring');if(f)throw new Error(f.textContent);return doc}
-function txt(el,tag){if(!el)return '';for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)return c.textContent.trim()}const n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)return n[i].textContent.trim()}return ''}
-function all(el,tag){if(!el)return [];const o=[],n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)o.push(n[i])}return o}
-function itemsOf(c){return c?Array.from(c.children).filter(child=>{const l=child.localName||child.tagName.split(':').pop(); return l==='item'}):[]}
-
-const countryImages = {
-  "Cabo Verde": "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=100&h=70&fit=crop",
-  "Egipto": "https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=100&h=70&fit=crop",
-  "Gâmbia": "https://images.unsplash.com/photo-1588796603-6f3a081b2605?w=100&h=70&fit=crop",
-  "Tunísia": "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=100&h=70&fit=crop",
-  "Marrocos": "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=100&h=70&fit=crop",
-  "Brasil": "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=100&h=70&fit=crop",
-  "Tailândia": "https://images.unsplash.com/photo-1537956965359-76d1d79e3d3a?w=100&h=70&fit=crop",
-  "Portugal": "https://images.unsplash.com/photo-1555881400-74d5acaacd8b?w=100&h=70&fit=crop",
-  "Espanha": "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=100&h=70&fit=crop"
+let state = {
+  sessionHash: null,
+  selectedProduct: null,
+  productParams: null,
+  rooms: [{ num: 1, code: 437, childAges: '' }],
+  roomTypes: [],
+  baseLocals: [],
+  simulationData: null,
+  paxCount: 1,
+  isDynamic: true,
+  selectedHotel: null,
+  selectedFlight: null,
+  hotels: []
 }
 
-// Lista de países com keywords PRIORITÁRIAS (palavras mais longas primeiro)
-const countriesList = [
-  // Brasil primeiro porque tem palavras mais longas como "salvador", "rio de janeiro"
-  { name: "Brasil", flag: "🇧🇷", keywords: ["salvador", "rio de janeiro", "rio", "fortaleza", "recife", "porto seguro", "brasil", "costa do sauípe"] },
-  { name: "Cabo Verde", flag: "🇨🇻", keywords: ["cabo verde", "boavista", "sal", "santiago", "são vicente", "mindelo", "ilha do sal", "santo antão", "maio", "fogo"] },
-  { name: "Egipto", flag: "🇪🇬", keywords: ["egito", "cairo", "hurghada", "sharm el sheikh", "luxor", "marsa alam", "taba"] },
-  { name: "Gâmbia", flag: "🇬🇲", keywords: ["gâmbia", "banjul", "kololi", "serekunda"] },
-  { name: "Senegal", flag: "🇸🇳", keywords: ["senegal", "dakar", "saly", "mbour"] },
-  { name: "Tunísia", flag: "🇹🇳", keywords: ["tunísia", "hammamet", "sousse", "djerba", "monastir", "tunes"] },
-  { name: "São Tomé e Príncipe", flag: "🇸🇹", keywords: ["são tomé", "príncipe"] },
-  { name: "Moçambique", flag: "🇲🇿", keywords: ["moçambique", "maputo", "vilanculos", "inhambane"] },
-  { name: "Marrocos", flag: "🇲🇦", keywords: ["marrocos", "marraquexe", "agadir", "casablanca", "fez", "tânger"] },
-  { name: "Tanzânia", flag: "🇹🇿", keywords: ["tanzânia", "zanzibar", "dar es salaam", "arusha"] },
-  { name: "África do Sul", flag: "🇿🇦", keywords: ["áfrica do sul", "cidade do cabo", "joanesburgo", "durban"] },
-  { name: "Portugal", flag: "🇵🇹", keywords: ["portugal", "madeira", "açores", "algarve", "lisboa", "porto", "cascais"] },
-  { name: "Espanha", flag: "🇪🇸", keywords: ["espanha", "canárias", "barcelona", "madrid", "maiorca", "ibiza", "tenerife", "gran canaria"] },
-  { name: "Grécia", flag: "🇬🇷", keywords: ["grécia", "creta", "atenas", "santorini", "rhodes", "mykonos", "corfu"] },
-  { name: "Itália", flag: "🇮🇹", keywords: ["itália", "roma", "veneza", "milão", "nápoles", "sicília"] },
-  { name: "França", flag: "🇫🇷", keywords: ["frança", "paris", "nice", "côte d'azur"] },
-  { name: "Turquia", flag: "🇹🇷", keywords: ["turquia", "antália", "istambul", "bodrum", "marmaris"] },
-  { name: "Cuba", flag: "🇨🇺", keywords: ["cuba", "varadero", "havana", "cayo coco"] },
-  { name: "República Dominicana", flag: "🇩🇴", keywords: ["república dominicana", "punta cana", "la romana", "santo domingo"] },
-  { name: "México", flag: "🇲🇽", keywords: ["méxico", "cancún", "riviera maya", "playa del carmen"] },
-  { name: "Tailândia", flag: "🇹🇭", keywords: ["tailândia", "phuket", "banguecoque", "krabi", "koh samui", "pattaya"] },
-  { name: "Maldivas", flag: "🇲🇻", keywords: ["maldivas", "malé", "ari atol"] },
-  { name: "Indonésia", flag: "🇮🇩", keywords: ["indonésia", "bali", "jacarta", "lombok", "ubud"] },
-  { name: "Emirados Árabes", flag: "🇦🇪", keywords: ["emirados", "dubai", "abu dhabi", "sharjah"] }
-]
-
-const continents = {
-  "🌍 África": { icon: "🌍", countries: ["Cabo Verde", "Egipto", "Gâmbia", "Senegal", "Tunísia", "São Tomé e Príncipe", "Moçambique", "Marrocos", "Tanzânia", "África do Sul"] },
-  "🇪🇺 Europa": { icon: "🇪🇺", countries: ["Portugal", "Espanha", "Grécia", "Itália", "França", "Turquia"] },
-  "🌎 América": { icon: "🌎", countries: ["Brasil", "Cuba", "República Dominicana", "México"] },
-  "🌏 Ásia": { icon: "🌏", countries: ["Tailândia", "Maldivas", "Indonésia", "Emirados Árabes"] }
+function log(msg, type='info') {
+  const p = document.getElementById('log-panel')
+  if (!p) return
+  const t = new Date().toLocaleTimeString()
+  const cls = {error:'log-error',success:'log-success',warn:'log-warn'}[type] || 'log-info'
+  p.innerHTML += `<div class="log-entry ${cls}">[${t}] ${msg}</div>`
+  p.scrollTop = p.scrollHeight
 }
-
-function getCountry(name){
-  return countriesList.find(c => c.name === name)
+function clearLogs() {
+  document.getElementById('log-panel').innerHTML = '<div class="log-entry log-info">Logs limpos.</div>'
+  document.getElementById('xml-card').style.display = 'none'
 }
-
-function extractCountry(productName){
-  const lower = productName.toLowerCase()
-  
-  // Ordenar keywords por tamanho (maiores primeiro) para dar prioridade a palavras mais específicas
-  const allKeywords = []
-  for(const c of countriesList){
-    for(const kw of c.keywords){
-      allKeywords.push({ country: c.name, keyword: kw, length: kw.length })
-    }
+function switchTab(tab, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  document.getElementById('panel-' + tab).classList.add('active')
+  if (btn) btn.classList.add('active')
+}
+function setStatus(id, type, msg) {
+  const el = document.getElementById(id)
+  if (!el) return
+  if (!msg) { el.className = 'status-bar'; return }
+  el.className = `status-bar show ${type}`
+  el.innerHTML = type === 'loading' ? `<span class="loader"></span>${msg}` : msg
+}
+function setStep(n) {
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('step' + i)
+    if (el) el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '')
   }
-  allKeywords.sort((a,b) => b.length - a.length)
-  
-  // Verificar keywords por ordem de tamanho
-  for(const item of allKeywords){
-    if(lower.includes(item.keyword)){
-      return item.country
-    }
+}
+function backStep(n) {
+  ['r-step1','r-step2','r-step3','r-step4','r-step5','r-final'].forEach(s => {
+    const el = document.getElementById(s); if (el) el.style.display = 'none'
+  })
+  const target = document.getElementById('r-step' + n)
+  if (target) target.style.display = 'block'
+  setStep(n)
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+
+function credXML() {
+  return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">${CREDS.System}</System><Client xsi:type="xsd:int">${CREDS.Client}</Client><Username xsi:type="xsd:string">${CREDS.Username}</Username><Password xsi:type="xsd:string">${CREDS.Password}</Password></Credentials>`
+}
+function wrap(body) {
+  return `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
+}
+
+async function soapCall(action, body) {
+  log(`📤 ${action}`)
+  const res = await fetch(PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON}` },
+    body: JSON.stringify({ soapAction: action, soapBody: wrap(body) })
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const data = await res.json()
+  if (data.error) throw new Error(data.error)
+  const xmlStr = (data.xml || '').replace(/^\uFEFF/, '').trim()
+
+  window.xmlHistory = window.xmlHistory || {}
+  window.xmlHistory[action] = xmlStr
+  console.log(`[SOAP] ${action}\n` + xmlStr)
+
+  const rawEl = document.getElementById('raw-xml')
+  const xmlCard = document.getElementById('xml-card')
+  if (rawEl) rawEl.textContent = xmlStr
+  if (xmlCard) xmlCard.style.display = 'block'
+  const sel = document.getElementById('xml-selector')
+  if (sel && window.xmlHistory) {
+    sel.innerHTML = Object.keys(window.xmlHistory).map(k => `<option value="${k}">${k}</option>`).join('')
   }
-  
+
+  const doc = new DOMParser().parseFromString(xmlStr, 'text/xml')
+  if (doc.querySelector('parsererror')) throw new Error('XML inválido na resposta')
+  const fault = doc.querySelector('faultstring')
+  if (fault) throw new Error(fault.textContent)
+  return doc
+}
+function showXmlFromHistory() {
+  const sel = document.getElementById('xml-selector')
+  const rawEl = document.getElementById('raw-xml')
+  if (sel && rawEl && window.xmlHistory) rawEl.textContent = window.xmlHistory[sel.value] || ''
+}
+
+// ── PARSING (corrigido para namespaces ns1: e arrays SOAP) ──
+// txt: primeiro filho direto com esse localName
+function txt(el, tag) {
+  if (!el) return ''
+  for (let i = 0; i < el.children.length; i++) {
+    const c = el.children[i]
+    const local = c.localName || c.tagName.split(':').pop()
+    if (local === tag) return c.textContent.trim()
+  }
+  // procura em profundidade como fallback
+  const nodes = el.getElementsByTagName('*')
+  for (let i = 0; i < nodes.length; i++) {
+    const local = nodes[i].localName || nodes[i].tagName.split(':').pop()
+    if (local === tag) return nodes[i].textContent.trim()
+  }
+  return ''
+}
+
+// childByLocal: devolve o PRIMEIRO elemento descendente (a qualquer profundidade) com este localName
+function firstByLocal(el, tag) {
+  if (!el) return null
+  const nodes = el.getElementsByTagName('*')
+  for (let i = 0; i < nodes.length; i++) {
+    const local = nodes[i].localName || nodes[i].tagName.split(':').pop()
+    if (local === tag) return nodes[i]
+  }
   return null
 }
 
-function filterProducts(){
-  const term = currentSearch.toLowerCase().trim()
-  const searchInfo = document.getElementById('search-info')
-  const clearBtn = document.getElementById('search-clear')
-  
-  if(!term){
-    searchInfo.textContent = ''
-    clearBtn.style.display = 'none'
-    renderAll()
-    return
+// directChildren: filhos diretos com localName (não desce)
+function directChildren(el, tag) {
+  if (!el) return []
+  const out = []
+  for (let i = 0; i < el.children.length; i++) {
+    const c = el.children[i]
+    const local = c.localName || c.tagName.split(':').pop()
+    if (local === tag) out.push(c)
   }
-  
-  clearBtn.style.display = 'flex'
-  
-  const filtered = allProducts.filter(p => 
-    p.nome.toLowerCase().includes(term) || 
-    p.country.toLowerCase().includes(term)
-  )
-  
-  searchInfo.textContent = `${filtered.length} res.`
-  renderAll(filtered)
-  
-  if(filtered.length === 0){
-    toast(`🔍 Nenhum resultado para "${term}"`, 'err')
+  return out
+}
+
+// all: todos os descendentes com este localName (a qualquer profundidade)
+function all(el, tag) {
+  if (!el) return []
+  const out = []
+  const nodes = el.getElementsByTagName('*')
+  for (let i = 0; i < nodes.length; i++) {
+    const local = nodes[i].localName || nodes[i].tagName.split(':').pop()
+    if (local === tag) out.push(nodes[i])
+  }
+  return out
+}
+
+// itemsOf: os <item> filhos diretos de um container-array (ex: HotelOption > item)
+function itemsOf(container) {
+  return container ? directChildren(container, 'item') : []
+}
+
+// ── DIAGNÓSTICO ──
+async function testConnection() {
+  setStatus('debug-status','loading','A testar…')
+  log('🔌 Testando ligação…')
+  try {
+    const doc = await soapCall('SearchProductTypes',
+      `<ns1:SearchProductTypes><SearchProductTypesRequest>${credXML()}</SearchProductTypesRequest></ns1:SearchProductTypes>`)
+    const types = all(doc, 'ProductType')
+    log(`✅ Ligação OK — ${types.length} tipo(s)`, 'success')
+    setStatus('debug-status','ok',`✅ Ligação OK! ${types.length} tipo(s) de produto.`)
+  } catch(e) { log(`❌ ${e.message}`, 'error'); setStatus('debug-status','err',`❌ ${e.message}`) }
+}
+async function testProductTypes() {
+  setStatus('debug-status','loading','A listar…')
+  try {
+    const doc = await soapCall('SearchProductTypes',
+      `<ns1:SearchProductTypes><SearchProductTypesRequest>${credXML()}</SearchProductTypesRequest></ns1:SearchProductTypes>`)
+    const types = all(doc, 'ProductType')
+    log(`✅ ${types.length} tipo(s):`, 'success')
+    types.forEach(t => log(`   • ${txt(t,'Code')} — ${txt(t,'Description')}`))
+    setStatus('debug-status','ok',`✓ ${types.length} tipo(s)`)
+  } catch(e) { log(`❌ ${e.message}`, 'error'); setStatus('debug-status','err',`❌ ${e.message}`) }
+}
+
+// ── PESQUISA DE PRODUTOS ──
+async function searchProducts() {
+  const name = document.getElementById('s-name').value
+  const depdate = document.getElementById('s-depdate').value
+  const pkttype = document.getElementById('s-pkttype').value
+  const country = document.getElementById('s-country').value
+  log(`🔍 Pesquisando: "${name||'(todos)'}"`)
+  setStatus('search-status','loading','A pesquisar…')
+  document.getElementById('search-results').innerHTML = ''
+  let xml = `<ns1:SearchProducts><SearchProductsRequest>${credXML()}`
+  if (name) xml += `<Name>${name}</Name>`
+  if (country) xml += `<Country>${country}</Country>`
+  if (depdate) xml += `<DepDate>${depdate}</DepDate>`
+  if (pkttype) xml += `<Pkt_type>${pkttype}</Pkt_type>`
+  xml += `<PriceFrom>0</PriceFrom><PriceTo>99999</PriceTo></SearchProductsRequest></ns1:SearchProducts>`
+  try {
+    const doc = await soapCall('SearchProducts', xml)
+    const productArray = all(doc, 'ProductArray')[0]
+    let items = productArray ? itemsOf(productArray) : []
+    if (!items.length) items = all(doc, 'Product')
+    const products = items.map(p => {
+      let code = (txt(p,'Code') || txt(p,'ProdCode') || txt(p,'ProductCode') || '').trim()
+      const codeInt = parseInt(code)
+      const nm = txt(p,'Name') || txt(p,'ProdName') || txt(p,'Description') || ''
+      const price = txt(p,'PriceFrom') || '0'
+      const pkt = txt(p,'ProdType') || txt(p,'Pkt_type') || ''
+      const img = txt(p,'ImageUrl') || txt(p,'Image') || ''
+      return { code, codeInt, name: nm, price, pkt, img, valid: !isNaN(codeInt) && codeInt > 0 && nm !== '' }
+    }).filter(p => p.name && p.name !== 'TESTE OMNIBEES')
+    const valid = products.filter(p => p.valid)
+    if (!valid.length) {
+      setStatus('search-status','err','⚠️ Nenhum produto válido.')
+      document.getElementById('search-results').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Sem resultados.</div>'
+      return
+    }
+    setStatus('search-status','ok',`✓ ${valid.length} produto(s)`)
+    let html = `<div class="section-title">🏖️ Produtos</div><div class="product-grid">`
+    valid.forEach(p => {
+      const priceVal = parseFloat(p.price) || 0
+      html += `<div class="product-card" onclick="selectProduct(${p.codeInt}, '${esc(p.name)}', '${p.pkt}')">
+        <div class="product-img">${p.img ? `<img src="${esc(p.img)}" onerror="this.parentElement.innerHTML='🌍'">` : '🌍'}</div>
+        <div class="product-info">
+          <div class="product-name">${esc(p.name)}</div>
+          <div class="product-meta">Código: <strong>${p.code}</strong></div>
+          <div class="product-price">${priceVal > 0 ? `€${priceVal.toLocaleString('pt-PT',{minimumFractionDigits:2})}` : 'Sob consulta'}</div>
+          <button class="btn btn-blue btn-sm" style="width:100%;justify-content:center;margin-top:8px" onclick="event.stopPropagation();selectProduct(${p.codeInt},'${esc(p.name)}','${p.pkt}')">Reservar →</button>
+        </div></div>`
+    })
+    html += '</div>'
+    document.getElementById('search-results').innerHTML = html
+  } catch(e) { log(`❌ ${e.message}`, 'error'); setStatus('search-status','err',`❌ ${e.message}`) }
+}
+
+function selectProduct(codeInt, name, pkt) {
+  const code = parseInt(codeInt)
+  if (!code || isNaN(code) || code <= 0) { alert(`Código inválido: "${codeInt}"`); return }
+  log(`✅ Produto: ${name} (${code})`, 'success')
+  state.selectedProduct = { code, name, pkt: pkt || 'DYNAMIC' }
+  document.getElementById('r-product-code').value = code
+  document.getElementById('r-product-info').innerHTML = `<strong>${esc(name)}</strong> <span style="color:var(--muted)">(código: ${code})</span>`
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  document.getElementById('panel-reserva').classList.add('active')
+  document.querySelectorAll('.tab')[1].classList.add('active')
+  setStep(1)
+  getProductParams()
+}
+function clearSearch() {
+  ['s-name','s-depdate','s-country'].forEach(id => { const el=document.getElementById(id); if(el) el.value='' })
+  document.getElementById('s-pkttype').value = ''
+  document.getElementById('search-results').innerHTML = ''
+  setStatus('search-status','','')
+}
+
+// ── PARÂMETROS ──
+async function getProductParams() {
+  const raw = document.getElementById('r-product-code').value
+  const code = parseInt(raw)
+  if (!code || isNaN(code) || code <= 0) { setStatus('reserva-status','err',`❌ Código "${raw}" inválido.`); return }
+  log(`📦 Parâmetros do produto ${code}`)
+  setStatus('reserva-status','loading',`A obter parâmetros…`)
+  try {
+    const pkt = state.selectedProduct?.pkt || 'DYNAMIC'
+    state.isDynamic = pkt === 'DYNAMIC'
+    let doc
+    if (state.isDynamic) {
+      doc = await soapCall('DynGetProductParameters',
+        `<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${code}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+    } else {
+      doc = await soapCall('StaticGetProductParameters',
+        `<ns1:StaticGetProductParameters><StaticProductParametersRequest>${credXML()}<ProductCode xsi:type="xsd:int">${code}</ProductCode></StaticProductParametersRequest></ns1:StaticGetProductParameters>`)
+    }
+    const productName = txt(doc,'Name')
+    if (!productName) throw new Error(`Produto ${code} não encontrado`)
+    state.selectedProduct = { code, name: productName, pkt }
+    state.productParams = doc
+
+    function arrayItems(container) {
+      const wrap = all(doc, container)[0]
+      return wrap ? itemsOf(wrap) : []
+    }
+    const dates = arrayItems('DepartureDates').map(it => txt(it,'Date')).filter(Boolean)
+    document.getElementById('r-depdate').innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('')
+
+    const locals = arrayItems('DepartureLocals').map(it => ({ code: txt(it,'Code'), name: txt(it,'Name') })).filter(l => l.code)
+    document.getElementById('r-deplocal').innerHTML = locals.length
+      ? locals.map(l => `<option value="${l.code}">${l.name||l.code}</option>`).join('')
+      : '<option value="LIS">Lisboa (LIS)</option>'
+
+    state.roomTypes = arrayItems('RoomTypes').map(r => ({
+      code: txt(r,'Code'), name: txt(r,'Name'), numAdults: txt(r,'NumAdults'), numChilds: txt(r,'NumChilds')
+    })).filter(r => r.code)
+
+    state.baseLocals = arrayItems('BaseLocals').map(b => ({
+      code: txt(b,'Code'), name: txt(b,'Name'), minNights: txt(b,'MinNights')||'1', maxNights: txt(b,'MaxNights')||'7'
+    })).filter(b => b.code)
+
+    log(`✅ ${dates.length} data(s), ${locals.length} local(is), ${state.roomTypes.length} quarto(s), ${state.baseLocals.length} hotel-base`, 'success')
+    if (state.roomTypes.length && !state.roomTypes.find(r=>r.code==state.rooms[0].code)) state.rooms[0].code = state.roomTypes[0].code
+    renderRooms(); renderBaseLocals()
+    document.getElementById('r-step1').style.display = 'none'
+    document.getElementById('r-step2').style.display = 'block'
+    setStep(2); setStatus('reserva-status','','')
+  } catch(e) { log(`❌ ${e.message}`, 'error'); setStatus('reserva-status','err',`❌ ${e.message}`) }
+}
+
+function renderRooms() {
+  const c = document.getElementById('rooms-list')
+  c.innerHTML = state.rooms.map((r,i) => `
+    <div class="room-row">
+      <label style="min-width:70px">Quarto ${r.num}</label>
+      <select id="room-code-${i}" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px">
+        ${state.roomTypes.map(t=>`<option value="${t.code}" ${t.code==r.code?'selected':''}>${t.name}</option>`).join('')}
+      </select>
+      <input type="text" id="room-childages-${i}" placeholder="idades (3,7)" value="${r.childAges}" style="width:120px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px">
+      ${state.rooms.length>1?`<button class="btn btn-outline btn-sm" onclick="removeRoom(${i})">✕</button>`:''}
+    </div>`).join('')
+}
+function addRoom() { state.rooms.push({num:state.rooms.length+1,code:state.roomTypes[0]?.code||437,childAges:''}); renderRooms() }
+function removeRoom(i) { state.rooms.splice(i,1); state.rooms.forEach((r,idx)=>r.num=idx+1); renderRooms() }
+function renderBaseLocals() {
+  const sec = document.getElementById('base-locals-section')
+  const c = document.getElementById('base-locals-list')
+  if (!state.baseLocals.length) { sec.style.display='none'; return }
+  sec.style.display='block'
+  c.innerHTML = state.baseLocals.map((b,i)=>`
+    <div class="room-row">
+      <label style="min-width:110px">${b.name||b.code}</label>
+      <input type="number" id="base-nights-${i}" value="${b.minNights}" min="${b.minNights}" style="width:70px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px">
+      <span style="font-size:12px;color:var(--muted)">noites (${b.minNights}–${b.maxNights})</span>
+    </div>`).join('')
+}
+
+// ── DISPONIBILIDADE ──
+async function searchAvailableServices() {
+  setStatus('reserva-status', 'loading', 'A pesquisar disponibilidade…')
+  state.rooms.forEach((r, i) => {
+    r.code = parseInt(document.getElementById(`room-code-${i}`)?.value || r.code)
+    r.childAges = document.getElementById(`room-childages-${i}`)?.value || ''
+  })
+  const depDate = document.getElementById('r-depdate').value
+  const depLocal = document.getElementById('r-deplocal').value
+  const extraNights = document.getElementById('r-extranights').value || '0'
+  const roomsXML = state.rooms.map(r =>
+    `<RoomTypeOption><RoomNum>${r.num}</RoomNum><Code>${r.code}</Code><ChildAges>${r.childAges}</ChildAges></RoomTypeOption>`).join('')
+  const baseXML = state.baseLocals.length
+    ? state.baseLocals.map((b, i) => `<Local><Code>${b.code}</Code><Nights>${document.getElementById(`base-nights-${i}`)?.value || b.minNights}</Nights></Local>`).join('')
+    : '<Local><Code>2234</Code><Nights>7</Nights></Local>'
+  try {
+    const doc = await soapCall('DynSearchProductAvailableServices',
+      `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${state.selectedProduct.code}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">${extraNights}</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+    state.sessionHash = txt(doc, 'SessionHash')
+    log(`✅ SessionHash: ${state.sessionHash}`, 'success')
+    renderServicesStep(doc)
+    document.getElementById('r-step2').style.display = 'none'
+    document.getElementById('r-step3').style.display = 'block'
+    setStep(3); setStatus('reserva-status', '', '')
+  } catch (e) { log(`❌ ${e.message}`, 'error'); setStatus('reserva-status', 'err', `❌ ${e.message}`) }
+}
+
+// ── RENDER SERVIÇOS (VOOS + HOTÉIS) ──
+function renderServicesStep(doc) {
+  // VOOS — descer FlightMainGroup > item > FlightOptionsSuperBB|FlightOptions > item
+  const fsec = document.getElementById('flight-options-section')
+  let flightsHtml = '<div style="font-weight:700;margin-bottom:10px">✈️ Opções de Voo</div>'
+  let flightOpts = []
+  const fmgContainer = all(doc, 'FlightMainGroup')[0]
+  state.flightSegmentsByOption = {}
+  itemsOf(fmgContainer).forEach(fmg => {
+    // tentar SuperBB e Options
+    ;['FlightOptionsSuperBB','FlightOptions','FlightOptionsFlightEngine'].forEach(key => {
+      const cont = directChildren(fmg, key)[0]
+      itemsOf(cont).forEach(opt => {
+        const optCode = txt(opt, 'OptionCode')
+        const rate = txt(opt, 'RateTaxVal')
+        const tax = txt(opt, 'Tax')
+        const sup = txt(opt, 'SuplementsTotalVal')
+        // Segmentos: cada DynFlightSegments tem SegmentCode; o grupo tem FlightGroupCode
+        const segContainer = directChildren(opt, 'FlightSegments')[0]
+        const segItems = itemsOf(segContainer)
+        const segList = segItems.map(seg => {
+          const segmentCode = txt(seg, 'SegmentCode')
+          const grpContainer = directChildren(seg, 'Flights')[0]
+          const grpItem = itemsOf(grpContainer)[0]
+          const flightGroupCode = grpItem ? txt(grpItem, 'FlightGroupCode') : '0'
+          return { segmentCode, flightGroupCode }
+        })
+        state.flightSegmentsByOption[optCode] = segList
+        // descrição do 1º e último voo
+        const flights = all(opt, 'DynFlight')
+        let route = ''
+        if (flights.length) {
+          const first = flights[0], last = flights[flights.length-1]
+          route = `${txt(first,'From')}→${txt(first,'To')} ${txt(first,'DepDate')} … ${txt(last,'From')}→${txt(last,'To')} ${txt(last,'DepDate')}`
+        }
+        flightOpts.push({ optCode, rate, tax, sup, route })
+      })
+    })
+  })
+  if (flightOpts.length) {
+    flightOpts.forEach((f,i) => {
+      const base = f.rate ? `€${parseFloat(f.rate).toFixed(2)}` : (f.sup ? `+€${parseFloat(f.sup).toFixed(2)}` : '')
+      flightsHtml += `<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:8px;cursor:pointer">
+        <input type="radio" name="flight-opt" value="${f.optCode}" ${i===0?'checked':''}>
+        <div><div style="font-weight:600">Opção ${f.optCode} ${base?'— '+base:''}</div>
+        ${f.route?`<div style="font-size:12px;color:var(--muted)">${esc(f.route)}</div>`:''}</div></label>`
+    })
   } else {
-    toast(`🔍 ${filtered.length} pacote(s) encontrado(s)`, 'ok')
+    flightsHtml += '<div style="padding:14px;color:var(--muted);background:var(--bg);border-radius:8px">✈️ Sem voos nesta resposta (já incluídos no pacote ou indisponíveis para esta data).</div>'
+  }
+  fsec.innerHTML = flightsHtml
+
+  // HOTÉIS — Itinerary > item > HotelOption > item(N)
+  const hsec = document.getElementById('hotel-options-section')
+  state.hotels = []
+  let html = '<div style="font-weight:700;margin:16px 0 10px">🏨 Opções de Alojamento</div>'
+  const itinContainer = all(doc, 'Itinerary')[0]
+  const itinItems = itemsOf(itinContainer)
+  if (!itinItems.length) { hsec.innerHTML = html + '<div style="padding:14px;color:var(--muted)">Nenhum itinerário encontrado.</div>'; return }
+
+  state.itinMeta = {}
+  itinItems.forEach(itin => {
+    const itinCode = txt(itin, 'Code') || '0'
+    const itinName = txt(itin, 'Name') || 'Destino'
+    // Guardar metadados do itinerário, necessários para o DynSetServicesSelected
+    state.itinMeta[itinCode] = {
+      iface: txt(itin, 'Interface') || 'htl_hub',
+      connector: txt(itin, 'Connector') || 'HTL_HUB',
+      htlSession: txt(itin, 'HtlSession') || state.sessionHash
+    }
+    html += `<div style="font-weight:600;color:var(--blue);margin:12px 0 8px">📌 ${esc(itinName)}</div>`
+    const hotelContainer = directChildren(itin, 'HotelOption')[0]
+    const hotels = itemsOf(hotelContainer)
+    log(`🏨 ${hotels.length} hotel(éis) em "${itinName}"`, hotels.length ? 'success' : 'warn')
+    if (!hotels.length) { html += '<div style="padding:10px;color:var(--muted);font-style:italic">Sem hotéis disponíveis.</div>'; return }
+
+    hotels.forEach((hotel, hi) => {
+      const hCode = txt(hotel, 'Code')
+      const hName = txt(hotel, 'Name')
+      const hRating = parseInt(txt(hotel, 'Rating')) || 0
+      const hPrice = parseFloat(txt(hotel, 'PriceFrom')) || 0
+      const hImage = txt(hotel, 'Image')
+      const hAddr = txt(hotel, 'Address')
+      const hLocal = txt(hotel, 'Local')
+      const stars = '★'.repeat(Math.min(hRating,5)) + '☆'.repeat(Math.max(0,5-hRating))
+
+      // Quartos: RoomsOccupancy > item > Rooms > item(N)
+      const occContainer = directChildren(hotel, 'RoomsOccupancy')[0]
+      const occItem = itemsOf(occContainer)[0]
+      const roomsContainer = occItem ? directChildren(occItem, 'Rooms')[0] : null
+      const rooms = itemsOf(roomsContainer)
+      let roomsHtml = ''
+      rooms.forEach(rm => {
+        const rCode = txt(rm,'Code')
+        const rName = txt(rm,'Name')
+        const rSell = parseFloat(txt(rm,'SellValue')) || 0
+        const rBoard = txt(rm,'BoardCode') || 'TI'
+        const avail = txt(rm,'AvailStatus')
+        if (avail === 'OK') {
+          roomsHtml += `<option value="${rCode}" data-board="${rBoard}" data-sell="${rSell}">${esc(rName)} — €${rSell.toFixed(2)} (${rBoard})</option>`
+        }
+      })
+      if (!roomsHtml) roomsHtml = '<option value="0" data-board="TI">Standard</option>'
+
+      // Regimes (Boards)
+      const boardsContainer = directChildren(hotel, 'Boards')[0]
+      const boards = itemsOf(boardsContainer)
+      let boardsHtml = boards.map(b => `<option value="${txt(b,'Code')}">${esc(txt(b,'Name'))}</option>`).join('')
+      if (!boardsHtml) boardsHtml = '<option value="TI">All Inclusive</option>'
+
+      state.hotels.push({ itinCode, hCode, hName })
+      html += `
+        <div class="hotel-card" id="hcard-${itinCode}-${hi}" data-itin="${itinCode}" data-hotel="${hCode}" data-idx="${hi}" onclick="selectHotelCard('${itinCode}',${hi},'${hCode}')">
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            ${hImage ? `<img src="${esc(hImage)}" class="hotel-image" onerror="this.style.display='none'">` : ''}
+            <div style="flex:1;min-width:200px">
+              <div class="hotel-name">${esc(hName)} <span class="hotel-rating">${stars}</span></div>
+              ${hAddr ? `<div class="hotel-address">📍 ${esc(hAddr)}${hLocal?' · '+esc(hLocal):''}</div>` : ''}
+              <div class="hotel-price">desde €${hPrice.toFixed(2)}</div>
+              <div class="hotel-selectors">
+                <select id="room-${itinCode}-${hCode}" onclick="event.stopPropagation()">${roomsHtml}</select>
+                <select id="board-${itinCode}-${hCode}" onclick="event.stopPropagation()">${boardsHtml}</select>
+              </div>
+            </div>
+          </div>
+        </div>`
+    })
+  })
+  hsec.innerHTML = html
+  // pré-selecionar o primeiro hotel
+  if (state.hotels.length) {
+    const h0 = state.hotels[0]
+    selectHotelCard(h0.itinCode, 0, h0.hCode)
+  }
+  log(`🏨 Total exibidos: ${hsec.querySelectorAll('.hotel-card').length}`, 'success')
+}
+
+function selectHotelCard(itinCode, idx, hotelCode) {
+  document.querySelectorAll('.hotel-card').forEach(c => c.classList.remove('selected'))
+  const card = document.getElementById(`hcard-${itinCode}-${idx}`)
+  if (card) {
+    card.classList.add('selected')
+    state.selectedHotel = { itinCode, hotelCode }
   }
 }
 
-function clearSearch(){
-  document.getElementById('search-input').value = ''
-  currentSearch = ''
-  filterProducts()
-}
+// ── SIMULAÇÃO ──
+async function setServicesAndSimulate() {
+  setStatus('reserva-status', 'loading', 'A simular…')
 
-function toggleCountry(countryName, event){
-  event.stopPropagation()
-  const el = document.getElementById(`prods-${countryName.replace(/\s/g,'')}`)
-  if(el){
-    el.classList.toggle('show')
+  // VOO selecionado (SuperBB) — estrutura com SegmentLists, conforme a Sandbox.
+  const flightRadio = document.querySelector('input[name="flight-opt"]:checked')
+  let flightsSuperBB = `<FlightsSelectedSuperBB xsi:nil="true"/>`
+  if (flightRadio) {
+    const segs = (state.flightSegmentsByOption && state.flightSegmentsByOption[flightRadio.value]) || []
+    const segXML = segs.map(s =>
+      `<item xsi:type="ns1:DynFlightSegmentSel"><SegmentCode xsi:type="xsd:string">${s.segmentCode}</SegmentCode><FlightGroupCode xsi:type="xsd:string">${s.flightGroupCode}</FlightGroupCode></item>`
+    ).join('')
+    flightsSuperBB =
+      `<FlightsSelectedSuperBB SOAP-ENC:arrayType="ns1:DynFlightsSelected[1]" xsi:type="ns1:DynFlightsSelectedArray">` +
+        `<item xsi:type="ns1:DynFlightsSelected">` +
+          `<OptionCode xsi:type="xsd:string">${flightRadio.value}</OptionCode>` +
+          `<SegmentLists SOAP-ENC:arrayType="ns1:DynFlightSegmentSel[${segs.length}]" xsi:type="ns1:DynFlightSegmentSelArray">${segXML}</SegmentLists>` +
+        `</item>` +
+      `</FlightsSelectedSuperBB>`
   }
-}
 
-function highlightText(text, searchTerm){
-  if(!searchTerm) return esc(text)
-  const regex = new RegExp(`(${esc(searchTerm)})`, 'gi')
-  return esc(text).replace(regex, `<span class="highlight">$1</span>`)
-}
-
-function renderProducts(countryName, searchTerm = ''){
-  const products = allProducts.filter(p => p.country === countryName)
-  const sorted = [...products].sort((a,b) => (a.price||9999) - (b.price||9999))
-  const container = document.getElementById(`prods-${countryName.replace(/\s/g,'')}`)
-  const countryImg = countryImages[countryName] || ''
-  const flag = getCountry(countryName)?.flag || '🏖️'
-  
-  if(!container) return
-  
-  if(products.length === 0){
-    container.innerHTML = `<div class="empty-message">📭 Nenhum pacote disponível</div>`
+  // HOTEL selecionado — estrutura exata da Sandbox (DynHotelsSelected)
+  const card = document.querySelector('.hotel-card.selected') || document.querySelector('.hotel-card')
+  let hotelsSelected = `<HotelsSelected xsi:nil="true"/>`
+  if (card) {
+    card.classList.add('selected')
+    const itinCode = card.dataset.itin
+    const hotelCode = card.dataset.hotel
+    const roomSel = document.getElementById(`room-${itinCode}-${hotelCode}`)
+    const roomCode = roomSel ? roomSel.value : '0'
+    const boardCode = (roomSel && roomSel.selectedOptions[0]?.dataset.board) || 'TI'
+    const meta = (state.itinMeta && state.itinMeta[itinCode]) || { iface: 'htl_hub', connector: 'HTL_HUB' }
+    // HtlSession deve ser SEMPRE o da sessão atual (igual ao SessionHash da disponibilidade)
+    const htlSession = state.sessionHash
+    log(`🏨 A selecionar: hotel ${hotelCode}, quarto ${roomCode} (${boardCode}), itin ${itinCode}, sessão ${htlSession}`, 'info')
+    // RoomsSelected: um por quarto pedido
+    const roomsSelXML = state.rooms.map((r, idx) =>
+      `<item xsi:type="ns1:DynRoomsSelect"><RoomNum xsi:type="xsd:string">${idx}</RoomNum><RoomCode xsi:type="xsd:string">${roomCode}</RoomCode><BoardCode xsi:type="xsd:string">${boardCode}</BoardCode></item>`
+    ).join('')
+    hotelsSelected =
+      `<HotelsSelected SOAP-ENC:arrayType="ns1:DynHotelsSelected[1]" xsi:type="ns1:DynHotelsSelectedArray">` +
+        `<item xsi:type="ns1:DynHotelsSelected">` +
+          `<ItineraryCode xsi:type="xsd:string">${itinCode}</ItineraryCode>` +
+          `<Interface xsi:type="xsd:string">${meta.iface}</Interface>` +
+          `<Connector xsi:type="xsd:string">${meta.connector}</Connector>` +
+          `<HtlSession xsi:type="xsd:string">${htlSession}</HtlSession>` +
+          `<HotelRPH xsi:type="xsd:string">${hotelCode}</HotelRPH>` +
+          `<HotelSelected xsi:type="xsd:string">${hotelCode}</HotelSelected>` +
+          `<HotelSelectedPrice xsi:nil="true"/>` +
+          `<RoomsSelected SOAP-ENC:arrayType="ns1:DynRoomsSelect[${state.rooms.length}]" xsi:type="ns1:DynRoomsSelectArray">${roomsSelXML}</RoomsSelected>` +
+          `<BoardSelected xsi:type="xsd:string">${boardCode}</BoardSelected>` +
+          `<SuplementSelected xsi:type="xsd:string"/>` +
+        `</item>` +
+      `</HotelsSelected>`
+  } else {
+    log('⚠️ Nenhum hotel disponível para selecionar — a simulação vai falhar.', 'warn')
+    setStatus('reserva-status', 'err', '❌ Selecione um hotel antes de simular.')
     return
   }
-  
-  container.innerHTML = `
-    <div class="products-grid">
-      ${sorted.map(p => {
-        const imgUrl = p.img && p.img.startsWith('http') ? p.img : countryImg
-        const displayName = searchTerm ? highlightText(p.nome, searchTerm) : esc(p.nome)
-        return `
-          <div class="product-card" onclick="event.stopPropagation();selectProduct(${p.code},'${esc(p.nome)}')">
-            <div class="product-img">
-              ${imgUrl ? `<img src="${esc(imgUrl)}" onerror="this.parentElement.innerHTML='${flag}'">` : flag}
-            </div>
-            <div class="product-info">
-              <div class="product-name">${displayName.length > 45 ? displayName.substring(0,45)+'...' : displayName}</div>
-              <div class="product-code">Código ${p.code}</div>
-              <div class="product-price">${p.price > 0 ? money(p.price) : '—'} <small>/pessoa</small></div>
-            </div>
-          </div>
-        `
-      }).join('')}
-    </div>
-  `
+
+  // Estrutura completa na ordem exata da Sandbox (campos não usados a nil)
+  const setBody =
+    `<ns1:DynSetServicesSelected><DynServicesSelectedRequest xsi:type="ns1:DynServicesSelectedRequest">${credXML()}` +
+    `<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash>` +
+    `<Reserve xsi:nil="true"/>` +
+    `<Local xsi:nil="true"/>` +
+    `<Regime xsi:nil="true"/>` +
+    `<Connector xsi:nil="true"/>` +
+    `<Skeleton_id xsi:nil="true"/>` +
+    `<Action xsi:nil="true"/>` +
+    `<DepLocal xsi:nil="true"/>` +
+    `<OptionId xsi:nil="true"/>` +
+    `<FlightsSelected xsi:nil="true"/>` +
+    flightsSuperBB +
+    `<FlightsSelectedFlightEngine xsi:nil="true"/>` +
+    `<FlightsSelectedAirAvailFlightEngine xsi:nil="true"/>` +
+    `<BusSelected xsi:nil="true"/>` +
+    hotelsSelected +
+    `<OptionalsSelected xsi:nil="true"/>` +
+    `<RoomsOfi xsi:nil="true"/>` +
+    `<RoomsSeniorOfi xsi:nil="true"/>` +
+    `<RoomsPktStatic xsi:nil="true"/>` +
+    `<RoomsSeniorPktStatic xsi:nil="true"/>` +
+    `</DynServicesSelectedRequest></ns1:DynSetServicesSelected>`
+
+  try {
+    await soapCall('DynSetServicesSelected', setBody)
+    const simDoc = await soapCall('DynGetSimulation',
+      `<ns1:DynGetSimulation><DynGetSimulationRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
+    state.simulationData = simDoc
+    renderSimulation(simDoc)
+    document.getElementById('r-step3').style.display = 'none'
+    document.getElementById('r-step4').style.display = 'block'
+    setStep(4); setStatus('reserva-status', '', '')
+  } catch (e) { log(`❌ ${e.message}`, 'error'); setStatus('reserva-status', 'err', `❌ ${e.message}`) }
 }
 
-function selectProduct(code, name){
-  toast(`📦 ${name}`, 'ok')
-  alert(`Produto: ${name}\nCódigo: ${code}\n\nReserva será integrada aqui.`)
-}
-
-function renderAll(filteredProducts = null){
-  const data = filteredProducts || allProducts
-  const searchTerm = currentSearch
-  let html = ''
-  
-  for(const [contName, contData] of Object.entries(continents)){
-    const countriesInCont = []
-    for(const countryName of contData.countries){
-      const count = data.filter(p => p.country === countryName).length
-      if(count > 0){
-        countriesInCont.push({ name: countryName, count })
-      }
-    }
-    
-    if(countriesInCont.length === 0) continue
-    
-    html += `<div class="continent-section">
-      <div class="continent-header">
-        <span class="continent-icon">${contData.icon}</span>
-        <span class="continent-title">${contName.replace(/[🌍🇪🇺🌎🌏]/g,'')}</span>
-        <span class="continent-count">${countriesInCont.length} países</span>
-      </div>
-      <div class="country-grid">`
-    
-    for(const c of countriesInCont){
-      const country = getCountry(c.name)
-      const flag = country ? country.flag : '🏖️'
-      const safeId = c.name.replace(/\s/g,'')
-      
-      html += `
-        <div style="grid-column:1/-1">
-          <div class="country-card" onclick="toggleCountry('${c.name}', event)">
-            <span class="country-flag">${flag}</span>
-            <span class="country-name">${c.name}</span>
-            <span class="country-badge">${c.count}</span>
-          </div>
-          <div class="country-products" id="prods-${safeId}"></div>
-        </div>
-      `
-    }
-    html += `</div></div>`
+function renderSimulation(doc) {
+  const status = txt(doc, 'AvailableStatus') || 'OK'
+  const price = parseFloat(txt(doc, 'TotalPrice') || 0).toFixed(2)
+  const services = all(doc, 'DynResService')
+  const badge = status === 'OK' ? '<span class="badge badge-ok">✅ Confirmação Imediata</span>' : '<span class="badge badge-wl">⏳ Sujeito a Confirmação</span>'
+  let h = `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px">${badge}<div style="font-size:30px;font-weight:800;color:var(--coral);font-family:'Poppins',sans-serif">€${price}</div><div style="color:var(--muted)">Total</div></div>`
+  if (services.length) {
+    h += '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Tipo</th><th style="padding:8px;text-align:left">Descrição</th><th style="padding:8px;text-align:left">Período</th><th style="padding:8px">Estado</th></tr></thead><tbody>'
+    services.forEach(s => {
+      const st = txt(s, 'Status')
+      h += `<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px">${txt(s,'Type')}</td><td style="padding:8px">${esc(txt(s,'Description'))}</td><td style="padding:8px;font-size:12px">${txt(s,'DateFrom')} → ${txt(s,'DateTo')}</td><td style="padding:8px;text-align:center"><span class="badge ${st==='OK'?'badge-ok':'badge-wl'}">${st}</span></td></tr>`
+    })
+    h += '</tbody></table>'
   }
-  
-  if(html === '' && searchTerm !== ''){
-    html = `<div class="empty-state"><div class="ico">🔍</div><h3>Nenhum resultado</h3><p>Não encontramos "${esc(searchTerm)}"</p></div>`
-  } else if(html === ''){
-    html = `<div class="empty-state"><div class="ico">🌍</div><h3>A carregar...</h3></div>`
-  }
-  
-  document.getElementById('continents-container').innerHTML = html
-  
-  for(const cont of Object.values(continents)){
-    for(const countryName of cont.countries){
-      if(data.some(p => p.country === countryName)){
-        renderProducts(countryName, searchTerm)
-      }
-    }
-  }
+  document.getElementById('simulation-result').innerHTML = h
+  document.getElementById('btn-step4-actions').style.display = 'flex'
 }
 
-async function init(){
-  document.getElementById('continents-container').innerHTML = `
-    <div class="continent-section"><div class="continent-header"><span class="continent-icon">🌍</span><span class="continent-title">A carregar...</span></div>
-    <div class="skel-grid">${Array(8).fill('<div class="skel-card"><div class="skel-flag"></div><div class="skel-text"></div><div class="skel-badge"></div></div>').join('')}</div></div>`
-  
-  try{
-    const doc=await soapCall('SearchProducts',`<ns1:SearchProducts><SearchProductsRequest>${credXML()}<PriceFrom>0</PriceFrom><PriceTo>99999</PriceTo></SearchProductsRequest></ns1:SearchProducts>`)
-    const arr=all(doc,'ProductArray')[0];
-    let items=arr?itemsOf(arr):[];
-    if(!items.length) items=all(doc,'Product')
-    
-    allProducts = []
-    const seen = new Set()
-    for(const p of items){
-      const code=parseInt(txt(p,'Code')||txt(p,'ProdCode')||'0');
-      const nome=txt(p,'Name')||txt(p,'ProdName')||'';
-      const price=parseFloat(txt(p,'PriceFrom')||'0');
-      let img = txt(p,'ImageUrl') || txt(p,'Image') || '';
-      const country = extractCountry(nome);
-      if(code>0 && nome && country && !seen.has(code)){
-        seen.add(code)
-        allProducts.push({code,nome,price,country,img})
-      }
-    }
-    
-    document.getElementById('total-count').textContent = allProducts.length
-    const uniqueCountries = new Set(allProducts.map(p=>p.country))
-    document.getElementById('country-count').textContent = uniqueCountries.size
-    const minPrice = Math.min(...allProducts.map(p=>p.price).filter(p=>p>0))
-    document.getElementById('best-price').innerHTML = minPrice ? money(minPrice) : '—'
-    
-    renderAll()
-  }catch(e){
-    toast('Erro ao carregar', 'err')
-    console.error(e)
+function goToConfirm() {
+  renderPaxForm(all(state.simulationData, 'DynResPax'))
+  document.getElementById('r-step4').style.display = 'none'
+  document.getElementById('r-step5').style.display = 'block'
+  setStep(5)
+}
+function renderPaxForm(paxList) {
+  const c = document.getElementById('pax-form')
+  let h = ''
+  const list = paxList.length ? paxList : state.rooms.map((r,i)=>({room:'DBL'+r.num, type:'ADT', roomNum:r.num}))
+  list.forEach((p, i) => {
+    const room = paxList.length ? (txt(p,'Room')||'DBL1') : p.room
+    const type = paxList.length ? (txt(p,'Type')||'ADT') : p.type
+    const roomNum = paxList.length ? (txt(p,'RoomNumber')||'1') : p.roomNum
+    h += `<div class="pax-row">
+      <div class="pax-row-title">Passageiro ${i+1} — ${room} · ${type==='ADT'?'Adulto':'Criança'}</div>
+      <div class="form-group"><label>Tratamento</label><select id="pax-title-${i}"><option>MR</option><option>MRS</option><option>MISS</option></select></div>
+      <div class="form-group"><label>Nome</label><input type="text" id="pax-name-${i}"></div>
+      <div class="form-group"><label>Apelido</label><input type="text" id="pax-surname-${i}"></div>
+      <div class="form-group"><label>Data Nasc.</label><input type="date" id="pax-dob-${i}"></div>
+      <input type="hidden" id="pax-roomnum-${i}" value="${roomNum}">
+      <input type="hidden" id="pax-room-${i}" value="${room}"></div>`
+  })
+  c.innerHTML = h
+  state.paxCount = list.length
+}
+
+async function createReservation() {
+  // MODO TREINO: não cria reserva real na Soltrópico
+  if (MODO_TREINO) {
+    setStatus('reserva-status', 'ok', '🎓 Modo treino — reserva NÃO efetuada. Em modo real, a reserva seria criada agora na Soltrópico.')
+    const fn = document.getElementById('foot-next'); if(fn) fn.style.display='none'
+    return
   }
+  setStatus('reserva-status', 'loading', 'A criar reserva…')
+  let paxXML = ''
+  for (let i = 0; i < state.paxCount; i++) {
+    const title = document.getElementById(`pax-title-${i}`)?.value || 'MR'
+    const name = document.getElementById(`pax-name-${i}`)?.value || ''
+    const surname = document.getElementById(`pax-surname-${i}`)?.value || ''
+    const dob = document.getElementById(`pax-dob-${i}`)?.value || '1990-01-01'
+    const roomNum = document.getElementById(`pax-roomnum-${i}`)?.value || '1'
+    const room = document.getElementById(`pax-room-${i}`)?.value || 'DBL1'
+    paxXML += `<DynPax><RoomNum>${roomNum}</RoomNum><Title>${title}</Title><Name>${name}</Name><Surname>${surname}</Surname><DateBirth>${dob}</DateBirth><Room>${room}</Room></DynPax>`
+  }
+  const ref = document.getElementById('r-clientref').value || ''
+  const obs = document.getElementById('r-clientobs').value || ''
+  try {
+    const doc = await soapCall('DynCreateReserve',
+      `<ns1:DynCreateReserve><DynCreateReserveRequest>${credXML()}<SessionHash xsi:type="xsd:string">${state.sessionHash}</SessionHash><PaxsStruct>${paxXML}</PaxsStruct>${ref?`<ClientRef>${ref}</ClientRef>`:''}${obs?`<ClientObs>${obs}</ClientObs>`:''}</DynCreateReserveRequest></ns1:DynCreateReserve>`)
+    const reserve = txt(doc, 'Reserve')
+    const sysStatus = txt(doc, 'SystemStatus')
+    const statusAll = txt(doc, 'StatusAll')
+    log(`✅ Reserva criada: ${reserve} — ${sysStatus}`, 'success')
+    document.getElementById('r-step5').style.display = 'none'
+    document.getElementById('r-final').style.display = 'block'
+    document.getElementById('r-final').innerHTML = `<div class="res-success">
+      <div style="font-size:40px;margin-bottom:8px">✅</div>
+      <div class="res-number">${reserve}</div>
+      <div style="color:var(--muted);margin-top:4px">Número de Reserva Optigest / Soltropico</div>
+      <div style="margin-top:14px"><span class="badge ${sysStatus==='OK'?'badge-ok':'badge-wl'}">Sistema: ${sysStatus}</span><span class="badge ${statusAll==='OK'?'badge-ok':'badge-wl'}">Serviços: ${statusAll}</span></div>
+      <div style="margin-top:20px;display:flex;gap:10px;justify-content:center"><button class="btn btn-outline" onclick="viewReserve(${reserve})">Ver Detalhes</button><button class="btn btn-blue" onclick="location.reload()">Nova Reserva</button></div>
+    </div>`
+    setStatus('reserva-status', '', '')
+  } catch (e) { log(`❌ ${e.message}`, 'error'); setStatus('reserva-status', 'err', `❌ ${e.message}`) }
 }
 
-document.getElementById('search-input').addEventListener('input', (e) => {
-  currentSearch = e.target.value
-  filterProducts()
-})
-
-const urlP=new URLSearchParams(location.search)
-const CONSULTOR={id:urlP.get('cid')||'',nome:decodeURIComponent(urlP.get('cnome')||'Consultor')}
-if(CONSULTOR.nome&&CONSULTOR.nome!=='Consultor'){
-  document.getElementById('consultor-chip').style.display='flex'
-  document.getElementById('consultor-nome').textContent=CONSULTOR.nome
+async function listReserves() {
+  setStatus('reserves-status', 'loading', 'A pesquisar…')
+  const reserve = document.getElementById('rl-reserve').value
+  const status = document.getElementById('rl-status').value
+  const depFrom = document.getElementById('rl-depfrom').value
+  const depTo = document.getElementById('rl-depto').value
+  let xml = `<ns1:ReserveList><ReserveListRequest>${credXML()}`
+  if (reserve) xml += `<Reserve>${reserve}</Reserve>`
+  if (status) xml += `<Status>${status}</Status>`
+  if (depFrom) xml += `<DepDateFrom>${depFrom}</DepDateFrom>`
+  if (depTo) xml += `<DepDateTo>${depTo}</DepDateTo>`
+  xml += `<MaxReg>50</MaxReg></ReserveListRequest></ns1:ReserveList>`
+  try {
+    const doc = await soapCall('ReserveList', xml)
+    const list = all(doc, 'ResList')
+    if (!list.length) { setStatus('reserves-status', 'err', 'Nenhuma reserva.'); document.getElementById('reserves-results').innerHTML = ''; return }
+    setStatus('reserves-status', 'ok', `✓ ${list.length} reserva(s)`)
+    let h = '<table style="width:100%;border-collapse:collapse;margin-top:12px"><thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Nº</th><th style="padding:8px;text-align:left">Cliente</th><th style="padding:8px;text-align:left">Partida</th><th style="padding:8px">Ações</th></tr></thead><tbody>'
+    list.forEach(r => {
+      const num = txt(r,'Reserve'); const client = txt(r,'ClientName'); const dep = txt(r,'DepDate')
+      h += `<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px"><strong>${num}</strong></td><td style="padding:8px">${esc(client)}</td><td style="padding:8px">${dep}</td><td style="padding:8px;text-align:center"><button class="btn btn-outline btn-sm" onclick="viewReserve(${num})">Ver</button></td></tr>`
+    })
+    h += '</tbody></table>'
+    document.getElementById('reserves-results').innerHTML = h
+  } catch (e) { log(`❌ ${e.message}`, 'error'); setStatus('reserves-status', 'err', `❌ ${e.message}`) }
+}
+async function viewReserve(num) {
+  try {
+    const doc = await soapCall('RetrieveReserve',
+      `<ns1:RetrieveReserve><RetrieveReserveRequest>${credXML()}<Reserve xsi:type="xsd:int">${num}</Reserve></RetrieveReserveRequest></ns1:RetrieveReserve>`)
+    const head = firstByLocal(doc, 'Head') || firstByLocal(doc, 'ResHead')
+    const prod = head ? txt(head,'Product') : ''
+    const dep = head ? txt(head,'DepDate') : ''
+    const total = head ? parseFloat(txt(head,'TotalGrossVal')||0).toFixed(2) : '0.00'
+    alert(`Reserva ${num}\nProduto: ${prod}\nPartida: ${dep}\nTotal: €${total}`)
+  } catch (e) { alert('Erro: ' + e.message) }
 }
 
-init()
+document.getElementById('s-depdate').value = new Date().toISOString().split('T')[0]
+log('🚀 Sistema pronto.', 'success')
 </script>
 </body>
 </html>
