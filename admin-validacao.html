@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Submissões do Questionário · APM</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.08);--radius:12px;--shadow:0 2px 8px rgba(0,0,0,0.06);--green:#2E9E5B}
+body{font-family:'Inter',sans-serif;color:var(--navy);background:var(--bg);padding:16px;font-size:14px}
+.wrap{max-width:1000px;margin:0 auto}
+h1{font-family:'Poppins';font-size:1.4rem;font-weight:700;margin-bottom:4px}
+.sub{color:var(--muted);font-size:.88rem;margin-bottom:18px}
+.subm{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.subm-head{padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.subm-head:hover{background:#fafafe}
+.subm-head .who{flex:1}
+.subm-head .who b{font-size:14.5px;font-family:'Poppins'}
+.subm-head .who span{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+.score{font-size:12.5px;font-weight:700;padding:5px 11px;border-radius:20px;background:#EEF2FF;color:var(--blue);white-space:nowrap}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--coral);flex-shrink:0}
+.dot.seen{background:transparent}
+.estado-tag{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px}
+.estado-tag.novo{background:#FFF3E0;color:#E8A23B}
+.estado-tag.aprovado{background:#E8F5E9;color:var(--green)}
+.estado-tag.reprovado{background:#FFEBEE;color:var(--coral)}
+.subm-body{display:none;padding:0 18px 18px;border-top:1px solid var(--border)}
+.subm-body.open{display:block}
+.qa{padding:13px 0;border-bottom:1px solid var(--border)}
+.qa:last-child{border-bottom:none}
+.qa .q{font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:5px}
+.qa .a{font-size:14px;line-height:1.5;white-space:pre-wrap}
+.qa .model{font-size:12.5px;color:var(--green);background:#F0FAF3;border-radius:8px;padding:8px 11px;margin-top:7px;line-height:1.45}
+.qa .model b{color:#1f7a44}
+.mc-result{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;margin-left:8px}
+.mc-result.ok{color:var(--green)}.mc-result.no{color:var(--coral)}
+.valida{display:flex;gap:8px;margin-top:9px}
+.vbtn{font-size:12px;font-weight:600;padding:7px 13px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-family:inherit}
+.vbtn.ok{color:var(--green);border-color:#bfe6cc}.vbtn.ok.active{background:var(--green);color:#fff;border-color:var(--green)}
+.vbtn.no{color:var(--coral);border-color:#f5c2cc}.vbtn.no.active{background:var(--coral);color:#fff;border-color:var(--coral)}
+.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.act{flex:1;min-width:130px;padding:11px;border-radius:9px;border:none;font-weight:700;font-size:13px;cursor:pointer;font-family:'Poppins'}
+.act.aprovar{background:var(--green);color:#fff}
+.act.reprovar{background:var(--coral);color:#fff}
+.empty{text-align:center;padding:50px;color:var(--muted)}
+.refresh{float:right;font-size:12.5px;color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Submissões do Questionário <button class="refresh" onclick="carregar()">🔄 Atualizar</button></h1>
+  <div class="sub">Respostas dos consultores ao questionário de validação. As de escolha múltipla são corrigidas automaticamente; as escritas pode validar manualmente com a resposta-modelo ao lado.</div>
+  <div id="lista"><div class="empty">A carregar…</div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://uiaorfcgvqwxjezgisps.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const PERGUNTAS = [
+  {id:'p1', tipo:'txt', q:'1 — Formações obrigatórias antes dos acessos'},
+  {id:'p2', tipo:'txt', q:'2 — Documentação de envio obrigatório ao cliente'},
+  {id:'p3', tipo:'txt', q:'3 — Quando é necessário o contrato de viagem organizada'},
+  {id:'p4', tipo:'txt', q:'4 — Políticas de pagamento/cancelamento no contrato'},
+  {id:'p5', tipo:'mc', q:'5 — Foto de documentos do cliente'},
+  {id:'p6', tipo:'txt', q:'6 — Manter/partilhar as fotografias'},
+  {id:'p7', tipo:'txt', q:'7 — Comunicações de marketing com consentimento'},
+  {id:'p8', tipo:'txt', q:'8 — Prazo de pagamento faseado'},
+  {id:'p9', tipo:'txt', q:'9 — Tarifa não reembolsável'},
+  {id:'p10', tipo:'mc', q:'10 — Devolução garantida no cancelamento?'},
+  {id:'p11', tipo:'mc', q:'11 — Reservas experimentais'},
+  {id:'p12', tipo:'mc', q:'12 — Prazo de pagamento imediato'},
+  {id:'p13', tipo:'mc', q:'13 — IBAN das transferências'},
+  {id:'p14', tipo:'mc', q:'14 — Quando informar a APM da reserva'},
+  {id:'p15', tipo:'mc', q:'15 — Pagamentos diretos a operadores'},
+  {id:'p16', tipo:'mc', q:'16 — Quem contactar em horário útil'},
+  {id:'p17', tipo:'mc', q:'Confirmação final'}
+];
+
+let GABARITO = {};
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+async function carregar(){
+  const cont = document.getElementById('lista');
+  try{
+    try{ const { data:g } = await sb.from('quiz_gabarito').select('respostas').eq('id',1).single(); GABARITO=(g&&g.respostas)||{}; }catch(_){ GABARITO={}; }
+    const { data, error } = await sb.from('quiz_submissoes').select('*').order('criado_em',{ascending:false});
+    if(error) throw error;
+    if(!data || !data.length){ cont.innerHTML='<div class="empty">Ainda não há submissões.</div>'; return; }
+    cont.innerHTML = data.map(renderSubm).join('');
+  }catch(e){ cont.innerHTML='<div class="empty" style="color:var(--coral)">Erro: '+esc(e.message||e)+'</div>'; }
+}
+
+function renderSubm(s){
+  const dt = new Date(s.criado_em).toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const score = (s.pontuacao_auto!=null && s.total_escolha) ? `${s.pontuacao_auto}/${s.total_escolha} escolha múltipla` : '—';
+  const estadoTag = s.estado && s.estado!=='novo' && s.estado!=='visto' ? `<span class="estado-tag ${s.estado}">${s.estado}</span>` : (s.estado==='novo'?'<span class="estado-tag novo">novo</span>':'');
+  const qas = PERGUNTAS.map(p => {
+    const resp = (s.respostas&&s.respostas[p.id])||'(sem resposta)';
+    if(p.tipo==='mc'){
+      const corr = s.correcao && s.correcao[p.id];
+      const tag = corr===true?'<span class="mc-result ok">✓ certo</span>':(corr===false?'<span class="mc-result no">✗ errado</span>':'');
+      return `<div class="qa"><div class="q">${esc(p.q)}</div><div class="a">${esc(resp)} ${tag}</div></div>`;
+    }
+    const modelo = GABARITO[p.id] ? `<div class="model"><b>Resposta de referência:</b> ${esc(GABARITO[p.id])}</div>` : '';
+    const vc = s.correcao && s.correcao[p.id];
+    return `<div class="qa"><div class="q">${esc(p.q)}</div><div class="a">${esc(resp)}</div>${modelo}
+      <div class="valida">
+        <button class="vbtn ok ${vc===true?'active':''}" onclick="validar('${s.id}','${p.id}',true)">✓ Certo</button>
+        <button class="vbtn no ${vc===false?'active':''}" onclick="validar('${s.id}','${p.id}',false)">✗ Errado</button>
+      </div></div>`;
+  }).join('');
+  return `<div class="subm" data-id="${s.id}">
+    <div class="subm-head" onclick="toggle('${s.id}')">
+      <span class="dot ${s.visto?'seen':''}"></span>
+      <div class="who"><b>${esc(s.nome)}</b><span>${esc(s.email||'')} · ${esc(s.telefone||'')} · ${dt}</span></div>
+      ${estadoTag}
+      <span class="score">${score}</span>
+    </div>
+    <div class="subm-body" id="body-${s.id}">
+      ${qas}
+      <div class="actions">
+        <button class="act aprovar" onclick="setEstado('${s.id}','aprovado')">✓ Aprovar consultor</button>
+        <button class="act reprovar" onclick="setEstado('${s.id}','reprovado')">✗ Reprovar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function toggle(id){
+  const body = document.getElementById('body-'+id);
+  const open = body.classList.toggle('open');
+  if(open){
+    // marcar como visto (tira a notificação)
+    const card = document.querySelector(`.subm[data-id="${id}"] .dot`);
+    if(card && !card.classList.contains('seen')){
+      card.classList.add('seen');
+      try{ await sb.from('quiz_submissoes').update({visto:true}).eq('id',id); }catch(_){}
+    }
+  }
+}
+
+async function validar(subId, pid, valor){
+  try{
+    const { data } = await sb.from('quiz_submissoes').select('correcao').eq('id',subId).single();
+    const corr = (data&&data.correcao)||{};
+    corr[pid] = valor;
+    await sb.from('quiz_submissoes').update({correcao:corr}).eq('id',subId);
+    // atualizar botões na UI
+    const qa = event.target.closest('.qa');
+    qa.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('active'));
+    event.target.classList.add('active');
+  }catch(e){ alert('Erro ao validar: '+(e.message||e)); }
+}
+
+async function setEstado(id, estado){
+  try{
+    await sb.from('quiz_submissoes').update({estado, visto:true}).eq('id',id);
+    carregar();
+  }catch(e){ alert('Erro: '+(e.message||e)); }
+}
+
+carregar();
+</script>
+</body>
+</html>

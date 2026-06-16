@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Questionário de Validação · APM</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.08);--radius:12px;--shadow:0 2px 8px rgba(0,0,0,0.06)}
+body{font-family:'Inter',sans-serif;color:var(--navy);background:var(--bg);padding:18px;font-size:14px}
+.wrap{max-width:760px;margin:0 auto}
+.head{background:var(--coral);color:#fff;border-radius:var(--radius) var(--radius) 0 0;padding:22px 24px}
+.head h1{font-family:'Poppins';font-size:1.3rem;font-weight:700;margin-bottom:4px}
+.head p{font-size:.85rem;opacity:.92;line-height:1.5}
+.gab-banner{background:#FEF3C7;color:#92660B;padding:10px 24px;font-size:12.5px;font-weight:600;text-align:center}
+.card{background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);padding:24px;box-shadow:var(--shadow)}
+.q{margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--border)}
+.q:last-of-type{border-bottom:none}
+.q-num{font-size:11px;font-weight:700;color:var(--coral);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.q-txt{font-weight:600;font-size:14px;margin-bottom:12px;line-height:1.45}
+.q-txt .req{color:var(--coral)}
+input[type=text],input[type=email],input[type=tel],textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s}
+input:focus,textarea:focus{border-color:var(--blue)}
+textarea{resize:vertical;min-height:80px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:.15s;font-size:13.5px;line-height:1.4}
+.opt:hover{border-color:var(--blue);background:#F8FAFF}
+.opt input{margin-top:2px;flex-shrink:0;accent-color:var(--coral)}
+.opt.sel{border-color:var(--coral);background:var(--coral-light,#FFF0F3)}
+.section-label{font-family:'Poppins';font-weight:700;font-size:13px;color:var(--navy);text-transform:uppercase;letter-spacing:.05em;margin:8px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--coral)}
+.btn{background:var(--coral);color:#fff;border:none;border-radius:10px;padding:14px 28px;font-size:15px;font-weight:700;cursor:pointer;width:100%;font-family:'Poppins';transition:.15s}
+.btn:hover{background:#d02f4e}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.ok-screen{text-align:center;padding:50px 24px}
+.ok-screen .ico{font-size:54px;margin-bottom:14px}
+.ok-screen h2{font-family:'Poppins';font-size:1.3rem;margin-bottom:8px}
+.ok-screen p{color:var(--muted);line-height:1.55}
+.err{color:var(--coral);font-size:12.5px;margin-top:6px;display:none}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="head">
+    <h1>Questionário de Validação de Conhecimentos</h1>
+    <p>Preenche este formulário após terminares a visualização dos vídeos obrigatórios. Após o preenchimento, serás contactado por um membro da gestão da APM Viagens. Obrigado.</p>
+  </div>
+  <div class="gab-banner" id="gab-banner" style="display:none">⚙️ MODO GABARITO — as respostas que indicar ficam como referência de correção.</div>
+  <div class="card" id="form-card"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://uiaorfcgvqwxjezgisps.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const MODO = new URLSearchParams(location.search).get('modo') || 'consultor';
+const PRE_NOME = decodeURIComponent(new URLSearchParams(location.search).get('cnome') || '');
+
+// tipo: 'mc' = escolha múltipla, 'txt' = resposta escrita
+const PERGUNTAS = [
+  {id:'p1', tipo:'txt', q:'1 — Quais as formações obrigatórias que tens de concluir, antes de te serem atribuídos os acessos à plataforma de agência de viagens?'},
+  {id:'p2', tipo:'txt', q:'2 — Qual a documentação de envio obrigatório ao cliente, antes de efetuarmos a reserva?'},
+  {id:'p3', tipo:'txt', q:'3 — Em que situações é necessário o contrato de viagem organizada?'},
+  {id:'p4', tipo:'txt', q:'4 — As políticas de pagamento e de cancelamento devem estar escritas no contrato de viagem organizada, ou são apenas discutidas com o cliente na altura da reserva?'},
+  {id:'p5', tipo:'mc', q:'5 — O cliente, na altura da reserva, envia uma foto dos seus documentos de identificação. O que devemos fazer?', opcoes:['Claro, sem problema.','Não.']},
+  {id:'p6', tipo:'txt', q:'6 — Podemos manter essas fotografias em nossa posse? E partilhá-las com outras pessoas ou empresas?'},
+  {id:'p7', tipo:'txt', q:'7 — Quando temos os dados de um cliente e o seu consentimento para tratamento de dados, no seguimento de uma reserva que efetuámos, podemos enviar-lhe comunicações de marketing? Porquê?'},
+  {id:'p8', tipo:'txt', q:'8 — Relativamente às políticas de pagamentos, até que prazo pode o cliente fazer o pagamento da sua viagem, caso esteja a efetuar pagamentos faseados?'},
+  {id:'p9', tipo:'txt', q:'9 — O cliente pretende reservar uma estadia num hotel e o operador tem apenas disponível uma tarifa não reembolsável. O que significa isto?'},
+  {id:'p10', tipo:'mc', q:'10 — Quando os clientes pretendem cancelar uma reserva já efetuada, podemos garantir que em todas as situações há devolução do montante pago?', opcoes:['Sim, sempre.','Não, vai depender das situações.']},
+  {id:'p11', tipo:'mc', q:'11 — Devemos efetuar reservas experimentais nas plataformas dos operadores, apenas para saber o valor final das mesmas?', opcoes:['Sim, para verificarmos os valores da reserva.','Não, só quando o cliente pretender avançar com a reserva.']},
+  {id:'p12', tipo:'mc', q:'12 — Perante uma reserva de pagamento imediato, o cliente deve fazer o pagamento em que prazo?', opcoes:['Quando tiver oportunidade.','Antes de avançarmos com a reserva.','No prazo de 72H.']},
+  {id:'p13', tipo:'mc', q:'13 — Os clientes fazem as transferências dos valores das reservas para que IBAN?', opcoes:['Para o do consultor.','Pagam diretamente ao operador.','Para o da APM Viagens.']},
+  {id:'p14', tipo:'mc', q:'14 — Quando fazemos uma reserva, quando devemos informar a APM Viagens acerca da reserva feita e através de que meio?', opcoes:['No prazo de 3 dias úteis.','De imediato, ou nas primeiras 24H, através do formulário de reservas.','Quando tivermos oportunidade.']},
+  {id:'p15', tipo:'mc', q:'15 — Podem os consultores efetuar pagamentos diretamente aos operadores?', opcoes:['Não, nunca.','Sim, para não incomodarmos o suporte ou a gestão.']},
+  {id:'p16', tipo:'mc', q:'16 — Quando preciso de ajuda, dentro de horário útil (2ªf-6ªf, 9H-18H), quem devo contactar?', opcoes:['A gestão.','Qualquer uma das pessoas do suporte, via mensagem privada.','O grupo de suporte.','Todos, estou com urgência em ser atendido.']},
+  {id:'p17', tipo:'mc', q:'Abaixo tens o botão Enviar. Certifica-te de que ao clicar recebes a confirmação do envio no teu e-mail. Marca esta questão com "Sim, compreendi" e clica em Enviar.', opcoes:['Sim, compreendi.']}
+];
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function render(){
+  const card = document.getElementById('form-card');
+  if(MODO === 'gabarito'){ document.getElementById('gab-banner').style.display='block'; }
+  let html = '';
+  if(MODO !== 'gabarito'){
+    html += '<div class="section-label">Identificação</div>';
+    html += `<div class="q" style="border-bottom:none;padding-bottom:6px">
+      <div class="q-txt">Nome e apelido <span class="req">*</span></div>
+      <input type="text" id="f-nome" value="${esc(PRE_NOME)}" placeholder="O teu nome completo">
+      <div class="err" id="e-nome">Indica o teu nome.</div>
+    </div>
+    <div class="q" style="border-bottom:none;padding-bottom:6px">
+      <div class="q-txt">E-mail <span class="req">*</span></div>
+      <input type="email" id="f-email" placeholder="o.teu@email.com">
+      <div class="err" id="e-email">Indica um e-mail válido.</div>
+    </div>
+    <div class="q" style="border-bottom:none">
+      <div class="q-txt">Contacto telefónico <span class="req">*</span></div>
+      <input type="tel" id="f-tel" placeholder="9XX XXX XXX">
+    </div>
+    <div class="section-label">Questionário</div>`;
+  }
+  PERGUNTAS.forEach(p => {
+    html += `<div class="q"><div class="q-txt">${esc(p.q)} <span class="req">*</span></div>`;
+    if(p.tipo === 'txt'){
+      html += `<textarea id="q-${p.id}" placeholder="A tua resposta"></textarea>`;
+    } else {
+      p.opcoes.forEach((op,i) => {
+        html += `<label class="opt" onclick="selOpt('${p.id}',this)">
+          <input type="radio" name="${p.id}" value="${esc(op)}"> <span>${esc(op)}</span>
+        </label>`;
+      });
+    }
+    html += `</div>`;
+  });
+  html += `<button class="btn" id="submit-btn" onclick="enviar()">${MODO==='gabarito'?'Guardar Gabarito':'Enviar Questionário'}</button>`;
+  card.innerHTML = html;
+}
+
+function selOpt(pid, el){
+  el.parentNode.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  el.querySelector('input').checked = true;
+}
+
+function recolher(){
+  const r = {};
+  PERGUNTAS.forEach(p => {
+    if(p.tipo==='txt'){ r[p.id] = document.getElementById('q-'+p.id).value.trim(); }
+    else { const sel = document.querySelector(`input[name="${p.id}"]:checked`); r[p.id] = sel ? sel.value : ''; }
+  });
+  return r;
+}
+
+async function enviar(){
+  const btn = document.getElementById('submit-btn');
+  const respostas = recolher();
+
+  if(MODO === 'gabarito'){
+    btn.disabled = true; btn.textContent = 'A guardar…';
+    try{
+      const { error } = await sb.from('quiz_gabarito').upsert({ id:1, respostas, atualizado_em:new Date().toISOString() });
+      if(error) throw error;
+      document.getElementById('wrap').innerHTML = '<div class="card" style="border-radius:12px;border-top:1px solid var(--border)"><div class="ok-screen"><div class="ico">✅</div><h2>Gabarito guardado</h2><p>As respostas de referência foram registadas. As submissões dos consultores passam a ser comparadas com estas.</p></div></div>';
+    }catch(e){ alert('Erro: '+(e.message||e)); btn.disabled=false; btn.textContent='Guardar Gabarito'; }
+    return;
+  }
+
+  // modo consultor: validar identificação
+  const nome = document.getElementById('f-nome').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const tel = document.getElementById('f-tel').value.trim();
+  let erro = false;
+  if(!nome){ document.getElementById('e-nome').style.display='block'; erro=true; }
+  if(!email || !email.includes('@')){ document.getElementById('e-email').style.display='block'; erro=true; }
+  if(erro){ window.scrollTo({top:0,behavior:'smooth'}); return; }
+
+  btn.disabled = true; btn.textContent = 'A enviar…';
+  try{
+    // correção automática das de escolha múltipla, comparando com o gabarito
+    let gabarito = {};
+    try{ const { data } = await sb.from('quiz_gabarito').select('respostas').eq('id',1).single(); gabarito = (data&&data.respostas)||{}; }catch(_){}
+    const correcao = {}; let acertos=0, totalMC=0;
+    PERGUNTAS.forEach(p => {
+      if(p.tipo==='mc'){
+        totalMC++;
+        if(gabarito[p.id]){ const ok = respostas[p.id]===gabarito[p.id]; correcao[p.id]=ok; if(ok) acertos++; }
+        else correcao[p.id]=null;
+      } else { correcao[p.id]=null; } // escritas: por validar pelo admin
+    });
+    const { error } = await sb.from('quiz_submissoes').insert({
+      nome, email, telefone:tel, respostas, correcao,
+      pontuacao_auto:acertos, total_escolha:totalMC, estado:'novo', visto:false
+    });
+    if(error) throw error;
+    document.getElementById('wrap').innerHTML = '<div class="card" style="border-radius:12px;border-top:1px solid var(--border)"><div class="ok-screen"><div class="ico">🎉</div><h2>Questionário enviado!</h2><p>Obrigado, '+esc(nome)+'. As tuas respostas foram registadas com sucesso. Um membro da gestão da APM Viagens entrará em contacto.</p></div></div>';
+  }catch(e){ alert('Não foi possível enviar: '+(e.message||e)); btn.disabled=false; btn.textContent='Enviar Questionário'; }
+}
+
+render();
+</script>
+</body>
+</html>
