@@ -419,6 +419,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-section" data-s="recursos">Recursos</div>
       <div class="nav-item" onclick="navTo('recursos',this)"><span class="nav-icon">🧰</span> Central de Recursos</div>
       <div class="nav-item" onclick="navTo('questionario',this)"><span class="nav-icon">🎓</span> Validação de Conhecimentos <span class="nav-badge" id="quiz-consultor-badge" style="display:none">!</span></div>
+      <div class="nav-item" onclick="navTo('exercicio',this)"><span class="nav-icon">📝</span> Exercício Prático <span class="nav-badge" id="exerc-consultor-badge" style="display:none">!</span></div>
       <div class="nav-item" onclick="navTo('tickets',this)"><span class="nav-icon">🎫</span> Suporte / Tickets <span class="nav-badge" id="tickets-badge" style="display:none">0</span></div>
 
       <div class="nav-section" data-s="fluxo">Jornada de venda</div>
@@ -462,6 +463,7 @@ textarea.finput{resize:vertical;min-height:72px}
         <div class="nav-item" id="nav-templates" style="display:none" onclick="navTo('templates',this)"><span class="nav-icon">📝</span> Templates</div>
         <div class="nav-item" onclick="navTo('aprovacoes',this)"><span class="nav-icon">✓</span> Aprovações <span class="nav-badge" id="appr-badge">0</span></div>
         <div class="nav-item" onclick="window.open('admin-validacao.html','_blank')"><span class="nav-icon">📋</span> Novo Questionário <span class="nav-badge" id="quiz-badge" style="display:none">0</span></div>
+        <div class="nav-item" onclick="window.open('admin-exercicio.html','_blank')"><span class="nav-icon">📝</span> Exercícios Práticos <span class="nav-badge" id="exerc-badge" style="display:none">0</span></div>
       </div>
     </nav>
     <div class="sidebar-user">
@@ -2328,6 +2330,10 @@ textarea.finput{resize:vertical;min-height:72px}
         <iframe id="questionario-frame" style="width:100%;height:calc(100vh - 90px);border:none;border-radius:12px;background:#fff" title="Questionário de Validação"></iframe>
       </div>
 
+      <div class="page" id="page-exercicio">
+        <iframe id="exercicio-frame" style="width:100%;height:calc(100vh - 90px);border:none;border-radius:12px;background:#fff" title="Exercício Prático"></iframe>
+      </div>
+
       <!-- ═══ FASE: VENDER (página de fluxo em cards) ══════════════════════════ -->
       <div class="page" id="page-vender">
         <div style="max-width:1100px;margin:0 auto;padding:8px 28px">
@@ -3999,6 +4005,8 @@ function enterApp() {
   atualizarTicketsBadge()
   if(currentPerfil.role === 'admin') atualizarQuestionarioBadge()
   if(currentPerfil.role !== 'admin') atualizarQuizConsultorBadge()
+  if(currentPerfil.role === 'admin') atualizarExercAdminBadge()
+  if(currentPerfil.role !== 'admin') atualizarExercConsultorBadge()
   // agregar badges por fase (depois de os internos carregarem)
   setTimeout(atualizarBadgesFases, 1500)
   setInterval(atualizarBadgesFases, 30000)
@@ -4130,12 +4138,13 @@ function navTo(page, el) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
   sessionStorage.setItem('apm_page', page)
-  const titles={dashboard:'Dashboard',recursos:'Central de Recursos',tickets:'Suporte',questionario:'Validação de Conhecimentos',captar:'Captar — Captar negócio',vender:'Vender — Fechar a venda',acompanhar:'Acompanhar — Acompanhar e fidelizar',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',lembretes:'Lembretes em Destaque',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento','rec-divulgar':'Recrutamento — Divulgar','rec-converter':'Recrutamento — Converter','rec-crescer':'Recrutamento — Crescer',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
+  const titles={dashboard:'Dashboard',recursos:'Central de Recursos',tickets:'Suporte',questionario:'Validação de Conhecimentos',exercicio:'Exercício Prático',captar:'Captar — Captar negócio',vender:'Vender — Fechar a venda',acompanhar:'Acompanhar — Acompanhar e fidelizar',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',lembretes:'Lembretes em Destaque',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento','rec-divulgar':'Recrutamento — Divulgar','rec-converter':'Recrutamento — Converter','rec-crescer':'Recrutamento — Crescer',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
   document.getElementById('tb-title').textContent = titles[page]||page
   document.getElementById('tb-sub').textContent = page==='dashboard'?(currentPerfil?.role==='admin'?'Visão global da agência':'Visão geral das tuas reservas'):''
   if(page==='recursos') loadRecursos()
   if(page==='tickets') carregarTicketsFrame()
   if(page==='questionario') carregarQuestionarioFrame()
+  if(page==='exercicio') carregarExercicioFrame()
   if(page==='dashboard') renderDash()
   if(page==='reservas') renderTable()
   if(page==='pipeline') loadPipeline()
@@ -15509,6 +15518,35 @@ function carregarQuestionarioFrame(){
   const cemail = encodeURIComponent(currentPerfil.email || '')
   const src = `validacao-conhecimentos.html?cid=${cid}&cnome=${cnome}&cemail=${cemail}`
   f.src = src // recarrega sempre para refletir o estado mais recente
+}
+
+function carregarExercicioFrame(){
+  const f = document.getElementById('exercicio-frame')
+  if(!f) return
+  const cid = encodeURIComponent(currentPerfil.id || '')
+  const cnome = encodeURIComponent(currentPerfil.nome || '')
+  const cemail = encodeURIComponent(currentPerfil.email || '')
+  f.src = `exercicio-pratico.html?cid=${cid}&cnome=${cnome}&cemail=${cemail}`
+}
+
+async function atualizarExercAdminBadge(){
+  try{
+    if(!currentPerfil || currentPerfil.role !== 'admin') return
+    const { count } = await sb.from('exercicio_pratico').select('id',{count:'exact',head:true}).eq('visto',false).neq('estado','em_curso')
+    const b=document.getElementById('exerc-badge')
+    if(b){ b.textContent=count||0; b.style.display=(count>0)?'inline-flex':'none' }
+  }catch(e){ console.warn('exerc admin badge:',e) }
+}
+
+async function atualizarExercConsultorBadge(){
+  try{
+    if(!currentPerfil || currentPerfil.role === 'admin') return
+    const { data } = await sb.from('exercicio_pratico').select('estado,visto_consultor').eq('consultor_id',currentPerfil.id).order('atualizado_em',{ascending:false}).limit(1)
+    const b=document.getElementById('exerc-consultor-badge')
+    if(!b) return
+    const s=data&&data[0]
+    b.style.display = (s && s.estado==='a_corrigir' && s.visto_consultor===false) ? 'inline-flex':'none'
+  }catch(e){ console.warn('exerc consultor badge:',e) }
 }
 
 async function atualizarQuizConsultorBadge(){
