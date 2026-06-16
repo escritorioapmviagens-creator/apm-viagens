@@ -66,8 +66,8 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .nav-section[data-s="recursos"]{color:#E8395A}.nav-section[data-s="recursos"]::before{background:#E8395A}
 .nav-section[data-s="gestao"]{color:#3B5BDB}.nav-section[data-s="gestao"]::before{background:#3B5BDB}
 .nav-section[data-s="recrutamento"]{color:#c9a84c}.nav-section[data-s="recrutamento"]::before{background:#c9a84c}
-.nav-section[data-s="rec-divulgar"]{color:#c9a84c}.nav-section[data-s="rec-divulgar"]::before{background:#c9a84c}
-.nav-section[data-s="rec-converter"]{color:#d98324}.nav-section[data-s="rec-converter"]::before{background:#d98324}
+.nav-section[data-s="rec-divulgar"]{color:#8B5CF6}.nav-section[data-s="rec-divulgar"]::before{background:#8B5CF6}
+.nav-section[data-s="rec-converter"]{color:#F59E0B}.nav-section[data-s="rec-converter"]::before{background:#F59E0B}
 .nav-section[data-s="rec-crescer"]{color:#2E9E5B}.nav-section[data-s="rec-crescer"]::before{background:#2E9E5B}
 .nav-section[data-s="admin"]{color:#7c3aed}.nav-section[data-s="admin"]::before{background:#7c3aed}
 .nav-section[data-s="captar"]{color:#E8395A}.nav-section[data-s="captar"]::before{background:#E8395A}
@@ -437,9 +437,9 @@ textarea.finput{resize:vertical;min-height:72px}
 
       <div class="nav-item" onclick="navTo('minha-equipa',this)" style="margin-top:8px"><span class="nav-icon">👥</span> A Minha Equipa</div>
       <div class="nav-section" data-s="recrutamento">Recrutamento</div>
-      <div class="nav-section nav-section-click" data-s="rec-divulgar" onclick="navTo('rec-divulgar',null)" title="Ver o fluxo desta fase">1 · Divulgar</div>
-      <div class="nav-section nav-section-click" data-s="rec-converter" onclick="navTo('rec-converter',null)" title="Ver o fluxo desta fase">2 · Converter <span class="nav-badge" id="fase-converter-badge" style="display:none;margin-left:auto">0</span></div>
-      <div class="nav-section nav-section-click" data-s="rec-crescer" onclick="navTo('rec-crescer',null)" title="Ver o fluxo desta fase">3 · Crescer <span class="nav-badge" id="fase-crescer-badge" style="display:none;margin-left:auto">0</span></div>
+      <div class="nav-section nav-section-click" data-s="rec-divulgar" onclick="navTo('rec-divulgar',null)" title="Ver o fluxo desta fase">📢 1 · Divulgar</div>
+      <div class="nav-section nav-section-click" data-s="rec-converter" onclick="navTo('rec-converter',null)" title="Ver o fluxo desta fase">🎯 2 · Converter <span class="nav-badge" id="fase-converter-badge" style="display:none;margin-left:auto">0</span></div>
+      <div class="nav-section nav-section-click" data-s="rec-crescer" onclick="navTo('rec-crescer',null)" title="Ver o fluxo desta fase">🌱 3 · Crescer <span class="nav-badge" id="fase-crescer-badge" style="display:none;margin-left:auto">0</span></div>
       <!-- itens internos (escondidos) — alimentam os cards e os badges das fases -->
       <div style="display:none">
         <div id="nav-recrutamento" onclick="navTo('recrutamento',this)"><span class="nav-badge" id="recrutamento-badge">0</span></div>
@@ -2468,7 +2468,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="page" id="page-rec-divulgar">
         <div style="max-width:1100px;margin:0 auto;padding:8px 28px">
           <div style="margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)">
-            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#c9a84c;margin-bottom:8px">Recrutamento · Fase 1 · Divulgar</div>
+            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#8B5CF6;margin-bottom:8px">Recrutamento · Fase 1 · Divulgar</div>
             <div style="font-size:1.5rem;font-weight:700;color:var(--navy);line-height:1.2;font-family:'Poppins',sans-serif">Divulgar a oportunidade</div>
             <div style="font-size:.88rem;color:var(--muted);margin-top:6px">Partilhe a APM e atraia pessoas interessadas em juntar-se à equipa.</div>
           </div>
@@ -2477,13 +2477,13 @@ textarea.finput{resize:vertical;min-height:72px}
               <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">🔗</span></div></div>
               <div class="rec-card-title">Link de Afiliado</div>
               <div class="rec-card-desc">O seu link pessoal para partilhar a oportunidade e atrair candidatos.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" style="background:#FBF3DC;color:#c9a84c">Passo 1</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
+              <div class="rec-card-footer"><span class="rec-card-metric" style="background:#F3EEFE;color:#8B5CF6">Passo 1</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
             </div>
             <div class="rec-card" onclick="navTo('promotores',document.getElementById('nav-promotores'))">
               <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">📣</span></div></div>
               <div class="rec-card-title">Promotores</div>
               <div class="rec-card-desc">Faça a gestão dos promotores que divulgam a APM consigo.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" style="background:#FBF3DC;color:#c9a84c">Passo 2</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
+              <div class="rec-card-footer"><span class="rec-card-metric" style="background:#F3EEFE;color:#8B5CF6">Passo 2</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
             </div>
           </div>
         </div>
@@ -2493,7 +2493,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="page" id="page-rec-converter">
         <div style="max-width:1100px;margin:0 auto;padding:8px 28px">
           <div style="margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)">
-            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#d98324;margin-bottom:8px">Recrutamento · Fase 2 · Converter</div>
+            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#F59E0B;margin-bottom:8px">Recrutamento · Fase 2 · Converter</div>
             <div style="font-size:1.5rem;font-weight:700;color:var(--navy);line-height:1.2;font-family:'Poppins',sans-serif">Converter interessados</div>
             <div style="font-size:.88rem;color:var(--muted);margin-top:6px">Acompanhe os candidatos até se tornarem consultores.</div>
           </div>
@@ -2502,7 +2502,7 @@ textarea.finput{resize:vertical;min-height:72px}
               <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">🎯</span></div></div>
               <div class="rec-card-title">Pipeline de Recrutamento</div>
               <div class="rec-card-desc">Acompanhe os candidatos em cada etapa, do contacto à inscrição.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" id="rec-conv-metric" style="background:#FCEEDD;color:#d98324">Acompanhar</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
+              <div class="rec-card-footer"><span class="rec-card-metric" id="rec-conv-metric" style="background:#FEF3C7;color:#F59E0B">Acompanhar</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
             </div>
           </div>
         </div>
@@ -10379,7 +10379,7 @@ async function renderEquipasGlobal() {
   const elegiveis = Object.values(equipas).filter(e => e.filter(m=>m.status==='ativo'||m.status==='aprovado').length >= (cfg.min_recrutados||5)).length
 
   document.getElementById('meq-total').textContent = totalRecrutados
-  document.getElementById('meq-ativos').textContent = totalRecrutadores + ' líderes'
+  document.getElementById('meq-ativos').textContent = totalRecrutadores + ' membros'
   document.getElementById('meq-comissoes').textContent = elegiveis + ' elegíveis'
   document.querySelector('#meq-stats .card:nth-child(2) .card:last-child, #meq-stats > div:nth-child(2) > div:last-child')
   // fix labels
