@@ -56,14 +56,6 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 const MODO_RAW = new URLSearchParams(location.search).get('modo') || 'consultor';
 let MODO = MODO_RAW;
-// Modo gabarito protegido por palavra-passe
-if(MODO_RAW === 'gabarito'){
-  const pw = prompt('Palavra-passe para definir o gabarito:');
-  if(pw !== 'APMgabarito2026'){
-    document.body.innerHTML = '<div style="max-width:480px;margin:80px auto;text-align:center;font-family:Inter,sans-serif;color:#1A1D2E"><div style="font-size:48px">🔒</div><h2 style="font-family:Poppins">Acesso restrito</h2><p style="color:#8B92A5">A palavra-passe não está correta. O modo gabarito é reservado à gestão.</p></div>';
-    throw new Error('gabarito: palavra-passe incorreta');
-  }
-}
 // Dados do consultor (passados pelo sistema via URL no modo consultor)
 const CID = new URLSearchParams(location.search).get('cid') || '';
 const PRE_NOME = decodeURIComponent(new URLSearchParams(location.search).get('cnome') || '');
