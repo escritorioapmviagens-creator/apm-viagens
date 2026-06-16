@@ -66,9 +66,9 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .nav-section[data-s="recursos"]{color:#E8395A}.nav-section[data-s="recursos"]::before{background:#E8395A}
 .nav-section[data-s="gestao"]{color:#3B5BDB}.nav-section[data-s="gestao"]::before{background:#3B5BDB}
 .nav-section[data-s="recrutamento"]{color:#c9a84c}.nav-section[data-s="recrutamento"]::before{background:#c9a84c}
-.nav-section[data-s="rec-divulgar"]{color:#8B5CF6}.nav-section[data-s="rec-divulgar"]::before{background:#8B5CF6}
-.nav-section[data-s="rec-converter"]{color:#F59E0B}.nav-section[data-s="rec-converter"]::before{background:#F59E0B}
-.nav-section[data-s="rec-crescer"]{color:#2E9E5B}.nav-section[data-s="rec-crescer"]::before{background:#2E9E5B}
+
+
+
 .nav-section[data-s="admin"]{color:#7c3aed}.nav-section[data-s="admin"]::before{background:#7c3aed}
 .nav-section[data-s="captar"]{color:#E8395A}.nav-section[data-s="captar"]::before{background:#E8395A}
 .nav-section[data-s="vender"]{color:#3B5BDB}.nav-section[data-s="vender"]::before{background:#3B5BDB}
@@ -437,9 +437,9 @@ textarea.finput{resize:vertical;min-height:72px}
 
       <div class="nav-item" onclick="navTo('minha-equipa',this)" style="margin-top:8px"><span class="nav-icon">👥</span> A Minha Equipa</div>
       <div class="nav-section" data-s="recrutamento">Recrutamento</div>
-      <div class="nav-section nav-section-click" data-s="rec-divulgar" onclick="navTo('rec-divulgar',null)" title="Ver o fluxo desta fase">📢 1 · Divulgar</div>
-      <div class="nav-section nav-section-click" data-s="rec-converter" onclick="navTo('rec-converter',null)" title="Ver o fluxo desta fase">🎯 2 · Converter <span class="nav-badge" id="fase-converter-badge" style="display:none;margin-left:auto">0</span></div>
-      <div class="nav-section nav-section-click" data-s="rec-crescer" onclick="navTo('rec-crescer',null)" title="Ver o fluxo desta fase">🌱 3 · Crescer <span class="nav-badge" id="fase-crescer-badge" style="display:none;margin-left:auto">0</span></div>
+      <div class="nav-item" onclick="navTo('rec-divulgar',this)" data-fase="rec-divulgar"><span class="nav-icon">📢</span> 1 · Divulgar</div>
+      <div class="nav-item" onclick="navTo('rec-converter',this)" data-fase="rec-converter"><span class="nav-icon">🎯</span> 2 · Converter <span class="nav-badge" id="fase-converter-badge" style="display:none">0</span></div>
+      <div class="nav-item" onclick="navTo('rec-crescer',this)" data-fase="rec-crescer"><span class="nav-icon">🌱</span> 3 · Crescer <span class="nav-badge" id="fase-crescer-badge" style="display:none">0</span></div>
       <!-- itens internos (escondidos) — alimentam os cards e os badges das fases -->
       <div style="display:none">
         <div id="nav-recrutamento" onclick="navTo('recrutamento',this)"><span class="nav-badge" id="recrutamento-badge">0</span></div>
