@@ -54,8 +54,20 @@ const SUPABASE_URL='https://uiaorfcgvqwxjezgisps.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-const MODO = new URLSearchParams(location.search).get('modo') || 'consultor';
+const MODO_RAW = new URLSearchParams(location.search).get('modo') || 'consultor';
+let MODO = MODO_RAW;
+// Modo gabarito protegido por palavra-passe
+if(MODO_RAW === 'gabarito'){
+  const pw = prompt('Palavra-passe para definir o gabarito:');
+  if(pw !== 'APMgabarito2026'){
+    document.body.innerHTML = '<div style="max-width:480px;margin:80px auto;text-align:center;font-family:Inter,sans-serif;color:#1A1D2E"><div style="font-size:48px">🔒</div><h2 style="font-family:Poppins">Acesso restrito</h2><p style="color:#8B92A5">A palavra-passe não está correta. O modo gabarito é reservado à gestão.</p></div>';
+    throw new Error('gabarito: palavra-passe incorreta');
+  }
+}
+// Dados do consultor (passados pelo sistema via URL no modo consultor)
+const CID = new URLSearchParams(location.search).get('cid') || '';
 const PRE_NOME = decodeURIComponent(new URLSearchParams(location.search).get('cnome') || '');
+const PRE_EMAIL = decodeURIComponent(new URLSearchParams(location.search).get('cemail') || '');
 
 // tipo: 'mc' = escolha múltipla, 'txt' = resposta escrita
 const PERGUNTAS = [
@@ -80,9 +92,72 @@ const PERGUNTAS = [
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-function render(){
+let submissaoAtual = null;   // submissão existente do consultor (se houver)
+let GABARITO_VIEW = {};       // só usado em modo gabarito (vazio no consultor)
+
+async function init(){
+  if(MODO === 'gabarito'){ document.getElementById('gab-banner').style.display='block'; renderForm(); return; }
+  // modo consultor: verificar se já existe submissão deste consultor
   const card = document.getElementById('form-card');
-  if(MODO === 'gabarito'){ document.getElementById('gab-banner').style.display='block'; }
+  card.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">A carregar…</div>';
+  try{
+    if(CID){
+      const { data } = await sb.from('quiz_submissoes').select('*').eq('consultor_id', CID).order('atualizado_em',{ascending:false}).limit(1);
+      if(data && data.length){ submissaoAtual = data[0]; }
+    }
+  }catch(_){}
+
+  if(!submissaoAtual){ renderForm(); return; }
+  // marcar como visto pelo consultor (tira notificação do lado dele)
+  if(submissaoAtual.visto_consultor === false){
+    try{ await sb.from('quiz_submissoes').update({visto_consultor:true}).eq('id', submissaoAtual.id); }catch(_){}
+  }
+  if(submissaoAtual.estado === 'em_analise') return renderEmAnalise();
+  if(submissaoAtual.estado === 'validado') return renderValidado();
+  if(submissaoAtual.estado === 'a_corrigir') return renderCorrecao();
+  renderForm();
+}
+
+function renderEmAnalise(){
+  document.getElementById('wrap').innerHTML = '<div class="card" style="border-radius:12px;border-top:1px solid var(--border)"><div class="ok-screen"><div class="ico">⏳</div><h2>Em análise</h2><p>O teu questionário foi enviado e está a ser analisado pela gestão da APM Viagens. Serás notificado quando a correção estiver disponível.</p></div></div>';
+}
+function renderValidado(){
+  document.getElementById('wrap').innerHTML = '<div class="card" style="border-radius:12px;border-top:1px solid var(--border)"><div class="ok-screen"><div class="ico">✅</div><h2>Questionário validado!</h2><p>Parabéns! As tuas respostas foram validadas. Já cumpriste este requisito da formação.</p></div></div>';
+}
+
+function renderCorrecao(){
+  const card = document.getElementById('form-card');
+  const corr = submissaoAtual.correcao || {};
+  const resp = submissaoAtual.respostas || {};
+  let nErradas = 0;
+  let html = '<div style="background:#FFF3E0;color:#92660B;border-radius:10px;padding:13px 16px;margin-bottom:18px;font-size:13px;line-height:1.5"><b>O teu questionário foi corrigido.</b> Vê abaixo o que está certo e o que precisas de rever. Corrige as respostas e reenvia para nova análise.</div>';
+  html += '<div class="section-label">Correção</div>';
+  PERGUNTAS.forEach(p => {
+    const estado = corr[p.id]; // true=certo, false=errado, null/undefined=por validar
+    const errada = estado === false;
+    if(errada) nErradas++;
+    const badge = estado===true ? '<span style="color:var(--green,#2E9E5B);font-weight:700;font-size:12px">✓ Certo</span>'
+                : estado===false ? '<span style="color:var(--coral);font-weight:700;font-size:12px">✗ Rever</span>'
+                : '<span style="color:var(--muted);font-weight:600;font-size:12px">Em análise</span>';
+    html += `<div class="q"><div class="q-txt">${esc(p.q)} ${badge}</div>`;
+    const val = resp[p.id] || '';
+    if(p.tipo === 'txt'){
+      html += `<textarea id="q-${p.id}">${esc(val)}</textarea>`;
+    } else {
+      p.opcoes.forEach(op => {
+        const sel = (op===val) ? ' sel' : '';
+        const chk = (op===val) ? ' checked' : '';
+        html += `<label class="opt${sel}" onclick="selOpt('${p.id}',this)"><input type="radio" name="${p.id}" value="${esc(op)}"${chk}> <span>${esc(op)}</span></label>`;
+      });
+    }
+    html += `</div>`;
+  });
+  html += `<button class="btn" id="submit-btn" onclick="reenviar()">Reenviar para análise</button>`;
+  card.innerHTML = html;
+}
+
+function renderForm(){
+  const card = document.getElementById('form-card');
   let html = '';
   if(MODO !== 'gabarito'){
     html += '<div class="section-label">Identificação</div>';
@@ -93,7 +168,7 @@ function render(){
     </div>
     <div class="q" style="border-bottom:none;padding-bottom:6px">
       <div class="q-txt">E-mail <span class="req">*</span></div>
-      <input type="email" id="f-email" placeholder="o.teu@email.com">
+      <input type="email" id="f-email" value="${esc(PRE_EMAIL)}" placeholder="o.teu@email.com">
       <div class="err" id="e-email">Indica um e-mail válido.</div>
     </div>
     <div class="q" style="border-bottom:none">
@@ -107,10 +182,8 @@ function render(){
     if(p.tipo === 'txt'){
       html += `<textarea id="q-${p.id}" placeholder="A tua resposta"></textarea>`;
     } else {
-      p.opcoes.forEach((op,i) => {
-        html += `<label class="opt" onclick="selOpt('${p.id}',this)">
-          <input type="radio" name="${p.id}" value="${esc(op)}"> <span>${esc(op)}</span>
-        </label>`;
+      p.opcoes.forEach(op => {
+        html += `<label class="opt" onclick="selOpt('${p.id}',this)"><input type="radio" name="${p.id}" value="${esc(op)}"> <span>${esc(op)}</span></label>`;
       });
     }
     html += `</div>`;
@@ -128,7 +201,7 @@ function selOpt(pid, el){
 function recolher(){
   const r = {};
   PERGUNTAS.forEach(p => {
-    if(p.tipo==='txt'){ r[p.id] = document.getElementById('q-'+p.id).value.trim(); }
+    if(p.tipo==='txt'){ const el=document.getElementById('q-'+p.id); r[p.id] = el? el.value.trim():''; }
     else { const sel = document.querySelector(`input[name="${p.id}"]:checked`); r[p.id] = sel ? sel.value : ''; }
   });
   return r;
@@ -159,27 +232,34 @@ async function enviar(){
 
   btn.disabled = true; btn.textContent = 'A enviar…';
   try{
-    // correção automática das de escolha múltipla, comparando com o gabarito
-    let gabarito = {};
-    try{ const { data } = await sb.from('quiz_gabarito').select('respostas').eq('id',1).single(); gabarito = (data&&data.respostas)||{}; }catch(_){}
-    const correcao = {}; let acertos=0, totalMC=0;
-    PERGUNTAS.forEach(p => {
-      if(p.tipo==='mc'){
-        totalMC++;
-        if(gabarito[p.id]){ const ok = respostas[p.id]===gabarito[p.id]; correcao[p.id]=ok; if(ok) acertos++; }
-        else correcao[p.id]=null;
-      } else { correcao[p.id]=null; } // escritas: por validar pelo admin
-    });
     const { error } = await sb.from('quiz_submissoes').insert({
-      nome, email, telefone:tel, respostas, correcao,
-      pontuacao_auto:acertos, total_escolha:totalMC, estado:'novo', visto:false
+      consultor_id: CID || null,
+      nome, email, telefone:tel, respostas, correcao:null,
+      pontuacao_auto:null, total_escolha:null,
+      estado:'em_analise', visto:false, visto_consultor:true,
+      atualizado_em:new Date().toISOString()
     });
     if(error) throw error;
-    document.getElementById('wrap').innerHTML = '<div class="card" style="border-radius:12px;border-top:1px solid var(--border)"><div class="ok-screen"><div class="ico">🎉</div><h2>Questionário enviado!</h2><p>Obrigado, '+esc(nome)+'. As tuas respostas foram registadas com sucesso. Um membro da gestão da APM Viagens entrará em contacto.</p></div></div>';
+    renderEmAnalise();
   }catch(e){ alert('Não foi possível enviar: '+(e.message||e)); btn.disabled=false; btn.textContent='Enviar Questionário'; }
 }
 
-render();
+async function reenviar(){
+  const btn = document.getElementById('submit-btn');
+  const respostas = recolher();
+  btn.disabled = true; btn.textContent = 'A reenviar…';
+  try{
+    const { error } = await sb.from('quiz_submissoes').update({
+      respostas, correcao:null, estado:'em_analise',
+      visto:false, visto_consultor:true,
+      atualizado_em:new Date().toISOString()
+    }).eq('id', submissaoAtual.id);
+    if(error) throw error;
+    renderEmAnalise();
+  }catch(e){ alert('Não foi possível reenviar: '+(e.message||e)); btn.disabled=false; btn.textContent='Reenviar para análise'; }
+}
+
+init();
 </script>
 </body>
 </html>
