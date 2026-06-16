@@ -22,9 +22,9 @@ h1{font-family:'Poppins';font-size:1.4rem;font-weight:700;margin-bottom:4px}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--coral);flex-shrink:0}
 .dot.seen{background:transparent}
 .estado-tag{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px}
-.estado-tag.novo{background:#FFF3E0;color:#E8A23B}
-.estado-tag.aprovado{background:#E8F5E9;color:var(--green)}
-.estado-tag.reprovado{background:#FFEBEE;color:var(--coral)}
+.estado-tag.em_analise{background:#FFF3E0;color:#E8A23B}
+.estado-tag.validado{background:#E8F5E9;color:var(--green)}
+.estado-tag.a_corrigir{background:#FFEBEE;color:var(--coral)}
 .subm-body{display:none;padding:0 18px 18px;border-top:1px solid var(--border)}
 .subm-body.open{display:block}
 .qa{padding:13px 0;border-bottom:1px solid var(--border)}
@@ -123,14 +123,28 @@ async function carregar(){
 
 function renderSubm(s){
   const dt = new Date(s.criado_em).toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  const score = (s.pontuacao_auto!=null && s.total_escolha) ? `${s.pontuacao_auto}/${s.total_escolha} escolha múltipla` : '—';
-  const estadoTag = s.estado && s.estado!=='novo' && s.estado!=='visto' ? `<span class="estado-tag ${s.estado}">${s.estado}</span>` : (s.estado==='novo'?'<span class="estado-tag novo">novo</span>':'');
+  // correção das escolhas múltiplas: calculada aqui, comparando com o gabarito
+  let acertos=0, totalMC=0;
+  PERGUNTAS.forEach(p => {
+    if(p.tipo==='mc' && GABARITO[p.id]){
+      totalMC++;
+      if(s.respostas && s.respostas[p.id]===GABARITO[p.id]) acertos++;
+    }
+  });
+  const score = totalMC ? `${acertos}/${totalMC} escolha múltipla` : '—';
+  const labels = {em_analise:'em análise', a_corrigir:'a corrigir', validado:'validado'};
+  const estadoTag = s.estado ? `<span class="estado-tag ${s.estado}">${labels[s.estado]||s.estado}</span>` : '';
   const qas = PERGUNTAS.map(p => {
     const resp = (s.respostas&&s.respostas[p.id])||'(sem resposta)';
     if(p.tipo==='mc'){
-      const corr = s.correcao && s.correcao[p.id];
-      const tag = corr===true?'<span class="mc-result ok">✓ certo</span>':(corr===false?'<span class="mc-result no">✗ errado</span>':'');
-      return `<div class="qa"><div class="q">${esc(p.q)}</div><div class="a">${esc(resp)} ${tag}</div></div>`;
+      const certa = GABARITO[p.id];
+      let tag = '';
+      if(certa){
+        const ok = resp === certa;
+        tag = ok ? '<span class="mc-result ok">✓ certo</span>' : '<span class="mc-result no">✗ errado</span>';
+      }
+      const modeloMC = certa && resp!==certa ? `<div class="model"><b>Resposta correta:</b> ${esc(certa)}</div>` : '';
+      return `<div class="qa"><div class="q">${esc(p.q)}</div><div class="a">${esc(resp)} ${tag}</div>${modeloMC}</div>`;
     }
     const modelo = GABARITO[p.id] ? `<div class="model"><b>Resposta de referência:</b> ${esc(GABARITO[p.id])}</div>` : '';
     const vc = s.correcao && s.correcao[p.id];
@@ -150,8 +164,8 @@ function renderSubm(s){
     <div class="subm-body" id="body-${s.id}">
       ${qas}
       <div class="actions">
-        <button class="act aprovar" onclick="setEstado('${s.id}','aprovado')">✓ Aprovar consultor</button>
-        <button class="act reprovar" onclick="setEstado('${s.id}','reprovado')">✗ Reprovar</button>
+        <button class="act aprovar" onclick="setEstado('${s.id}','validado')">✓ Validar (tudo certo)</button>
+        <button class="act reprovar" onclick="setEstado('${s.id}','a_corrigir')">↩ Devolver para corrigir</button>
       </div>
     </div>
   </div>`;
@@ -185,7 +199,8 @@ async function validar(subId, pid, valor){
 
 async function setEstado(id, estado){
   try{
-    await sb.from('quiz_submissoes').update({estado, visto:true}).eq('id',id);
+    // ao mudar de estado, notifica o consultor (visto_consultor=false) e marca visto pelo admin
+    await sb.from('quiz_submissoes').update({estado, visto:true, visto_consultor:false, atualizado_em:new Date().toISOString()}).eq('id',id);
     carregar();
   }catch(e){ alert('Erro: '+(e.message||e)); }
 }
