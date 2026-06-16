@@ -147,7 +147,19 @@ async function darAcessoCompleto(consultorId, btn){
   }catch(e){ alert('Erro ao dar acesso: '+(e.message||e)); btn.disabled=false; btn.textContent='🔓 Dar acesso completo'; }
 }
 
-carregar();
+async function verificarAdmin(){
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session){ bloquear('Tens de iniciar sessão no sistema para aceder a esta página.'); return; }
+    const { data:perfil } = await sb.from('perfis').select('role').eq('id', session.user.id).single();
+    if(!perfil || perfil.role !== 'admin'){ bloquear('Esta área é reservada à administração.'); return; }
+    carregar();
+  }catch(e){ bloquear('Não foi possível validar o acesso.'); }
+}
+function bloquear(msg){
+  document.body.innerHTML = '<div style="max-width:480px;margin:90px auto;text-align:center;font-family:Inter,sans-serif;color:#1A1D2E"><div style="font-size:52px">🔒</div><h2 style="font-family:Poppins;margin:10px 0">Acesso restrito</h2><p style="color:#8B92A5;line-height:1.5">'+msg+'</p></div>';
+}
+verificarAdmin();
 </script>
 </body>
 </html>
