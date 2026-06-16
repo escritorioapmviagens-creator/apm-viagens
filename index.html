@@ -460,6 +460,7 @@ textarea.finput{resize:vertical;min-height:72px}
         <div class="nav-item" id="nav-performance" style="display:none" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/estatisticas.html','_blank')"><span class="nav-icon">📊</span> Estatísticas</div>
         <div class="nav-item" id="nav-templates" style="display:none" onclick="navTo('templates',this)"><span class="nav-icon">📝</span> Templates</div>
         <div class="nav-item" onclick="navTo('aprovacoes',this)"><span class="nav-icon">✓</span> Aprovações <span class="nav-badge" id="appr-badge">0</span></div>
+        <div class="nav-item" onclick="window.open('admin-questionario.html','_blank')"><span class="nav-icon">📋</span> Novo Questionário <span class="nav-badge" id="quiz-badge" style="display:none">0</span></div>
       </div>
     </nav>
     <div class="sidebar-user">
@@ -3991,9 +3992,11 @@ function enterApp() {
   atualizarAssuntosBadge()
   atualizarAssuntosSuporteBadge()
   atualizarTicketsBadge()
+  if(currentPerfil.role === 'admin') atualizarQuestionarioBadge()
   // agregar badges por fase (depois de os internos carregarem)
   setTimeout(atualizarBadgesFases, 1500)
   setInterval(atualizarBadgesFases, 30000)
+  setInterval(() => { if(currentPerfil && currentPerfil.role === 'admin') atualizarQuestionarioBadge() }, 30000)
   if(currentPerfil.role === 'admin') atualizarBadgeEliminacoes()
   if(currentPerfil.role !== 'admin') renderDashIndividual()
   checkAlertasClientes()
@@ -15465,6 +15468,18 @@ async function atualizarAssuntosSuporteBadge() {
     const badge = document.getElementById('assuntos-sup-badge')
     if(badge) { badge.textContent = count || 0; badge.style.display = (count > 0) ? 'inline-flex' : 'none' }
   } catch(e) { console.warn('assuntos suporte badge exception:', e) }
+}
+
+async function atualizarQuestionarioBadge() {
+  try {
+    // submissões do questionário ainda não vistas
+    const { count, error } = await sb.from('quiz_submissoes')
+      .select('id', { count:'exact', head:true })
+      .eq('visto', false)
+    if(error) { console.warn('quiz badge error:', error.message); return }
+    const badge = document.getElementById('quiz-badge')
+    if(badge) { badge.textContent = count || 0; badge.style.display = (count > 0) ? 'inline-flex' : 'none' }
+  } catch(e) { console.warn('quiz badge exception:', e) }
 }
 
 // ═══ TICKETS (embutido via iframe — lógica completa em tickets.html) ═══
