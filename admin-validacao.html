@@ -61,6 +61,8 @@ h1{font-family:'Poppins';font-size:1.4rem;font-weight:700;margin-bottom:4px}
     <button onclick="abrirGabarito()" style="background:#fff;color:var(--navy);border:1.5px solid var(--border);border-radius:8px;padding:10px 16px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;font-family:'Poppins'">⚙️ Definir gabarito</button>
   </div>
 
+  <div id="gab-estado" style="border-radius:10px;padding:11px 15px;margin-bottom:18px;font-size:13px;font-weight:600;display:none"></div>
+
   <div id="lista"><div class="empty">A carregar…</div></div>
 </div>
 
@@ -113,12 +115,28 @@ function abrirGabarito(){
 async function carregar(){
   const cont = document.getElementById('lista');
   try{
-    try{ const { data:g } = await sb.from('quiz_gabarito').select('respostas').eq('id',1).single(); GABARITO=(g&&g.respostas)||{}; }catch(_){ GABARITO={}; }
+    try{ const { data:g } = await sb.from('quiz_gabarito').select('respostas,atualizado_em').eq('id',1).single(); GABARITO=(g&&g.respostas)||{}; mostrarEstadoGabarito(g); }catch(_){ GABARITO={}; mostrarEstadoGabarito(null); }
     const { data, error } = await sb.from('quiz_submissoes').select('*').order('criado_em',{ascending:false});
     if(error) throw error;
     if(!data || !data.length){ cont.innerHTML='<div class="empty">Ainda não há submissões.</div>'; return; }
     cont.innerHTML = data.map(renderSubm).join('');
   }catch(e){ cont.innerHTML='<div class="empty" style="color:var(--coral)">Erro: '+esc(e.message||e)+'</div>'; }
+}
+
+function mostrarEstadoGabarito(g){
+  const box = document.getElementById('gab-estado');
+  if(!box) return;
+  const n = g && g.respostas ? Object.values(g.respostas).filter(v => v && String(v).trim()).length : 0;
+  box.style.display = 'block';
+  if(g && n > 0){
+    let quando = '';
+    if(g.atualizado_em){ try{ quando = ' · atualizado em ' + new Date(g.atualizado_em).toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(_){} }
+    box.style.background = '#E8F5E9'; box.style.color = '#1f7a44';
+    box.innerHTML = `✓ Gabarito definido — ${n} respostas de referência guardadas${quando}.`;
+  } else {
+    box.style.background = '#FFEBEE'; box.style.color = 'var(--coral)';
+    box.innerHTML = '⚠ Gabarito ainda não definido. Carregue em "⚙️ Definir gabarito" e responda como referência, senão as escolhas múltiplas não são corrigidas automaticamente.';
+  }
 }
 
 function renderSubm(s){
@@ -201,6 +219,19 @@ async function setEstado(id, estado){
   try{
     // ao mudar de estado, notifica o consultor (visto_consultor=false) e marca visto pelo admin
     await sb.from('quiz_submissoes').update({estado, visto:true, visto_consultor:false, atualizado_em:new Date().toISOString()}).eq('id',id);
+    // Se foi validado, avança automaticamente a etapa de formação do consultor para 2
+    // (desbloqueia operadores do promotor + Soltrópico-treino + exercício prático)
+    if(estado === 'validado'){
+      try{
+        const { data:sub } = await sb.from('quiz_submissoes').select('consultor_id').eq('id',id).single();
+        if(sub && sub.consultor_id){
+          // só sobe para 2 se ainda estiver em etapa 1 (não baixa quem já está mais à frente)
+          const { data:perf } = await sb.from('perfis').select('etapa_formacao').eq('id', sub.consultor_id).single();
+          const atual = (perf && perf.etapa_formacao) || 1;
+          if(atual < 2){ await sb.from('perfis').update({etapa_formacao:2}).eq('id', sub.consultor_id); }
+        }
+      }catch(err){ console.warn('avançar etapa:', err); }
+    }
     carregar();
   }catch(e){ alert('Erro: '+(e.message||e)); }
 }
