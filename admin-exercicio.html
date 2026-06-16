@@ -108,6 +108,10 @@ function renderItem(s){
         <button class="act val" onclick="validar('${s.id}')">✓ Validar exercício</button>
         <button class="act dev" onclick="devolver('${s.id}')">↩ Devolver para corrigir</button>
       </div>
+      ${s.estado==='validado' ? `<div style="margin-top:10px;padding-top:12px;border-top:1px dashed var(--border)">
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:8px">Exercício validado. Para libertar o acesso completo (operadores reais, Soltrópico real, venda e recrutamento), confirme abaixo:</div>
+        <button class="act" style="background:var(--navy);color:#fff;width:100%" onclick="darAcessoCompleto('${s.consultor_id||''}', this)">🔓 Dar acesso completo a ${esc(s.nome)}</button>
+      </div>` : ''}
     </div>
   </div>`;
 }
@@ -130,6 +134,17 @@ async function devolver(id){
   if(nota===null) return;
   try{ await sb.from('exercicio_pratico').update({estado:'a_corrigir',nota_admin:nota,visto:true,visto_consultor:false,atualizado_em:new Date().toISOString()}).eq('id',id); carregar(); }
   catch(e){ alert('Erro: '+(e.message||e)); }
+}
+
+async function darAcessoCompleto(consultorId, btn){
+  if(!consultorId){ alert('Este exercício não está associado a um consultor com conta.'); return; }
+  if(!confirm('Confirmar acesso completo? O consultor passa a ter operadores reais, Soltrópico real, venda e recrutamento.')) return;
+  btn.disabled = true; btn.textContent = 'A libertar acesso…';
+  try{
+    await sb.from('perfis').update({ etapa_formacao:3, acesso_operadores:true, acesso_promotor:true }).eq('id', consultorId);
+    btn.textContent = '✓ Acesso completo concedido';
+    btn.style.background = 'var(--green)';
+  }catch(e){ alert('Erro ao dar acesso: '+(e.message||e)); btn.disabled=false; btn.textContent='🔓 Dar acesso completo'; }
 }
 
 carregar();
