@@ -36,6 +36,20 @@ h1{font-size:26px;font-weight:800;margin:14px 0 4px;}
 .mes .destinos{display:flex;flex-wrap:wrap;gap:6px;}
 .tagd{background:var(--bg);border:1px solid #e1e3ea;border-radius:20px;padding:4px 11px;font-size:12px;font-weight:600;color:var(--blue);}
 .tagd.top1{background:#fdedf0;border-color:#f3c4cf;color:var(--coral);}
+.dlist{display:flex;flex-direction:column;gap:11px;}
+.dinfo{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;}
+.dname{font-size:13px;font-weight:600;color:var(--navy);}
+.dscore{font-size:13px;font-weight:800;color:var(--blue);}
+.dscore small{font-size:9px;font-weight:600;color:#b0b6c3;}
+.dbar{height:6px;background:#eceef3;border-radius:4px;overflow:hidden;}
+.dbar-fill{height:100%;border-radius:4px;background:var(--blue);}
+.dnivel{font-size:10.5px;color:#9ca3af;margin-top:3px;font-weight:600;}
+/* níveis */
+.drow.l-top .dscore,.drow.l-top .dnivel{color:var(--coral);}
+.drow.l-top .dbar-fill{background:var(--coral);}
+.drow.l-alta .dscore{color:var(--blue);} .drow.l-alta .dbar-fill{background:var(--blue);}
+.drow.l-media .dscore{color:#5b7bd6;} .drow.l-media .dbar-fill{background:#7d99e0;}
+.drow.l-mod .dscore{color:#8a93a5;} .drow.l-mod .dbar-fill{background:#aab2c2;}
 .mes .nada{font-size:12px;color:#9ca3af;font-style:italic;}
 /* cards genéricos */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
@@ -94,7 +108,7 @@ h1{font-size:26px;font-weight:800;margin:14px 0 4px;}
   <!-- CALENDÁRIO -->
   <div class="panel active" id="cal">
     <div class="intro">
-      <b>O que vender em cada mês?</b> Com base nas reservas reais da APM, mostramos-te <b>o que mais se reservou em cada mês</b> — para saberes o que está procurado e te posicionares. O destino a <span style="color:var(--coral);font-weight:700">vermelho</span> é o nº1 do mês. Lembra-te: os clientes reservam ~3 meses antes de viajar, e Novembro é Black Friday.
+      <b>O que publicar em cada mês?</b> Com base nas reservas reais da APM, mostramos um índice de procura (de 0 a 10) para os destinos mais pedidos em cada mês. Quanto mais alto o índice, mais esse destino está a ser procurado nesse período — publica sobre eles para acompanhares o momento. Nota: os clientes costumam reservar cerca de 3 meses antes de viajar, e novembro é o mês da Black Friday.
     </div>
     <div class="cal-grid" id="calGrid"></div>
   </div>
@@ -157,7 +171,7 @@ const SUPA_URL="https://uiaorfcgvqwxjezgisps.supabase.co";
 const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU";
 let sb = null;
 try { sb = supabase.createClient(SUPA_URL, SUPA_KEY); } catch(e){ console.warn('Supabase indisponível:', e); }
-const CAL = {"Janeiro": {"epoca": "Pico de reservas — planeamento do ano", "foco": "Aposta forte: as pessoas estão a planear as férias. É o melhor momento para encher a agenda.", "cor": "pico", "top": [{"nome": "Cabo Verde (Sal)", "n": 12}, {"nome": "Djerba", "n": 10}, {"nome": "Bayahibe", "n": 7}, {"nome": "Disneyland Paris", "n": 5}, {"nome": "Porto Santo", "n": 4}]}, "Fevereiro": {"epoca": "Pico de reservas", "foco": "Continua a pressão. As reservas de verão estão no auge.", "cor": "pico", "top": [{"nome": "Djerba", "n": 7}, {"nome": "Cabo Verde (Sal)", "n": 6}, {"nome": "Maiorca", "n": 5}, {"nome": "Cabo Verde (Boa Vista)", "n": 4}, {"nome": "Lisboa", "n": 4}]}, "Março": {"epoca": "Pico máximo de reservas", "foco": "O topo do ano. Trabalha todos os leads — é agora que se decide o ano.", "cor": "pico", "top": [{"nome": "Djerba", "n": 13}, {"nome": "Cabo Verde (Sal)", "n": 11}, {"nome": "Madeira", "n": 7}, {"nome": "Bayahibe", "n": 6}, {"nome": "Maiorca", "n": 4}]}, "Abril": {"epoca": "Páscoa + venda de verão", "foco": "Last-minute de Páscoa e continua a vender o verão que se aproxima.", "cor": "normal", "top": [{"nome": "Madeira", "n": 6}, {"nome": "Djerba", "n": 6}, {"nome": "Cabo Verde (Sal)", "n": 4}, {"nome": "Grécia", "n": 4}, {"nome": "Paris", "n": 2}]}, "Maio": {"epoca": "Verão a chegar", "foco": "Promove os destinos de junho/julho e comunica last-minute de verão.", "cor": "normal", "top": [{"nome": "Maiorca", "n": 4}, {"nome": "Menorca", "n": 3}, {"nome": "Djerba", "n": 3}, {"nome": "Barcelona", "n": 2}, {"nome": "Cabo Verde (Sal)", "n": 2}]}, "Junho": {"epoca": "Época de viagens a começar", "foco": "Last-minute de verão para os indecisos. Muita procura ainda.", "cor": "normal", "top": [{"nome": "Cabo Verde (Sal)", "n": 13}, {"nome": "Bayahibe", "n": 7}, {"nome": "Djerba", "n": 6}, {"nome": "Cuba", "n": 4}, {"nome": "Punta Cana", "n": 3}]}, "Julho": {"epoca": "Pico de viagens", "foco": "Aproveita os clientes a viajar: pede testemunhos e fotos.", "cor": "baixa", "top": [{"nome": "Cabo Verde (Sal)", "n": 5}, {"nome": "Madeira", "n": 4}, {"nome": "Maiorca", "n": 3}, {"nome": "Djerba", "n": 3}, {"nome": "Cabo Verde (Boa Vista)", "n": 1}]}, "Agosto": {"epoca": "Pico máximo de viagens", "foco": "Recolhe testemunhos e começa a promover os destinos de outono.", "cor": "baixa", "top": [{"nome": "Cabo Verde (Sal)", "n": 7}, {"nome": "Maiorca", "n": 4}, {"nome": "Djerba", "n": 4}, {"nome": "Paris", "n": 2}, {"nome": "Marrocos", "n": 2}]}, "Setembro": {"epoca": "Regresso — retoma de reservas", "foco": "As pessoas voltam à rotina e começam a pensar no próximo destino.", "cor": "normal", "top": [{"nome": "Paris", "n": 6}, {"nome": "Madeira", "n": 4}, {"nome": "Disneyland Paris", "n": 3}, {"nome": "Cuba", "n": 2}, {"nome": "Cabo Verde", "n": 2}]}, "Outubro": {"epoca": "Recuperação de reservas", "foco": "Promove inverno e fim de ano. Prepara a campanha de Black Friday.", "cor": "normal", "top": [{"nome": "Cabo Verde (Sal)", "n": 6}, {"nome": "Paris", "n": 4}, {"nome": "Madeira", "n": 4}, {"nome": "Cabo Verde", "n": 3}, {"nome": "Roma", "n": 2}]}, "Novembro": {"epoca": "BLACK FRIDAY — pico de promoções", "foco": "O teu maior momento de campanhas. Promoções fortes com urgência.", "cor": "blackfriday", "top": [{"nome": "Djerba", "n": 9}, {"nome": "Cabo Verde (Sal)", "n": 8}, {"nome": "Maldivas", "n": 6}, {"nome": "Menorca", "n": 4}, {"nome": "Maiorca", "n": 3}]}, "Dezembro": {"epoca": "Festas + antecipação do ano novo", "foco": "Ofertas de Natal e prepara o arranque de janeiro.", "cor": "pico", "top": [{"nome": "Cabo Verde (Sal)", "n": 6}, {"nome": "Paris", "n": 4}, {"nome": "Djerba", "n": 3}, {"nome": "Disneyland Paris", "n": 2}, {"nome": "Grécia", "n": 2}]}};
+const CAL = {"Janeiro": {"epoca": "Pico de reservas — planeamento do ano", "foco": "Aposta forte: as pessoas estão a planear as férias. É o melhor momento para encher a agenda.", "cor": "pico", "top": [{"nome": "Cabo Verde (Sal)", "score": 10, "nivel": "Muito procurado"}, {"nome": "Djerba", "score": 8, "nivel": "Procura alta"}, {"nome": "Bayahibe", "score": 6, "nivel": "Procura média"}, {"nome": "Disneyland Paris", "score": 4, "nivel": "Procura moderada"}, {"nome": "Porto Santo", "score": 3, "nivel": "Procura moderada"}]}, "Fevereiro": {"epoca": "Pico de reservas", "foco": "Continua a pressão. As reservas de verão estão no auge.", "cor": "pico", "top": [{"nome": "Djerba", "score": 10, "nivel": "Muito procurado"}, {"nome": "Cabo Verde (Sal)", "score": 9, "nivel": "Muito procurado"}, {"nome": "Maiorca", "score": 7, "nivel": "Procura alta"}, {"nome": "Cabo Verde (Boa Vista)", "score": 6, "nivel": "Procura média"}, {"nome": "Lisboa", "score": 6, "nivel": "Procura média"}]}, "Março": {"epoca": "Pico máximo de reservas", "foco": "O topo do ano. Trabalha todos os leads — é agora que se decide o ano.", "cor": "pico", "top": [{"nome": "Djerba", "score": 10, "nivel": "Muito procurado"}, {"nome": "Cabo Verde (Sal)", "score": 8, "nivel": "Procura alta"}, {"nome": "Madeira", "score": 5, "nivel": "Procura média"}, {"nome": "Bayahibe", "score": 5, "nivel": "Procura média"}, {"nome": "Maiorca", "score": 3, "nivel": "Procura moderada"}]}, "Abril": {"epoca": "Páscoa + venda de verão", "foco": "Last-minute de Páscoa e continua a vender o verão que se aproxima.", "cor": "normal", "top": [{"nome": "Madeira", "score": 10, "nivel": "Muito procurado"}, {"nome": "Djerba", "score": 10, "nivel": "Muito procurado"}, {"nome": "Cabo Verde (Sal)", "score": 7, "nivel": "Procura alta"}, {"nome": "Grécia", "score": 7, "nivel": "Procura alta"}, {"nome": "Paris", "score": 3, "nivel": "Procura moderada"}]}, "Maio": {"epoca": "Verão a chegar", "foco": "Promove os destinos de junho/julho e comunica last-minute de verão.", "cor": "normal", "top": [{"nome": "Maiorca", "score": 10, "nivel": "Muito procurado"}, {"nome": "Menorca", "score": 8, "nivel": "Procura alta"}, {"nome": "Djerba", "score": 8, "nivel": "Procura alta"}, {"nome": "Barcelona", "score": 5, "nivel": "Procura média"}, {"nome": "Cabo Verde (Sal)", "score": 5, "nivel": "Procura média"}]}, "Junho": {"epoca": "Época de viagens a começar", "foco": "Last-minute de verão para os indecisos. Muita procura ainda.", "cor": "normal", "top": [{"nome": "Cabo Verde (Sal)", "score": 10, "nivel": "Muito procurado"}, {"nome": "Bayahibe", "score": 5, "nivel": "Procura média"}, {"nome": "Djerba", "score": 5, "nivel": "Procura média"}, {"nome": "Cuba", "score": 3, "nivel": "Procura moderada"}, {"nome": "Punta Cana", "score": 3, "nivel": "Procura moderada"}]}, "Julho": {"epoca": "Pico de viagens", "foco": "Aproveita os clientes a viajar: pede testemunhos e fotos.", "cor": "baixa", "top": [{"nome": "Cabo Verde (Sal)", "score": 10, "nivel": "Muito procurado"}, {"nome": "Madeira", "score": 8, "nivel": "Procura alta"}, {"nome": "Maiorca", "score": 6, "nivel": "Procura média"}, {"nome": "Djerba", "score": 6, "nivel": "Procura média"}, {"nome": "Cabo Verde (Boa Vista)", "score": 3, "nivel": "Procura moderada"}]}, "Agosto": {"epoca": "Pico máximo de viagens", "foco": "Recolhe testemunhos e começa a promover os destinos de outono.", "cor": "baixa", "top": [{"nome": "Cabo Verde (Sal)", "score": 10, "nivel": "Muito procurado"}, {"nome": "Maiorca", "score": 6, "nivel": "Procura média"}, {"nome": "Djerba", "score": 6, "nivel": "Procura média"}, {"nome": "Paris", "score": 3, "nivel": "Procura moderada"}, {"nome": "Marrocos", "score": 3, "nivel": "Procura moderada"}]}, "Setembro": {"epoca": "Regresso — retoma de reservas", "foco": "As pessoas voltam à rotina e começam a pensar no próximo destino.", "cor": "normal", "top": [{"nome": "Paris", "score": 10, "nivel": "Muito procurado"}, {"nome": "Madeira", "score": 7, "nivel": "Procura alta"}, {"nome": "Disneyland Paris", "score": 5, "nivel": "Procura média"}, {"nome": "Cuba", "score": 3, "nivel": "Procura moderada"}, {"nome": "Cabo Verde", "score": 3, "nivel": "Procura moderada"}]}, "Outubro": {"epoca": "Recuperação de reservas", "foco": "Promove inverno e fim de ano. Prepara a campanha de Black Friday.", "cor": "normal", "top": [{"nome": "Cabo Verde (Sal)", "score": 10, "nivel": "Muito procurado"}, {"nome": "Paris", "score": 7, "nivel": "Procura alta"}, {"nome": "Madeira", "score": 7, "nivel": "Procura alta"}, {"nome": "Cabo Verde", "score": 5, "nivel": "Procura média"}, {"nome": "Roma", "score": 3, "nivel": "Procura moderada"}]}, "Novembro": {"epoca": "BLACK FRIDAY — pico de promoções", "foco": "O teu maior momento de campanhas. Promoções fortes com urgência.", "cor": "blackfriday", "top": [{"nome": "Djerba", "score": 10, "nivel": "Muito procurado"}, {"nome": "Cabo Verde (Sal)", "score": 9, "nivel": "Muito procurado"}, {"nome": "Maldivas", "score": 7, "nivel": "Procura alta"}, {"nome": "Menorca", "score": 4, "nivel": "Procura moderada"}, {"nome": "Maiorca", "score": 3, "nivel": "Procura moderada"}]}, "Dezembro": {"epoca": "Festas + antecipação do ano novo", "foco": "Ofertas de Natal e prepara o arranque de janeiro.", "cor": "pico", "top": [{"nome": "Cabo Verde (Sal)", "score": 10, "nivel": "Muito procurado"}, {"nome": "Paris", "score": 7, "nivel": "Procura alta"}, {"nome": "Djerba", "score": 5, "nivel": "Procura média"}, {"nome": "Disneyland Paris", "score": 3, "nivel": "Procura moderada"}, {"nome": "Grécia", "score": 3, "nivel": "Procura moderada"}]}};
 
 // ?ref do consultor (para os links)
 const ref = new URLSearchParams(location.search).get('ref') || '';
@@ -179,15 +193,26 @@ function copiar(txt){navigator.clipboard.writeText(txt).then(()=>toast('Copiado!
 function renderCal(){
   const g=document.getElementById('calGrid');
   g.innerHTML = Object.entries(CAL).map(([mes,v])=>{
-    const top = (v.top && v.top.length)
-      ? '<div class="destinos">'+v.top.map((d,i)=>'<span class="tagd'+(i===0?' top1':'')+'">'+d.nome+'</span>').join('')+'</div>'
-      : '<div class="nada">Sem dados de destino para este mês.</div>';
+    let lista;
+    if(v.top && v.top.length){
+      lista = '<div class="dlist">'+v.top.map((d,i)=>{
+        const pct = Math.max(8, d.score*10);
+        const lvl = (d.score>=9)?'l-top':(d.score>=7?'l-alta':(d.score>=5?'l-media':'l-mod'));
+        return '<div class="drow '+lvl+(i===0?' top1':'')+'">'
+          +'<div class="dinfo"><span class="dname">'+d.nome+'</span><span class="dscore">'+d.score+'<small>/10</small></span></div>'
+          +'<div class="dbar"><div class="dbar-fill" style="width:'+pct+'%"></div></div>'
+          +'<div class="dnivel">'+d.nivel+'</div>'
+          +'</div>';
+      }).join('')+'</div>';
+    } else {
+      lista = '<div class="nada">Sem dados de destino para este mês.</div>';
+    }
     const emoji = v.cor==='blackfriday'?'🛍️':(v.cor==='pico'?'🔥':(v.cor==='baixa'?'🌴':'📌'));
     return '<div class="mes '+v.cor+'"><h3>'+emoji+' '+mes+'</h3>'
       +'<div class="epoca">'+v.epoca+'</div>'
       +'<div class="foco">'+v.foco+'</div>'
-      +'<div style="font-size:12px;font-weight:700;color:#6b7280;margin-bottom:6px">O que mais se reservou neste mês:</div>'
-      +top+'</div>';
+      +'<div style="font-size:12px;font-weight:700;color:#6b7280;margin-bottom:8px">Destinos mais procurados este mês:</div>'
+      +lista+'</div>';
   }).join('');
 }
 renderCal();
