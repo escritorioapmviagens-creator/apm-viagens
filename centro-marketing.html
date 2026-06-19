@@ -71,7 +71,12 @@ h1{font-size:26px;font-weight:800;margin:14px 0 4px;}
 .gen-box input,.gen-box select{width:100%;padding:10px 12px;border:1px solid #d8dbe5;border-radius:8px;font-size:14px;}
 .gen-out{margin-top:18px;display:flex;flex-direction:column;gap:12px;}
 .gen-leg{background:var(--bg);border-radius:10px;padding:14px;font-size:13px;white-space:pre-wrap;position:relative;}
-.gen-leg .cp{position:absolute;top:10px;right:10px;font-size:12px;}
+.gen-edit{width:100%;border:1px solid #d8dbe5;border-radius:8px;padding:11px;font-size:13px;font-family:inherit;line-height:1.5;resize:vertical;min-height:90px;background:#fff;}
+.gen-edit.big{min-height:240px;}
+.gen-acts{display:flex;gap:8px;margin-top:10px;}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;margin-bottom:8px;}
+.b-post{background:#e7eefe;color:var(--blue);}
+.b-art{background:#fdedf0;color:var(--coral);}
 .loader{display:none;font-size:13px;color:#6b7280;margin-top:14px;}
 .loader.on{display:block;}
 /* scripts */
@@ -115,7 +120,7 @@ h1{font-size:26px;font-weight:800;margin:14px 0 4px;}
 
   <!-- BIBLIOTECA -->
   <div class="panel" id="bib">
-    <div class="intro"><b>Conteúdos prontos a publicar.</b> Copia a legenda, adapta com o teu link pessoal e publica nas tuas redes. Novos conteúdos são adicionados regularmente.</div>
+    <div class="intro"><b>Conteúdos prontos a publicar.</b> Copia o texto, adapta com o teu toque pessoal e publica nas tuas redes. Tens publicações curtas e artigos mais longos.</div>
     <div class="filtros" id="bibFiltros">
       <button class="fbtn on" data-c="todos">Todos</button>
       <button class="fbtn" data-c="destinos">Destinos</button>
@@ -128,8 +133,13 @@ h1{font-size:26px;font-weight:800;margin:14px 0 4px;}
 
   <!-- GERADOR -->
   <div class="panel" id="gen">
-    <div class="intro"><b>Sem ideias para a legenda?</b> Escolhe um destino e o tom, e geramos 3 legendas prontas a usar. Podes gerar quantas vezes quiseres.</div>
+    <div class="intro"><b>Sem ideias para publicar?</b> Escolhe o formato, o destino e o tom, e geramos conteúdo pronto a usar. Podes <b>editar</b> o resultado antes de copiar ou guardar.</div>
     <div class="gen-box">
+      <label>Formato</label>
+      <select id="genFormato">
+        <option value="post">Publicação para redes sociais (curta)</option>
+        <option value="artigo">Artigo / texto longo (tipo blog)</option>
+      </select>
       <label>Destino</label>
       <input id="genDest" placeholder="ex: Maiorca, Cabo Verde, Djerba…">
       <label>Tom</label>
@@ -139,15 +149,20 @@ h1{font-size:26px;font-weight:800;margin:14px 0 4px;}
         <option value="familiar e caloroso">Familiar e caloroso</option>
         <option value="elegante e sofisticado">Elegante e sofisticado</option>
       </select>
-      <label>Tipo de publicação</label>
-      <select id="genTipo">
-        <option value="post de Instagram/Facebook">Post (Instagram/Facebook)</option>
-        <option value="story">Story</option>
-        <option value="legenda de reels">Reels</option>
-      </select>
-      <div style="margin-top:16px"><button class="btn" id="genBtn">✨ Gerar legendas</button></div>
-      <div class="loader" id="genLoad">A gerar legendas…</div>
+      <div style="margin-top:16px"><button class="btn" id="genBtn">✨ Gerar conteúdo</button></div>
+      <div class="loader" id="genLoad">A gerar conteúdo…</div>
       <div class="gen-out" id="genOut"></div>
+    </div>
+
+    <!-- ZONA ADMIN: gerar lote do mês -->
+    <div id="adminBox" style="display:none;margin-top:24px;background:#1A1D2E;border-radius:14px;padding:22px;color:#fff">
+      <div style="font-size:1.05rem;font-weight:700;margin-bottom:4px">⚙️ Administração — Gerar conteúdos do mês</div>
+      <div style="font-size:.85rem;opacity:.8;margin-bottom:14px;line-height:1.5">Gera automaticamente 1 publicação + 1 artigo para cada destino em destaque do mês selecionado. Os conteúdos ficam logo disponíveis na Biblioteca para todos os consultores.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <select id="adminMes" style="padding:9px 12px;border-radius:8px;border:none;font-size:14px"></select>
+        <button class="btn" id="adminGerarBtn">⚡ Gerar lote do mês</button>
+      </div>
+      <div id="adminProg" style="font-size:.85rem;margin-top:14px;opacity:.9"></div>
     </div>
   </div>
 
@@ -175,6 +190,53 @@ const CAL = {"Janeiro": {"epoca": "Pico de reservas — planeamento do ano", "fo
 
 // ?ref do consultor (para os links)
 const ref = new URLSearchParams(location.search).get('ref') || '';
+const isAdmin = new URLSearchParams(location.search).get('admin') === '1';
+const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+// Zona admin: mostrar e preparar o seletor de meses
+if(isAdmin){
+  const box=document.getElementById('adminBox'); if(box) box.style.display='block';
+  const sel=document.getElementById('adminMes');
+  if(sel){
+    sel.innerHTML=MESES.map((m,i)=>'<option value="'+m+'"'+(i===new Date().getMonth()?' selected':'')+'>'+m+'</option>').join('');
+  }
+}
+
+async function gerarLoteDoMes(){
+  if(!sb){toast('Supabase indisponível');return;}
+  const mes=document.getElementById('adminMes').value;
+  const v=CAL[mes];
+  if(!v||!v.top||!v.top.length){toast('Sem destinos para este mês');return;}
+  const destinos=v.top.slice(0,3).map(d=>d.nome);   // 3 destinos em destaque
+  const prog=document.getElementById('adminProg');
+  const btn=document.getElementById('adminGerarBtn'); btn.disabled=true;
+  let feitos=0, total=destinos.length*2;
+  for(const destino of destinos){
+    for(const formato of ['post','artigo']){
+      prog.textContent='A gerar '+(feitos+1)+'/'+total+'  ('+destino+' · '+formato+')…';
+      try{
+        const r=await fetch(SUPA_URL+'/functions/v1/gerar-conteudo',{
+          method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPA_KEY},
+          body:JSON.stringify({destino,tom:'entusiasta',formato})
+        });
+        const d=await r.json();
+        if(d.corpo){
+          await sb.from('conteudos_marketing').insert({
+            tipo:formato, formato:formato, categoria:'destinos',
+            titulo:d.titulo||destino, legenda:d.corpo, hashtags:d.hashtags||'', ativo:true
+          });
+        }
+      }catch(e){console.warn('lote',destino,formato,e);}
+      feitos++;
+    }
+  }
+  prog.textContent='✅ '+feitos+' conteúdos gerados e disponíveis na Biblioteca!';
+  btn.disabled=false;
+  loadBib();
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const b=document.getElementById('adminGerarBtn'); if(b) b.onclick=gerarLoteDoMes;
+});
 
 // TABS
 document.querySelectorAll('.tab').forEach(t=>{
@@ -233,48 +295,71 @@ async function loadBib(){
 function renderBib(cat){
   const arr = cat==='todos'?bibCache:bibCache.filter(c=>c.categoria===cat);
   const g=document.getElementById('bibGrid');
-  if(!arr.length){g.innerHTML='<p style="color:#9ca3af;font-size:14px">Sem conteúdos nesta categoria.</p>';return;}
+  if(!arr.length){g.innerHTML='<p style="color:#9ca3af;font-size:14px">Sem conteúdos nesta categoria. (O admin pode gerar conteúdos no separador Gerador.)</p>';return;}
   g.innerHTML=arr.map(c=>{
     const img=c.imagem_url?'<img src="'+c.imagem_url+'" onerror="this.style.display=\'none\'">':'';
-    const leg=(c.legenda||'').replace(/</g,'&lt;');
-    const full=(c.legenda||'')+(c.hashtags?'\n\n'+c.hashtags:'');
-    return '<div class="card">'+img+'<h4>'+(c.titulo||'')+'</h4>'
-      +'<div class="leg">'+leg+'</div>'
+    const ehArtigo=(c.formato==='artigo'||c.tipo==='artigo');
+    const corpo=(c.legenda||'');
+    const preview=ehArtigo&&corpo.length>220 ? corpo.slice(0,220).replace(/</g,'&lt;')+'…' : corpo.replace(/</g,'&lt;');
+    const full=corpo+(c.hashtags?'\n\n'+c.hashtags:'');
+    const badge='<span class="badge '+(ehArtigo?'b-art':'b-post')+'">'+(ehArtigo?'📄 Artigo':'📱 Publicação')+'</span>';
+    return '<div class="card">'+img+badge+'<h4>'+(c.titulo||'')+'</h4>'
+      +'<div class="leg">'+preview+'</div>'
       +(c.hashtags?'<div class="hash">'+c.hashtags+'</div>':'')
-      +'<button class="btn" onclick=\'copiar('+JSON.stringify(full)+')\'>Copiar legenda</button></div>';
+      +'<button class="btn" onclick=\'copiar('+JSON.stringify(full)+')\'>Copiar '+(ehArtigo?'artigo':'publicação')+'</button></div>';
   }).join('');
 }
 document.querySelectorAll('#bibFiltros .fbtn').forEach(b=>{
   b.onclick=()=>{document.querySelectorAll('#bibFiltros .fbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderBib(b.dataset.c);};
 });
 
-// GERADOR IA
+// GERADOR IA (posts e artigos, editáveis)
 document.getElementById('genBtn').onclick=async()=>{
   const dest=document.getElementById('genDest').value.trim();
   if(!dest){toast('Indica um destino');return;}
   const tom=document.getElementById('genTom').value;
-  const tipo=document.getElementById('genTipo').value;
+  const formato=document.getElementById('genFormato').value;
   const load=document.getElementById('genLoad'), out=document.getElementById('genOut');
   out.innerHTML='';load.classList.add('on');
   try{
-    const r=await fetch(SUPA_URL+'/functions/v1/gerar-legenda',{
+    const r=await fetch(SUPA_URL+'/functions/v1/gerar-conteudo',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPA_KEY},
-      body:JSON.stringify({destino:dest,tom,tipo})
+      body:JSON.stringify({destino:dest,tom,formato})
     });
     const d=await r.json();
     load.classList.remove('on');
     if(d.error){out.innerHTML='<p style="color:#c0392b;font-size:13px">Erro: '+d.error+'</p>';return;}
-    out.innerHTML=(d.legendas||[]).map(l=>{
-      const safe=l.replace(/</g,'&lt;');
-      return '<div class="gen-leg"><button class="btn ghost cp" onclick=\'copiar('+JSON.stringify(l)+')\'>Copiar</button>'+safe+'</div>';
-    }).join('');
-    if(!(d.legendas||[]).length) out.innerHTML='<p style="color:#9ca3af;font-size:13px">Não foi possível gerar. Tenta outra vez.</p>';
+    if(d.corpo){
+      const texto = (formato==='artigo' && d.titulo ? (d.titulo+'\n\n') : '') + d.corpo + (d.hashtags ? ('\n\n'+d.hashtags) : '');
+      out.innerHTML = bloco(texto, dest, formato==='artigo');
+    } else {
+      out.innerHTML='<p style="color:#9ca3af;font-size:13px">Não foi possível gerar. Tenta outra vez.</p>';
+    }
   }catch(e){
     load.classList.remove('on');
-    out.innerHTML='<p style="color:#c0392b;font-size:13px">Falha ao gerar (verifica a Edge Function gerar-legenda).</p>';
+    out.innerHTML='<p style="color:#c0392b;font-size:13px">Falha ao gerar (verifica a Edge Function gerar-conteudo).</p>';
   }
 };
+// cria um bloco editável com botões copiar e guardar
+function bloco(texto, destino, grande){
+  const id='ed'+Math.random().toString(36).slice(2,8);
+  return '<div class="gen-leg">'
+    +'<textarea id="'+id+'" class="gen-edit'+(grande?' big':'')+'">'+texto.replace(/</g,'&lt;')+'</textarea>'
+    +'<div class="gen-acts">'
+    +'<button class="btn ghost" onclick="copiarEdit(\''+id+'\')">📋 Copiar</button>'
+    +'<button class="btn sec" onclick="guardarEdit(\''+id+'\',\''+destino.replace(/'/g,"")+'\')">💾 Guardar</button>'
+    +'</div></div>';
+}
+function copiarEdit(id){const t=document.getElementById(id);navigator.clipboard.writeText(t.value).then(()=>toast('Copiado!'));}
+async function guardarEdit(id,destino){
+  const t=document.getElementById(id);
+  if(!sb){toast('Indisponível');return;}
+  try{
+    await sb.from('legendas_guardadas').insert({consultor_id:ref||null,destino:destino,legenda:t.value});
+    toast('Guardado nos teus favoritos!');
+  }catch(e){toast('Não foi possível guardar');}
+}
 
 // PLANO SEMANAL
 const DIAS=['','Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
