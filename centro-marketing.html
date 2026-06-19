@@ -91,6 +91,55 @@ h1{font-size:26px;font-weight:800;margin:14px 0 4px;}
 .plano-row .t{font-size:14px;font-weight:600;}
 .plano-row .d{font-size:12.5px;color:#6b7280;margin-top:2px;}
 .plano-row .ex{font-size:12.5px;color:var(--blue);margin-top:4px;font-style:italic;}
+/* === PLANO DE AÇÃO === */
+.pa-semana-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;background:#fff;border-radius:12px;padding:12px 18px;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+.pa-semana-nav button{background:none;border:1px solid #e1e3ea;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--navy);}
+.pa-semana-nav button:hover{background:var(--bg);}
+.pa-semana-label{font-size:15px;font-weight:700;color:var(--navy);}
+.pa-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.pa-kpi{background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.04);text-align:center;}
+.pa-kpi .kv{font-size:28px;font-weight:800;color:var(--coral);}
+.pa-kpi .kv.blue{color:var(--blue);}
+.pa-kpi .kv.green{color:var(--green);}
+.pa-kpi .kl{font-size:11.5px;color:#6b7280;margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+.pa-progress{background:#fff;border-radius:12px;padding:16px 18px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+.pa-progress-label{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px;}
+.pa-bar{height:10px;background:#eceef3;border-radius:6px;overflow:hidden;}
+.pa-bar-fill{height:100%;border-radius:6px;background:var(--coral);transition:width .4s;}
+.pa-bar-fill.ok{background:var(--green);}
+.pa-section{margin-bottom:20px;}
+.pa-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#9ca3af;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.pa-section-title span{background:#eceef3;border-radius:4px;padding:2px 8px;}
+.pa-task{display:flex;align-items:flex-start;gap:12px;background:#fff;border-radius:12px;padding:13px 16px;margin-bottom:8px;box-shadow:0 1px 6px rgba(0,0,0,.04);cursor:pointer;transition:box-shadow .15s;border:1.5px solid transparent;}
+.pa-task:hover{box-shadow:0 3px 12px rgba(0,0,0,.08);}
+.pa-task.done{opacity:.55;border-color:#e1e3ea;}
+.pa-task.done .pa-task-title{text-decoration:line-through;color:#9ca3af;}
+.pa-check{width:22px;height:22px;border-radius:6px;border:2px solid #d1d5db;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .15s;background:#fff;}
+.pa-task.done .pa-check{background:var(--green);border-color:var(--green);color:#fff;}
+.pa-task-body{flex:1;}
+.pa-task-title{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:2px;}
+.pa-task-desc{font-size:12.5px;color:#6b7280;line-height:1.45;}
+.pa-task-tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:5px;}
+.tag-rede{background:#e7eefe;color:var(--blue);}
+.tag-contacto{background:#fdedf0;color:var(--coral);}
+.tag-followup{background:#f0faf3;color:var(--green);}
+.tag-conteudo{background:#fef9ec;color:#b45309;}
+.pa-add-form{background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:12px;display:none;}
+.pa-add-form.open{display:block;}
+.pa-add-form input,.pa-add-form textarea,.pa-add-form select{width:100%;padding:9px 12px;border:1px solid #d8dbe5;border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:8px;}
+.pa-add-form textarea{min-height:60px;resize:vertical;}
+.pa-add-row{display:flex;gap:8px;}
+.pa-resultado{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:20px;}
+.pa-resultado h4{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--navy);}
+.pa-resultado-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pa-res-item{background:var(--bg);border-radius:10px;padding:12px 14px;}
+.pa-res-item label{display:block;font-size:11.5px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+.pa-res-val{font-size:22px;font-weight:800;color:var(--coral);}
+.pa-res-manual{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.pa-res-manual input{width:60px;padding:6px 8px;border:1px solid #d8dbe5;border-radius:6px;font-size:14px;font-weight:700;text-align:center;}
+.pa-objetivo{display:flex;align-items:center;gap:6px;font-size:12px;color:#6b7280;margin-top:6px;}
+.pa-objetivo .met{color:var(--green);font-weight:700;}
+.pa-objetivo .nmet{color:var(--coral);font-weight:700;}
 </style>
 </head>
 <body>
@@ -103,7 +152,8 @@ h1{font-size:26px;font-weight:800;margin:14px 0 4px;}
   <p class="sub">Ferramentas para captar clientes e saber o que publicar — feito para quem está a começar.</p>
 
   <div class="tabs">
-    <button class="tab active" data-p="cal">📅 Calendário inteligente</button>
+    <button class="tab active" data-p="acao">🎯 Plano de ação</button>
+    <button class="tab" data-p="cal">📅 Calendário inteligente</button>
     <button class="tab" data-p="bib">🖼️ Biblioteca de conteúdos</button>
     <button class="tab" data-p="gen">✨ Gerador de legendas</button>
     <button class="tab" data-p="blog">📰 Criar artigo de blog</button>
@@ -112,7 +162,7 @@ h1{font-size:26px;font-weight:800;margin:14px 0 4px;}
   </div>
 
   <!-- CALENDÁRIO -->
-  <div class="panel active" id="cal">
+  <div class="panel" id="cal">
     <div class="intro">
       <b>O que publicar em cada mês?</b> Com base nas reservas reais da APM, mostramos um índice de procura (de 0 a 10) para os destinos mais pedidos em cada mês. Quanto mais alto o índice, mais esse destino está a ser procurado nesse período — publica sobre eles para acompanhares o momento. Nota: os clientes costumam reservar cerca de 3 meses antes de viajar, e novembro é o mês da Black Friday.
     </div>
@@ -200,6 +250,100 @@ h1{font-size:26px;font-weight:800;margin:14px 0 4px;}
   <div class="panel" id="scr">
     <div class="intro"><b>Mensagens prontas a usar.</b> Copia, personaliza com o nome da pessoa e envia. Tom natural, sem pressão.</div>
     <div id="scrList"><p style="color:#9ca3af;font-size:14px">A carregar…</p></div>
+  </div>
+
+
+  <!-- PLANO DE AÇÃO -->
+  <div class="panel active" id="acao">
+    <div class="intro"><b>O teu plano para 3 pedidos de orçamento por semana.</b> Marca as tarefas feitas, regista os resultados e acompanha a tua evolução semana a semana. As tarefas APM são a base — podes adicionar as tuas próprias.</div>
+
+    <!-- NAVEGAÇÃO DE SEMANA -->
+    <div class="pa-semana-nav">
+      <button onclick="semanaAnterior()">← Semana anterior</button>
+      <div class="pa-semana-label" id="pa-semana-label">Esta semana</div>
+      <button onclick="semanaSeguinte()">Semana seguinte →</button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="pa-kpis">
+      <div class="pa-kpi"><div class="kv" id="pa-kv-tarefas">0</div><div class="kl">Tarefas concluídas</div></div>
+      <div class="pa-kpi"><div class="kv blue" id="pa-kv-perc">0%</div><div class="kl">Progresso semanal</div></div>
+      <div class="pa-kpi"><div class="kv green" id="pa-kv-orc">0/3</div><div class="kl">Orçamentos gerados</div></div>
+    </div>
+
+    <!-- BARRA DE PROGRESSO -->
+    <div class="pa-progress">
+      <div class="pa-progress-label">
+        <span>Progresso das tarefas</span>
+        <span id="pa-prog-txt">0 de 0 tarefas</span>
+      </div>
+      <div class="pa-bar"><div class="pa-bar-fill" id="pa-bar-fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- RESULTADOS DA SEMANA -->
+    <div class="pa-resultado">
+      <h4>📊 Resultados da semana</h4>
+      <div class="pa-resultado-grid">
+        <div class="pa-res-item">
+          <label>Pedidos de orçamento</label>
+          <div class="pa-res-val" id="pa-orc-auto">—</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:3px">Automático (sistema)</div>
+          <div class="pa-res-manual">
+            <span style="font-size:12px;color:#6b7280">+ manual:</span>
+            <input type="number" id="pa-orc-manual" min="0" max="99" value="0" onchange="guardarResultados()">
+          </div>
+          <div class="pa-objetivo" id="pa-orc-meta"></div>
+        </div>
+        <div class="pa-res-item">
+          <label>Contactos feitos</label>
+          <div class="pa-res-manual" style="margin-top:0">
+            <input type="number" id="pa-cont-manual" min="0" max="999" value="0" onchange="guardarResultados()">
+            <span style="font-size:12px;color:#6b7280">contactos</span>
+          </div>
+          <div class="pa-objetivo" id="pa-cont-meta"></div>
+        </div>
+        <div class="pa-res-item">
+          <label>Publicações feitas</label>
+          <div class="pa-res-manual" style="margin-top:0">
+            <input type="number" id="pa-pub-manual" min="0" max="99" value="0" onchange="guardarResultados()">
+            <span style="font-size:12px;color:#6b7280">publicações</span>
+          </div>
+          <div class="pa-objetivo" id="pa-pub-meta"></div>
+        </div>
+        <div class="pa-res-item">
+          <label>Reservas confirmadas</label>
+          <div class="pa-res-val" id="pa-res-auto">—</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:3px">Automático (sistema)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAREFAS APM -->
+    <div class="pa-section">
+      <div class="pa-section-title">🏢 <span>Tarefas APM — base semanal</span></div>
+      <div id="pa-tasks-apm"></div>
+    </div>
+
+    <!-- TAREFAS PESSOAIS -->
+    <div class="pa-section">
+      <div class="pa-section-title">👤 <span>As minhas tarefas</span></div>
+      <div id="pa-tasks-pessoais"></div>
+      <div class="pa-add-form" id="pa-add-form">
+        <input type="text" id="pa-add-titulo" placeholder="Título da tarefa (ex: Ligar a 5 clientes antigos)">
+        <textarea id="pa-add-desc" placeholder="Descrição opcional…"></textarea>
+        <select id="pa-add-tag">
+          <option value="contacto">📞 Contacto</option>
+          <option value="rede">📱 Redes sociais</option>
+          <option value="followup">🔄 Follow-up</option>
+          <option value="conteudo">✍️ Conteúdo</option>
+        </select>
+        <div class="pa-add-row">
+          <button class="btn" onclick="adicionarTarefaPessoal()" style="flex:1">Adicionar tarefa</button>
+          <button class="btn" onclick="document.getElementById('pa-add-form').classList.remove('open')" style="background:#6b7280;flex:1">Cancelar</button>
+        </div>
+      </div>
+      <button class="btn ghost" onclick="document.getElementById('pa-add-form').classList.toggle('open')" style="width:100%;margin-top:4px;border:1.5px dashed #d8dbe5;background:#fff;color:#6b7280;border-color:#d8dbe5">＋ Adicionar tarefa minha</button>
+    </div>
   </div>
 
 </div>
@@ -502,6 +646,227 @@ if(blogAdminBtn) blogAdminBtn.onclick=async()=>{
   prog.textContent='✅ '+feitos+' artigos criados como rascunho. Revê-os no blog antes de publicar.';
   blogAdminBtn.disabled=false;
 };
+
+loadBib();loadPlano();loadScripts();
+
+// ===== PLANO DE AÇÃO =====
+const TAREFAS_APM = [
+  {id:'apm1', titulo:'Publicar 3 conteúdos nas redes sociais', desc:'Usa a Biblioteca ou o Gerador de legendas. Destinos em destaque do mês ou testemunho de cliente.', tag:'rede'},
+  {id:'apm2', titulo:'Fazer 10 contactos diretos', desc:'Mensagem personalizada a amigos, familiares ou conhecidos. Pergunta se têm viagem planeada ou se conhecem alguém.', tag:'contacto'},
+  {id:'apm3', titulo:'Enviar 3 propostas ou orçamentos', desc:'Responder a pedidos pendentes ou criar propostas proativas para quem mostrou interesse.', tag:'contacto'},
+  {id:'apm4', titulo:'Fazer follow-up de orçamentos enviados', desc:'Contactar clientes que receberam orçamento há mais de 3 dias e ainda não responderam.', tag:'followup'},
+  {id:'apm5', titulo:'Partilhar um testemunho de cliente', desc:'Publica uma avaliação real (com autorização). Histórias reais vendem mais do que qualquer anúncio.', tag:'conteudo'},
+  {id:'apm6', titulo:'Pedir referências a um cliente satisfeito', desc:'Um cliente contente pode indicar 2-3 pessoas. Usa o questionário de satisfação ou pergunta diretamente.', tag:'followup'},
+  {id:'apm7', titulo:'Estudar 1 destino em destaque do mês', desc:'Consulta o Calendário inteligente, vê o que está a ser procurado e prepara-te para responder melhor.', tag:'conteudo'},
+];
+
+const TAGS = {rede:'📱 Redes sociais', contacto:'📞 Contacto', followup:'🔄 Follow-up', conteudo:'✍️ Conteúdo'};
+const TAG_CLASS = {rede:'tag-rede', contacto:'tag-contacto', followup:'tag-followup', conteudo:'tag-conteudo'};
+const OBJETIVO = {orcamentos:3, contactos:10, publicacoes:3};
+
+let paOffset = 0; // semanas relativas a hoje (0=esta, -1=anterior, etc.)
+let paData = {}; // {tarefas:{id:bool}, resultados:{orc_manual,cont_manual,pub_manual}, tarefas_pessoais:[]}
+let paStorageKey = '';
+
+function semanaKey(offset){
+  const d = new Date();
+  d.setDate(d.getDate() - d.getDay() + 1 + offset*7); // segunda-feira
+  return 'semana_' + d.toISOString().slice(0,10);
+}
+
+function semanaLabel(offset){
+  if(offset===0) return 'Esta semana';
+  if(offset===-1) return 'Semana passada';
+  const d = new Date();
+  d.setDate(d.getDate() - d.getDay() + 1 + offset*7);
+  const fim = new Date(d); fim.setDate(d.getDate()+6);
+  const fmt = dt => dt.getDate()+'/'+(dt.getMonth()+1);
+  return fmt(d) + ' – ' + fmt(fim);
+}
+
+function semanaAnterior(){ paOffset--; carregarSemana(); }
+function semanaSeguinte(){ if(paOffset<0){paOffset++; carregarSemana();} }
+
+function carregarSemana(){
+  document.getElementById('pa-semana-label').textContent = semanaLabel(paOffset);
+  document.querySelector('.pa-semana-nav button:last-child').disabled = paOffset >= 0;
+
+  paStorageKey = (ref?'pa_'+ref+'_':'pa_') + semanaKey(paOffset);
+  const saved = localStorage.getItem(paStorageKey);
+  paData = saved ? JSON.parse(saved) : {tarefas:{}, resultados:{orc_manual:0,cont_manual:0,pub_manual:0}, tarefas_pessoais:[]};
+
+  renderTarefas();
+  carregarResultadosSupabase();
+  actualizarKPIs();
+}
+
+function guardarLocal(){
+  localStorage.setItem(paStorageKey, JSON.stringify(paData));
+}
+
+function toggleTarefa(id){
+  paData.tarefas[id] = !paData.tarefas[id];
+  guardarLocal();
+  renderTarefas();
+  actualizarKPIs();
+}
+
+function renderTarefas(){
+  // APM
+  const elAPM = document.getElementById('pa-tasks-apm');
+  elAPM.innerHTML = TAREFAS_APM.map(t => taskHTML(t, paData.tarefas[t.id])).join('');
+
+  // Pessoais
+  const elP = document.getElementById('pa-tasks-pessoais');
+  const pessoais = paData.tarefas_pessoais || [];
+  elP.innerHTML = pessoais.length
+    ? pessoais.map((t,i) => taskHTML(t, paData.tarefas['p_'+i], true, i)).join('')
+    : '<p style="font-size:13px;color:#9ca3af;padding:10px 0">Ainda não adicionaste tarefas próprias.</p>';
+}
+
+function taskHTML(t, done, pessoal, idx){
+  pessoal = pessoal || false;
+  idx = (idx === undefined) ? null : idx;
+  const id = pessoal ? 'p_'+idx : t.id;
+  const tagLabel = TAGS[t.tag] || t.tag;
+  const tagClass = TAG_CLASS[t.tag] || 'tag-contacto';
+  const removeBtn = pessoal
+    ? '<button onclick="removerTarefaPessoal('+idx+')" style="background:none;border:none;font-size:16px;cursor:pointer;color:#d1d5db;margin-left:auto;padding:0 4px" title="Remover">&times;</button>'
+    : '';
+  const doneClass = done ? ' done' : '';
+  const check = done ? '&#10003;' : '';
+  const desc = t.desc ? '<div class="pa-task-desc">'+t.desc+'</div>' : '';
+  return '<div class="pa-task'+doneClass+'" onclick="toggleTarefa('+JSON.stringify(id)+')">'
+    +'<div class="pa-check">'+check+'</div>'
+    +'<div class="pa-task-body">'
+    +'<div class="pa-task-title">'+t.titulo+'</div>'
+    +desc
+    +'<span class="pa-task-tag '+tagClass+'">'+tagLabel+'</span>'
+    +'</div>'
+    +removeBtn
+    +'</div>';
+}
+
+function adicionarTarefaPessoal(){
+  const titulo = document.getElementById('pa-add-titulo').value.trim();
+  if(!titulo){toast('Indica o título da tarefa');return;}
+  const desc = document.getElementById('pa-add-desc').value.trim();
+  const tag = document.getElementById('pa-add-tag').value;
+  paData.tarefas_pessoais = paData.tarefas_pessoais || [];
+  paData.tarefas_pessoais.push({titulo, desc, tag});
+  guardarLocal();
+  document.getElementById('pa-add-titulo').value='';
+  document.getElementById('pa-add-desc').value='';
+  document.getElementById('pa-add-form').classList.remove('open');
+  renderTarefas();
+  actualizarKPIs();
+}
+
+function removerTarefaPessoal(idx){
+  paData.tarefas_pessoais.splice(idx,1);
+  // limpar chave de estado para índices removidos
+  guardarLocal();
+  renderTarefas();
+  actualizarKPIs();
+}
+
+function actualizarKPIs(){
+  const total = TAREFAS_APM.length + (paData.tarefas_pessoais||[]).length;
+  let feitas = 0;
+  TAREFAS_APM.forEach(t => { if(paData.tarefas[t.id]) feitas++; });
+  (paData.tarefas_pessoais||[]).forEach((_,i) => { if(paData.tarefas['p_'+i]) feitas++; });
+  const perc = total>0 ? Math.round(feitas/total*100) : 0;
+
+  document.getElementById('pa-kv-tarefas').textContent = feitas;
+  document.getElementById('pa-kv-perc').textContent = perc+'%';
+  document.getElementById('pa-prog-txt').textContent = feitas+' de '+total+' tarefas';
+
+  const fill = document.getElementById('pa-bar-fill');
+  fill.style.width = perc+'%';
+  fill.className = 'pa-bar-fill'+(perc>=100?' ok':'');
+
+  // orçamentos (auto + manual)
+  const orcAuto = parseInt(document.getElementById('pa-orc-auto').textContent)||0;
+  const orcMan = parseInt((paData.resultados||{}).orc_manual)||0;
+  const totalOrc = orcAuto + orcMan;
+  document.getElementById('pa-kv-orc').textContent = totalOrc+'/'+OBJETIVO.orcamentos;
+
+  // metas
+  const metaOrc = totalOrc >= OBJETIVO.orcamentos;
+  document.getElementById('pa-orc-meta').innerHTML = 'Objetivo: 3/semana — '
+    +'<span class="'+(metaOrc?'met':'nmet')+'">'+(metaOrc?'✅ Atingido!':'❌ '+( OBJETIVO.orcamentos - totalOrc)+' em falta')+'</span>';
+
+  const contMan = parseInt((paData.resultados||{}).cont_manual)||0;
+  const metaCont = contMan >= OBJETIVO.contactos;
+  document.getElementById('pa-cont-meta').innerHTML = 'Objetivo: 10/semana — '
+    +'<span class="'+(metaCont?'met':'nmet')+'">'+(metaCont?'✅ Atingido!':'❌ '+(OBJETIVO.contactos-contMan)+' em falta')+'</span>';
+
+  const pubMan = parseInt((paData.resultados||{}).pub_manual)||0;
+  const metaPub = pubMan >= OBJETIVO.publicacoes;
+  document.getElementById('pa-pub-meta').innerHTML = 'Objetivo: 3/semana — '
+    +'<span class="'+(metaPub?'met':'nmet')+'">'+(metaPub?'✅ Atingido!':'❌ '+(OBJETIVO.publicacoes-pubMan)+' em falta')+'</span>';
+}
+
+function guardarResultados(){
+  paData.resultados = paData.resultados || {};
+  paData.resultados.orc_manual = parseInt(document.getElementById('pa-orc-manual').value)||0;
+  paData.resultados.cont_manual = parseInt(document.getElementById('pa-cont-manual').value)||0;
+  paData.resultados.pub_manual = parseInt(document.getElementById('pa-pub-manual').value)||0;
+  guardarLocal();
+  actualizarKPIs();
+}
+
+async function carregarResultadosSupabase(){
+  // restaurar campos manuais
+  const r = paData.resultados || {};
+  document.getElementById('pa-orc-manual').value = r.orc_manual || 0;
+  document.getElementById('pa-cont-manual').value = r.cont_manual || 0;
+  document.getElementById('pa-pub-manual').value = r.pub_manual || 0;
+
+  // puxar orçamentos e reservas automáticos do Supabase
+  if(!sb||!ref){
+    document.getElementById('pa-orc-auto').textContent = '—';
+    document.getElementById('pa-res-auto').textContent = '—';
+    actualizarKPIs();
+    return;
+  }
+  try{
+    // calcular intervalo da semana
+    const inicio = new Date();
+    inicio.setDate(inicio.getDate() - inicio.getDay() + 1 + paOffset*7);
+    inicio.setHours(0,0,0,0);
+    const fim = new Date(inicio); fim.setDate(inicio.getDate()+6); fim.setHours(23,59,59,999);
+
+    const isoI = inicio.toISOString(), isoF = fim.toISOString();
+
+    // orçamentos criados nesta semana
+    const {data:orcs} = await sb.from('orcamentos')
+      .select('id', {count:'exact'})
+      .eq('consultor_id', ref)
+      .gte('criado_em', isoI).lte('criado_em', isoF);
+    const nOrcs = orcs ? orcs.length : 0;
+    document.getElementById('pa-orc-auto').textContent = nOrcs;
+
+    // reservas confirmadas nesta semana
+    const {data:reservas} = await sb.from('reservas')
+      .select('id', {count:'exact'})
+      .eq('consultor_id', ref)
+      .gte('criado_em', isoI).lte('criado_em', isoF);
+    const nRes = reservas ? reservas.length : 0;
+    document.getElementById('pa-res-auto').textContent = nRes;
+  }catch(e){
+    document.getElementById('pa-orc-auto').textContent = '—';
+    document.getElementById('pa-res-auto').textContent = '—';
+  }
+  actualizarKPIs();
+}
+
+// inicializar ao abrir a tab
+document.querySelector('[data-p="acao"]').addEventListener('click', ()=>{
+  if(!paStorageKey) carregarSemana();
+});
+// pré-carregar se a tab já estiver ativa
+if(document.getElementById('acao').classList.contains('active')) carregarSemana();
 
 loadBib();loadPlano();loadScripts();
 </script>
