@@ -7172,7 +7172,10 @@ function carregarMarketing() {
     if (frame.getAttribute('data-loaded') === '1') return
     const base = window.location.origin + window.location.pathname.replace('index.html','')
     const codigo = currentPerfil ? (currentPerfil.codigo_afiliado || currentPerfil.id) : ''
-    frame.src = base + 'centro-marketing.html' + (codigo ? ('?ref=' + encodeURIComponent(codigo)) : '')
+    const ehAdmin = currentPerfil && (currentPerfil.role === 'admin')
+    let url = base + 'centro-marketing.html?ref=' + encodeURIComponent(codigo)
+    if (ehAdmin) url += '&admin=1'
+    frame.src = url
     frame.setAttribute('data-loaded', '1')
   } catch(e) { console.warn('carregarMarketing:', e) }
 }
