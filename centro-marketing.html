@@ -106,6 +106,7 @@ h1{font-size:26px;font-weight:800;margin:14px 0 4px;}
     <button class="tab active" data-p="cal">📅 Calendário inteligente</button>
     <button class="tab" data-p="bib">🖼️ Biblioteca de conteúdos</button>
     <button class="tab" data-p="gen">✨ Gerador de legendas</button>
+    <button class="tab" data-p="blog">📰 Criar artigo de blog</button>
     <button class="tab" data-p="plano">🗓️ Plano semanal</button>
     <button class="tab" data-p="scr">💬 Scripts de abordagem</button>
   </div>
@@ -163,6 +164,29 @@ h1{font-size:26px;font-weight:800;margin:14px 0 4px;}
         <button class="btn" id="adminGerarBtn">⚡ Gerar lote do mês</button>
       </div>
       <div id="adminProg" style="font-size:.85rem;margin-top:14px;opacity:.9"></div>
+    </div>
+  </div>
+
+  <!-- BLOG -->
+  <div class="panel" id="blog">
+    <div class="intro"><b>Cria um artigo completo para o blog.</b> Escreve o destino e o sistema gera um artigo estruturado com imagens, pronto a publicar. Fica como <b>rascunho</b> — podes revê-lo no blog antes de o tornares público.</div>
+    <div class="gen-box">
+      <label>Destino ou tema do artigo</label>
+      <input id="blogDest" placeholder="ex: Maiorca, Cabo Verde, Lua de mel nas Maldivas…">
+      <div style="margin-top:16px"><button class="btn" id="blogBtn">📰 Criar artigo de blog</button></div>
+      <div class="loader" id="blogLoad">A criar o artigo e a buscar imagens… (pode demorar alguns segundos)</div>
+      <div id="blogOut" style="margin-top:16px"></div>
+    </div>
+
+    <!-- ZONA ADMIN: lote de artigos do mês -->
+    <div id="blogAdminBox" style="display:none;margin-top:24px;background:#1A1D2E;border-radius:14px;padding:22px;color:#fff">
+      <div style="font-size:1.05rem;font-weight:700;margin-bottom:4px">⚙️ Administração — Artigos do mês</div>
+      <div style="font-size:.85rem;opacity:.8;margin-bottom:14px;line-height:1.5">Cria automaticamente um artigo de blog (com imagens) para cada destino em destaque do mês selecionado. Ficam como rascunho para reveres.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <select id="blogAdminMes" style="padding:9px 12px;border-radius:8px;border:none;font-size:14px"></select>
+        <button class="btn" id="blogAdminBtn">⚡ Criar artigos do mês</button>
+      </div>
+      <div id="blogAdminProg" style="font-size:.85rem;margin-top:14px;opacity:.9"></div>
     </div>
   </div>
 
@@ -389,6 +413,95 @@ async function loadScripts(){
     document.getElementById('scrList').innerHTML='<p style="color:#9ca3af;font-size:14px">Corre o SQL para ativar os scripts.</p>';
   }
 }
+
+// ===== BLOG: gerar artigo + imagens e publicar como rascunho =====
+async function buscarImagem(query){
+  try{
+    const r=await fetch(SUPA_URL+'/functions/v1/pexels-proxy?q='+encodeURIComponent(query||'travel')+'&per_page=1&orientation=landscape',{
+      headers:{'Authorization':'Bearer '+SUPA_KEY}
+    });
+    const d=await r.json();
+    return (d.photos&&d.photos[0]&&d.photos[0].src&&(d.photos[0].src.large||d.photos[0].src.landscape))||'';
+  }catch(e){console.warn('pexels',e);return '';}
+}
+
+async function criarArtigoBlog(destino){
+  // 1) gerar artigo estruturado
+  const r=await fetch(SUPA_URL+'/functions/v1/gerar-artigo',{
+    method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPA_KEY},
+    body:JSON.stringify({prompt:destino})
+  });
+  const a=await r.json();
+  if(a.error||!a.titulo) throw new Error(a.error||'sem artigo');
+
+  // 2) imagens (hero + secções) via pexels-proxy
+  const heroQ = a.hero_query || destino;
+  const hero = await buscarImagem(heroQ);
+  const secs = Array.isArray(a.seccoes)?a.seccoes:[];
+  for(const s of secs){ s.img = await buscarImagem(s.img_query||destino); }
+
+  // 3) montar registo no formato da tabela artigos_consultores
+  const reg = {
+    consultor_id: ref||null,
+    consultor_nome: (typeof CONSULTOR_NOME!=='undefined'?CONSULTOR_NOME:null),
+    titulo: a.titulo,
+    subtitulo: a.subtitulo||'',
+    regiao: a.regiao||destino,
+    categoria: 'viagem',
+    hero_img: hero,
+    seccoes: secs,
+    s1_titulo: secs[0]?secs[0].titulo:null, s1_texto: secs[0]?secs[0].texto:null, s1_img: secs[0]?secs[0].img:null,
+    s2_titulo: secs[1]?secs[1].titulo:null, s2_texto: secs[1]?secs[1].texto:null, s2_img: secs[1]?secs[1].img:null,
+    s3_titulo: secs[2]?secs[2].titulo:null, s3_texto: secs[2]?secs[2].texto:null, s3_img: secs[2]?secs[2].img:null,
+    publicado: false
+  };
+  const {error}=await sb.from('artigos_consultores').insert(reg);
+  if(error) throw error;
+  return a.titulo;
+}
+
+// botão individual (consultor)
+const blogBtn=document.getElementById('blogBtn');
+if(blogBtn) blogBtn.onclick=async()=>{
+  const dest=document.getElementById('blogDest').value.trim();
+  if(!dest){toast('Indica um destino');return;}
+  if(!sb){toast('Supabase indisponível');return;}
+  const load=document.getElementById('blogLoad'), out=document.getElementById('blogOut');
+  out.innerHTML=''; load.classList.add('on');
+  try{
+    const titulo=await criarArtigoBlog(dest);
+    load.classList.remove('on');
+    out.innerHTML='<div style="background:#f0faf3;border:1px solid #bfe6cc;border-radius:10px;padding:14px;font-size:13px;color:#1A1D2E">✅ Artigo <b>"'+titulo+'"</b> criado como rascunho. Vai ao blog para o reveres e publicares.</div>';
+  }catch(e){
+    load.classList.remove('on');
+    out.innerHTML='<div style="background:#fdecef;border:1px solid #f3c4cf;border-radius:10px;padding:14px;font-size:13px;color:#c0392b">Não foi possível criar o artigo: '+(e.message||e)+'</div>';
+  }
+};
+
+// botão lote (admin)
+if(isAdmin){
+  const bb=document.getElementById('blogAdminBox'); if(bb) bb.style.display='block';
+  const sel=document.getElementById('blogAdminMes');
+  if(sel) sel.innerHTML=MESES.map((m,i)=>'<option value="'+m+'"'+(i===new Date().getMonth()?' selected':'')+'>'+m+'</option>').join('');
+}
+const blogAdminBtn=document.getElementById('blogAdminBtn');
+if(blogAdminBtn) blogAdminBtn.onclick=async()=>{
+  if(!sb){toast('Supabase indisponível');return;}
+  const mes=document.getElementById('blogAdminMes').value;
+  const v=CAL[mes];
+  if(!v||!v.top||!v.top.length){toast('Sem destinos para este mês');return;}
+  const destinos=v.top.slice(0,3).map(d=>d.nome);
+  const prog=document.getElementById('blogAdminProg');
+  blogAdminBtn.disabled=true;
+  let feitos=0;
+  for(const destino of destinos){
+    prog.textContent='A criar artigo '+(feitos+1)+'/'+destinos.length+'  ('+destino+')…';
+    try{ await criarArtigoBlog(destino); }catch(e){console.warn('lote blog',destino,e);}
+    feitos++;
+  }
+  prog.textContent='✅ '+feitos+' artigos criados como rascunho. Revê-os no blog antes de publicar.';
+  blogAdminBtn.disabled=false;
+};
 
 loadBib();loadPlano();loadScripts();
 </script>
