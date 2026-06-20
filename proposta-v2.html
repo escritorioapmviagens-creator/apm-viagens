@@ -362,16 +362,39 @@ async function registarPixelPessoal(consultorId) {
   } catch(e) { /* silencioso — tracking nunca deve bloquear a proposta */ }
 }
 
-// Dispara Purchase quando o cliente assina/aceita o contrato — em todos os pixeis ativos
+// Grava o evento na tabela própria do sistema (eventos_funil), para o consultor
+// poder ver os seus números diretamente no painel, sem depender do Facebook.
+async function registarEvento(tipo, label, consultorId, valor) {
+  try {
+    await sb.from('eventos_funil').insert({
+      consultor_id: consultorId || D?.consultor_id || null,
+      tipo, label: label || null, valor: valor || null,
+      origem: 'proposta'
+    })
+  } catch(e) { /* silencioso — tracking nunca deve bloquear a proposta */ }
+}
+
+// Dispara AddToCart quando o cliente aceita um ORÇAMENTO (ainda não é o contrato final)
+function trackAddToCart(valor, destino) {
+  if(window.fbq) fbq('track', 'AddToCart', {
+    value: valor || 0,
+    currency: 'EUR',
+    content_name: destino || 'Orçamento de viagem',
+    content_type: 'product'
+  })
+  registarEvento('AddToCart', destino, null, valor)
+}
+
+// Dispara Purchase quando o cliente assina/aceita o CONTRATO (CST) — fecho real do negócio
 function trackPurchase(valor, destino, rnavt) {
-  if(!window.fbq) return
-  fbq('track', 'Purchase', {
+  if(window.fbq) fbq('track', 'Purchase', {
     value: valor || 0,
     currency: 'EUR',
     content_name: destino || 'Contrato de viagem',
     content_type: 'product',
     content_ids: rnavt ? [rnavt] : undefined
   })
+  registarEvento('Purchase', destino, null, valor)
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -389,6 +412,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   renderProposta(); initSig()
 
   if(D.consultor_id) registarPixelPessoal(D.consultor_id)
+  registarEvento(D.tipo === 'cst' ? 'ViewContent_CST' : 'ViewContent_Orcamento', D.dest, D.consultor_id)
 })
 
 function renderProposta() {
@@ -634,7 +658,11 @@ async function aceitarProposta() {
       if(rsvErr) console.error('Erro ao criar reserva:', rsvErr.message)
       else {
         console.log('✅ Reserva criada:', rnavt)
-        trackPurchase(total, D.dest, rnavt)
+        if(D.tipo === 'cst') {
+          trackPurchase(total, D.dest, rnavt)
+        } else {
+          trackAddToCart(total, D.dest)
+        }
         // Notificação ao admin
         await sb.from('notificacoes').insert({
           tipo: 'cst_aceite',
