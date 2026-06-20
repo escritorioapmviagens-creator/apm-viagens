@@ -553,6 +553,27 @@ nav {
         </button>
       </div>
     </div>
+
+    <!-- MEUS ORÇAMENTOS ENVIADOS -->
+    <div class="gen-box" style="margin-top:16px">
+      <div class="gen-title">📋 Os meus orçamentos enviados</div>
+      <div id="meus-orcamentos-lista" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto">
+        <div style="font-size:.8rem;color:var(--muted);padding:10px 0">A carregar...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: TRANSFORMAR EM CST -->
+  <div id="modal-transformar-cst" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:20px">
+    <div style="background:#fff;border-radius:16px;padding:28px;max-width:380px;width:100%;text-align:center">
+      <div style="font-size:2rem;margin-bottom:12px">📄</div>
+      <div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">Transformar em Contrato (CST)?</div>
+      <div style="font-size:.85rem;color:var(--muted);line-height:1.6;margin-bottom:20px">Vamos abrir o gerador de CST com todos os dados deste orçamento já preenchidos. Pode rever e ajustar tudo antes de gerar o contrato final.</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('modal-transformar-cst').style.display='none'" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid var(--border);background:#fff;font-weight:600;cursor:pointer;font-family:inherit">Cancelar</button>
+        <button id="btn-confirmar-cst" style="flex:1;padding:11px;border-radius:10px;border:none;background:var(--coral);color:#fff;font-weight:600;cursor:pointer;font-family:inherit">Continuar →</button>
+      </div>
+    </div>
   </div>
 
   <!-- PREVIEW COL -->
@@ -686,6 +707,55 @@ async function initApp() {
   // Add default rows
   addPrice()
   addVoo()
+
+  carregarMeusOrcamentos()
+}
+
+// ── MEUS ORÇAMENTOS ENVIADOS + TRANSFORMAR EM CST ──
+async function carregarMeusOrcamentos() {
+  const el = document.getElementById('meus-orcamentos-lista')
+  if(!el) return
+  el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:10px 0">A carregar...</div>'
+
+  const { data, error } = await sb.from('propostas_viagem')
+    .select('id,dados,created_at,aceite')
+    .eq('consultor_id', currentUser.id)
+    .order('created_at', { ascending: false })
+    .limit(30)
+
+  if(error || !data) { el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:10px 0">Não foi possível carregar.</div>'; return }
+
+  // Só orçamentos (não CSTs já gerados) — dados.tipo é 'orcamento' ou ausente (propostas antigas)
+  const orcamentos = data.filter(p => (p.dados?.tipo || 'orcamento') === 'orcamento')
+
+  if(!orcamentos.length) { el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:10px 0">Ainda não enviou nenhum orçamento.</div>'; return }
+
+  el.innerHTML = orcamentos.map(p => {
+    const d = p.dados || {}
+    const dataFmt = new Date(p.created_at).toLocaleDateString('pt-PT', { day:'2-digit', month:'short' })
+    const total = (d.prices||[]).reduce((s,pr) => s + (parseFloat(pr.val)||0), 0)
+    const statusBadge = p.aceite
+      ? '<span style="background:#e7f7ed;color:#1a7a3f;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px">✅ Aceite</span>'
+      : '<span style="background:var(--bg);color:var(--muted);font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px">⏳ Pendente</span>'
+
+    return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
+        <div style="font-weight:700;font-size:.85rem">${d.dest || 'Sem destino'}</div>
+        ${statusBadge}
+      </div>
+      <div style="font-size:.76rem;color:var(--muted);margin-bottom:10px">${d.cli_nome || d.cli || 'Cliente não identificado'} · ${dataFmt}${total ? ' · €' + total.toLocaleString('pt-PT') : ''}</div>
+      <button onclick="confirmarTransformarCst('${p.id}')" style="width:100%;padding:8px;border-radius:8px;border:1.5px solid var(--coral);background:var(--coral-light, #fdedf0);color:var(--coral);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit">📄 Transformar em CST</button>
+    </div>`
+  }).join('')
+}
+
+function confirmarTransformarCst(propostaId) {
+  document.getElementById('modal-transformar-cst').style.display = 'flex'
+  document.getElementById('btn-confirmar-cst').onclick = () => {
+    const base = window.location.origin + window.location.pathname.replace('orcamento.html', '') + 'cst.html'
+    window.open(base + '?from_proposta=' + propostaId, '_blank')
+    document.getElementById('modal-transformar-cst').style.display = 'none'
+  }
 }
 
 // ── SECTIONS TOGGLE ──
