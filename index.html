@@ -1677,6 +1677,10 @@ textarea.finput{resize:vertical;min-height:72px}
                 <input type="checkbox" id="perfil-mostrar-aval" style="accent-color:var(--coral);width:15px;height:15px;flex-shrink:0">
                 <span style="font-size:12.5px">Mostrar avaliações de clientes</span>
               </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="checkbox" id="perfil-mostrar-recrutamento" style="accent-color:var(--coral);width:15px;height:15px;flex-shrink:0">
+                <span style="font-size:12.5px">Mostrar banner "Quero ser consultor" (recrutamento)</span>
+              </div>
             </div>
             <div style="font-size:10px;color:var(--muted);margin-bottom:14px">💡 Desligado por defeito — ative quando já tiver histórico e avaliações para mostrar.</div>
 
@@ -14334,6 +14338,7 @@ function abrirModalPerfil() {
   document.getElementById('perfil-anos-exp').value = currentPerfil.anos_experiencia || ''
   document.getElementById('perfil-mostrar-stats').checked = currentPerfil.mostrar_estatisticas || false
   document.getElementById('perfil-mostrar-aval').checked = currentPerfil.mostrar_avaliacoes || false
+  document.getElementById('perfil-mostrar-recrutamento').checked = currentPerfil.mostrar_recrutamento || false
   if(currentPerfil.foto_capa) {
     document.getElementById('perfil-capa-img').src = currentPerfil.foto_capa
     document.getElementById('perfil-capa-img').style.display = 'block'
@@ -14459,12 +14464,14 @@ async function guardarPerfil() {
   const anosExp = document.getElementById('perfil-anos-exp')?.value || null
   const mostrarStats = document.getElementById('perfil-mostrar-stats')?.checked || false
   const mostrarAval = document.getElementById('perfil-mostrar-aval')?.checked || false
+  const mostrarRecrutamento = document.getElementById('perfil-mostrar-recrutamento')?.checked || false
 
   const { error } = await sb.from('perfis').update({
     nome, telefone: tel, meta_pixel_id: pixel,
     redes_sociais: Object.keys(redes).length ? redes : null,
     bio, anos_experiencia: anosExp ? parseInt(anosExp) : null,
     mostrar_estatisticas: mostrarStats, mostrar_avaliacoes: mostrarAval,
+    mostrar_recrutamento: mostrarRecrutamento,
     artigos_destacados: _artigosSelecionados.length ? _artigosSelecionados : null
   }).eq('id', currentPerfil.id)
   if(error) { toast('Erro ao guardar', 'err'); return }
@@ -14476,6 +14483,7 @@ async function guardarPerfil() {
   currentPerfil.anos_experiencia = anosExp ? parseInt(anosExp) : null
   currentPerfil.mostrar_estatisticas = mostrarStats
   currentPerfil.mostrar_avaliacoes = mostrarAval
+  currentPerfil.mostrar_recrutamento = mostrarRecrutamento
   currentPerfil.artigos_destacados = _artigosSelecionados.length ? _artigosSelecionados : null
   document.getElementById('sb-name').textContent = nome
   closeModal('modal-perfil')
