@@ -666,9 +666,100 @@ async function initApp() {
   templates.filter(t => t.tipo === 'cancelamento').forEach(t => {
     document.getElementById('tmpl-cancel-sel').innerHTML += `<option value="${t.id}">${t.nome}</option>`
   })
-  // Add default rows
-  addPrice()
-  addVoo()
+
+  // Vem de um orçamento já enviado? Pré-preencher tudo a partir dele.
+  const _urlParams = new URLSearchParams(window.location.search)
+  const fromPropostaId = _urlParams.get('from_proposta')
+  if(fromPropostaId) {
+    await prePreencherDeProposta(fromPropostaId)
+  } else {
+    // Add default rows (apenas quando não há dados de origem)
+    addPrice()
+    addVoo()
+  }
+}
+
+// ── PRÉ-PREENCHER A PARTIR DE UM ORÇAMENTO JÁ ENVIADO ──
+async function prePreencherDeProposta(propostaId) {
+  window._fromPropostaId = propostaId
+  const toastEl = document.getElementById('toast')
+  try {
+    const { data: prop, error } = await sb.from('propostas_viagem').select('dados').eq('id', propostaId).single()
+    if(error || !prop?.dados) { toast('Não foi possível carregar os dados do orçamento.', 'err'); addPrice(); addVoo(); return }
+    const d = prop.dados
+
+    const set = (id, val) => { const el = document.getElementById(id); if(el && val !== undefined && val !== null) el.value = val }
+
+    set('f-dest', d.dest); set('f-hotel', d.hotel); set('f-sub', d.sub)
+    set('f-part', d.part); set('f-reg', d.reg)
+    set('f-pax', d.pax); set('f-noites', d.noites)
+    set('f-spct', d.spct); set('f-sval', d.sval); set('f-drest', d.drest)
+    set('f-condpag', d.condpag); set('f-cancel', d.cancel)
+    set('f-cli-nome', d.cli_nome); set('f-cli-nif', d.cli_nif)
+    set('f-cli-tel', d.cli_tel); set('f-cli-email', d.cli_email)
+    set('f-localizador', d._localizador); set('f-fornecedor', d._fornecedor)
+    set('f-video', d.videoUrl)
+
+    // Voos
+    document.getElementById('voos-wrap').innerHTML = ''
+    const voos = d.voos?.length ? d.voos : (d.voo ? d.voo.split(' · ') : [])
+    if(voos.length) voos.forEach(v => addVoo(v)); else addVoo()
+
+    // Itinerário (dias)
+    document.getElementById('days-wrap').innerHTML = ''
+    ;(d.days || []).forEach(day => {
+      addDay()
+      const rows = document.querySelectorAll('#days-wrap .day-row')
+      const last = rows[rows.length-1]
+      const inputs = last.querySelectorAll('input, textarea')
+      if(inputs[0]) inputs[0].value = day.titulo || ''
+      if(inputs[1]) inputs[1].value = day.desc || ''
+    })
+
+    // Incluídos
+    document.getElementById('incls-wrap').innerHTML = ''
+    ;(d.incls || []).forEach(i => { addIncl(); const all = document.querySelectorAll('#incls-wrap .incl-row input'); all[all.length-1].value = i })
+
+    // Preços
+    document.getElementById('prices-wrap').innerHTML = ''
+    if(d.prices?.length) {
+      d.prices.forEach(p => {
+        addPrice()
+        const rows = document.querySelectorAll('#prices-wrap .price-row-item')
+        const last = rows[rows.length-1]
+        const inputs = last.querySelectorAll('input')
+        if(inputs[0]) inputs[0].value = p.lbl || ''
+        if(inputs[1]) inputs[1].value = p.val || ''
+      })
+    } else { addPrice() }
+    if(typeof calcSinal === 'function') calcSinal()
+
+    // Foto principal
+    if(d.foto) handleFotoUrl(d.foto)
+
+    // Fotos do hotel
+    if(d.hotel_fotos?.length) {
+      window._hotelFotos = []
+      d.hotel_fotos.forEach((url, i) => {
+        const inp = document.getElementById('hotel-url-' + (i+1))
+        if(inp) inp.value = url
+      })
+      if(typeof updateHotelUrlPreview === 'function') updateHotelUrlPreview()
+    }
+
+    // Método de pagamento
+    if(d.metodo_pag?.tipo) {
+      set('f-metodo', d.metodo_pag.tipo)
+      if(typeof toggleMetodoPag === 'function') toggleMetodoPag()
+    }
+
+    if(typeof updatePreview === 'function') updatePreview()
+    toast('✅ Dados do orçamento carregados — reveja antes de gerar o contrato.', 'ok')
+  } catch(e) {
+    console.error('Erro ao pré-preencher de proposta:', e)
+    toast('Erro ao carregar dados do orçamento.', 'err')
+    addPrice(); addVoo()
+  }
 }
 
 // ── SECTIONS TOGGLE ──
@@ -1553,6 +1644,7 @@ async function gerarLink() {
     cli_tel: v('f-cli-tel'), cli_email: v('f-cli-email'),
     foto: fotoFinal,
     tipo: 'cst',
+    orcamento_origem_id: window._fromPropostaId || null,
     videoUrl: window._v2VideoUrl || v('f-video'),
     hotel_fotos: getHotelFotos(),
     _localizador: v('f-localizador'), _fornecedor: v('f-fornecedor'), _hotel: v('f-hotel'),
