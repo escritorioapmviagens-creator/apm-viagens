@@ -66,6 +66,8 @@ img{max-width:100%}
 .btn:active{transform:scale(.97)}
 .btn-primary{background:var(--coral);color:#fff;box-shadow:0 6px 16px rgba(232,57,90,.28)}
 .btn-primary:hover{background:var(--coral-deep)}
+.btn-outline{background:#fff;color:var(--navy);border:1.5px solid var(--border)}
+.btn-outline:hover{border-color:var(--navy)}
 .btn-follow{background:var(--navy);color:#fff;height:46px}
 .btn-follow.following{background:#fff;color:var(--navy);border:1.5px solid var(--border)}
 .btn-icon{width:46px;height:46px;border-radius:10px;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:1.05rem;padding:0;flex-shrink:0;color:var(--navy);transition:border-color .15s,color .15s}
@@ -131,7 +133,7 @@ body.has-sticky{padding-bottom:78px}
   .avatar-wrap{margin-top:-44px;align-items:flex-start;gap:14px}
   .head-actions{width:100%;margin-left:0;padding-bottom:0;margin-top:10px;order:3}
   .cta-bar{flex-wrap:wrap;margin-top:18px;padding-bottom:20px}
-  .cta-bar .btn-primary{flex:1;justify-content:center;min-width:160px}
+  .cta-bar .btn{flex:1;justify-content:center;min-width:140px}
   .bio{font-size:.92rem}
   .section{margin-top:32px}
   .section-title{font-size:1.15rem}
@@ -263,7 +265,7 @@ function renderPerfil(p) {
 
       <div class="cta-bar">
         <a href="${escapeHtml(p.link_orcamento)}" class="btn btn-primary">✈️ Pedir orçamento</a>
-        ${p.telefone ? `<a href="https://wa.me/351${(p.telefone||'').replace(/\D/g,'')}" target="_blank" rel="noopener" class="btn-icon" title="WhatsApp">💬</a>` : ''}
+        ${p.telefone ? `<a href="https://wa.me/351${(p.telefone||'').replace(/\D/g,'')}" target="_blank" rel="noopener" class="btn btn-outline">💬 Posso ajudar?</a>` : ''}
       </div>
     </div>
 
