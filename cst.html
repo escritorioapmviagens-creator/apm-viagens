@@ -1233,18 +1233,22 @@ function handleFotoUrl(url) {
   if(!url || !url.startsWith('http')) return
   fotoBase64 = null
   fotoUrl = url
-  document.getElementById('foto-img').src = url
-  document.getElementById('foto-preview').style.display = 'block'
-  document.getElementById('foto-placeholder').style.display = 'none'
-  document.getElementById('prev-img').src = url
-  document.getElementById('prev-img').style.display = 'block'
+  const thumb = document.getElementById('v2-foto-thumb')
+  const videoThumb = document.getElementById('v2-video-thumb')
+  const selected = document.getElementById('v2-media-selected')
+  if(thumb) { thumb.src = url; thumb.style.display = 'block' }
+  if(videoThumb) videoThumb.style.display = 'none'
+  if(selected) selected.style.display = 'block'
+  const prevImg = document.getElementById('prev-img')
+  if(prevImg) { prevImg.src = url; prevImg.style.display = 'block' }
 }
 
 function removerFoto() {
   fotoBase64 = null; fotoUrl = null
-  document.getElementById('foto-preview').style.display = 'none'
-  document.getElementById('foto-placeholder').style.display = 'block'
-  document.getElementById('foto-img').src = ''
+  const selected = document.getElementById('v2-media-selected')
+  if(selected) selected.style.display = 'none'
+  const thumb = document.getElementById('v2-foto-thumb')
+  if(thumb) thumb.src = ''
   document.getElementById('prev-img').src = ''
   document.getElementById('prev-img').style.display = 'none'
   document.getElementById('f-foto-url').value = ''
@@ -1334,9 +1338,12 @@ function handleFoto(file) {
   reader.onload = e => {
     fotoBase64 = e.target.result
     fotoUrl = null
-    document.getElementById('foto-img').src = fotoBase64
-    document.getElementById('foto-preview').style.display = 'block'
-    document.getElementById('foto-placeholder').style.display = 'none'
+    const thumb = document.getElementById('v2-foto-thumb')
+    const videoThumb = document.getElementById('v2-video-thumb')
+    const selected = document.getElementById('v2-media-selected')
+    if(thumb) { thumb.src = fotoBase64; thumb.style.display = 'block' }
+    if(videoThumb) videoThumb.style.display = 'none'
+    if(selected) selected.style.display = 'block'
     document.getElementById('prev-img').src = fotoBase64
     document.getElementById('prev-img').style.display = 'block'
   }
