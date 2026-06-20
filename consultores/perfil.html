@@ -6,6 +6,17 @@
 <title>Consultor · APM Viagens</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Meta Pixel — APM Viagens (sempre ativo, visão agregada da rede) -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '596463839593251'); // Pixel APM Viagens
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=596463839593251&ev=PageView&noscript=1"/></noscript>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -187,7 +198,7 @@ body.has-sticky{padding-bottom:78px}
 
 <div class="sticky-cta" id="sticky-cta">
   <div class="sticky-cta-inner">
-    <a href="#" id="sticky-cta-link" class="btn btn-primary">✈️ Pedir orçamento</a>
+    <a href="#" id="sticky-cta-link" class="btn btn-primary" onclick="trackLead('Pedir orçamento (sticky)')">✈️ Pedir orçamento</a>
   </div>
 </div>
 
@@ -219,6 +230,44 @@ function iniciais(nome) {
   return (nome||'?').split(' ').map(n=>n[0]).filter(Boolean).slice(0,2).join('').toUpperCase()
 }
 
+// Regista o Pixel pessoal do consultor (se configurado), em paralelo ao Pixel APM.
+// O Facebook permite múltiplos pixeis ativos simultaneamente — cada um regista
+// os eventos de forma independente, sem interferir com o outro.
+function registarPixelPessoal(pixelId) {
+  if(!pixelId || !window.fbq) return
+  if(pixelId === '596463839593251') return // já é o pixel APM, evita duplicar
+  fbq('init', pixelId)
+  fbq('track', 'PageView')
+}
+
+// Grava o evento na tabela própria do sistema (eventos_funil), para o consultor
+// poder ver os seus números diretamente no painel, sem depender do Facebook.
+async function registarEvento(tipo, label) {
+  try {
+    await sb.from('eventos_funil').insert({
+      consultor_id: consultorId || null,
+      tipo,
+      label: label || null,
+      origem: 'perfil'
+    })
+  } catch(e) { /* silencioso — tracking nunca deve bloquear a navegação */ }
+}
+
+// Funções de tracking — cada uma dispara o evento standard correto do Meta
+// (em todos os pixeis ativos) E grava na tabela própria em simultâneo.
+function trackLead(label) {
+  if(window.fbq) fbq('track', 'Lead', { content_name: label })
+  registarEvento('Lead', label)
+}
+function trackContact(label) {
+  if(window.fbq) fbq('track', 'Contact', { content_name: label })
+  registarEvento('Contact', label)
+}
+function trackSubscribe(label) {
+  if(window.fbq) fbq('track', 'Subscribe', { content_name: label })
+  registarEvento('Subscribe', label)
+}
+
 // Linha de rota decorativa na capa (estilo mapa) — assinatura visual da página
 const COVER_SVG = `<svg class="cover-route" viewBox="0 0 800 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M-20,150 C150,80 250,180 400,110 C550,40 650,140 820,70" stroke="rgba(255,255,255,.35)" stroke-width="1.5" stroke-dasharray="2,8" fill="none" stroke-linecap="round"/>
@@ -241,6 +290,8 @@ async function init() {
   }
 
   renderPerfil(perfil)
+  registarPixelPessoal(perfil.meta_pixel_id)
+  registarEvento('PageView', 'Visita ao perfil')
   carregarArtigos(perfil.id, perfil.artigos_destacados)
   carregarPublicacoes(perfil.id)
   if(perfil.mostrar_avaliacoes) carregarTestemunhos(perfil.id)
@@ -300,8 +351,8 @@ function renderPerfil(p) {
       ${proofHtml}
 
       <div class="cta-bar">
-        <a href="${escapeHtml(p.link_orcamento)}" class="btn btn-primary">✈️ Pedir orçamento</a>
-        ${p.telefone ? `<a href="https://wa.me/351${(p.telefone||'').replace(/\D/g,'')}" target="_blank" rel="noopener" class="btn btn-outline">💬 Posso ajudar?</a>` : ''}
+        <a href="${escapeHtml(p.link_orcamento)}" class="btn btn-primary" onclick="trackLead('Pedir orçamento')">✈️ Pedir orçamento</a>
+        ${p.telefone ? `<a href="https://wa.me/351${(p.telefone||'').replace(/\D/g,'')}" target="_blank" rel="noopener" class="btn btn-outline" onclick="trackContact('WhatsApp')">💬 Posso ajudar?</a>` : ''}
       </div>
 
       ${p.mostrar_recrutamento ? `
@@ -427,6 +478,7 @@ async function submeterSubscricao(consultorId) {
 
   if(error) { errEl.textContent = 'Não foi possível concluir. Tenta novamente.'; return }
 
+  trackSubscribe('Subscrição newsletter')
   document.getElementById('sub-form').style.display = 'none'
   document.getElementById('sub-success').style.display = 'block'
 }
