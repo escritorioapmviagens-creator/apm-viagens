@@ -415,6 +415,7 @@ textarea.finput{resize:vertical;min-height:72px}
     </div>
     <nav class="nav">
       <div class="nav-item active" onclick="navTo('dashboard',this)"><span class="nav-icon">▦</span> Dashboard</div>
+      <div class="nav-item" onclick="abrirModalMomentoCerto()"><span class="nav-icon">🎯</span> Momento Certo <span class="nav-badge" id="mc-badge" style="display:none">0</span></div>
 
       <div class="nav-section" data-s="recursos">Recursos</div>
       <div class="nav-item" onclick="navTo('recursos',this)"><span class="nav-icon">🧰</span> Central de Recursos</div>
@@ -1469,6 +1470,27 @@ textarea.finput{resize:vertical;min-height:72px}
       </div>
 
       <!-- MODAL PERFIL CLIENTE -->
+      <!-- MOMENTO CERTO — Resumo do dia -->
+      <div class="overlay" id="modal-momento-certo">
+        <div class="modal" style="max-width:540px;max-height:85vh;overflow-y:auto">
+          <div class="modal-hdr" style="background:linear-gradient(135deg,var(--navy),#2a2f4d);border-radius:12px 12px 0 0">
+            <span class="modal-title" style="color:#fff">🎯 Momento Certo — hoje</span>
+            <button class="modal-x" style="color:#fff" onclick="closeModal('modal-momento-certo')">✕</button>
+          </div>
+          <div style="padding:18px 20px 8px">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Estes clientes precisam de atenção hoje. Um clique e fala diretamente com eles.</p>
+            <div id="mc-lista"></div>
+            <div id="mc-vazio" style="display:none;text-align:center;padding:30px 10px;color:var(--muted)">
+              <div style="font-size:2rem;margin-bottom:10px">✅</div>
+              <div style="font-size:13px">Sem nada urgente hoje. Bom trabalho!</div>
+            </div>
+          </div>
+          <div style="padding:14px 20px 20px">
+            <button class="btn" style="width:100%;justify-content:center;background:var(--bg2);color:var(--muted);border:1px solid var(--border)" onclick="closeModal('modal-momento-certo')">Continuar para o painel →</button>
+          </div>
+        </div>
+      </div>
+
       <div class="overlay" id="modal-generic">
         <div class="modal" style="max-width:500px">
           <div class="modal-hdr">
@@ -3892,6 +3914,89 @@ async function loadPerfil(user) {
   enterApp()
   setTimeout(verificarAceitesPendentes24h, 3000)
   setTimeout(verificarLembretesBadge, 4000)
+  setTimeout(() => carregarMomentoCerto(true), 1200)
+}
+
+// ── MOMENTO CERTO ──────────────────────────────────────────────────────────
+const MC_ICONS = { orcamento_parado:'⏳', pos_viagem:'⭐', aniversario:'🎉', cliente_frio:'🌙' }
+
+async function carregarMomentoCerto(mostrarModalSeHouver) {
+  if(!currentPerfil) return
+  const hoje = new Date().toISOString().slice(0,10)
+  const { data, error } = await sb.from('alertas_momento_certo')
+    .select('*')
+    .eq('consultor_id', currentPerfil.id)
+    .eq('data_alerta', hoje)
+    .eq('dispensado', false)
+    .order('prioridade', { ascending: false })
+
+  if(error) { console.warn('Momento Certo:', error.message); return }
+
+  window._mcAlertas = data || []
+  const badge = document.getElementById('mc-badge')
+  if(badge) {
+    if(window._mcAlertas.length > 0) { badge.textContent = window._mcAlertas.length; badge.style.display = 'inline-flex' }
+    else badge.style.display = 'none'
+  }
+
+  if(mostrarModalSeHouver && window._mcAlertas.some(a => !a.visto)) {
+    renderMomentoCerto()
+    openModal('modal-momento-certo')
+    // marcar como vistos (não dispensados — continuam no histórico do dia)
+    const idsNaoVistos = window._mcAlertas.filter(a => !a.visto).map(a => a.id)
+    if(idsNaoVistos.length) await sb.from('alertas_momento_certo').update({ visto: true }).in('id', idsNaoVistos)
+  }
+}
+
+function abrirModalMomentoCerto() {
+  renderMomentoCerto()
+  openModal('modal-momento-certo')
+}
+
+function renderMomentoCerto() {
+  const lista = document.getElementById('mc-lista')
+  const vazio = document.getElementById('mc-vazio')
+  const alertas = window._mcAlertas || []
+
+  if(!alertas.length) {
+    lista.innerHTML = ''
+    vazio.style.display = 'block'
+    return
+  }
+  vazio.style.display = 'none'
+
+  lista.innerHTML = alertas.map(a => {
+    const motivos = a.motivos || []
+    const telLimpo = (a.cliente_telefone || '').replace(/\D/g, '')
+    const waMsg = encodeURIComponent('Olá ' + (a.cliente_nome||'').split(' ')[0] + '! 👋 Tudo bem?')
+    const waUrl = telLimpo ? `https://wa.me/${telLimpo.startsWith('351')?telLimpo:'351'+telLimpo}?text=${waMsg}` : null
+
+    return `<div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">
+        <div style="font-weight:700;font-size:14px">${a.cliente_nome}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+        ${motivos.map(m => `<div style="font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:flex-start">
+          <span>${MC_ICONS[m.tipo]||'📌'}</span><span>${m.texto}</span>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px">
+        ${waUrl ? `<a href="${waUrl}" target="_blank" style="flex:1;text-align:center;background:#25d366;color:#fff;border-radius:8px;padding:8px;font-size:12.5px;font-weight:600;text-decoration:none">💬 WhatsApp</a>` : ''}
+        <button onclick="dispensarAlertaMomentoCerto('${a.id}')" style="flex:${waUrl?'0 0 auto':'1'};padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);font-size:12.5px;cursor:pointer;font-family:inherit">Dispensar</button>
+      </div>
+    </div>`
+  }).join('')
+}
+
+async function dispensarAlertaMomentoCerto(id) {
+  await sb.from('alertas_momento_certo').update({ dispensado: true }).eq('id', id)
+  window._mcAlertas = (window._mcAlertas || []).filter(a => a.id !== id)
+  renderMomentoCerto()
+  const badge = document.getElementById('mc-badge')
+  if(badge) {
+    if(window._mcAlertas.length > 0) badge.textContent = window._mcAlertas.length
+    else badge.style.display = 'none'
+  }
 }
 
 function checkAlertasPagamento() {
