@@ -7,6 +7,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Meta Pixel — APM Viagens (sempre ativo, visão agregada da rede) -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '596463839593251'); // Pixel APM Viagens
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=596463839593251&ev=PageView&noscript=1"/></noscript>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 :root {
@@ -338,6 +349,31 @@ const { createClient } = supabase
 const sb = createClient(SUPA_URL, SUPA_KEY)
 let D = null, sigDrawing = false, sigHasMark = false
 
+// Regista o Pixel pessoal do consultor (se configurado), em paralelo ao Pixel APM.
+async function registarPixelPessoal(consultorId) {
+  if(!consultorId || !window.fbq) return
+  try {
+    const { data: perfil } = await sb.from('perfis').select('meta_pixel_id').eq('id', consultorId).maybeSingle()
+    const pixelId = perfil?.meta_pixel_id
+    if(pixelId && pixelId !== '596463839593251') {
+      fbq('init', pixelId)
+      fbq('track', 'PageView')
+    }
+  } catch(e) { /* silencioso — tracking nunca deve bloquear a proposta */ }
+}
+
+// Dispara Purchase quando o cliente assina/aceita o contrato — em todos os pixeis ativos
+function trackPurchase(valor, destino, rnavt) {
+  if(!window.fbq) return
+  fbq('track', 'Purchase', {
+    value: valor || 0,
+    currency: 'EUR',
+    content_name: destino || 'Contrato de viagem',
+    content_type: 'product',
+    content_ids: rnavt ? [rnavt] : undefined
+  })
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search)
   const id = params.get('proposta')
@@ -351,6 +387,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     try { D = JSON.parse(decodeURIComponent(escape(atob(id)))) } catch(e) { showError('Link inválido.'); return }
   }
   renderProposta(); initSig()
+
+  if(D.consultor_id) registarPixelPessoal(D.consultor_id)
 })
 
 function renderProposta() {
@@ -596,6 +634,7 @@ async function aceitarProposta() {
       if(rsvErr) console.error('Erro ao criar reserva:', rsvErr.message)
       else {
         console.log('✅ Reserva criada:', rnavt)
+        trackPurchase(total, D.dest, rnavt)
         // Notificação ao admin
         await sb.from('notificacoes').insert({
           tipo: 'cst_aceite',
