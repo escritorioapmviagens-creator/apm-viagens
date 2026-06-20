@@ -545,21 +545,6 @@ nav {
           <div class="field"><label>WhatsApp</label><input id="f-ctel" placeholder="351912345678"></div>
         </div>
 
-        <!-- Stats da agência (automático) -->
-        <div id="consul-stats-box" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:4px">
-          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Stats da agência (visíveis na proposta)</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div style="text-align:center;background:#fff;border-radius:8px;padding:10px">
-              <div style="font-size:1.2rem;font-weight:800;color:var(--blue)" id="consul-nrsv">—</div>
-              <div style="font-size:.7rem;color:var(--muted)">reservas na agência</div>
-            </div>
-            <div style="text-align:center;background:#fff;border-radius:8px;padding:10px">
-              <div style="font-size:1.2rem;font-weight:800;color:var(--coral)" id="consul-aval">—</div>
-              <div style="font-size:.7rem;color:var(--muted)">avaliação média ⭐</div>
-            </div>
-          </div>
-        </div>
-
         <div class="field-row" style="margin-top:12px">
           <div class="field"><label>🔒 Localizador</label><input id="f-localizador" placeholder="ex: 2829705"></div>
           <div class="field"><label>🔒 Operador/Fornecedor</label><input id="f-fornecedor" placeholder="ex: Newblue" oninput="sugerirTmplOperador(this.value)"></div>
@@ -656,7 +641,6 @@ async function initApp() {
       document.getElementById('consul-avatar-initials').style.display = 'none'
     }
   }
-  carregarStatsAgencia()
   // Load templates
   const { data: tmpls } = await sb.from('templates_condicoes').select('*').eq('ativo', true).order('nome')
   templates = tmpls || []
@@ -818,31 +802,6 @@ function handleConsulFotoUrl(url) {
   }
 }
 
-async function carregarStatsAgencia() {
-  try {
-    // Total reservas confirmadas da agência
-    const { count: nRsv } = await sb.from('reservas')
-      .select('id', { count: 'exact', head: true })
-      .eq('estado', 'Confirmada')
-
-    // Avaliação média da tabela avaliacoes
-    const { data: avals } = await sb.from('avaliacoes')
-      .select('geral')
-      .not('geral', 'is', null)
-
-    const avgAval = avals?.length
-      ? (avals.reduce((s,r) => s + (r.geral||0), 0) / avals.length).toFixed(1)
-      : null
-
-    document.getElementById('consul-nrsv').textContent = nRsv || 0
-    document.getElementById('consul-aval').textContent = avgAval ? avgAval + ' ⭐' : 'Sem dados'
-    document.getElementById('consul-stats-box').style.display = 'block'
-
-    window._agenciaStats = { nRsv: nRsv || 0, avgAval: avgAval || null }
-  } catch(e) {
-    console.warn('Erro ao carregar stats:', e)
-  }
-}
 
 // ── MULTIBANCO ──
 const IFT_ENTIDADE    = '12378'
