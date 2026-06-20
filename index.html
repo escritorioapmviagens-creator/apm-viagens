@@ -801,6 +801,12 @@ textarea.finput{resize:vertical;min-height:72px}
                 <div class="rec-card-desc">Avalie a experiência do cliente após a viagem</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
+              <div class="rec-card" style="--rc-color:#3B5BDB;--rc-bg:#eef2ff" onclick="abrirModalPerfilPublico()">
+                <div class="rec-card-top"><div class="rec-card-icon">🗺️</div></div>
+                <div class="rec-card-title">O Meu Perfil Público</div>
+                <div class="rec-card-desc">Partilhe a sua página de consultor com artigos, publicações e pedido de orçamento</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
+              </div>
             </div>
           </div>
 
@@ -7214,6 +7220,27 @@ function abrirModalPedidoOrcamento() {
     + '<a href="https://wa.me/?text=' + msgWa + '" target="_blank" style="flex:1;background:#25d366;color:#fff;border-radius:8px;padding:9px;font-size:.8rem;font-weight:600;text-decoration:none;display:flex;align-items:center;justify-content:center">💬 Partilhar WhatsApp</a>'
     + '</div>'
     + '<button onclick="window.open(\'' + link + '\',\'_blank\')" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:.8rem;color:var(--muted);cursor:pointer;font-family:var(--font)">👁 Ver página</button>'
+    + '</div>'
+  openModal('modal-generic')
+}
+
+function abrirModalPerfilPublico() {
+  const base = window.location.origin + window.location.pathname.replace('index.html','')
+  const codigo = currentPerfil.codigo_afiliado || currentPerfil.id
+  const link = base + 'consultores/perfil.html?c=' + codigo
+  const msgWa = encodeURIComponent('Olá! 👋\n\nConheça o meu trabalho como consultor de viagens e peça já o seu orçamento gratuito:\n\n' + link)
+
+  document.getElementById('modal-generic-title').textContent = '🗺️ O Meu Perfil Público'
+  document.getElementById('modal-generic-body').innerHTML =
+    '<div>'
+    + '<p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.6">A sua página pública mostra a sua foto, bio, artigos publicados e publicações de redes sociais. Os visitantes podem pedir orçamento diretamente — fica associado a si automaticamente.</p>'
+    + '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:.78rem;font-family:monospace;word-break:break-all;color:var(--blue);margin-bottom:12px">' + link + '</div>'
+    + '<div style="display:flex;gap:8px;margin-bottom:16px">'
+    + '<button onclick="navigator.clipboard.writeText(\'' + link + '\').then(()=>toast(\'Link copiado!\',\'ok\'))" style="flex:1;background:var(--blue-light);border:1px solid #c7d7fd;color:var(--blue);border-radius:8px;padding:9px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:var(--font)">📋 Copiar link</button>'
+    + '<a href="https://wa.me/?text=' + msgWa + '" target="_blank" style="flex:1;background:#25d366;color:#fff;border-radius:8px;padding:9px;font-size:.8rem;font-weight:600;text-decoration:none;display:flex;align-items:center;justify-content:center">💬 Partilhar WhatsApp</a>'
+    + '</div>'
+    + '<button onclick="window.open(\'' + link + '\',\'_blank\')" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:.8rem;color:var(--muted);cursor:pointer;font-family:var(--font);margin-bottom:8px">👁 Ver página</button>'
+    + '<button onclick="closeModal(\'modal-generic\');abrirModalPerfil()" style="width:100%;background:none;border:none;border-radius:8px;padding:9px;font-size:.78rem;color:var(--coral);cursor:pointer;font-family:var(--font);text-decoration:underline">✏️ Editar bio, foto e o que aparece no perfil</button>'
     + '</div>'
   openModal('modal-generic')
 }
