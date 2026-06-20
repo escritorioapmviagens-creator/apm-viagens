@@ -266,7 +266,7 @@ nav {
         <span class="section-arrow">▼</span>
       </div>
       <div class="section-body open">
-        <div class="field"><label>Destino *</label><input id="f-dest" placeholder="ex: Maldivas" oninput="updatePreview()"></div>
+        <div class="field"><label>Destino *</label><input id="f-dest" placeholder="ex: Maldivas" oninput="updatePreview(); atualizarRefMargem()"></div>
         <div class="field"><label>Hotel</label><input id="f-hotel" placeholder="ex: Anantara Veli Resort & Spa"></div>
         <div class="field"><label>Subtítulo</label><input id="f-sub" placeholder="ex: Lua de mel · 10 noites" oninput="updatePreview()"></div>
         <div class="field-row">
@@ -274,7 +274,7 @@ nav {
           <div class="field"><label>Regresso</label><input type="date" id="f-reg" oninput="updatePreview()"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Passageiros</label><input id="f-pax" placeholder="ex: 2 pessoas" oninput="updatePreview()"></div>
+          <div class="field"><label>Passageiros</label><input id="f-pax" placeholder="ex: 2 pessoas" oninput="updatePreview(); atualizarRefMargem()"></div>
           <div class="field"><label>Noites</label><input id="f-noites" placeholder="ex: 10 noites"></div>
         </div>
         <div class="field">
@@ -396,6 +396,14 @@ nav {
       <div class="section-body open">
         <div id="prices-wrap"></div>
         <button class="add-btn" onclick="addPrice()">＋ Adicionar linha</button>
+
+        <!-- Referência de margens da rede -->
+        <div id="ref-margem-box" style="display:none;margin-top:14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px">
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">📊 O que a rede aplica neste destino</div>
+          <div id="ref-margem-conteudo"></div>
+          <div style="font-size:.68rem;color:var(--muted);margin-top:8px">Apenas uma referência com base em reservas confirmadas — o valor final é sempre tua decisão.</div>
+        </div>
+
         <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
           <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Sinal de reserva</div>
           <div class="sinal-btns">
@@ -1261,10 +1269,61 @@ function addPrice() {
   div.className = 'price-row-item'
   div.innerHTML = `
     <input style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:.875rem;outline:none;width:100%" placeholder="Descrição (ex: Pacote 2 adultos)">
-    <input type="number" style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:.875rem;outline:none;width:100%" placeholder="€" oninput="updatePreview()">
+    <input type="number" style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:.875rem;outline:none;width:100%" placeholder="€" oninput="updatePreview(); atualizarRefMargem()">
     <button onclick="this.closest('.price-row-item').remove();updatePreview()" class="price-del">✕</button>
   `
   wrap.appendChild(div)
+}
+
+// ── REFERÊNCIA DE MARGEM DA REDE ──
+let _refMargemTimer = null
+function atualizarRefMargem() {
+  clearTimeout(_refMargemTimer)
+  _refMargemTimer = setTimeout(consultarRefMargem, 600) // debounce
+}
+
+function extrairNumPax(texto) {
+  if(!texto) return 0
+  const m = texto.match(/(\d+)/)
+  return m ? parseInt(m[1]) : 0
+}
+
+async function consultarRefMargem() {
+  const box = document.getElementById('ref-margem-box')
+  const dest = document.getElementById('f-dest').value.trim()
+  const pax = extrairNumPax(document.getElementById('f-pax').value)
+  const total = getTotal()
+
+  if(!dest || !pax || !total) { box.style.display = 'none'; return }
+
+  const valorPorPessoa = total / pax
+
+  try {
+    const { data, error } = await sb.rpc('obter_referencia_margem', {
+      p_destino: dest,
+      p_valor_por_pessoa: valorPorPessoa
+    })
+
+    if(error || !data || !data.length) { box.style.display = 'none'; return }
+
+    document.getElementById('ref-margem-conteudo').innerHTML = data.map(f => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;${f.faixa_atual ? 'background:var(--coral-light,#fdedf0);margin:0 -8px;padding:8px;border-radius:6px' : ''}">
+        <div>
+          <div style="font-size:.78rem;font-weight:700;${f.faixa_atual?'color:var(--coral)':''}">${f.faixa}${f.faixa_atual ? ' · a tua faixa' : ''}</div>
+          <div style="font-size:.68rem;color:var(--muted)">€${Math.round(f.faixa_min).toLocaleString('pt-PT')}–€${Math.round(f.faixa_max).toLocaleString('pt-PT')}/pessoa · ${f.n_amostras} reservas</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:.95rem;font-weight:800;${f.faixa_atual?'color:var(--coral)':''}">${f.margem_moda}%</div>
+          <div style="font-size:.66rem;color:var(--muted)">${f.margem_p25}%–${f.margem_p75}%</div>
+        </div>
+      </div>
+    `).join('')
+
+    box.style.display = 'block'
+  } catch(e) {
+    console.warn('Ref margem:', e)
+    box.style.display = 'none'
+  }
 }
 
 // ── SINAL ──
