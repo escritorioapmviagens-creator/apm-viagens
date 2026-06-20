@@ -6,6 +6,17 @@
 <title>Pedir Orçamento Gratuito · APM Viagens</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Meta Pixel — APM Viagens (sempre ativo, visão agregada da rede) -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '596463839593251'); // Pixel APM Viagens
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=596463839593251&ev=PageView&noscript=1"/></noscript>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -279,15 +290,40 @@ if(cParam) {
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(cParam)
   if(isUUID) {
     consultorId = cParam
-    sb.from('perfis').select('nome').eq('id', cParam).single().then(({data}) => {
+    sb.from('perfis').select('nome,meta_pixel_id').eq('id', cParam).single().then(({data}) => {
       if(data?.nome) personalizarPagina(data.nome, cParam)
+      registarPixelPessoal(data?.meta_pixel_id)
+      registarEvento('PageView', 'Visita pedir orçamento')
     })
   } else {
     // Lookup by codigo_afiliado
-    sb.from('perfis').select('id,nome').eq('codigo_afiliado', cParam).single().then(({data}) => {
+    sb.from('perfis').select('id,nome,meta_pixel_id').eq('codigo_afiliado', cParam).single().then(({data}) => {
       if(data) { consultorId = data.id; personalizarPagina(data.nome, data.id) }
+      registarPixelPessoal(data?.meta_pixel_id)
+      registarEvento('PageView', 'Visita pedir orçamento')
     })
   }
+} else {
+  registarEvento('PageView', 'Visita pedir orçamento')
+}
+
+// Regista o Pixel pessoal do consultor (se configurado), em paralelo ao Pixel APM
+function registarPixelPessoal(pixelId) {
+  if(!pixelId || !window.fbq || pixelId === '596463839593251') return
+  fbq('init', pixelId)
+  fbq('track', 'PageView')
+}
+
+// Grava o evento na tabela própria do sistema (eventos_funil), para o consultor
+// poder ver os seus números diretamente no painel, sem depender do Facebook.
+async function registarEvento(tipo, label) {
+  try {
+    await sb.from('eventos_funil').insert({
+      consultor_id: consultorId || null,
+      tipo, label: label || null,
+      origem: 'pedir-orcamento'
+    })
+  } catch(e) { /* silencioso */ }
 }
 
 function personalizarPagina(nome, id) {
@@ -369,6 +405,9 @@ async function enviar() {
   btn.disabled = false; btn.textContent = 'Quero o meu orçamento gratuito ✈️'
 
   if(error){ console.error(error); errEl.textContent='Erro ao enviar. Por favor tente novamente.'; errEl.style.display='block'; return }
+
+  if(window.fbq) fbq('track', 'Lead', { content_name: 'Pedido de orçamento', content_category: dest })
+  registarEvento('Lead', dest)
 
   document.getElementById('s-nome').textContent = nome.split(' ')[0]
   document.getElementById('s-dest').textContent = dest
