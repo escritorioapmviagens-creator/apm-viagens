@@ -1639,6 +1639,57 @@ textarea.finput{resize:vertical;min-height:72px}
             </div>
           </div>
 
+          <!-- PERFIL PÚBLICO -->
+          <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px">🗺️ Perfil Público</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Esta informação aparece na sua página pública de consultor, partilhada com clientes.</div>
+
+            <!-- Foto de capa -->
+            <div style="margin-bottom:14px">
+              <label class="flabel" style="margin-bottom:6px;display:block">Foto de capa</label>
+              <div id="perfil-capa-wrap" style="width:100%;height:90px;border-radius:8px;background:linear-gradient(135deg,#1A1D2E,#5b3a52);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative" onclick="document.getElementById('perfil-capa-inp').click()">
+                <img id="perfil-capa-img" style="display:none;width:100%;height:100%;object-fit:cover">
+                <span id="perfil-capa-placeholder" style="color:#fff;font-size:11px;opacity:.8">📷 Clique para escolher uma foto de capa</span>
+                <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.4);color:#fff;font-size:9px;padding:3px;text-align:center">📷 Alterar capa</div>
+              </div>
+              <input type="file" id="perfil-capa-inp" accept="image/*" style="display:none" onchange="uploadFotoCapa(this.files[0])">
+              <div style="font-size:10px;color:var(--muted);margin-top:4px">Se não escolher nenhuma, mostramos um fundo APM por defeito.</div>
+            </div>
+
+            <!-- Sobre mim -->
+            <div class="fgroup" style="margin-bottom:14px">
+              <label class="flabel">Sobre mim</label>
+              <textarea class="finput" id="perfil-bio" rows="3" placeholder="Escreva uma breve apresentação sobre si — o que o motiva a ajudar clientes a viajar, a sua especialidade, etc." style="resize:vertical"></textarea>
+            </div>
+
+            <div class="fgroup" style="margin-bottom:14px">
+              <label class="flabel">Anos de experiência</label>
+              <input class="finput" id="perfil-anos-exp" type="number" min="0" max="60" placeholder="ex: 3">
+            </div>
+
+            <!-- Toggles -->
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="checkbox" id="perfil-mostrar-stats" style="accent-color:var(--coral);width:15px;height:15px;flex-shrink:0">
+                <span style="font-size:12.5px">Mostrar nº de viagens e destinos vendidos</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="checkbox" id="perfil-mostrar-aval" style="accent-color:var(--coral);width:15px;height:15px;flex-shrink:0">
+                <span style="font-size:12.5px">Mostrar avaliações de clientes</span>
+              </div>
+            </div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:14px">💡 Desligado por defeito — ative quando já tiver histórico e avaliações para mostrar.</div>
+
+            <!-- Seleção de artigos -->
+            <div>
+              <label class="flabel" style="margin-bottom:6px;display:block">Artigos a mostrar no perfil</label>
+              <div id="perfil-artigos-lista" style="display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px">
+                <div style="font-size:11px;color:var(--muted);padding:6px">A carregar artigos...</div>
+              </div>
+              <div style="font-size:10px;color:var(--muted);margin-top:4px">Se não selecionar nenhum, mostramos os 6 mais recentes automaticamente.</div>
+            </div>
+          </div>
+
           <button class="btn btn-coral" style="width:100%;justify-content:center" onclick="guardarPerfil()">💾 Guardar</button>
         </div>
       </div>
@@ -14277,7 +14328,82 @@ function abrirModalPerfil() {
     document.getElementById('perfil-foto-img').style.display = 'block'
     document.getElementById('perfil-foto-initials').style.display = 'none'
   }
+
+  // Perfil Público
+  document.getElementById('perfil-bio').value = currentPerfil.bio || ''
+  document.getElementById('perfil-anos-exp').value = currentPerfil.anos_experiencia || ''
+  document.getElementById('perfil-mostrar-stats').checked = currentPerfil.mostrar_estatisticas || false
+  document.getElementById('perfil-mostrar-aval').checked = currentPerfil.mostrar_avaliacoes || false
+  if(currentPerfil.foto_capa) {
+    document.getElementById('perfil-capa-img').src = currentPerfil.foto_capa
+    document.getElementById('perfil-capa-img').style.display = 'block'
+    document.getElementById('perfil-capa-placeholder').style.display = 'none'
+  } else {
+    document.getElementById('perfil-capa-img').style.display = 'none'
+    document.getElementById('perfil-capa-placeholder').style.display = 'block'
+  }
+  carregarArtigosSeletor()
+
   openModal('modal-perfil')
+}
+
+async function uploadFotoCapa(file) {
+  if(!file) return
+  const reader = new FileReader()
+  reader.onload = e => {
+    document.getElementById('perfil-capa-img').src = e.target.result
+    document.getElementById('perfil-capa-img').style.display = 'block'
+    document.getElementById('perfil-capa-placeholder').style.display = 'none'
+  }
+  reader.readAsDataURL(file)
+
+  const ext = file.name.split('.').pop()
+  const path = currentPerfil.id + '-capa.' + ext
+  await sb.storage.from('avatars').remove([path])
+  const { error: upErr } = await sb.storage.from('avatars').upload(path, file, { contentType: file.type || 'image/jpeg' })
+  if(upErr) { toast('Erro ao carregar capa: ' + upErr.message, 'err'); return }
+
+  const { data: urlData } = sb.storage.from('avatars').getPublicUrl(path)
+  const url = urlData.publicUrl + '?t=' + Date.now()
+
+  await sb.from('perfis').update({ foto_capa: url }).eq('id', currentPerfil.id)
+  currentPerfil.foto_capa = url
+  toast('Capa atualizada!', 'ok')
+}
+
+let _artigosSelecionados = []
+async function carregarArtigosSeletor() {
+  const el = document.getElementById('perfil-artigos-lista')
+  el.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:6px">A carregar artigos...</div>'
+
+  const { data, error } = await sb.from('artigos_consultores')
+    .select('id,titulo')
+    .eq('consultor_id', currentPerfil.id)
+    .eq('publicado', true)
+    .order('titulo', {ascending:true})
+
+  if(error || !data || !data.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:6px">Ainda não tem artigos publicados. Crie um em "Os meus artigos".</div>'
+    return
+  }
+
+  _artigosSelecionados = currentPerfil.artigos_destacados || []
+
+  el.innerHTML = data.map(a => {
+    const checked = _artigosSelecionados.includes(a.id) ? 'checked' : ''
+    return '<label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;padding:3px 0">'
+      + '<input type="checkbox" value="'+a.id+'" '+checked+' onchange="toggleArtigoSelecionado(\''+a.id+'\',this.checked)" style="accent-color:var(--coral);width:14px;height:14px;flex-shrink:0">'
+      + '<span>'+a.titulo+'</span>'
+      + '</label>'
+  }).join('')
+}
+
+function toggleArtigoSelecionado(id, checked) {
+  if(checked) {
+    if(!_artigosSelecionados.includes(id)) _artigosSelecionados.push(id)
+  } else {
+    _artigosSelecionados = _artigosSelecionados.filter(x => x !== id)
+  }
 }
 
 async function uploadFotoPerfil(file) {
@@ -14328,15 +14454,29 @@ async function guardarPerfil() {
     if(url) redes[r] = {url, ativo}
   })
 
+  // Perfil Público
+  const bio = document.getElementById('perfil-bio')?.value.trim() || null
+  const anosExp = document.getElementById('perfil-anos-exp')?.value || null
+  const mostrarStats = document.getElementById('perfil-mostrar-stats')?.checked || false
+  const mostrarAval = document.getElementById('perfil-mostrar-aval')?.checked || false
+
   const { error } = await sb.from('perfis').update({
     nome, telefone: tel, meta_pixel_id: pixel,
-    redes_sociais: Object.keys(redes).length ? redes : null
+    redes_sociais: Object.keys(redes).length ? redes : null,
+    bio, anos_experiencia: anosExp ? parseInt(anosExp) : null,
+    mostrar_estatisticas: mostrarStats, mostrar_avaliacoes: mostrarAval,
+    artigos_destacados: _artigosSelecionados.length ? _artigosSelecionados : null
   }).eq('id', currentPerfil.id)
   if(error) { toast('Erro ao guardar', 'err'); return }
   currentPerfil.nome = nome
   currentPerfil.telefone = tel
   currentPerfil.meta_pixel_id = pixel
   currentPerfil.redes_sociais = redes
+  currentPerfil.bio = bio
+  currentPerfil.anos_experiencia = anosExp ? parseInt(anosExp) : null
+  currentPerfil.mostrar_estatisticas = mostrarStats
+  currentPerfil.mostrar_avaliacoes = mostrarAval
+  currentPerfil.artigos_destacados = _artigosSelecionados.length ? _artigosSelecionados : null
   document.getElementById('sb-name').textContent = nome
   closeModal('modal-perfil')
   toast('Perfil atualizado!', 'ok')
