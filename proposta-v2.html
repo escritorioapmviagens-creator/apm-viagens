@@ -551,6 +551,23 @@ function renderProposta() {
   document.getElementById('consul-wa').href = waUrl
   document.getElementById('success-wa').href = waUrl
   if(D.sval) { document.getElementById('accept-cta').textContent = '✍️ Aceitar e pagar sinal de €' + D.sval; document.getElementById('accept-sub-text').textContent = 'Ao aceitar, confirmas que leste e concordas com todas as condições. O sinal de €' + D.sval + ' deverá ser pago nos dados indicados acima.' }
+
+  // Orçamento (ainda não é contrato): aceitação simples — sem checkboxes legais nem assinatura.
+  // CST mantém-se exatamente como estava (checkboxes + assinatura + criação de reserva).
+  if(D.tipo !== 'cst') {
+    ;['chk-contrato-lbl','chk-rgpd-lbl','chk-cgr-lbl','chk-fin-lbl'].forEach(id => {
+      const el = document.getElementById(id)
+      if(el) el.style.display = 'none'
+    })
+    const sigWrap = document.querySelector('.sig-wrap')
+    if(sigWrap) sigWrap.style.display = 'none'
+    document.getElementById('accept-sub-text').textContent = 'Ao aceitar este orçamento, o teu consultor é notificado e prepara o contrato com todos os detalhes para ti.'
+    const cta = document.getElementById('accept-cta')
+    if(!D.sval) cta.textContent = 'Aceitar orçamento'
+    cta.disabled = false
+    cta.style.opacity = '1'
+    cta.onclick = aceitarOrcamento
+  }
 }
 
 function scrollToAccept() { document.getElementById('section-accept').scrollIntoView({behavior:'smooth',block:'center'}) }
@@ -686,6 +703,48 @@ async function aceitarProposta() {
   } catch(e) {
     console.error('Erro:', e)
     btn.disabled = false; btn.textContent = D.sval ? '✍️ Aceitar e pagar sinal de €' + D.sval : 'Aceitar proposta'
+    toast('Erro ao registar aceitação. Tenta novamente.', 'err')
+  }
+}
+
+// Aceitação SIMPLES de um orçamento (D.tipo !== 'cst') — sem checkboxes legais,
+// sem assinatura, sem criar reserva. Só marca aceite=true, notifica o consultor
+// e dispara AddToCart. O contrato (CST) é gerado depois, separadamente, pelo consultor.
+async function aceitarOrcamento() {
+  const btn = document.getElementById('accept-cta')
+  btn.disabled = true; btn.textContent = 'A processar...'
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const pid = params.get('proposta')
+    const isUUID = /^[0-9a-f]{8}-/.test(pid)
+    if(isUUID) {
+      await sb.from('propostas_viagem').update({ aceite: true, aceite_at: new Date().toISOString() }).eq('id', pid)
+
+      const total = D.prices?.reduce((s,p) => s+(parseFloat(p.val)||0), 0) || 0
+      trackAddToCart(total, D.dest)
+
+      // Notificação ao admin/consultor
+      await sb.from('notificacoes').insert({
+        tipo: 'orcamento_aceite',
+        titulo: `Orçamento aceite — ${D.dest || '—'}`,
+        mensagem: `O cliente ${D.cli_nome || D.cli || '—'} aceitou o orçamento para ${D.dest || '—'}. Podes agora preparar o contrato (CST).`,
+        reserva_id: null,
+        para_admin: true,
+        lida: false
+      })
+    }
+
+    const cname = D.cnome || 'consultor'
+    const msg = 'Olá ' + cname + '! Aceitei o orçamento para ' + (D.dest||'o destino indicado') + '. Aguardo o contrato. Obrigado.'
+    const waUrl = 'https://wa.me/' + (D.ctel||'').replace(/\D/g,'') + '?text=' + encodeURIComponent(msg)
+    document.getElementById('accept-box').style.display = 'none'
+    document.getElementById('success-screen').style.display = 'block'
+    document.getElementById('sticky-footer').style.display = 'none'
+    window.open(waUrl, '_blank')
+    toast('✅ Orçamento aceite com sucesso!', 'ok')
+  } catch(e) {
+    console.error('Erro:', e)
+    btn.disabled = false; btn.textContent = 'Aceitar orçamento'
     toast('Erro ao registar aceitação. Tenta novamente.', 'err')
   }
 }
