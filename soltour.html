@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soltour — Motor de Reservas APM Viagens</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--coral:#E8395A;--blue:#3B5BDB;--navy:#1A1D2E;--bg:#F5F6FA;--surface:#fff;--muted:#8B92A5;--border:rgba(0,0,0,0.07);--radius:12px;--radius-sm:8px;--shadow:0 2px 8px rgba(0,0,0,0.06)}
+body{font-family:'Inter',sans-serif;font-size:14px;color:var(--navy);background:var(--bg);min-height:100vh}
+header{background:var(--surface);border-bottom:3px solid var(--coral);padding:14px 28px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);flex-wrap:wrap}
+header img{height:44px;object-fit:contain}
+header h1{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700}
+header span{font-size:12px;color:var(--muted)}
+.session-pill{margin-left:auto;font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;background:#FFEBEE;color:#C62828}
+.session-pill.on{background:#E8F5E9;color:#2E7D32}
+.container{max-width:1200px;margin:0 auto;padding:28px 20px 60px}
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:6px;box-shadow:var(--shadow);margin-bottom:24px;flex-wrap:wrap}
+.tab{flex:1;min-width:140px;padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s;text-align:center}
+.tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,91,219,0.3)}
+.tab:hover:not(.active){background:var(--bg);color:var(--navy)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
+.card-title{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:16px;color:var(--navy);display:flex;align-items:center;gap:8px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.form-group input,.form-group select{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;transition:border-color .15s;background:#fff}
+.form-group input:focus,.form-group select:focus{border-color:var(--blue)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .18s}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#3251c4}
+.btn-coral{background:var(--coral);color:#fff}.btn-coral:hover{background:#d02f4e}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--navy)}.btn-outline:hover{background:var(--bg)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.status-bar{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;margin-bottom:16px;display:none}
+.status-bar.show{display:block}
+.status-bar.loading{background:#EEF2FF;color:#3251c4;border:1px solid #c7d2fe}
+.status-bar.ok{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
+.status-bar.err{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2}
+.section-title{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;margin:24px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--blue)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;margin:2px}
+.badge-ok{background:#E8F5E9;color:#2E7D32}.badge-wl{background:#FFF3E0;color:#E65100}
+.badge-board{background:#EEF2FF;color:#3B5BDB}
+.log-panel{background:#1e1e2e;color:#a6e3a1;font-family:monospace;font-size:12px;padding:16px;border-radius:8px;max-height:400px;overflow-y:auto;white-space:pre-wrap}
+.log-entry{margin:3px 0;padding:3px 0;border-bottom:1px solid #334155}
+.log-error{color:#f87171}.log-success{color:#4ade80}.log-info{color:#60a5fa}.log-warn{color:#fbbf24}
+.json-block{background:#1e1e2e;color:#cdd6f4;font-family:monospace;font-size:11px;padding:14px;border-radius:8px;overflow-x:auto;max-height:350px;overflow-y:auto;white-space:pre-wrap;margin-top:8px}
+.steps{display:flex;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.step{flex:1;padding:10px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--muted);border-right:1px solid var(--border)}
+.step:last-child{border-right:none}.step.done{background:#EEF2FF;color:var(--blue)}.step.active{background:var(--blue);color:#fff}
+.step-num{display:block;font-size:16px;font-weight:700}
+.room-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.pax-row{background:var(--bg);border-radius:var(--radius-sm);padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:8px}
+.pax-row-title{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;grid-column:1/-1;margin-bottom:4px}
+.res-success{background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:1.5px solid #A5D6A7;border-radius:var(--radius);padding:24px;text-align:center}
+.res-number{font-family:'Poppins',sans-serif;font-size:36px;font-weight:700;color:#2E7D32;word-break:break-all}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader{display:inline-block;width:13px;height:13px;border:2px solid rgba(59,91,219,.3);border-top-color:#3B5BDB;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+.hotel-card{background:var(--bg);border-radius:8px;padding:15px;margin-bottom:12px;border:2px solid transparent;transition:all .2s;cursor:pointer}
+.hotel-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.hotel-card.selected{border-color:var(--blue);background:#EEF2FF}
+.hotel-name{font-weight:700;font-size:16px;margin-bottom:5px}
+.hotel-rating{color:#f5a623;margin-left:5px;font-size:14px}
+.hotel-price{font-size:18px;font-weight:700;color:var(--coral);margin:8px 0}
+.hotel-address{font-size:12px;color:var(--muted);margin-bottom:8px}
+.hotel-image{width:90px;height:90px;object-fit:cover;border-radius:8px;margin-right:12px}
+table{width:100%;border-collapse:collapse}
+th{padding:8px;text-align:left;background:var(--bg);font-size:12px}
+td{padding:8px;border-bottom:1px solid var(--border);font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <img src="https://ezycourse.b-cdn.net/3064/cmbzo7qfw08hhth9nfjwpb7sw.png" alt="APM">
+  <div><h1>Soltour — Motor de Reservas</h1><span>Integração External Booking API V5 · Grupo Piñero · APM Viagens</span></div>
+  <div id="session-pill" class="session-pill">● Sem sessão</div>
+</header>
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('pesquisa',this)">🔍 Pesquisar Hotéis</button>
+    <button class="tab" onclick="switchTab('reserva',this)">📋 Fazer Reserva</button>
+    <button class="tab" onclick="switchTab('reservas',this)">📁 Reservas</button>
+    <button class="tab" onclick="switchTab('debug',this)">🛠 Diagnóstico</button>
+  </div>
+
+  <!-- ───────── PESQUISA ───────── -->
+  <div id="panel-pesquisa" class="panel active">
+    <div class="card">
+      <div class="card-title"><span>🔍</span> Disponibilidade de Hotéis</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Destino (código)</label><input type="text" id="s-dest" placeholder="ex: PUJ, PMI, CUN" value="PUJ"></div>
+        <div class="form-group"><label>Check-in</label><input type="date" id="s-start"></div>
+        <div class="form-group"><label>Check-out</label><input type="date" id="s-end"></div>
+        <div class="form-group"><label>Idioma</label><select id="s-lang"><option value="PT">PT</option><option value="ES">ES</option></select></div>
+        <div class="form-group"><label>Tipo Residente</label><select id="s-resident"><option value="NONE">Nenhum</option><option value="RESIDENT">Residente</option><option value="LARGE_FAMILY">Família Numerosa</option></select></div>
+        <div class="form-group"><label>Resultados</label><input type="number" id="s-count" value="25" min="1" max="50"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px"><span style="font-weight:700">Quartos &amp; Ocupação</span><button class="btn btn-outline btn-sm" onclick="addSearchRoom()">+ Quarto</button></div>
+      <div id="search-rooms"></div>
+      <div class="btn-actions">
+        <button class="btn btn-blue" onclick="searchAvailability()">🔍 Pesquisar</button>
+        <button class="btn btn-outline" onclick="clearSearch()">Limpar</button>
+      </div>
+    </div>
+    <div id="search-status" class="status-bar"></div>
+    <div id="search-results"></div>
+  </div>
+
+  <!-- ───────── RESERVA ───────── -->
+  <div id="panel-reserva" class="panel">
+    <div class="steps">
+      <div class="step done" id="step1"><span class="step-num">1</span>Orçamento</div>
+      <div class="step" id="step2"><span class="step-num">2</span>Cotação</div>
+      <div class="step" id="step3"><span class="step-num">3</span>Titular</div>
+      <div class="step" id="step4"><span class="step-num">4</span>Passageiros</div>
+      <div class="step" id="step5"><span class="step-num">5</span>Confirmar</div>
+    </div>
+    <div id="reserva-status" class="status-bar"></div>
+
+    <div id="r-step1" class="card">
+      <div class="card-title"><span>📦</span> Orçamento Selecionado</div>
+      <div id="r-budget-info" style="font-size:14px;color:var(--muted)">Nenhum orçamento selecionado. Faça uma pesquisa e escolha um hotel.</div>
+      <div class="btn-actions"><button class="btn btn-blue" id="btn-quote" onclick="doQuote()" disabled>Cotar →</button></div>
+    </div>
+
+    <div id="r-step2" class="card" style="display:none">
+      <div class="card-title"><span>💶</span> Cotação Confirmada</div>
+      <div id="quote-result"></div>
+      <div class="btn-actions"><button class="btn btn-outline" onclick="backStep(1)">← Voltar</button><button class="btn btn-blue" onclick="backStep(3)">Dados do Titular →</button></div>
+    </div>
+
+    <div id="r-step3" class="card" style="display:none">
+      <div class="card-title"><span>🧑‍💼</span> Titular da Reserva</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Nome</label><input type="text" id="h-first"></div>
+        <div class="form-group"><label>Apelido</label><input type="text" id="h-last1"></div>
+        <div class="form-group"><label>2º Apelido</label><input type="text" id="h-last2"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="h-email"></div>
+        <div class="form-group"><label>Telefone</label><input type="text" id="h-phone" placeholder="+351 ..."></div>
+        <div class="form-group"><label>Ref. Agência</label><input type="text" id="h-agencyref" placeholder="opcional"></div>
+      </div>
+      <div class="btn-actions"><button class="btn btn-outline" onclick="backStep(2)">← Voltar</button><button class="btn btn-blue" onclick="doGenerateExpedient()">Gerar Expediente →</button></div>
+    </div>
+
+    <div id="r-step4" class="card" style="display:none">
+      <div class="card-title"><span>👥</span> Dados dos Passageiros</div>
+      <div id="r-expedient-info" style="font-size:13px;color:var(--muted);margin-bottom:12px"></div>
+      <div id="pax-form"></div>
+      <div class="form-group" style="margin-top:12px;max-width:100%"><label>Observações</label><input type="text" id="b-obs" placeholder="opcional"></div>
+      <div class="btn-actions"><button class="btn btn-outline" onclick="backStep(3)">← Voltar</button><button class="btn btn-coral" onclick="doBook()">✓ Confirmar Reserva</button></div>
+    </div>
+
+    <div id="r-final" style="display:none"></div>
+  </div>
+
+  <!-- ───────── RESERVAS ───────── -->
+  <div id="panel-reservas" class="panel">
+    <div class="card">
+      <div class="card-title"><span>📁</span> Reservas Existentes</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Criadas de</label><input type="date" id="rl-from"></div>
+        <div class="form-group"><label>Criadas até</label><input type="date" id="rl-to"></div>
+        <div class="form-group"><label>Mostrar canceladas</label><select id="rl-canceled"><option value="true">Sim</option><option value="false">Não</option></select></div>
+      </div>
+      <div class="btn-actions">
+        <button class="btn btn-blue" onclick="listReservations()">🔍 Pesquisar</button>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+        <div class="form-group" style="flex:1;min-width:200px"><label>Ler / Cancelar por Expediente</label><input type="text" id="rl-expedient" placeholder="nº expediente"></div>
+        <button class="btn btn-outline btn-sm" onclick="readReservation()">Ver Detalhes</button>
+        <button class="btn btn-outline btn-sm" onclick="cancelReservation(true)">Pré-cancelar</button>
+        <button class="btn btn-coral btn-sm" onclick="cancelReservation(false)">Cancelar</button>
+      </div>
+    </div>
+    <div id="reserves-status" class="status-bar"></div>
+    <div id="reserves-results"></div>
+  </div>
+
+  <!-- ───────── DIAGNÓSTICO ───────── -->
+  <div id="panel-debug" class="panel">
+    <div class="card">
+      <div class="card-title"><span>🔑</span> Sessão / Login</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Brand</label><input type="text" id="cfg-brand" value="SOLTOUR"></div>
+        <div class="form-group"><label>Market</label><input type="text" id="cfg-market" value="XMLPT"></div>
+        <div class="form-group"><label>Idioma</label><input type="text" id="cfg-lang" value="PT"></div>
+        <div class="form-group"><label>Username</label><input type="text" id="cfg-user" value="APMVIA999"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="cfg-pass" value="XMLAPMVIA"></div>
+      </div>
+      <div class="btn-actions">
+        <button class="btn btn-blue" onclick="doLogin()">🔓 Login</button>
+        <button class="btn btn-outline" onclick="verifySession()">Verificar Sessão</button>
+        <button class="btn btn-outline" onclick="getUserInfo()">User Info</button>
+        <button class="btn btn-outline" onclick="doLogout()">Logout</button>
+        <button class="btn btn-outline" onclick="clearLogs()">🗑 Limpar Logs</button>
+      </div>
+      <div id="debug-status" class="status-bar" style="margin-top:12px"></div>
+      <div id="log-panel" class="log-panel" style="margin-top:12px"><div class="log-entry log-info">Aguardando ação… Faça login primeiro.</div></div>
+    </div>
+    <div class="card" id="json-card" style="display:none">
+      <div class="card-title"><span>📄</span> JSON Bruto das Respostas</div>
+      <select id="json-selector" onchange="showJsonFromHistory()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;margin-bottom:10px"></select>
+      <div id="raw-json" class="json-block"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>⚙️</span> Configuração</div>
+      <div style="font-size:13px;color:var(--muted);line-height:2">
+        <div><b>Base URL:</b> https://soltour-svcext.grupo-pinero.com/soltour/v5/</div>
+        <div><b>Proxy:</b> <span id="cfg-proxy-show"></span></div>
+        <div style="color:var(--coral)"><b>Nota:</b> o client_id / client_secret MuleSoft ficam no proxy (servidor), nunca no browser.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════ CONFIG ════════════════
+   O proxy injeta MULESOFT_CLIENT_ID / MULESOFT_CLIENT_SECRET no lado do servidor.
+   Substitua PROXY_URL pelo endpoint da sua Edge Function (ver soltour-proxy/index.ts).
+   Para testar sem proxy, defina USE_DIRECT=true — só funciona fora do browser
+   (a Soltour não envia CORS e exige whitelist de IP).                          */
+const PROXY_URL = 'https://SEU-PROJETO.supabase.co/functions/v1/soltour-proxy'
+const SUPABASE_ANON = 'COLOQUE_AQUI_O_ANON_KEY'   // header Authorization do Supabase (não confundir com sessionToken da Soltour)
+const BASE_URL = 'https://soltour-svcext.grupo-pinero.com/soltour/v5/'
+
+let state = {
+  sessionToken: null,
+  searchRooms: [{ adults: 2, childAges: '' }],
+  availToken: null,
+  budgets: [],
+  hotelsById: {},
+  selectedBudget: null,
+  expedient: null,
+  startDate: null,
+  endDate: null,
+  destination: null,
+  paxLayout: []   // [{roomIdx, age, type}]
+}
+
+/* ────────── helpers UI ────────── */
+function log(msg, type='info'){
+  const p=document.getElementById('log-panel'); if(!p) return
+  const t=new Date().toLocaleTimeString()
+  const cls={error:'log-error',success:'log-success',warn:'log-warn'}[type]||'log-info'
+  p.innerHTML+=`<div class="log-entry ${cls}">[${t}] ${msg}</div>`; p.scrollTop=p.scrollHeight
+}
+function clearLogs(){ document.getElementById('log-panel').innerHTML='<div class="log-entry log-info">Logs limpos.</div>'; document.getElementById('json-card').style.display='none' }
+function switchTab(tab,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'))
+  document.getElementById('panel-'+tab).classList.add('active'); if(btn) btn.classList.add('active')
+}
+function setStatus(id,type,msg){
+  const el=document.getElementById(id); if(!el) return
+  if(!msg){el.className='status-bar';return}
+  el.className=`status-bar show ${type}`
+  el.innerHTML= type==='loading'?`<span class="loader"></span>${msg}`:msg
+}
+function setStep(n){ for(let i=1;i<=5;i++){const el=document.getElementById('step'+i); if(el) el.className='step'+(i<n?' done':i===n?' active':'')} }
+function backStep(n){
+  ['r-step1','r-step2','r-step3','r-step4','r-final'].forEach(s=>{const el=document.getElementById(s); if(el) el.style.display='none'})
+  const t=document.getElementById('r-step'+n); if(t) t.style.display='block'; setStep(n)
+}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function money(v,cur){ const n=parseFloat(v); if(isNaN(n)) return '—'; return '€'+n.toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+(cur&&cur!=='EUR'?' '+cur:'') }
+function setSession(tok){
+  state.sessionToken=tok
+  const pill=document.getElementById('session-pill')
+  if(tok){ pill.className='session-pill on'; pill.textContent='● Sessão ativa' }
+  else { pill.className='session-pill'; pill.textContent='● Sem sessão' }
+}
+
+/* ────────── núcleo REST (via proxy) ────────── */
+async function api(path, body, opts={}){
+  log(`📤 ${path}`)
+  if(!opts.noAuth && !state.sessionToken && path!=='login/login')
+    throw new Error('Sem sessão — faça login primeiro (separador Diagnóstico).')
+  const res = await fetch(PROXY_URL, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${SUPABASE_ANON}` },
+    body: JSON.stringify({ path, token: state.sessionToken || null, body })
+  })
+  let data
+  try { data = await res.json() } catch(e){ throw new Error(`Resposta não-JSON (HTTP ${res.status})`) }
+
+  // histórico p/ viewer
+  window.jsonHistory = window.jsonHistory || {}
+  window.jsonHistory[path] = JSON.stringify(data, null, 2)
+  const rawEl=document.getElementById('raw-json'), card=document.getElementById('json-card')
+  if(rawEl) rawEl.textContent=window.jsonHistory[path]
+  if(card) card.style.display='block'
+  const sel=document.getElementById('json-selector')
+  if(sel) sel.innerHTML=Object.keys(window.jsonHistory).map(k=>`<option value="${k}">${k}</option>`).join('')
+
+  if(!res.ok && !data) throw new Error(`HTTP ${res.status}`)
+  if(data && data.proxyError) throw new Error('Proxy: '+data.proxyError)
+  // erro de negócio da Soltour
+  const r = data && data.result
+  if(r && r.ok===false) throw new Error(`${r.errorCode||''} ${r.errorMessage||'Erro desconhecido'}`.trim())
+  return data
+}
+function showJsonFromHistory(){
+  const sel=document.getElementById('json-selector'), rawEl=document.getElementById('raw-json')
+  if(sel&&rawEl&&window.jsonHistory) rawEl.textContent=window.jsonHistory[sel.value]||''
+}
+
+/* ════════════════ LOGIN / SESSÃO ════════════════ */
+async function doLogin(){
+  setStatus('debug-status','loading','A autenticar…')
+  try{
+    const data = await api('login/login', {
+      brand: document.getElementById('cfg-brand').value.trim(),
+      market: document.getElementById('cfg-market').value.trim(),
+      languageCode: document.getElementById('cfg-lang').value.trim(),
+      username: document.getElementById('cfg-user').value.trim(),
+      password: document.getElementById('cfg-pass').value
+    }, {noAuth:true})
+    if(!data.sessionToken) throw new Error('Login sem sessionToken na resposta.')
+    setSession(data.sessionToken)
+    log(`✅ Login OK — token ${data.sessionToken.slice(0,12)}…`,'success')
+    setStatus('debug-status','ok','✅ Sessão iniciada com sucesso.')
+  }catch(e){ setSession(null); log(`❌ ${e.message}`,'error'); setStatus('debug-status','err',`❌ ${e.message}`) }
+}
+async function verifySession(){
+  setStatus('debug-status','loading','A verificar…')
+  try{
+    await api('login/verifySessionToken',{ brand:document.getElementById('cfg-brand').value.trim(), sessionToken: state.sessionToken })
+    log('✅ Sessão válida.','success'); setStatus('debug-status','ok','✅ Sessão válida.')
+  }catch(e){ log(`❌ ${e.message}`,'error'); setStatus('debug-status','err',`❌ ${e.message}`) }
+}
+async function getUserInfo(){
+  setStatus('debug-status','loading','A obter info…')
+  try{ await api('login/getUserInformation',{}); log('✅ User info obtida (ver JSON).','success'); setStatus('debug-status','ok','✅ Ver JSON bruto.') }
+  catch(e){ log(`❌ ${e.message}`,'error'); setStatus('debug-status','err',`❌ ${e.message}`) }
+}
+async function doLogout(){
+  try{ await api('login/logout',{ sessionToken: state.sessionToken }); log('👋 Logout.','warn') }catch(e){ log(`⚠️ ${e.message}`,'warn') }
+  setSession(null); setStatus('debug-status','ok','Sessão terminada.')
+}
+
+/* ════════════════ PESQUISA / AVAILABILITY ════════════════ */
+function renderSearchRooms(){
+  const c=document.getElementById('search-rooms')
+  c.innerHTML=state.searchRooms.map((r,i)=>`
+    <div class="room-row">
+      <label style="min-width:70px">Quarto ${i+1}</label>
+      <span style="font-size:12px;color:var(--muted)">Adultos</span>
+      <input type="number" id="sr-adults-${i}" value="${r.adults}" min="1" max="6" style="width:64px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px">
+      <span style="font-size:12px;color:var(--muted)">Idades crianças</span>
+      <input type="text" id="sr-childages-${i}" value="${r.childAges}" placeholder="ex: 4,9" style="width:120px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px">
+      ${state.searchRooms.length>1?`<button class="btn btn-outline btn-sm" onclick="removeSearchRoom(${i})">✕</button>`:''}
+    </div>`).join('')
+}
+function addSearchRoom(){ state.searchRooms.push({adults:2,childAges:''}); renderSearchRoom_sync(); renderSearchRooms() }
+function removeSearchRoom(i){ renderSearchRoom_sync(); state.searchRooms.splice(i,1); renderSearchRooms() }
+function renderSearchRoom_sync(){
+  state.searchRooms.forEach((r,i)=>{
+    const a=document.getElementById(`sr-adults-${i}`), c=document.getElementById(`sr-childages-${i}`)
+    if(a) r.adults=parseInt(a.value)||1; if(c) r.childAges=c.value
+  })
+}
+function parseAges(str){ return String(str||'').split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n)) }
+function buildRoomsPayload(){
+  renderSearchRoom_sync()
+  state.paxLayout=[]
+  return state.searchRooms.map((r,ri)=>{
+    const passengers=[]
+    for(let i=0;i<r.adults;i++){ passengers.push({age:30,type:'ADULT'}); state.paxLayout.push({roomIdx:ri,age:30,type:'ADULT'}) }
+    parseAges(r.childAges).forEach(age=>{ passengers.push({age,type:'CHILD'}); state.paxLayout.push({roomIdx:ri,age,type:'CHILD'}) })
+    return { passengers }
+  })
+}
+function clearSearch(){
+  document.getElementById('s-dest').value=''
+  document.getElementById('search-results').innerHTML=''
+  setStatus('search-status','','')
+}
+async function searchAvailability(){
+  const dest=document.getElementById('s-dest').value.trim()
+  const start=document.getElementById('s-start').value
+  const end=document.getElementById('s-end').value
+  if(!dest||!start||!end){ setStatus('search-status','err','⚠️ Preencha destino, check-in e check-out.'); return }
+  setStatus('search-status','loading','A pesquisar disponibilidade…')
+  document.getElementById('search-results').innerHTML=''
+  const rooms=buildRoomsPayload()
+  state.startDate=start; state.endDate=end; state.destination=dest
+  const payload={
+    productType:'HOTEL',
+    languageCode:document.getElementById('s-lang').value,
+    criteria:{ order:{direction:'ASC',type:'PRICE'}, pagination:{firstItem:0,itemCount:parseInt(document.getElementById('s-count').value)||25} },
+    params:{ startDate:start, endDate:end, residentType:document.getElementById('s-resident').value, accomodation:{rooms}, hotelParams:{destinationCode:dest} }
+  }
+  try{
+    const data=await api('booking/availability',payload)
+    state.availToken=data.availToken
+    state.budgets=Array.isArray(data.budgets)?data.budgets:[]
+    // index descritivo dos hotéis
+    state.hotelsById={}
+    ;(data.hotels||[]).forEach(h=>{ if(h.code) state.hotelsById[String(h.code)]=h; if(h.numericCode) state.hotelsById[String(h.numericCode)]=h })
+    log(`✅ availToken ${String(state.availToken||'').slice(0,10)}… — ${state.budgets.length} orçamento(s)`,'success')
+    renderResults()
+  }catch(e){ log(`❌ ${e.message}`,'error'); setStatus('search-status','err',`❌ ${e.message}`) }
+}
+function budgetPrice(b){
+  const pb=b.priceBreakdown||{}
+  const v=pb.pvp ?? pb.pvpWithOverCommission ?? (b.hotelServices&&b.hotelServices[0]&&b.hotelServices[0].priceBreakdown&&b.hotelServices[0].priceBreakdown.pvp)
+  const cur=pb.sellCurrency || (b.hotelServices&&b.hotelServices[0]&&b.hotelServices[0].priceBreakdown&&b.hotelServices[0].priceBreakdown.sellCurrency) || 'EUR'
+  return {v,cur}
+}
+function renderResults(){
+  if(!state.budgets.length){
+    setStatus('search-status','err','⚠️ Sem disponibilidade para os critérios.')
+    document.getElementById('search-results').innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">Sem resultados.</div>'
+    return
+  }
+  setStatus('search-status','ok',`✓ ${state.budgets.length} orçamento(s)`)
+  let html='<div class="section-title">🏨 Hotéis Disponíveis</div>'
+  state.budgets.forEach((b,bi)=>{
+    const hs=(b.hotelServices&&b.hotelServices[0])||{}
+    const hotel=state.hotelsById[String(hs.hotelCode)]||{}
+    const name=hotel.name||hotel.fullName||hs.description||('Hotel '+(hs.hotelCode||''))
+    const cat=hotel.categoryDescription||''
+    const stars=(cat.match(/\d/)?'★'.repeat(parseInt(cat))+'☆'.repeat(Math.max(0,5-parseInt(cat))):'')
+    const img=hotel.mainImage||hotel.appImageUrl||''
+    const loc=[hotel.city,hotel.resort,hotel.destinationDescription].filter(Boolean).join(' · ')
+    const board=(hs.mealPlan&&(hs.mealPlan.description||hs.mealPlan.code))||''
+    const {v,cur}=budgetPrice(b)
+    html+=`
+      <div class="hotel-card" onclick="selectBudget(${bi})">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          ${img?`<img src="${esc(img)}" class="hotel-image" onerror="this.style.display='none'">`:''}
+          <div style="flex:1;min-width:220px">
+            <div class="hotel-name">${esc(name)} <span class="hotel-rating">${stars}</span></div>
+            ${loc?`<div class="hotel-address">📍 ${esc(loc)}</div>`:''}
+            <div style="margin:4px 0">${board?`<span class="badge badge-board">${esc(board)}</span>`:''} ${hs.status?`<span class="badge ${hs.status==='OK'?'badge-ok':'badge-wl'}">${esc(hs.status)}</span>`:''}</div>
+            <div style="font-size:12px;color:var(--muted)">${esc(hs.startDate||'')} → ${esc(hs.endDate||'')} · cód ${esc(hs.hotelCode||'')} (${esc(hs.providerCode||'')})</div>
+            <div class="hotel-price">${money(v,cur)}</div>
+            <button class="btn btn-blue btn-sm" onclick="event.stopPropagation();selectBudget(${bi})">Reservar →</button>
+          </div>
+        </div>
+      </div>`
+  })
+  document.getElementById('search-results').innerHTML=html
+}
+
+/* ════════════════ FLUXO DE RESERVA ════════════════ */
+function selectBudget(bi){
+  const b=state.budgets[bi]; if(!b) return
+  state.selectedBudget=b
+  const hs=(b.hotelServices&&b.hotelServices[0])||{}
+  const hotel=state.hotelsById[String(hs.hotelCode)]||{}
+  const name=hotel.name||hotel.fullName||hs.description||('Hotel '+(hs.hotelCode||''))
+  const {v,cur}=budgetPrice(b)
+  log(`✅ Orçamento ${b.budgetId} — ${name}`,'success')
+  document.getElementById('r-budget-info').innerHTML=
+    `<strong>${esc(name)}</strong><br>
+     <span style="color:var(--muted)">Orçamento ${esc(b.budgetId)} · ${esc(hs.startDate||'')} → ${esc(hs.endDate||'')} · ${state.paxLayout.length} pax</span><br>
+     <span class="hotel-price">${money(v,cur)}</span>`
+  document.getElementById('btn-quote').disabled=false
+  // ir para o separador reserva
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'))
+  document.getElementById('panel-reserva').classList.add('active')
+  document.querySelectorAll('.tab')[1].classList.add('active')
+  backStep(1)
+}
+async function doQuote(){
+  if(!state.selectedBudget){ setStatus('reserva-status','err','Selecione um orçamento.'); return }
+  setStatus('reserva-status','loading','A cotar…')
+  try{
+    const data=await api('booking/quote',{ productType:'HOTEL', availToken:state.availToken, budgetIds:[state.selectedBudget.budgetId] })
+    const b=(data.budgets&&data.budgets[0])||state.selectedBudget
+    state.selectedBudget=b
+    const {v,cur}=budgetPrice(b)
+    const hs=(b.hotelServices&&b.hotelServices[0])||{}
+    const hotel=state.hotelsById[String(hs.hotelCode)]||{}
+    document.getElementById('quote-result').innerHTML=`
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="font-size:30px;font-weight:800;color:var(--coral);font-family:'Poppins'">${money(v,cur)}</div>
+        <div style="color:var(--muted)">Preço cotado · ${esc(hotel.name||hs.description||'')}</div>
+      </div>
+      <div style="margin-top:8px;font-size:13px;color:var(--muted)">${esc(hs.startDate||'')} → ${esc(hs.endDate||'')} · ${esc((hs.mealPlan&&hs.mealPlan.description)||'')}</div>`
+    log(`✅ Cotação OK — ${money(v,cur)}`,'success')
+    backStep(2); setStatus('reserva-status','','')
+  }catch(e){ log(`❌ ${e.message}`,'error'); setStatus('reserva-status','err',`❌ ${e.message}`) }
+}
+async function doGenerateExpedient(){
+  const first=document.getElementById('h-first').value.trim()
+  const last1=document.getElementById('h-last1').value.trim()
+  const email=document.getElementById('h-email').value.trim()
+  if(!first||!last1||!email){ setStatus('reserva-status','err','Preencha nome, apelido e email do titular.'); return }
+  setStatus('reserva-status','loading','A gerar expediente…')
+  try{
+    const data=await api('booking/generateExpedient',{
+      destination: state.destination,
+      productType:'HOTEL',
+      availToken: state.availToken,
+      bookingHolder:{ email, firstName:first, lastName1:last1, lastName2:document.getElementById('h-last2').value.trim() },
+      startDate: state.startDate,
+      agencyBookingReference: document.getElementById('h-agencyref').value.trim()||undefined
+    })
+    state.expedient=data.expedient
+    log(`✅ Expediente ${state.expedient}`,'success')
+    document.getElementById('r-expedient-info').innerHTML=`Expediente gerado: <strong>${esc(state.expedient)}</strong>`
+    renderPaxForm()
+    backStep(4); setStatus('reserva-status','','')
+  }catch(e){ log(`❌ ${e.message}`,'error'); setStatus('reserva-status','err',`❌ ${e.message}`) }
+}
+function renderPaxForm(){
+  const holderFirst=document.getElementById('h-first').value.trim()
+  const holderLast1=document.getElementById('h-last1').value.trim()
+  const holderLast2=document.getElementById('h-last2').value.trim()
+  let h=''
+  state.paxLayout.forEach((p,i)=>{
+    const isHolder=i===0
+    h+=`<div class="pax-row">
+      <div class="pax-row-title">Passageiro ${i+1} — Quarto ${p.roomIdx+1} · ${p.type==='ADULT'?'Adulto':'Criança ('+p.age+' anos)'}</div>
+      <div class="form-group"><label>Nome</label><input type="text" id="pax-first-${i}" value="${isHolder?esc(holderFirst):''}"></div>
+      <div class="form-group"><label>Apelido</label><input type="text" id="pax-last1-${i}" value="${isHolder?esc(holderLast1):''}"></div>
+      <div class="form-group"><label>2º Apelido</label><input type="text" id="pax-last2-${i}" value="${isHolder?esc(holderLast2):''}"></div>
+      <div class="form-group"><label>Género</label><select id="pax-gender-${i}"><option value="MAN">M</option><option value="WOMAN">F</option></select></div>
+      <div class="form-group"><label>Idade</label><input type="number" id="pax-age-${i}" value="${p.age}" min="0" max="120"></div>
+    </div>`
+  })
+  document.getElementById('pax-form').innerHTML=h
+}
+async function doBook(){
+  setStatus('reserva-status','loading','A criar reserva…')
+  // reconstruir rooms com passageiros nomeados
+  const roomsMap={}
+  state.paxLayout.forEach((p,i)=>{
+    const ri=p.roomIdx
+    roomsMap[ri]=roomsMap[ri]||{passengers:[]}
+    roomsMap[ri].passengers.push({
+      age: parseInt(document.getElementById(`pax-age-${i}`).value)||p.age,
+      identification:0,
+      firstName: document.getElementById(`pax-first-${i}`).value.trim(),
+      lastName1: document.getElementById(`pax-last1-${i}`).value.trim(),
+      lastName2: document.getElementById(`pax-last2-${i}`).value.trim(),
+      gender: document.getElementById(`pax-gender-${i}`).value,
+      type: p.type
+    })
+  })
+  const rooms=Object.keys(roomsMap).sort((a,b)=>a-b).map(k=>roomsMap[k])
+  // validação mínima
+  for(const r of rooms) for(const px of r.passengers) if(!px.firstName||!px.lastName1){ setStatus('reserva-status','err','Preencha nome e apelido de todos os passageiros.'); return }
+  const payload={
+    availToken: state.availToken,
+    accomodation:{ rooms },
+    commonBookingData:{
+      agencyExpedient: document.getElementById('h-agencyref').value.trim()||state.expedient,
+      agent: document.getElementById('cfg-user').value.trim(),
+      email: document.getElementById('h-email').value.trim(),
+      expedient: state.expedient,
+      observations: document.getElementById('b-obs').value.trim(),
+      phoneNumber: document.getElementById('h-phone').value.trim(),
+      userName: document.getElementById('cfg-user').value.trim(),
+      channel:'WEB'
+    },
+    productType:'HOTEL'
+  }
+  try{
+    const data=await api('booking/book',payload)
+    const ref=(data.booking&&data.booking.bookingHeader&&data.booking.bookingHeader.bookingReference)||data.bookingReference||'(ver JSON)'
+    const status=(data.booking&&data.booking.bookingHeader&&data.booking.bookingHeader.status)||''
+    log(`✅ Reserva criada: ${ref}`,'success')
+    document.getElementById('r-step4').style.display='none'
+    const fin=document.getElementById('r-final'); fin.style.display='block'; setStep(5)
+    fin.innerHTML=`<div class="res-success">
+      <div style="font-size:40px;margin-bottom:8px">✅</div>
+      <div class="res-number">${esc(ref)}</div>
+      <div style="color:var(--muted);margin-top:6px">Localizador Soltour · Expediente ${esc(state.expedient||'')}</div>
+      ${status?`<div style="margin-top:10px"><span class="badge ${status==='OK'?'badge-ok':'badge-wl'}">${esc(status)}</span></div>`:''}
+      <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="document.getElementById('rl-expedient').value='${esc(state.expedient||'')}';switchTab('reservas',document.querySelectorAll('.tab')[2]);readReservation()">Ver Detalhes</button>
+        <button class="btn btn-blue" onclick="location.reload()">Nova Reserva</button>
+      </div></div>`
+    setStatus('reserva-status','','')
+  }catch(e){ log(`❌ ${e.message}`,'error'); setStatus('reserva-status','err',`❌ ${e.message}`) }
+}
+
+/* ════════════════ RESERVAS ════════════════ */
+async function listReservations(){
+  setStatus('reserves-status','loading','A pesquisar…')
+  try{
+    const data=await api('booking/getExistingReservations',{
+      creationStartDate: document.getElementById('rl-from').value||undefined,
+      creationEndDate: document.getElementById('rl-to').value||undefined,
+      showCanceled: document.getElementById('rl-canceled').value==='true'
+    })
+    const list = data.reservations || data.bookings || data.results || []
+    if(!list.length){ setStatus('reserves-status','err','Nenhuma reserva encontrada.'); document.getElementById('reserves-results').innerHTML=''; return }
+    setStatus('reserves-status','ok',`✓ ${list.length} reserva(s)`)
+    let h='<table><thead><tr><th>Expediente</th><th>Localizador</th><th>Titular</th><th>Datas</th><th>Estado</th><th></th></tr></thead><tbody>'
+    list.forEach(r=>{
+      const exp=r.expedient||r.agencyExpedient||''
+      const ref=r.bookingReference||(r.bookingHeader&&r.bookingHeader.bookingReference)||''
+      const holder=r.holderName||(r.bookingHolder&&`${r.bookingHolder.firstName||''} ${r.bookingHolder.lastName1||''}`)||''
+      const dates=`${r.startDate||''} → ${r.endDate||''}`
+      const st=r.status||(r.bookingHeader&&r.bookingHeader.status)||''
+      h+=`<tr><td><strong>${esc(exp)}</strong></td><td>${esc(ref)}</td><td>${esc(holder)}</td><td style="font-size:12px">${esc(dates)}</td><td><span class="badge ${st==='OK'?'badge-ok':'badge-wl'}">${esc(st)}</span></td>
+        <td><button class="btn btn-outline btn-sm" onclick="document.getElementById('rl-expedient').value='${esc(exp)}';readReservation()">Ver</button></td></tr>`
+    })
+    h+='</tbody></table>'
+    document.getElementById('reserves-results').innerHTML=h
+  }catch(e){ log(`❌ ${e.message}`,'error'); setStatus('reserves-status','err',`❌ ${e.message}`) }
+}
+async function readReservation(){
+  const exp=document.getElementById('rl-expedient').value.trim()
+  if(!exp){ setStatus('reserves-status','err','Indique um expediente.'); return }
+  setStatus('reserves-status','loading','A ler reserva…')
+  try{
+    const data=await api('booking/read',{ expedient:exp })
+    log(`✅ Reserva ${exp} lida (ver JSON).`,'success')
+    setStatus('reserves-status','ok',`✓ Reserva ${exp} — ver JSON bruto no Diagnóstico.`)
+  }catch(e){ log(`❌ ${e.message}`,'error'); setStatus('reserves-status','err',`❌ ${e.message}`) }
+}
+async function cancelReservation(pre){
+  const exp=document.getElementById('rl-expedient').value.trim()
+  if(!exp){ setStatus('reserves-status','err','Indique um expediente.'); return }
+  if(!pre && !confirm(`Cancelar definitivamente a reserva ${exp}?`)) return
+  setStatus('reserves-status','loading', pre?'A calcular gastos de cancelamento…':'A cancelar…')
+  try{
+    const data=await api('booking/cancel',{ expedient:exp, preCancellation:!!pre })
+    log(`✅ ${pre?'Pré-cancelamento':'Cancelamento'} OK para ${exp}.`,'success')
+    setStatus('reserves-status','ok', pre?'✓ Pré-cancelamento calculado — ver JSON (gastos).':'✓ Reserva cancelada.')
+  }catch(e){ log(`❌ ${e.message}`,'error'); setStatus('reserves-status','err',`❌ ${e.message}`) }
+}
+
+/* ────────── init ────────── */
+;(function init(){
+  const today=new Date(), plus3=new Date(Date.now()+3*864e5)
+  document.getElementById('s-start').value=plus3.toISOString().split('T')[0]
+  document.getElementById('s-end').value=new Date(plus3.getTime()+7*864e5).toISOString().split('T')[0]
+  document.getElementById('rl-from').value=new Date(Date.now()-30*864e5).toISOString().split('T')[0]
+  document.getElementById('rl-to').value=today.toISOString().split('T')[0]
+  document.getElementById('cfg-proxy-show').textContent=PROXY_URL
+  renderSearchRooms()
+  log('🚀 App pronta. Faça login no separador Diagnóstico antes de pesquisar.','success')
+})()
+</script>
+</body>
+</html>
