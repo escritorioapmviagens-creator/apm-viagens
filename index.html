@@ -886,6 +886,12 @@ textarea.finput{resize:vertical;min-height:72px}
                 <div class="rec-card-desc" id="solt-card-desc">Pesquisa de pacotes dinâmicos Soltropico/Optigest</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
+              <div class="rec-card" id="rec-card-soltour" style="display:none;--rc-color:#E8395A;--rc-bg:#ffe3eb" onclick="abrirSoltour()">
+                <div class="rec-card-top"><div class="rec-card-icon">🌅</div></div>
+                <div class="rec-card-title">Soltour</div>
+                <div class="rec-card-desc">Pesquisa e reservas de hotéis Soltour (Grupo Piñero)</div>
+                <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
+              </div>
             </div>
           </div>
 
@@ -4211,6 +4217,9 @@ function enterApp() {
       const cd=document.getElementById('solt-card-desc'); if(cd) cd.textContent='Ambiente de treino — pesquise e simule sem reservar'
     }
   }
+
+  // Card Soltour na Central de Recursos: só acesso completo (etapa 3 / admin) — reservas reais
+  { const rct=document.getElementById('rec-card-soltour'); if(rct) rct.style.display = (etapa>=3) ? 'flex' : 'none' }
   const na=document.getElementById('nav-avaliacoes'); if(na) na.style.display='flex'
   if(currentPerfil.role==='admin') { const nperf=document.getElementById('nav-performance'); if(nperf) nperf.style.display='flex' }
   if(currentPerfil.role==='admin') { const el=document.getElementById('nav-mensalidades'); if(el) el.style.display='flex' }
@@ -4583,6 +4592,10 @@ async function loadRecursos() {
   // Mostrar card soltropico só se disponível
   const soltCard = document.getElementById('rec-card-soltropico')
   if (soltCard && isAdmin) soltCard.style.display = 'block'
+
+  // Mostrar card soltour só se disponível (admin)
+  const soltourCard = document.getElementById('rec-card-soltour')
+  if (soltourCard && isAdmin) soltourCard.style.display = 'block'
 
   // Carregar métricas para os cards do funil
   const uid = currentPerfil?.id
@@ -6210,6 +6223,11 @@ function abrirSoltropico() {
   const base = 'https://escritorioapmviagens-creator.github.io/apm-viagens/soltropico.html'
   const url = etapa < 3 ? (base + '?modo=treino') : base
   window.open(url, '_blank')
+}
+
+function abrirSoltour() {
+  // Soltour: apenas acesso completo (reservas reais — Grupo Piñero). Sem modo treino.
+  window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/soltour.html', '_blank')
 }
 
 function abrirOperadores() {
