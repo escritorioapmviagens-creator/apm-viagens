@@ -222,8 +222,9 @@ td{padding:8px;border-bottom:1px solid var(--border);font-size:13px}
    Substitua PROXY_URL pelo endpoint da sua Edge Function (ver soltour-proxy/index.ts).
    Para testar sem proxy, defina USE_DIRECT=true — só funciona fora do browser
    (a Soltour não envia CORS e exige whitelist de IP).                          */
-const PROXY_URL = 'https://SEU-PROJETO.supabase.co/functions/v1/soltour-proxy'
-const SUPABASE_ANON = 'COLOQUE_AQUI_O_ANON_KEY'   // header Authorization do Supabase (não confundir com sessionToken da Soltour)
+const SUPABASE_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
+const PROXY_URL = `${SUPABASE_URL}/functions/v1/soltour-proxy`
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'   // anon key do Supabase (mesma da Soltrópico)
 const BASE_URL = 'https://soltour-svcext.grupo-pinero.com/soltour/v5/'
 
 let state = {
