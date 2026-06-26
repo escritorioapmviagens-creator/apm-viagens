@@ -250,6 +250,7 @@ td{padding:8px;border-bottom:1px solid var(--border);font-size:13px}
 const SUPABASE_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
 const PROXY_URL = SUPABASE_URL+'/functions/v1/Soltour-proxy-index-'
 const SOLTROPICO_PROXY = SUPABASE_URL+'/functions/v1/soltropico-proxy'
+const SOLTOUR_CREDS={brand:'SOLTOUR',market:'XMLPT',languageCode:'PT',username:'APMVIA999',password:'XMLAPMVIA'}
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
 const BASE_URL = 'https://soltour-svcext.grupo-pinero.com/soltour/v5/'
 
@@ -786,16 +787,8 @@ async function pkSearch(){
 }
 
 /* ---- SOLTOUR: availability(seed) -> getPriceCalendar(mês) -> dias ---- */
-async function pkSearchSoltour(dest,month){
-  if(!state.sessionToken) throw new Error('Sem sessão Soltour — faça login no separador Diagnóstico.')
-  const {pax}=pkPassengers()
-  const origin=document.getElementById('pk-origin').value
-  const nights=parseInt(document.getElementById('pk-nights').value)||7
-  const [y,m]=month.split('-').map(n=>parseInt(n))
-  const seedStart=`${month}-10`  // dia-semente no meio do mês
-  const sd=new Date(seedStart); sd.setDate(sd.getDate()+nights); const seedEnd=sd.toISOString().slice(0,10)
-  // 1) availability leve para obter availToken
-  const av=await api('booking/availability',{
+async function pkAvailSoltour(dest,origin,nights,seedStart,seedEnd,pax){
+  const body={
     productType:'PACKAGE', languageCode:'PT',
     criteria:{order:{direction:'ASC',type:'PRICE'},pagination:{firstItem:0,itemCount:10}},
     params:{startDate:seedStart,endDate:seedEnd,numNights:nights,residentType:'NONE',
@@ -805,8 +798,39 @@ async function pkSearchSoltour(dest,month){
         {origins:[origin],destinations:[dest.soltour],flightDate:seedStart},
         {origins:[dest.soltour],destinations:[origin],flightDate:seedEnd}
       ]}}
-  })
+  }
+  try{
+    return await api('booking/availability', body)
+  }catch(e){
+    // api() atira em ok:false. Se a msg sugere sessão, propaga p/ re-login. Senão, trata como "sem stock".
+    if(/sess|token|401|unauth|brand/i.test(e.message)) throw e
+    return {}  // sem availToken => sem resultados
+  }
+}
+async function pkSearchSoltour(dest,month){
+  if(!(await pkEnsureSession())) throw new Error('não foi possível iniciar sessão Soltour')
+  const {pax}=pkPassengers()
+  const origin=document.getElementById('pk-origin').value
+  const nights=parseInt(document.getElementById('pk-nights').value)||7
+  const [y,m]=month.split('-').map(n=>parseInt(n))
+  const seedStart=`${month}-10`  // dia-semente no meio do mês
+  const sd=new Date(seedStart); sd.setDate(sd.getDate()+nights); const seedEnd=sd.toISOString().slice(0,10)
+  // 1) availability leve para obter availToken
+  let av
+  try{
+    av=await pkAvailSoltour(dest,origin,nights,seedStart,seedEnd,pax)
+  }catch(e){
+    // se a sessão expirou, repetir uma vez após novo login
+    if(/sess|token|401|expир|expir|unauth/i.test(e.message)){
+      setSession(null); if(await pkEnsureSession()) av=await pkAvailSoltour(dest,origin,nights,seedStart,seedEnd,pax)
+      else throw e
+    } else throw e
+  }
   const availToken=av.availToken
+  if(!availToken){
+    // ok:false sem token = sem disponibilidade Soltour para este destino/mês (não é erro)
+    return []
+  }
   if(!availToken) return []  // sem inventário Soltour para este destino
   // mapa de hotéis a partir da própria resposta de availability (já traz nome+imagem)
   const hotelMap={}
@@ -989,12 +1013,18 @@ function pkReservar(json){
   pkAutoLogin()
 })()
 
-const SOLTOUR_CREDS={brand:'SOLTOUR',market:'XMLPT',languageCode:'PT',username:'APMVIA999',password:'XMLAPMVIA'}
 async function pkAutoLogin(){
   try{
     const data=await api('login/login', SOLTOUR_CREDS, {noAuth:true})
-    if(data.sessionToken){ setSession(data.sessionToken); log('🔐 Sessão iniciada automaticamente.','success') }
-  }catch(e){ log('⚠️ Falha no login automático: '+e.message,'warn') }
+    if(data && data.sessionToken){ setSession(data.sessionToken); log('🔐 Sessão iniciada automaticamente.','success'); return {ok:true} }
+    const m=(data&&data.result&&data.result.errorMessage)||'login sem sessionToken'
+    log('⚠️ Login automático: '+m,'warn'); return {ok:false, error:m}
+  }catch(e){ log('⚠️ Falha no login automático: '+e.message,'warn'); return {ok:false, error:e.message} }
+}
+async function pkEnsureSession(){
+  if(state.sessionToken) return true
+  const r=await pkAutoLogin()
+  return !!(r && r.ok)
 }
 </script>
 </body>
