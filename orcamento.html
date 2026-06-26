@@ -703,48 +703,33 @@ async function initApp() {
     window._pedidoOrcId = _urlParams.get('pedido_id')
   }
 
-  // ── PRÉ-PREENCHER A PARTIR DO MOTOR DE PACOTES (?dados=<id>) ──
-  // Busca os dados ricos da oferta (hotel, preço, regime, fotos, vídeo) na Supabase
-  // e preenche o formulário, que fica editável.
-  if(_urlParams.get('dados')) {
+  // ── PRÉ-PREENCHER A PARTIR DO MOTOR DE PACOTES (parâmetros no link) ──
+  // O motor passa os dados por URL (fotos são URLs curtas, cabe bem). NÃO grava nada:
+  // o registo oficial nasce quando o consultor clica "Gerar" aqui no orçamento.
+  if(_urlParams.get('motor') === '1') {
     try {
-      const id = _urlParams.get('dados')
-      const { data: row } = await sb.from('propostas_viagem').select('dados').eq('id', id).single()
-      const D = row && row.dados
-      if(D) {
-        const setV = (elId, val) => { const el = document.getElementById(elId); if(el && val != null && val !== '') el.value = val }
-        setV('f-dest', D.dest)
-        setV('f-hotel', D.hotel)
-        setV('f-sub', D.sub)
-        setV('f-part', D.part)
-        setV('f-reg', D.reg)
-        setV('f-noites', D.noites)
-        setV('f-pax', D.pax)
-        setV('f-fornecedor', D.fornecedor)
-        setV('f-localizador', D.localizador)
-        setV('f-drest', D.drest)
-        setV('f-video', D.videoUrl)
-        // Fotos do operador → grelha de pré-visualização
-        if(Array.isArray(D.hotel_fotos) && D.hotel_fotos.length) {
-          window._hotelFotos = D.hotel_fotos.slice(0, 4)
-          if(typeof renderHotelPreview === 'function') renderHotelPreview()
-        } else if(D.foto) {
-          window._hotelFotos = [D.foto]
-          if(typeof renderHotelPreview === 'function') renderHotelPreview()
-        }
-        // Preço(s): D.prices = [{lbl,val}] ; ou um valor único em D.sval
-        window._prefillPrices = Array.isArray(D.prices) ? D.prices : (D.sval ? [{lbl:'Preço por pessoa', val:D.sval}] : null)
-        // Cliente, se já vier
-        setV('f-cli-nome', D.cli_nome)
-        setV('f-cli-tel', D.cli_tel)
-        setV('f-cli-email', D.cli_email)
-        setV('f-cli-nif', D.cli_nif)
-        // Consultor
-        setV('f-cnome', D.cnome)
-        setV('f-ctel', D.ctel)
-        if(typeof updatePreview === 'function') updatePreview()
+      const g = k => _urlParams.get(k) || ''
+      const setV = (elId, val) => { const el = document.getElementById(elId); if(el && val) el.value = val }
+      setV('f-dest', g('dest'))
+      setV('f-hotel', g('hotel'))
+      setV('f-sub', g('sub'))
+      setV('f-part', g('part'))
+      setV('f-reg', g('reg'))
+      setV('f-noites', g('noites'))
+      setV('f-fornecedor', g('fornecedor'))
+      setV('f-localizador', g('localizador'))
+      setV('f-drest', g('drest'))
+      setV('f-cnome', g('cnome'))
+      // fotos do operador
+      const fotos = ['foto1','foto2','foto3','foto4'].map(k => g(k)).filter(Boolean)
+      if(fotos.length) {
+        window._hotelFotos = fotos
+        if(typeof renderHotelPreview === 'function') renderHotelPreview()
       }
-    } catch(e) { console.warn('Pré-preenchimento ?dados= falhou:', e.message) }
+      // preço (PVP)
+      if(g('pvp')) window._prefillPrices = [{ lbl: 'Preço por pessoa (PVP)', val: g('pvp') }]
+      if(typeof updatePreview === 'function') updatePreview()
+    } catch(e) { console.warn('Pré-preenchimento do motor falhou:', e.message) }
   }
 
   // Load templates
