@@ -1,93 +1,876 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📄 Contrato de Viagem · APM Viagens</title>
+<title>📅 Net vs PVP · Calendário de Preços</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',system-ui,sans-serif}
-body{background:#F5F6FA;color:#1A1D2E;font-size:14px;padding:20px}
-.wrap{max-width:800px;margin:0 auto}
-.card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:24px;margin-bottom:16px}
-h1{font-size:22px;font-weight:700;margin-bottom:4px}
-h2{font-size:18px;font-weight:600;margin:20px 0 12px}
-h3{font-size:15px;font-weight:600;margin:16px 0 8px;color:#3B5BDB}
-.sub{color:#8B92A5;font-size:13px;margin-bottom:18px}
-.divider{border:none;border-top:2px solid #E5E7EB;margin:16px 0}
-.info-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F3F4F6;flex-wrap:wrap}
-.info-row .label{color:#8B92A5;font-weight:500}
-.info-row .value{font-weight:600}
-.total-price{font-size:28px;font-weight:800;color:#E8395A;margin:8px 0}
-.net-price{font-size:20px;font-weight:700;color:#2E7D32}
-.checkbox-group{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #F3F4F6}
-.checkbox-group input[type="checkbox"]{margin-top:3px;width:18px;height:18px;cursor:pointer;flex-shrink:0}
-.checkbox-group label{font-size:14px;line-height:1.5;cursor:pointer}
-.checkbox-group label strong{color:#1A1D2E}
-.required{color:#C62828;font-weight:700;margin-left:4px}
-.assinatura-area{background:#FAFBFC;border:2px dashed #D1D5DB;border-radius:8px;padding:16px;margin:12px 0}
-.assinatura-area canvas{width:100%;height:150px;background:#fff;border-radius:4px;cursor:crosshair;touch-action:none}
-.assinatura-area .hint{font-size:12px;color:#8B92A5;text-align:center;margin-top:8px}
-.btn-group{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;border:none;transition:all .2s}
-.btn-primary{background:#3B5BDB;color:#fff}.btn-primary:hover{background:#2a4ac7}
-.btn-success{background:#0F6E56;color:#fff}.btn-success:hover{background:#0a4f3d}
-.btn-outline{background:transparent;border:1.5px solid #D1D5DB;color:#1A1D2E}.btn-outline:hover{background:#F3F4F6}
-.btn-danger{background:#E8395A;color:#fff}.btn-danger:hover{background:#c92a4a}
+body{background:#F5F6FA;color:#1A1D2E;font-size:14px;padding:22px}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-size:19px;font-weight:700;margin-bottom:4px}.sub{color:#8B92A5;font-size:13px;margin-bottom:18px}
+.card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:18px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+label{font-size:11px;font-weight:600;color:#8B92A5;text-transform:uppercase;display:block;margin-bottom:4px}
+input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:13px;background:#fff}
+.btn{padding:10px 18px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;background:#3B5BDB;color:#fff;margin-top:14px;transition:opacity .2s}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-.status-bar{padding:12px 16px;border-radius:8px;margin:12px 0;display:none}
-.status-bar.show{display:block}
-.status-bar.success{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
-.status-bar.error{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2}
-.footer-notes{font-size:12px;color:#8B92A5;margin-top:20px;line-height:1.8}
-@media (max-width:600px){body{padding:10px}.card{padding:16px}.total-price{font-size:22px}.btn{width:100%;justify-content:center}}
+.status{padding:10px 14px;border-radius:8px;font-size:13px;margin:14px 0;display:none}
+.status.show{display:block}.loading{background:#EEF2FF;color:#3251c4}.ok{background:#E8F5E9;color:#2E7D32}.err{background:#FFEBEE;color:#C62828}
+.hint{font-size:12px;color:#8B92A5;margin-top:6px}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
+.cal-day{background:#F8F9FC;border-radius:8px;padding:10px 6px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .15s;min-height:70px;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.cal-day:hover{background:#EEF2FF;border-color:#3B5BDB}
+.cal-day .day{font-weight:700;font-size:15px;color:#1A1D2E}
+.cal-day .price{font-size:13px;font-weight:600;color:#E8395A;margin-top:3px}
+.cal-day.unavailable{opacity:.3;cursor:default;background:#F5F5F5}
+.cal-day.unavailable:hover{border-color:transparent;background:#F5F5F5}
+.cal-day.selected{border-color:#3B5BDB;background:#EEF2FF}
+.cal-day.soltour{border-left:3px solid #E8395A}
+.cal-day.soltropico{border-left:3px solid #1098AD}
+.cal-day .op{font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600;margin-top:2px}
+.cal-day .op-soltour{background:#FFF0F3;color:#E8395A}
+.cal-day .op-soltropico{background:#E3FAFC;color:#1098AD}
+.cal-header{font-weight:600;color:#8B92A5;font-size:11px;text-align:center;padding:6px 0;text-transform:uppercase}
+.cal-month-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cal-month-nav .month{font-weight:700;font-size:16px}
+.detail-table td{padding:6px 10px;font-size:13px}
+.detail-table .total-row td{border-top:2px solid #1A1D2E;font-weight:700}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid #E5E7EB;border-top-color:#3B5BDB;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.brand-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-right:6px}
+.brand-soltour{background:#FFF0F3;color:#E8395A}
+.brand-soltropico{background:#E3FAFC;color:#1098AD}
 </style>
 </head>
 <body>
-<div class="wrap" id="app">
-  <!-- Cabeçalho -->
+<div class="wrap">
+  <h1>📅 Net vs PVP — Calendário de Preços</h1>
+  <div class="sub">Escolhe o destino, origem e mês. O calendário mostra o melhor preço para cada dia.</div>
+
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <div class="grid">
       <div>
-        <h1>📄 Contrato de Viagem</h1>
-        <div class="sub">APM Viagens · Proposta vinculativa</div>
+        <label>Destino</label>
+        <input id="dest" list="dest-list" placeholder="Ex: Samaná, Sal, Madeira..." value="Saídia">
+        <datalist id="dest-list"></datalist>
       </div>
-      <div style="text-align:right">
-        <div style="font-size:12px;color:#8B92A5">Nº Proposta</div>
-        <div style="font-weight:700;font-size:16px" id="proposta-id">#---</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Detalhes da Viagem -->
-  <div class="card">
-    <h2>✈️ Detalhes da Viagem</h2>
-    <div id="detalhes-viagem">
-      <div class="info-row"><span class="label">Destino</span><span class="value" id="destino">---</span></div>
-      <div class="info-row"><span class="label">Hotel</span><span class="value" id="hotel">---</span></div>
-      <div class="info-row"><span class="label">Check-in</span><span class="value" id="checkin">---</span></div>
-      <div class="info-row"><span class="label">Check-out</span><span class="value" id="checkout">---</span></div>
-      <div class="info-row"><span class="label">Noites</span><span class="value" id="noites">---</span></div>
-      <div class="info-row"><span class="label">Regime</span><span class="value" id="regime">---</span></div>
-      <div class="info-row"><span class="label">Operador</span><span class="value" id="operador">---</span></div>
-    </div>
-  </div>
-
-  <!-- Preços -->
-  <div class="card">
-    <h2>💰 Preços</h2>
-    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px">
       <div>
-        <div style="font-size:14px;color:#8B92A5">Preço Bruto (PVP)</div>
-        <div class="total-price" id="pvp">---</div>
+        <label>Origem</label>
+        <select id="origin">
+          <option value="LIS">Lisboa (LIS)</option>
+          <option value="OPO">Porto (OPO)</option>
+          <option value="FAO">Faro (FAO)</option>
+        </select>
       </div>
-      <div style="text-align:right">
-        <div style="font-size:14px;color:#8B92A5">Valor Líquido (NET)</div>
-        <div class="net-price" id="net">---</div>
+      <div>
+        <label>Mês</label>
+        <input type="month" id="month">
+      </div>
+      <div>
+        <label>Noites</label>
+        <input type="number" id="nights" value="7" min="1" max="30">
+      </div>
+      <div>
+        <label>Adultos</label>
+        <input type="number" id="adults" value="2" min="1" max="9">
       </div>
     </div>
-    <div style="margin-top:8px;font-size:13px;color:#8B92A5">
-      Margem: <span id="margem">---</span>
-    </div>
+    <button class="btn" id="go" onclick="run()">🔍 Mostrar Calendário</button>
+    <div class="hint">Escreve o nome do destino, escolhe a origem e o mês. Clica num dia para ver os detalhes.</div>
   </div>
 
-  <!-- ACEITAÇÃO - TODOS OS CAMPOS OBRIGATÓRIOS
+  <div id="status" class="status"></div>
+  <div id="calendar-container"></div>
+  <div id="detail-container"></div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const SUPABASE_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const PROXY=`${SUPABASE_URL}/functions/v1/Soltour-proxy-index-`
+const SOLTROPICO_PROXY=`${SUPABASE_URL}/functions/v1/soltropico-proxy`
+const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null
+const LOGIN={brand:'SOLTOUR',market:'XMLPT',languageCode:'PT',username:'APMVIA999',password:'XMLAPMVIA'}
+
+let token=null
+const $=id=>document.getElementById(id)
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
+const st=(t,m)=>{const e=$('status');e.className=`status show ${t}`;e.innerHTML=m}
+const eur=v=>v==null||isNaN(v)?'—':'€'+Number(v).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})
+const pct=v=>v==null||isNaN(v)?'—':Number(v).toFixed(2)+'%'
+
+// ============================================================
+// MAPEAMENTO DE DESTINOS
+// ============================================================
+const DEST_MAP = [
+  {label:'Ibiza', soltour:'IBZ', soltropico:228},
+  {label:'Menorca', soltour:'MAH', soltropico:227},
+  {label:'Maiorca', soltour:'PMI', soltropico:226},
+  {label:'Formentera', soltour:'FON', soltropico:231},
+  {label:'Tenerife', soltour:'TCI', soltropico:229},
+  {label:'Gran Canária', soltour:'LPA', soltropico:230},
+  {label:'Gran Canaria', soltour:'LPA', soltropico:230, alias:true},
+  {label:'Fuerteventura', soltour:'FUE', soltropico:242},
+  {label:'Faial', soltour:'HOR', soltropico:144},
+  {label:'São Miguel', soltour:'PDL', soltropico:11},
+  {label:'Sao Miguel', soltour:'PDL', soltropico:11, alias:true},
+  {label:'Terceira', soltour:'TER', soltropico:12},
+  {label:'Madeira', soltour:'FNC', soltropico:5},
+  {label:'Porto Santo', soltour:'PXO', soltropico:8},
+  {label:'Monastir', soltour:'MIR', soltropico:262},
+  {label:'Djerba', soltour:'DJE', soltropico:261},
+  {label:'Saídia', soltour:'OUD', soltropico:44},
+  {label:'Saidia', soltour:'OUD', soltropico:44, alias:true},
+  {label:'São Vicente', soltour:'VXE', soltropico:28},
+  {label:'Santiago', soltour:'RAI', soltropico:24},
+  {label:'Boa Vista', soltour:'BVC', soltropico:41},
+  {label:'Boavista', soltour:'BVC', soltropico:41, alias:true},
+  {label:'Sal', soltour:'SID', soltropico:7},
+  {label:'Salvador', soltour:'SSA', soltropico:51},
+  {label:'Fortaleza', soltour:'FOR', soltropico:62},
+  {label:'Natal', soltour:'NAT', soltropico:60},
+  {label:'Recife', soltour:'REC', soltropico:49},
+  {label:'Rio de Janeiro', soltour:'RIO', soltropico:91},
+  {label:'Marrakech', soltour:'RAK', soltropico:45},
+  {label:'Punta Cana', soltour:'PUJ', soltropico:null},
+  {label:'Puntacana', soltour:'PUJ', soltropico:null, alias:true},
+  {label:'Cancún', soltour:'CUN', soltropico:null},
+  {label:'Cancun', soltour:'CUN', soltropico:null, alias:true},
+  {label:'Riviera Maya', soltour:'RVM', soltropico:null},
+  {label:'La Romana', soltour:'LRM', soltropico:null},
+  {label:'Samaná', soltour:'AZS', soltropico:null},
+  {label:'Samana', soltour:'AZS', soltropico:null, alias:true},
+  {label:'Puerto Plata', soltour:'POP', soltropico:null},
+  {label:'La Palma', soltour:'SPC', soltropico:241},
+  {label:'Lanzarote', soltour:'ACE', soltropico:240},
+  {label:'Agadir', soltour:'AGA', soltropico:46},
+  {label:'Creta', soltour:'HER', soltropico:null},
+  {label:'Corfu', soltour:'CFU', soltropico:null},
+  {label:'Malta', soltour:'MLA', soltropico:null},
+  {label:'Dubai', soltour:null, soltropico:10},
+  {label:'Maldivas', soltour:null, soltropico:67},
+  {label:'Maurícias', soltour:null, soltropico:22},
+  {label:'Mauricias', soltour:null, soltropico:22, alias:true},
+  {label:'Zanzibar', soltour:null, soltropico:257},
+  {label:'Hammamet', soltour:null, soltropico:222},
+  {label:'Istambul', soltour:null, soltropico:249},
+  {label:'Alicante', soltour:null, soltropico:224},
+  {label:'Málaga', soltour:null, soltropico:225},
+  {label:'Malaga', soltour:null, soltropico:225, alias:true},
+]
+
+// ============================================================
+// HELPERS
+// ============================================================
+function normalize(str) {
+  if (!str) return ''
+  return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
+}
+
+function findDest(input) {
+  if (!input || input.trim() === '') return null
+  const normalized = normalize(input)
+  for (const d of DEST_MAP) {
+    if (normalize(d.label) === normalized) return d
+  }
+  for (const d of DEST_MAP) {
+    if (normalize(d.label).startsWith(normalized) || normalized.startsWith(normalize(d.label))) return d
+  }
+  for (const d of DEST_MAP) {
+    if (normalize(d.label).includes(normalized) || normalized.includes(normalize(d.label))) return d
+  }
+  return null
+}
+
+// ============================================================
+// API CALLS
+// ============================================================
+async function call(path, body) {
+  const r = await fetch(PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON}` },
+    body: JSON.stringify({ path, token, body })
+  })
+  return r.json()
+}
+
+async function ensureLogin() {
+  if (token) return token
+  const l = await call('login/login', LOGIN)
+  if (!l.sessionToken) throw new Error('Login falhou')
+  token = l.sessionToken
+  return token
+}
+
+// ============================================================
+// SOLTRÓPICO SOAP
+// ============================================================
+async function pkSoap(action, body) {
+  const wrap = `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
+  const r = await fetch(SOLTROPICO_PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON}` },
+    body: JSON.stringify({ soapAction: action, soapBody: wrap })
+  })
+  const data = await r.json()
+  if (!r.ok) throw new Error(`Falha proxy (${r.status})`)
+  if (data.error || data.proxyError) throw new Error(data.error || data.proxyError)
+  const doc = new DOMParser().parseFromString((data.xml || '').replace(/^\uFEFF/, '').trim(), 'text/xml')
+  if (doc.querySelector('parsererror')) throw new Error('XML inválido')
+  const f = doc.querySelector('faultstring')
+  if (f) throw new Error(f.textContent)
+  return doc
+}
+function pkCredXML() { return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">808</System><Client xsi:type="xsd:int">289363</Client><Username xsi:type="xsd:string">admin@apmviagens.pt</Username><Password xsi:type="xsd:string">JA622875</Password></Credentials>` }
+function pkTxt(el, tag) { if (!el) return ''; for (let i = 0; i < el.children.length; i++) { const c = el.children[i], l = c.localName || c.tagName.split(':').pop(); if (l === tag) return c.textContent.trim() } const n = el.getElementsByTagName('*'); for (let i = 0; i < n.length; i++) { const l = n[i].localName || n[i].tagName.split(':').pop(); if (l === tag) return n[i].textContent.trim() } return '' }
+function pkAll(el, tag) { if (!el) return []; const o = [], n = el.getElementsByTagName('*'); for (let i = 0; i < n.length; i++) { const l = n[i].localName || n[i].tagName.split(':').pop(); if (l === tag) o.push(n[i]) } return o }
+function pkItems(c) { return c ? pkAll(c, 'item') : [] }
+function pkDirectChildren(el, tag) { if (!el) return []; const o = []; for (let i = 0; i < el.children.length; i++) { const c = el.children[i], l = c.localName || c.tagName.split(':').pop(); if (l === tag) o.push(c) } return o }
+
+// ============================================================
+// BUSCAR CALENDÁRIO SOLTOUR - RÁPIDO (1 chamada availability + 1 calendário)
+// ============================================================
+async function getSoltourCalendar(destCode, origin, year, month, nights, adults) {
+  await ensureLogin()
+
+  const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
+
+  // Datas-semente espalhadas pelo MÊS INTEIRO (2 em 2 dias), testadas em LOTES
+  // PARALELOS de 5 — muito mais rápido que uma a uma. Para assim que um lote
+  // encontra disponibilidade, usando a data mais cedo desse lote.
+  const lastDay = new Date(year, month, 0).getDate()
+  const seedDays = []
+  for (let d = 1; d <= lastDay; d += 2) seedDays.push(d)
+
+  const buildBody = (sd) => {
+    const sDate = `${year}-${String(month).padStart(2, '0')}-${String(sd).padStart(2, '0')}`
+    const ed = new Date(sDate); ed.setDate(ed.getDate() + nights); const eStr = ed.toISOString().slice(0, 10)
+    return { sDate, eStr, body: {
+      productType: 'PACKAGE', languageCode: 'PT',
+      criteria: { order: { direction: 'ASC', type: 'PRICE' }, pagination: { firstItem: 0, itemCount: 10 } },
+      params: {
+        startDate: sDate, endDate: eStr, numNights: nights, residentType: 'NONE',
+        accomodation: { rooms: [{ passengers: pax }] },
+        hotelParams: { destinationCode: destCode },
+        flightParams: { directFlightsOnly: false, itineraries: [
+          { origins: [origin], destinations: [destCode], flightDate: sDate },
+          { origins: [destCode], destinations: [origin], flightDate: eStr }
+        ] }
+      }
+    }}
+  }
+
+  let av = null, startDate = null, endStr = null
+  const BATCH = 5
+  for (let i = 0; i < seedDays.length && !av; i += BATCH) {
+    const lote = seedDays.slice(i, i + BATCH)
+    const resultados = await Promise.all(lote.map(async (sd) => {
+      const { sDate, eStr, body } = buildBody(sd)
+      try {
+        const r = await call('booking/availability', body)
+        return (r && r.availToken) ? { sd, sDate, eStr, r } : null
+      } catch (e) { return null }
+    }))
+    // usar a data mais cedo do lote que teve disponibilidade
+    const ok = resultados.filter(Boolean).sort((a, b) => a.sd - b.sd)[0]
+    if (ok) { av = ok.r; startDate = ok.sDate; endStr = ok.eStr }
+  }
+  if (!av || !av.availToken) return []  // nenhuma data-semente do mês teve disponibilidade
+
+  // 2) Calendário do mês inteiro
+  const cal = await call('booking/getPriceCalendar', {
+    availToken: av.availToken,
+    destinationCode: destCode,
+    originCode: origin,
+    productType: 'PACKAGE',
+    languageCode: 'PT',
+    month: { year, month },
+    numNights: nights,
+    onlyDirectFlights: false
+  })
+
+  // Mapa de hotéis
+  const hotelMap = {}
+  if (av.hotels) {
+    for (const h of av.hotels) {
+      const c = h.code || h.numericCode || h.id
+      if (c != null) hotelMap[String(c)] = {
+        name: h.name || h.fullName || '',
+        stars: h.categoryCode,
+        image: h.mainImage || (h.images && h.images[0]) || '',
+        images: (h.images || []).slice(0, 4)
+      }
+    }
+  }
+
+  const days = (cal.days || [])
+  return days.map(d => {
+    const code = (d.additionalInformation && d.additionalInformation.hotel) || ''
+    const info = hotelMap[String(code)] || {}
+    return {
+      date: d.day,
+      price: parseFloat(d.bestPrice || d.price) || 0,
+      currency: d.currencyCode || 'EUR',
+      hotelName: info.name || code || 'Hotel',
+      hotelCode: code,
+      stars: info.stars || 0,
+      board: (d.additionalInformation && d.additionalInformation.mealPlan) || '',
+      direct: !!d.directFlight,
+      brand: 'SOLTOUR',
+      image: info.image || '',
+      images: info.images || [],
+      available: !d.unavailable && d.price != null && d.price > 0,
+      nights: d.numNights || nights
+    }
+  })
+}
+
+// ============================================================
+// BUSCAR CALENDÁRIO SOLTRÓPICO
+// ============================================================
+async function getSoltropicoCalendar(destCode, origin, year, month, nights, adults) {
+  const childAges = []
+  const results = []
+
+  try {
+    const pdoc = await pkSoap('DynGetProductParameters',
+      `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCredXML()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+
+    const itemsIn = (c) => { const w = pkAll(pdoc, c)[0]; return w ? pkItems(w) : [] }
+    const dates = itemsIn('DepartureDates').map(it => pkTxt(it, 'Date')).filter(Boolean)
+    const locals = itemsIn('DepartureLocals').map(it => ({ code: pkTxt(it, 'Code'), name: pkTxt(it, 'Name') })).filter(l => l.code)
+    const roomTypes = itemsIn('RoomTypes').map(r => ({ code: pkTxt(r, 'Code'), name: pkTxt(r, 'Name') })).filter(r => r.code)
+    const baseLocals = itemsIn('BaseLocals').map(b => ({ code: pkTxt(b, 'Code'), min: pkTxt(b, 'MinNights') || String(nights) })).filter(b => b.code)
+
+    const startDate = `${year}-${String(month).padStart(2, '0')}-01`
+    const depDate = dates.find(d => String(d).startsWith(startDate.slice(0, 7))) || dates[0] || startDate
+    const depLocal = locals.find(l => l.code === origin)?.code || locals[0]?.code || origin
+    const roomCode = roomTypes[0]?.code || '437'
+    const baseXML = (baseLocals.length ? baseLocals : [{ code: '0' }]).map(b => `<Local><Code>${b.code}</Code><Nights>${nights}</Nights></Local>`).join('')
+    const roomsXML = `<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges>${childAges.join(',')}</ChildAges></RoomTypeOption>`
+
+    const doc = await pkSoap('DynSearchProductAvailableServices',
+      `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${pkCredXML()}<ProductCode xsi:type="xsd:int">${destCode}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+
+    const itinC = pkAll(doc, 'Itinerary')[0]
+    const itins = itinC ? pkItems(itinC) : []
+
+    const harvest = (h) => {
+      const price = parseFloat(pkTxt(h, 'PriceFrom')) || 0
+      const name = pkTxt(h, 'Name') || pkTxt(h, 'Code')
+      if (!name || price === 0) return
+      const img = pkTxt(h, 'Image') || pkTxt(h, 'ImageUrl') || pkTxt(h, 'Photo') || ''
+      results.push({
+        date: depDate,
+        price: price,
+        currency: 'EUR',
+        hotelName: name,
+        hotelCode: destCode,
+        stars: parseInt(pkTxt(h, 'Rating')) || 0,
+        board: '',
+        direct: true,
+        brand: 'SOLTRÓPICO',
+        image: img,
+        images: img ? [img] : [],
+        available: true,
+        nights: nights
+      })
+    }
+
+    if (itins.length) {
+      itins.forEach(itin => {
+        const hc = pkDirectChildren(itin, 'HotelOption')[0]
+        if (hc) pkItems(hc).forEach(harvest)
+      })
+    }
+
+    if (!results.length) {
+      const hc = pkAll(doc, 'HotelOption')[0]
+      if (hc) pkItems(hc).forEach(harvest)
+    }
+
+    return results
+
+  } catch (e) {
+    console.warn('Soltrópico:', e.message)
+    return []
+  }
+}
+
+// ============================================================
+// FUNÇÃO PRINCIPAL
+// ============================================================
+async function run() {
+  const btn = $('go')
+  if (btn.disabled) return
+
+  btn.disabled = true
+  const calContainer = $('calendar-container')
+  const detailContainer = $('detail-container')
+  calContainer.innerHTML = ''
+  detailContainer.innerHTML = ''
+
+  try {
+    const destInput = $('dest').value.trim()
+    const origin = $('origin').value
+    const monthVal = $('month').value
+    const nights = +$('nights').value
+    const adults = +$('adults').value || 1
+
+    if (!destInput || !monthVal || !nights) {
+      st('err', '⚠️ Preenche todos os campos obrigatórios.')
+      return
+    }
+
+    const [year, month] = monthVal.split('-').map(Number)
+
+    const destInfo = findDest(destInput)
+    if (!destInfo) {
+      st('err', `❌ Destino "${esc(destInput)}" não reconhecido.`)
+      return
+    }
+
+    st('loading', `🔍 A carregar calendário para ${destInfo.label}...`, true)
+
+    const promises = []
+    const allDays = []
+
+    if (destInfo.soltour) {
+      promises.push(
+        getSoltourCalendar(destInfo.soltour, origin, year, month, nights, adults)
+          .then(days => { 
+            allDays.push(...days) 
+          })
+          .catch(e => console.warn('Soltour:', e.message))
+      )
+    }
+
+    if (destInfo.soltropico) {
+      promises.push(
+        getSoltropicoCalendar(destInfo.soltropico, origin, year, month, nights, adults)
+          .then(days => { 
+            allDays.push(...days) 
+          })
+          .catch(e => console.warn('Soltrópico:', e.message))
+      )
+    }
+
+    await Promise.all(promises)
+
+    if (!allDays.length) {
+      st('err', `❌ Sem disponibilidade para ${destInfo.label} em ${month}/${year}.`)
+      return
+    }
+
+    // Agrupar por dia (melhor preço)
+    const bestByDay = {}
+    for (const day of allDays) {
+      if (!day.available) continue
+      const date = day.date
+      if (!bestByDay[date] || day.price < bestByDay[date].price) {
+        bestByDay[date] = day
+      }
+    }
+
+    renderCalendar(year, month, bestByDay, destInfo)
+
+    const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
+    st('ok', `✅ ${Object.keys(bestByDay).length} dias com disponibilidade para ${destInfo.label} desde ${originLabel}`)
+
+  } catch (e) {
+    st('err', '❌ ' + e.message)
+    console.error(e)
+  } finally {
+    btn.disabled = false
+  }
+}
+
+// ============================================================
+// RENDERIZAR CALENDÁRIO
+// ============================================================
+function renderCalendar(year, month, bestByDay, destInfo) {
+  const container = $('calendar-container')
+  const daysInMonth = new Date(year, month, 0).getDate()
+  const firstDay = new Date(year, month - 1, 1).getDay()
+
+  const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+  const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+
+  let html = `<div class="card">
+    <div class="cal-month-nav">
+      <span class="month">${monthNames[month-1]} ${year}</span>
+      <span style="font-size:13px;color:#8B92A5">${destInfo.label} · ${Object.keys(bestByDay).length} dias disponíveis</span>
+    </div>
+    <div class="calendar">`
+
+  for (const name of dayNames) {
+    html += `<div class="cal-header">${name}</div>`
+  }
+
+  for (let i = 0; i < firstDay; i++) {
+    html += `<div class="cal-day unavailable"></div>`
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    const dayData = bestByDay[dateStr]
+
+    if (dayData) {
+      const brandClass = dayData.brand === 'SOLTOUR' ? 'soltour' : 'soltropico'
+      const opClass = dayData.brand === 'SOLTOUR' ? 'op-soltour' : 'op-soltropico'
+      const brandLabel = dayData.brand === 'SOLTOUR' ? 'Soltour' : 'Soltrópico'
+
+      html += `
+        <div class="cal-day ${brandClass}" onclick="selectDay('${dateStr}')" data-date="${dateStr}">
+          <div class="day">${day}</div>
+          <div class="price">${eur(dayData.price)}</div>
+          <span class="op ${opClass}">${brandLabel}</span>
+          ${dayData.hotelName ? `<div style="font-size:9px;color:#8B92A5;margin-top:2px;overflow:hidden;text-overflow:ellipsis;max-width:100%;white-space:nowrap">${esc(dayData.hotelName)}</div>` : ''}
+        </div>
+      `
+    } else {
+      html += `<div class="cal-day unavailable"><div class="day" style="color:#ccc">${day}</div></div>`
+    }
+  }
+
+  html += `</div></div>`
+  container.innerHTML = html
+
+  window._calendarData = { bestByDay, destInfo }
+}
+
+// ============================================================
+// SELECIONAR DIA - COM NET REAL
+// ============================================================
+async function selectDay(dateStr) {
+  const detailContainer = $('detail-container')
+  const data = window._calendarData
+  if (!data) return
+
+  const dayData = data.bestByDay[dateStr]
+  if (!dayData) return
+
+  document.querySelectorAll('.cal-day').forEach(el => {
+    el.classList.toggle('selected', el.dataset.date === dateStr)
+  })
+
+  detailContainer.innerHTML = `<div class="card"><div class="spinner"></div> A carregar detalhes...</div>`
+
+  try {
+    const origin = $('origin').value
+    const nights = +$('nights').value
+    const adults = +$('adults').value || 1
+    const destInfo = data.destInfo
+
+    let detailData = null
+
+    if (dayData.brand === 'SOLTOUR' && destInfo.soltour) {
+      const end = new Date(dateStr)
+      end.setDate(end.getDate() + nights)
+      const endStr = end.toISOString().slice(0, 10)
+
+      const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
+
+      const availBody = {
+        productType: 'PACKAGE',
+        languageCode: 'PT',
+        criteria: { order: { direction: 'ASC', type: 'PRICE' }, pagination: { firstItem: 0, itemCount: 5 } },
+        params: {
+          startDate: dateStr,
+          endDate: endStr,
+          numNights: nights,
+          residentType: 'NONE',
+          accomodation: { rooms: [{ passengers: pax }] },
+          hotelParams: { destinationCode: destInfo.soltour },
+          flightParams: {
+            directFlightsOnly: false,
+            itineraries: [
+              { origins: [origin], destinations: [destInfo.soltour], flightDate: dateStr },
+              { origins: [destInfo.soltour], destinations: [origin], flightDate: endStr }
+            ]
+          }
+        }
+      }
+
+      const av = await call('booking/availability', availBody)
+      const budgets = av.budgets || []
+
+      if (budgets.length && budgets[0].budgetId && av.availToken) {
+        const q = await call('booking/quote', {
+          availToken: av.availToken,
+          budgetIds: [budgets[0].budgetId],
+          productType: 'PACKAGE',
+          languageCode: 'PT'
+        })
+
+        const qpb = (q.budget && q.budget.priceBreakdown) || {}
+        const details = Array.isArray(qpb.priceBreakdownDetails) ? qpb.priceBreakdownDetails : []
+
+        let totalPvp = 0, totalNet = 0, totalCom = 0
+        const rows = []
+
+        if (details.length) {
+          for (const det of details) {
+            const pi = det.priceInfo || det
+            const pvp = parseFloat(pi.pvp || pi.amount || 0)
+            // CONFIRMADO com o site: o net por linha é netAmount (base+tasas+desconto somados = Importe neto TOTAL)
+            const net = parseFloat(pi.netAmount != null ? pi.netAmount : (pi.net || 0))
+            totalPvp += pvp
+            totalNet += net
+            rows.push({
+              name: det.description || det.priceBreakdownType || 'Componente',
+              pvp, net, com: pvp - net
+            })
+          }
+          totalCom = totalPvp - totalNet
+        } else {
+          totalPvp = parseFloat(qpb.pvp || qpb.amount || dayData.price)
+          totalNet = parseFloat(qpb.netAmount || qpb.net || 0)
+          totalCom = totalPvp - totalNet
+          rows.push({ name: 'Pacote', pvp: totalPvp, net: totalNet, com: totalCom })
+        }
+
+        detailData = {
+          brand: 'SOLTOUR',
+          hotelName: dayData.hotelName,
+          hotelCode: dayData.hotelCode,
+          stars: dayData.stars || 0,
+          board: dayData.board || '',
+          checkIn: dateStr,
+          checkOut: endStr,
+          nights,
+          image: dayData.image || '',
+          images: dayData.images || (dayData.image ? [dayData.image] : []),
+          totalPvp,
+          totalNet,
+          totalCom,
+          rows
+        }
+      }
+    } else if (dayData.brand === 'SOLTRÓPICO' && destInfo.soltropico) {
+      const bruto = dayData.price
+      const comissaoPct = 15
+      const comissaoEuro = bruto * 0.15
+      const net = bruto - comissaoEuro
+
+      detailData = {
+        brand: 'SOLTRÓPICO',
+        hotelName: dayData.hotelName,
+        hotelCode: destInfo.soltropico,
+        stars: dayData.stars || 0,
+        board: dayData.board || '',
+        checkIn: dateStr,
+        checkOut: '—',
+        nights,
+        image: dayData.image || '',
+        images: dayData.images || (dayData.image ? [dayData.image] : []),
+        totalPvp: bruto,
+        totalNet: net,
+        totalCom: comissaoEuro,
+        rows: [{ name: 'Pacote Soltrópico', pvp: bruto, net, com: comissaoEuro }]
+      }
+    }
+
+    if (detailData) {
+      detailContainer.innerHTML = renderDetail(detailData, destInfo.label, origin)
+    } else {
+      detailContainer.innerHTML = `<div class="card"><span style="color:#C62828">❌ Não foi possível obter os detalhes da oferta.</span></div>`
+    }
+
+  } catch (e) {
+    detailContainer.innerHTML = `<div class="card"><span style="color:#C62828">❌ ${esc(e.message)}</span></div>`
+    console.error(e)
+  }
+}
+
+// ============================================================
+// RENDERIZAR DETALHE
+// ============================================================
+// ============================================================
+// GERAR ORÇAMENTO / CONTRATO — guarda na Supabase e abre o documento
+// ============================================================
+async function gerarDocumento(tipo, dataJson, destLabel, origin) {
+  let data; try { data = JSON.parse(dataJson) } catch(e) { alert('Erro nos dados da oferta.'); return }
+  const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
+  const fmtPt = s => { if(!s || s==='—') return ''; try { return new Date(s+'T12:00:00').toLocaleDateString('pt-PT') } catch(e){ return s } }
+  // identidade do consultor (vinda do portal via ?cid/?cnome)
+  const up = new URLSearchParams(location.search)
+  const cid = up.get('cid') || null
+  const cnome = up.get('cnome') || ''
+
+  // montar o objeto 'dados' (consultor_id vai como coluna própria, não dentro de dados)
+  const subtitulo = [fmtPt(data.checkIn), data.nights ? data.nights + ' noites' : '', destLabel].filter(Boolean).join(' · ')
+  const dados = {
+    tipo: tipo,
+    dest: `${data.hotelName} · ${destLabel}`,
+    hotel: data.hotelName || '',
+    sub: subtitulo,
+    part: fmtPt(data.checkIn),
+    noites: data.nights || '',
+    reg: data.board || '',
+    pax: '',
+    fornecedor: data.brand || '',
+    localizador: '',
+    drest: originLabel,
+    hotel_fotos: (data.images && data.images.length) ? data.images : (data.image ? [data.image] : []),
+    foto: data.image || (data.images && data.images[0]) || '',
+    videoUrl: '',
+    prices: [{ lbl: 'Preço por pessoa (PVP)', val: data.totalPvp }],
+    sval: data.totalPvp,
+    _net: data.totalNet,
+    _margem: data.totalCom,
+    cnome: cnome,
+    _origem: 'motor-pacotes'
+  }
+
+  const btn = (typeof event !== 'undefined' && event) ? event.target : null
+  try {
+    if(btn){ btn.disabled = true; btn._txt = btn.textContent; btn.textContent = 'A gerar…' }
+    if(!sb) throw new Error('Supabase não carregado')
+    // mesmo padrão que o orçamento/portal já usam com sucesso
+    const { data: res, error } = await sb.from('propostas_viagem')
+      .insert({ consultor_id: cid, dados })
+      .select('id').single()
+    if(error) throw new Error(error.message)
+    const id = res && res.id
+    if(!id) throw new Error('Sem id devolvido')
+    const base = 'https://escritorioapmviagens-creator.github.io/apm-viagens/'
+    const url = tipo === 'orcamento'
+      ? `${base}orcamento.html?dados=${id}`
+      : `${base}proposta-v2.html?proposta=${id}`
+    window.open(url, '_blank')
+  } catch(e) {
+    alert('Não foi possível gerar o documento: ' + e.message)
+    console.error(e)
+  } finally {
+    if(btn){ btn.disabled = false; if(btn._txt) btn.textContent = btn._txt }
+  }
+}
+
+function renderDetail(data, destLabel, origin) {
+  const brandColor = data.brand === 'SOLTOUR' ? '#E8395A' : '#1098AD'
+  const brandClass = data.brand === 'SOLTOUR' ? 'brand-soltour' : 'brand-soltropico'
+  const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
+  const margem = data.totalPvp - data.totalNet
+
+  let rowsHtml = ''
+  for (const row of data.rows) {
+    const isNegative = row.pvp < 0
+    const cls = isNegative ? 'style="color:#D32F2F"' : ''
+    rowsHtml += `
+      <tr>
+        <td style="padding:6px 10px;font-weight:${isNegative ? '400' : '500'}">${esc(row.name)}</td>
+        <td style="padding:6px 10px;text-align:right;font-family:monospace" ${cls}>${eur(row.pvp)}</td>
+        <td style="padding:6px 10px;text-align:right;font-family:monospace"></td>
+        <td style="padding:6px 10px;text-align:right;font-family:monospace"></td>
+        <td style="padding:6px 10px;text-align:right;font-family:monospace;color:#F57C00">${eur(row.com)}</td>
+        <td style="padding:6px 10px;text-align:right;font-family:monospace">€0,00</td>
+        <td style="padding:6px 10px;text-align:right;font-family:monospace;color:#2E7D32;font-weight:600">${eur(row.net)}</td>
+      </tr>
+    `
+  }
+
+  return `
+    <div class="card" style="border:2px solid ${brandColor}">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+        <div>
+          <span class="brand-badge ${brandClass}">${data.brand}</span>
+          <b>${esc(data.hotelName)}</b>
+          ${data.stars ? '★'.repeat(Math.min(data.stars, 5)) : ''}
+        </div>
+        <span style="font-size:12px;color:#8B92A5">Net = Bruto - Comissão</span>
+      </div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin:8px 0;font-size:13px;color:#8B92A5">
+        <span>📍 ${esc(destLabel)} desde ${originLabel}</span>
+        <span>📅 ${data.checkIn} → ${data.checkOut}</span>
+        <span>🌙 ${data.nights} noites</span>
+        <span>🍽 ${data.board}</span>
+        <span>📋 ${data.hotelCode}</span>
+      </div>
+
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin:10px 0;padding:12px 16px;background:#F0F4FF;border-radius:8px">
+        <div>📦 Bruto: <b>${eur(data.totalPvp)}</b></div>
+        <div style="color:#2E7D32">🟢 NET: <b style="font-size:18px">${eur(data.totalNet)}</b></div>
+        <div style="color:#3B5BDB">💰 Margem: <b>${eur(margem)}</b></div>
+      </div>
+
+      <table class="detail-table" style="width:100%;border-collapse:collapse;margin-top:8px">
+        <thead>
+          <tr style="background:#F5F6FA;font-size:10px;font-weight:600;color:#8B92A5;text-transform:uppercase">
+            <td style="padding:6px 10px">Conceito</td>
+            <td style="padding:6px 10px;text-align:right">Bruto</td>
+            <td style="padding:6px 10px;text-align:right">Comissão</td>
+            <td style="padding:6px 10px;text-align:right">Over</td>
+            <td style="padding:6px 10px;text-align:right">Montante</td>
+            <td style="padding:6px 10px;text-align:right">Imposto</td>
+            <td style="padding:6px 10px;text-align:right;color:#2E7D32">Importe neto</td>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+          <tr class="total-row">
+            <td style="padding:6px 10px;font-weight:700">TOTAL</td>
+            <td style="padding:6px 10px;text-align:right;font-family:monospace;font-weight:700">${eur(data.totalPvp)}</td>
+            <td style="padding:6px 10px;text-align:right;font-family:monospace"></td>
+            <td style="padding:6px 10px;text-align:right;font-family:monospace"></td>
+            <td style="padding:6px 10px;text-align:right;font-family:monospace;font-weight:700;color:#F57C00">${eur(data.totalCom)}</td>
+            <td style="padding:6px 10px;text-align:right;font-family:monospace;font-weight:700">€0,00</td>
+            <td style="padding:6px 10px;text-align:right;font-family:monospace;font-weight:700;color:#2E7D32;font-size:16px">${eur(data.totalNet)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="hint" style="margin-top:10px;background:#FFF8E1;padding:8px 12px;border-radius:6px;border-left:3px solid #F57C00">
+        💡 <b>Net total: ${eur(data.totalNet)}</b> — valor que o agente paga ao operador.
+        ${data.brand === 'SOLTRÓPICO' ? '<br>⚠️ Soltrópico: net estimado com 15% de comissão.' : ''}
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+        <button onclick='gerarDocumento("orcamento", ${JSON.stringify(JSON.stringify(data))}, ${JSON.stringify(destLabel)}, ${JSON.stringify(origin)})'
+          style="flex:1;min-width:180px;background:#3B5BDB;color:#fff;border:none;border-radius:8px;padding:12px;font-weight:600;font-size:14px;cursor:pointer">
+          📄 Gerar orçamento
+        </button>
+        <button onclick='gerarDocumento("contrato", ${JSON.stringify(JSON.stringify(data))}, ${JSON.stringify(destLabel)}, ${JSON.stringify(origin)})'
+          style="flex:1;min-width:180px;background:#0F6E56;color:#fff;border:none;border-radius:8px;padding:12px;font-weight:600;font-size:14px;cursor:pointer">
+          ✍️ Gerar contrato
+        </button>
+      </div>
+    </div>
+  `
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date()
+  const start = new Date(today)
+  start.setDate(start.getDate() + 3)
+  $('month').value = start.toISOString().slice(0, 7)
+
+  // Preencher a lista de destinos a partir da tabela, SEM aliases (grafias alternativas),
+  // ordenada alfabeticamente — assim cada destino aparece só uma vez.
+  const dl = $('dest-list')
+  if (dl) {
+    const nomes = DEST_MAP.filter(d => !d.alias).map(d => d.label)
+      .sort((a, b) => a.localeCompare(b, 'pt'))
+    dl.innerHTML = nomes.map(n => `<option value="${n}">`).join('')
+  }
+
+  document.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') run()
+    })
+  })
+
+  ensureLogin().catch(() => {})
+})
+</script>
+</body>
+</html>
