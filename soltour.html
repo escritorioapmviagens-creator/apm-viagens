@@ -285,7 +285,12 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults)
   if (av.hotels) {
     for (const h of av.hotels) {
       const c = h.code || h.numericCode || h.id
-      if (c != null) hotelMap[String(c)] = { name: h.name || h.fullName || '', stars: h.categoryCode }
+      if (c != null) hotelMap[String(c)] = {
+        name: h.name || h.fullName || '',
+        stars: h.categoryCode,
+        image: h.mainImage || (h.images && h.images[0]) || '',
+        images: (h.images || []).slice(0, 4)
+      }
     }
   }
 
@@ -303,6 +308,8 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults)
       board: (d.additionalInformation && d.additionalInformation.mealPlan) || '',
       direct: !!d.directFlight,
       brand: 'SOLTOUR',
+      image: info.image || '',
+      images: info.images || [],
       available: !d.unavailable && d.price != null && d.price > 0,
       nights: d.numNights || nights
     }
@@ -343,6 +350,7 @@ async function getSoltropicoCalendar(destCode, origin, year, month, nights, adul
       const price = parseFloat(pkTxt(h, 'PriceFrom')) || 0
       const name = pkTxt(h, 'Name') || pkTxt(h, 'Code')
       if (!name || price === 0) return
+      const img = pkTxt(h, 'Image') || pkTxt(h, 'ImageUrl') || pkTxt(h, 'Photo') || ''
       results.push({
         date: depDate,
         price: price,
@@ -353,6 +361,8 @@ async function getSoltropicoCalendar(destCode, origin, year, month, nights, adul
         board: '',
         direct: true,
         brand: 'SOLTRÓPICO',
+        image: img,
+        images: img ? [img] : [],
         available: true,
         nights: nights
       })
@@ -620,6 +630,8 @@ async function selectDay(dateStr) {
           checkIn: dateStr,
           checkOut: endStr,
           nights,
+          image: dayData.image || '',
+          images: dayData.images || (dayData.image ? [dayData.image] : []),
           totalPvp,
           totalNet,
           totalCom,
@@ -641,6 +653,8 @@ async function selectDay(dateStr) {
         checkIn: dateStr,
         checkOut: '—',
         nights,
+        image: dayData.image || '',
+        images: dayData.images || (dayData.image ? [dayData.image] : []),
         totalPvp: bruto,
         totalNet: net,
         totalCom: comissaoEuro,
@@ -663,6 +677,71 @@ async function selectDay(dateStr) {
 // ============================================================
 // RENDERIZAR DETALHE
 // ============================================================
+// ============================================================
+// GERAR ORÇAMENTO / CONTRATO — guarda na Supabase e abre o documento
+// ============================================================
+async function gerarDocumento(tipo, dataJson, destLabel, origin) {
+  let data; try { data = JSON.parse(dataJson) } catch(e) { alert('Erro nos dados da oferta.'); return }
+  const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
+  const fmtPt = s => { if(!s || s==='—') return ''; try { return new Date(s+'T12:00:00').toLocaleDateString('pt-PT') } catch(e){ return s } }
+  // identidade do consultor (vinda do portal via ?cid/?cnome)
+  const up = new URLSearchParams(location.search)
+  const cid = up.get('cid') || null
+  const cnome = up.get('cnome') || ''
+
+  // montar o objeto 'dados' com o mapeamento validado
+  const subtitulo = [fmtPt(data.checkIn), data.nights ? data.nights + ' noites' : '', destLabel].filter(Boolean).join(' · ')
+  const dados = {
+    tipo: tipo,
+    dest: `${esc(data.hotelName)} · ${esc(destLabel)}`,
+    hotel: data.hotelName || '',
+    sub: subtitulo,
+    part: fmtPt(data.checkIn),
+    noites: data.nights || '',
+    reg: data.board || '',
+    pax: '',
+    fornecedor: data.brand || '',
+    localizador: '',
+    drest: originLabel,
+    hotel_fotos: (data.images && data.images.length) ? data.images : (data.image ? [data.image] : []),
+    foto: data.image || (data.images && data.images[0]) || '',
+    videoUrl: '',
+    prices: [{ lbl: 'Preço por pessoa (PVP)', val: data.totalPvp }],
+    sval: data.totalPvp,
+    _net: data.totalNet,
+    _margem: data.totalCom,
+    cnome: cnome,
+    consultor_id: cid,
+    _origem: 'motor-pacotes'
+  }
+
+  try {
+    const btn = event && event.target; if(btn){ btn.disabled = true; btn.textContent = 'A gerar…' }
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/propostas_viagem`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ dados: dados })
+    })
+    if(!resp.ok) throw new Error('Falha ao guardar (' + resp.status + ')')
+    const rows = await resp.json()
+    const id = rows && rows[0] && rows[0].id
+    if(!id) throw new Error('Sem id devolvido')
+    const base = 'https://escritorioapmviagens-creator.github.io/apm-viagens/'
+    const url = tipo === 'orcamento'
+      ? `${base}orcamento.html?dados=${id}`
+      : `${base}proposta-v2.html?proposta=${id}`
+    window.open(url, '_blank')
+  } catch(e) {
+    alert('Não foi possível gerar o documento: ' + e.message)
+    console.error(e)
+  }
+}
+
 function renderDetail(data, destLabel, origin) {
   const brandColor = data.brand === 'SOLTOUR' ? '#E8395A' : '#1098AD'
   const brandClass = data.brand === 'SOLTOUR' ? 'brand-soltour' : 'brand-soltropico'
@@ -740,6 +819,17 @@ function renderDetail(data, destLabel, origin) {
       <div class="hint" style="margin-top:10px;background:#FFF8E1;padding:8px 12px;border-radius:6px;border-left:3px solid #F57C00">
         💡 <b>Net total: ${eur(data.totalNet)}</b> — valor que o agente paga ao operador.
         ${data.brand === 'SOLTRÓPICO' ? '<br>⚠️ Soltrópico: net estimado com 15% de comissão.' : ''}
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+        <button onclick='gerarDocumento("orcamento", ${JSON.stringify(JSON.stringify(data))}, ${JSON.stringify(destLabel)}, ${JSON.stringify(origin)})'
+          style="flex:1;min-width:180px;background:#3B5BDB;color:#fff;border:none;border-radius:8px;padding:12px;font-weight:600;font-size:14px;cursor:pointer">
+          📄 Gerar orçamento
+        </button>
+        <button onclick='gerarDocumento("contrato", ${JSON.stringify(JSON.stringify(data))}, ${JSON.stringify(destLabel)}, ${JSON.stringify(origin)})'
+          style="flex:1;min-width:180px;background:#0F6E56;color:#fff;border:none;border-radius:8px;padding:12px;font-weight:600;font-size:14px;cursor:pointer">
+          ✍️ Gerar contrato
+        </button>
       </div>
     </div>
   `
