@@ -720,6 +720,9 @@ async function initApp() {
       setV('f-localizador', g('localizador'))
       setV('f-drest', g('drest'))
       setV('f-cnome', g('cnome'))
+      // condições de pagamento (regra APM) e cancelamento (operador, com teto)
+      setV('f-condpag', g('condpag'))
+      setV('f-cancel', g('cancel'))
       // fotos do operador
       const fotos = ['foto1','foto2','foto3','foto4'].map(k => g(k)).filter(Boolean)
       if(fotos.length) {
