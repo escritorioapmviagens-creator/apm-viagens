@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📅 Net vs PVP · Calendário de Preços</title>
@@ -93,6 +94,7 @@ const SUPABASE_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
 const PROXY=`${SUPABASE_URL}/functions/v1/Soltour-proxy-index-`
 const SOLTROPICO_PROXY=`${SUPABASE_URL}/functions/v1/soltropico-proxy`
+const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null
 const LOGIN={brand:'SOLTOUR',market:'XMLPT',languageCode:'PT',username:'APMVIA999',password:'XMLAPMVIA'}
 
 let token=null
@@ -238,33 +240,45 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults)
 
   const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
 
-  // Datas-semente espalhadas pelo MÊS INTEIRO. Não basta cobrir os dias da semana:
-  // alguns destinos só têm voos em certas semanas (ex: Saidia só dias 19 e 26 de julho).
-  // Por isso testamos de 2 em 2 dias por todo o mês até uma ter disponibilidade.
+  // Datas-semente espalhadas pelo MÊS INTEIRO (2 em 2 dias), testadas em LOTES
+  // PARALELOS de 5 — muito mais rápido que uma a uma. Para assim que um lote
+  // encontra disponibilidade, usando a data mais cedo desse lote.
   const lastDay = new Date(year, month, 0).getDate()
   const seedDays = []
   for (let d = 1; d <= lastDay; d += 2) seedDays.push(d)
-  let av = null, startDate = null, endStr = null
-  for (const sd of seedDays) {
-    startDate = `${year}-${String(month).padStart(2, '0')}-${String(sd).padStart(2, '0')}`
-    const ed = new Date(startDate); ed.setDate(ed.getDate() + nights); endStr = ed.toISOString().slice(0, 10)
-    const availBody = {
+
+  const buildBody = (sd) => {
+    const sDate = `${year}-${String(month).padStart(2, '0')}-${String(sd).padStart(2, '0')}`
+    const ed = new Date(sDate); ed.setDate(ed.getDate() + nights); const eStr = ed.toISOString().slice(0, 10)
+    return { sDate, eStr, body: {
       productType: 'PACKAGE', languageCode: 'PT',
       criteria: { order: { direction: 'ASC', type: 'PRICE' }, pagination: { firstItem: 0, itemCount: 10 } },
       params: {
-        startDate, endDate: endStr, numNights: nights, residentType: 'NONE',
+        startDate: sDate, endDate: eStr, numNights: nights, residentType: 'NONE',
         accomodation: { rooms: [{ passengers: pax }] },
         hotelParams: { destinationCode: destCode },
         flightParams: { directFlightsOnly: false, itineraries: [
-          { origins: [origin], destinations: [destCode], flightDate: startDate },
-          { origins: [destCode], destinations: [origin], flightDate: endStr }
+          { origins: [origin], destinations: [destCode], flightDate: sDate },
+          { origins: [destCode], destinations: [origin], flightDate: eStr }
         ] }
       }
-    }
-    try {
-      const r = await call('booking/availability', availBody)
-      if (r && r.availToken) { av = r; break }
-    } catch (e) { /* tenta a próxima data-semente */ }
+    }}
+  }
+
+  let av = null, startDate = null, endStr = null
+  const BATCH = 5
+  for (let i = 0; i < seedDays.length && !av; i += BATCH) {
+    const lote = seedDays.slice(i, i + BATCH)
+    const resultados = await Promise.all(lote.map(async (sd) => {
+      const { sDate, eStr, body } = buildBody(sd)
+      try {
+        const r = await call('booking/availability', body)
+        return (r && r.availToken) ? { sd, sDate, eStr, r } : null
+      } catch (e) { return null }
+    }))
+    // usar a data mais cedo do lote que teve disponibilidade
+    const ok = resultados.filter(Boolean).sort((a, b) => a.sd - b.sd)[0]
+    if (ok) { av = ok.r; startDate = ok.sDate; endStr = ok.eStr }
   }
   if (!av || !av.availToken) return []  // nenhuma data-semente do mês teve disponibilidade
 
@@ -689,11 +703,11 @@ async function gerarDocumento(tipo, dataJson, destLabel, origin) {
   const cid = up.get('cid') || null
   const cnome = up.get('cnome') || ''
 
-  // montar o objeto 'dados' com o mapeamento validado
+  // montar o objeto 'dados' (consultor_id vai como coluna própria, não dentro de dados)
   const subtitulo = [fmtPt(data.checkIn), data.nights ? data.nights + ' noites' : '', destLabel].filter(Boolean).join(' · ')
   const dados = {
     tipo: tipo,
-    dest: `${esc(data.hotelName)} · ${esc(destLabel)}`,
+    dest: `${data.hotelName} · ${destLabel}`,
     hotel: data.hotelName || '',
     sub: subtitulo,
     part: fmtPt(data.checkIn),
@@ -711,25 +725,19 @@ async function gerarDocumento(tipo, dataJson, destLabel, origin) {
     _net: data.totalNet,
     _margem: data.totalCom,
     cnome: cnome,
-    consultor_id: cid,
     _origem: 'motor-pacotes'
   }
 
+  const btn = (typeof event !== 'undefined' && event) ? event.target : null
   try {
-    const btn = event && event.target; if(btn){ btn.disabled = true; btn.textContent = 'A gerar…' }
-    const resp = await fetch(`${SUPABASE_URL}/rest/v1/propostas_viagem`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON,
-        'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({ dados: dados })
-    })
-    if(!resp.ok) throw new Error('Falha ao guardar (' + resp.status + ')')
-    const rows = await resp.json()
-    const id = rows && rows[0] && rows[0].id
+    if(btn){ btn.disabled = true; btn._txt = btn.textContent; btn.textContent = 'A gerar…' }
+    if(!sb) throw new Error('Supabase não carregado')
+    // mesmo padrão que o orçamento/portal já usam com sucesso
+    const { data: res, error } = await sb.from('propostas_viagem')
+      .insert({ consultor_id: cid, dados })
+      .select('id').single()
+    if(error) throw new Error(error.message)
+    const id = res && res.id
     if(!id) throw new Error('Sem id devolvido')
     const base = 'https://escritorioapmviagens-creator.github.io/apm-viagens/'
     const url = tipo === 'orcamento'
@@ -739,6 +747,8 @@ async function gerarDocumento(tipo, dataJson, destLabel, origin) {
   } catch(e) {
     alert('Não foi possível gerar o documento: ' + e.message)
     console.error(e)
+  } finally {
+    if(btn){ btn.disabled = false; if(btn._txt) btn.textContent = btn._txt }
   }
 }
 
