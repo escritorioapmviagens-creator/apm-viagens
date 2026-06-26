@@ -333,9 +333,10 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults,
   return days.map(d => {
     const code = (d.additionalInformation && d.additionalInformation.hotel) || ''
     const info = hotelMap[String(code)] || {}
+    const precoDia = parseFloat(d.bestPrice || d.price) || 0
     return {
       date: d.day,
-      price: parseFloat(d.bestPrice || d.price) || 0,
+      price: precoDia,
       currency: d.currencyCode || 'EUR',
       hotelName: info.name || code || 'Hotel',
       hotelCode: code,
@@ -345,7 +346,7 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults,
       brand: 'SOLTOUR',
       image: info.image || '',
       images: info.images || [],
-      available: !d.unavailable && d.price != null && d.price > 0,
+      available: !d.unavailable && precoDia > 0,
       nights: d.numNights || nights
     }
   })
@@ -729,6 +730,11 @@ async function gerarDocumento(tipo, dataJson, destLabel, origin) {
   const cid = up.get('cid') || ''
   const cnome = up.get('cnome') || ''
   const subtitulo = [fmtPt(data.checkIn), data.nights ? data.nights + ' noites' : '', destLabel].filter(Boolean).join(' · ')
+  // data de regresso: usa a do operador; se faltar (Soltrópico), calcula partida+noites
+  let regresso = (data.checkOut && data.checkOut !== '—') ? data.checkOut : ''
+  if (!regresso && data.checkIn && data.nights) {
+    try { const r = new Date(data.checkIn); r.setDate(r.getDate() + parseInt(data.nights)); regresso = r.toISOString().slice(0,10) } catch(e) {}
+  }
 
   // Passar tudo por parâmetros no link (as fotos são URLs curtas, cabe bem).
   // O motor NÃO grava nada — o registo oficial é criado quando o consultor
@@ -738,9 +744,10 @@ async function gerarDocumento(tipo, dataJson, destLabel, origin) {
   p.set('dest', `${data.hotelName} · ${destLabel}`)
   p.set('hotel', data.hotelName || '')
   p.set('sub', subtitulo)
-  p.set('part', fmtPt(data.checkIn))
+  p.set('part', data.checkIn || '')              // ISO AAAA-MM-DD para o campo type=date
+  p.set('regresso', regresso)
   p.set('noites', data.nights || '')
-  p.set('reg', data.board || '')
+  p.set('regime', data.board || '')              // regime separado (NÃO vai para f-reg/regresso)
   p.set('fornecedor', data.brand || '')
   p.set('drest', originLabel)
   p.set('pvp', data.totalPvp || '')
@@ -749,7 +756,14 @@ async function gerarDocumento(tipo, dataJson, destLabel, origin) {
   if(cid) p.set('cid', cid)
 
   // Condições de pagamento — regra FIXA da APM (sobrepõe-se ao prazo do operador)
-  p.set('condpag', 'O pagamento total deverá estar concluído até 30 dias antes da data de viagem ou da reserva de hotel.')
+  // Condições de pagamento: SÓ preenche se o operador as fornecer.
+  // Se vierem, aplica o reajuste dos 30 dias (nenhum prazo pode ser mais tarde
+  // que 30 dias antes da partida). Se o operador não dá (ex: Soltour na cotação),
+  // deixa em branco — o consultor preenche/escolhe template à mão.
+  if (Array.isArray(data.pagamento) && data.pagamento.length) {
+    const linhas = ajustarPagamento(data.pagamento, data.checkIn)
+    if (linhas) p.set('condpag', linhas)
+  }
 
   // Condições de cancelamento — do operador, já com teto no PVP do cliente
   if (Array.isArray(data.cancelamento) && data.cancelamento.length) {
@@ -774,6 +788,33 @@ async function gerarDocumento(tipo, dataJson, destLabel, origin) {
 // Cada faixa (até tal data = X€) é limitada ao PVP aplicado: se a penalização
 // do operador exceder o que o cliente pagou, mostra-se o PVP do cliente.
 // ============================================================
+// Reajusta os prazos de pagamento do operador: nenhuma data de pagamento pode
+// ser mais tarde que 30 dias antes da partida (regra APM). Datas que violem isso
+// são encurtadas para "30 dias antes da partida".
+function ajustarPagamento(faixas, checkIn) {
+  if (!Array.isArray(faixas) || !faixas.length) return ''
+  let limite30 = null
+  if (checkIn) { try { const d = new Date(checkIn); d.setDate(d.getDate() - 30); limite30 = d } catch(e) {} }
+  const fmtD = dt => { try { return new Date(dt).toLocaleDateString('pt-PT') } catch(e){ return dt } }
+  const eurStr = v => '€' + Number(v).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const linhas = faixas.map(f => {
+    let dataPag = f.dueDate || f.date || null
+    let quando
+    if (dataPag && limite30) {
+      const dp = new Date(dataPag)
+      // se a data de pagamento for DEPOIS do limite (mais perto da viagem que 30 dias), encurta
+      quando = (dp > limite30) ? ('Até ' + fmtD(limite30) + ' (30 dias antes)') : ('Até ' + fmtD(dataPag))
+    } else if (dataPag) {
+      quando = 'Até ' + fmtD(dataPag)
+    } else {
+      quando = f.label || f.desc || 'Pagamento'
+    }
+    const valor = (f.amount != null) ? (': ' + eurStr(f.amount)) : (f.pct != null ? (': ' + f.pct + '%') : '')
+    return quando + valor
+  })
+  return linhas.join('\n')
+}
+
 function extrairCancelamento(budget, pvpCliente) {
   const cargos = (budget && (budget.cancellationChargeServices || budget.cancellationCharges)) || []
   const fmtD = s => { if(!s) return ''; try { return new Date(s).toLocaleDateString('pt-PT') } catch(e){ return s } }
