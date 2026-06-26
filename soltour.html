@@ -247,10 +247,12 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults)
 
   const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
 
-  // Tentar várias datas-semente: basta UMA ter disponibilidade para obter o calendário do mês.
-  // (o site mostra o mês todo; não podemos desistir só porque o dia 10 não tem voo)
+  // Datas-semente: os primeiros 8 dias consecutivos do mês cobrem GARANTIDAMENTE
+  // todos os 7 dias da semana. Assim, qualquer que seja o dia de voo do destino
+  // (ex: Saidia só voa aos domingos), pelo menos uma semente apanha um dia com voo.
   const lastDay = new Date(year, month, 0).getDate()
-  const seedDays = [10, 17, 3, 24, 7, 14, 21, 28].filter(d => d <= lastDay)
+  const seedDays = []
+  for (let d = 1; d <= Math.min(8, lastDay); d++) seedDays.push(d)
   let av = null, startDate = null, endStr = null
   for (const sd of seedDays) {
     startDate = `${year}-${String(month).padStart(2, '0')}-${String(sd).padStart(2, '0')}`
