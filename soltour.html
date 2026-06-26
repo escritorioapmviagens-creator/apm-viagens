@@ -80,14 +80,15 @@ td{padding:8px;border-bottom:1px solid var(--border);font-size:13px}
 </header>
 <div class="container">
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('pesquisa',this)">🔍 Pesquisar Hotéis</button>
+    <button class="tab active" onclick="switchTab('pacotes',this)">🌴 Pacotes</button>
+    <button class="tab" onclick="switchTab('pesquisa',this)">🔍 Pesquisar Hotéis</button>
     <button class="tab" onclick="switchTab('reserva',this)">📋 Fazer Reserva</button>
     <button class="tab" onclick="switchTab('reservas',this)">📁 Reservas</button>
-    <button class="tab" onclick="switchTab('debug',this)">🛠 Diagnóstico</button>
+    <button class="tab" id="tab-debug" onclick="switchTab('debug',this)" style="display:none">🛠 Diagnóstico</button>
   </div>
 
   <!-- ───────── PESQUISA ───────── -->
-  <div id="panel-pesquisa" class="panel active">
+  <div id="panel-pesquisa" class="panel">
     <div class="card">
       <div class="card-title"><span>🔍</span> Disponibilidade de Hotéis</div>
       <div class="form-grid">
@@ -109,8 +110,32 @@ td{padding:8px;border-bottom:1px solid var(--border);font-size:13px}
     <div id="search-results"></div>
   </div>
 
-  <!-- ───────── RESERVA ───────── -->
-  <div id="panel-reserva" class="panel">
+  <!-- ───────── PACOTES (motor unificado Soltour + Soltrópico) ───────── -->
+  <div id="panel-pacotes" class="panel active">
+    <div class="card">
+      <div class="card-title"><span>🌴</span> Pacotes — Soltour &amp; Soltrópico</div>
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:span 2">
+          <label>Destino</label>
+          <input type="text" id="pk-dest-input" list="pk-dest-list" placeholder="Escreva: Sal, Punta Cana, Maldivas…" autocomplete="off">
+          <datalist id="pk-dest-list"></datalist>
+        </div>
+        <div class="form-group"><label>Origem</label><select id="pk-origin"><option value="LIS">Lisboa (LIS)</option><option value="OPO">Porto (OPO)</option><option value="FAO">Faro (FAO)</option></select></div>
+        <div class="form-group"><label>Mês</label><input type="month" id="pk-month"></div>
+        <div class="form-group"><label>Noites</label><input type="number" id="pk-nights" value="7" min="1" max="30"></div>
+        <div class="form-group"><label>Adultos</label><input type="number" id="pk-adults" value="2" min="1" max="9"></div>
+        <div class="form-group"><label>Idades crianças</label><input type="text" id="pk-children" placeholder="ex: 5,9"></div>
+      </div>
+      <div class="btn-actions">
+        <button class="btn btn-blue" onclick="pkSearch()">🔍 Procurar pacotes</button>
+        <button class="btn btn-outline" onclick="pkClear()">Limpar</button>
+      </div>
+      <div style="font-size:12px;color:var(--muted,#8B92A5);margin-top:8px">Mostra tudo o que cada operador tem para o destino escolhido, numa lista única. As horas de voo são obtidas na fase de reserva.</div>
+    </div>
+    <div id="pk-status" class="status-bar"></div>
+    <div id="pk-results"></div>
+  </div>
+
     <div class="steps">
       <div class="step done" id="step1"><span class="step-num">1</span>Orçamento</div>
       <div class="step" id="step2"><span class="step-num">2</span>Cotação</div>
@@ -223,8 +248,9 @@ td{padding:8px;border-bottom:1px solid var(--border);font-size:13px}
    Para testar sem proxy, defina USE_DIRECT=true — só funciona fora do browser
    (a Soltour não envia CORS e exige whitelist de IP).                          */
 const SUPABASE_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
-const PROXY_URL = `${SUPABASE_URL}/functions/v1/Soltour-proxy-index-`
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'   // anon key do Supabase (mesma da Soltrópico)
+const PROXY_URL = SUPABASE_URL+'/functions/v1/Soltour-proxy-index-'
+const SOLTROPICO_PROXY = SUPABASE_URL+'/functions/v1/soltropico-proxy'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
 const BASE_URL = 'https://soltour-svcext.grupo-pinero.com/soltour/v5/'
 
 let state = {
@@ -270,6 +296,7 @@ function money(v,cur){ const n=parseFloat(v); if(isNaN(n)) return '—'; return 
 function setSession(tok){
   state.sessionToken=tok
   const pill=document.getElementById('session-pill')
+  if(!pill) return
   if(tok){ pill.className='session-pill on'; pill.textContent='● Sessão ativa' }
   else { pill.className='session-pill'; pill.textContent='● Sem sessão' }
 }
@@ -631,6 +658,315 @@ async function cancelReservation(pre){
   }catch(e){ log(`❌ ${e.message}`,'error'); setStatus('reserves-status','err',`❌ ${e.message}`) }
 }
 
+/* ════════════════ MOTOR DE PACOTES — Soltour + Soltrópico ════════════════ */
+/* Tabela de destinos curada (validada com APM). Cada entrada pode ter um lado
+   Soltour (code) e/ou um lado Soltrópico (code). Os combinados Soltrópico ficam
+   à parte e aparecem como grupo próprio quando não há cruzamento. */
+const PK_DEST = [
+  // {label, soltour, soltropico}
+  {label:'Ibiza', soltour:'IBZ', soltropico:228},
+  {label:'Menorca', soltour:'MAH', soltropico:227},
+  {label:'Maiorca', soltour:'PMI', soltropico:226},
+  {label:'Formentera', soltour:'FON', soltropico:231},
+  {label:'Tenerife', soltour:'TCI', soltropico:229},
+  {label:'Gran Canária', soltour:'LPA', soltropico:230},
+  {label:'Fuerteventura', soltour:'FUE', soltropico:242},
+  {label:'Faial', soltour:'HOR', soltropico:144},
+  {label:'São Miguel', soltour:'PDL', soltropico:11},
+  {label:'Terceira', soltour:'TER', soltropico:12},
+  {label:'Madeira', soltour:'FNC', soltropico:5},
+  {label:'Porto Santo', soltour:'PXO', soltropico:8},
+  {label:'Monastir', soltour:'MIR', soltropico:262},
+  {label:'Djerba', soltour:'DJE', soltropico:261},
+  {label:'Saïdia', soltour:'OUD', soltropico:44},
+  {label:'São Vicente', soltour:'VXE', soltropico:28},
+  {label:'Santiago (C.Verde)', soltour:'RAI', soltropico:24},
+  {label:'Boa Vista', soltour:'BVC', soltropico:41},
+  {label:'Sal', soltour:'SID', soltropico:7},
+  {label:'Salvador da Bahia', soltour:'SSA', soltropico:51},
+  {label:'Fortaleza', soltour:'FOR', soltropico:62},
+  {label:'Natal', soltour:'NAT', soltropico:60},
+  {label:'Recife', soltour:'REC', soltropico:49},
+  {label:'Rio de Janeiro', soltour:'RIO', soltropico:91},
+  {label:'Marrakech', soltour:'RAK', soltropico:45},
+  // só Soltour
+  {label:'Punta Cana', soltour:'PUJ'},
+  {label:'Cancún', soltour:'CUN'},
+  {label:'Riviera Maya', soltour:'RVM'},
+  {label:'La Romana', soltour:'LRM'},
+  {label:'Samaná', soltour:'AZS'},
+  {label:'Puerto Plata', soltour:'POP'},
+  {label:'Jamaica (Runaway Bay)', soltour:'MBJ'},
+  {label:'La Palma', soltour:'SPC'},
+  {label:'Lanzarote', soltour:'ACE'},
+  {label:'Algarve', soltour:'FAO'},
+  {label:'Agadir', soltour:'AGA'},
+  {label:'Creta', soltour:'HER'},
+  {label:'Corfu', soltour:'CFU'},
+  {label:'Roma', soltour:'ROM'},
+  {label:'Malta', soltour:'MLA'},
+  {label:'Orlando', soltour:'MCO'},
+  {label:'Nova Iorque', soltour:'NYC'},
+  {label:'Miami', soltour:'MIA'},
+  // só Soltrópico (simples)
+  {label:'Dubai', soltropico:10},
+  {label:'Maldivas', soltropico:67},
+  {label:'Maurícias', soltropico:22},
+  {label:'Hurghada', soltropico:243},
+  {label:'Sharm El Sheik', soltropico:244},
+  {label:'Istambul', soltropico:249},
+  {label:'Hammamet', soltropico:222},
+  {label:'Zanzibar', soltropico:257},
+  {label:'Abu Dhabi', soltropico:259},
+  {label:'Ras al Khaimah', soltropico:260},
+  {label:'Maceió', soltropico:92},
+  {label:'Curitiba', soltropico:136},
+  {label:'Foz do Iguaçu', soltropico:135},
+  {label:'Maputo', soltropico:137},
+  {label:'Dakar', soltropico:256},
+  {label:'Banjul', soltropico:266},
+  {label:'Alicante', soltropico:224},
+  {label:'Málaga', soltropico:225},
+  {label:'São Tomé', soltropico:20},
+]
+const BOARD_PT_PK={AD:'Alojamento + PA',MP:'Meia pensão',PC:'Pensão completa',TI:'Tudo incluído',SA:'Só alojamento',RO:'Só alojamento'}
+
+function pkInitDestList(){
+  const dl=document.getElementById('pk-dest-list')
+  if(dl) dl.innerHTML=PK_DEST.map(d=>`<option value="${esc(d.label)}">`).join('')
+}
+function pkFindDest(label){
+  const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim()
+  const n=norm(label)
+  return PK_DEST.find(d=>norm(d.label)===n) || PK_DEST.find(d=>norm(d.label).startsWith(n)) || PK_DEST.find(d=>norm(d.label).includes(n))
+}
+function pkPassengers(){
+  const ad=parseInt(document.getElementById('pk-adults').value)||1
+  const ages=String(document.getElementById('pk-children').value||'').split(',').map(x=>parseInt(x.trim())).filter(n=>!isNaN(n))
+  const pax=[]; for(let i=0;i<ad;i++)pax.push({age:30,type:'ADULT'}); ages.forEach(a=>pax.push({age:a,type:'CHILD'}))
+  return {pax, adults:ad, childAges:ages}
+}
+function pkClear(){
+  document.getElementById('pk-dest-input').value=''
+  document.getElementById('pk-children').value=''
+  document.getElementById('pk-results').innerHTML=''
+  setStatus('pk-status','', '')
+}
+
+async function pkSearch(){
+  const label=document.getElementById('pk-dest-input').value.trim()
+  if(!label){ setStatus('pk-status','err','Escreva um destino.'); return }
+  const dest=pkFindDest(label)
+  if(!dest){ setStatus('pk-status','err','Destino não reconhecido. Escolha um da lista.'); return }
+  const month=document.getElementById('pk-month').value // AAAA-MM
+  if(!month){ setStatus('pk-status','err','Escolha um mês.'); return }
+  document.getElementById('pk-results').innerHTML=''
+  const results=[]
+  const tasks=[]
+  // Soltour
+  if(dest.soltour){
+    tasks.push(pkSearchSoltour(dest,month).then(r=>results.push(...r)).catch(e=>{
+      results.push({op:'SOLTOUR',error:e.message,dest})
+    }))
+  }
+  // Soltrópico
+  if(dest.soltropico){
+    tasks.push(pkSearchSoltropico(dest,month).then(r=>{
+      if(r.length) results.push(...r)
+      else results.push({op:'SOLTRÓPICO',info:'chamada OK mas 0 hotéis na resposta',dest})
+    }).catch(e=>{
+      results.push({op:'SOLTRÓPICO',error:e.message,dest})
+    }))
+  } else {
+    results.push({op:'SOLTRÓPICO',info:'destino sem código Soltrópico na tabela',dest})
+  }
+  setStatus('pk-status','loading',`A procurar pacotes para ${esc(dest.label)} em ${month}…`)
+  await Promise.all(tasks)
+  pkRender(dest,month,results)
+}
+
+/* ---- SOLTOUR: availability(seed) -> getPriceCalendar(mês) -> dias ---- */
+async function pkSearchSoltour(dest,month){
+  if(!state.sessionToken) throw new Error('Sem sessão Soltour — faça login no separador Diagnóstico.')
+  const {pax}=pkPassengers()
+  const origin=document.getElementById('pk-origin').value
+  const nights=parseInt(document.getElementById('pk-nights').value)||7
+  const [y,m]=month.split('-').map(n=>parseInt(n))
+  const seedStart=`${month}-10`  // dia-semente no meio do mês
+  const sd=new Date(seedStart); sd.setDate(sd.getDate()+nights); const seedEnd=sd.toISOString().slice(0,10)
+  // 1) availability leve para obter availToken
+  const av=await api('booking/availability',{
+    productType:'PACKAGE', languageCode:'PT',
+    criteria:{order:{direction:'ASC',type:'PRICE'},pagination:{firstItem:0,itemCount:10}},
+    params:{startDate:seedStart,endDate:seedEnd,numNights:nights,residentType:'NONE',
+      accomodation:{rooms:[{passengers:pax}]},
+      hotelParams:{destinationCode:dest.soltour},
+      flightParams:{directFlightsOnly:false,itineraries:[
+        {origins:[origin],destinations:[dest.soltour],flightDate:seedStart},
+        {origins:[dest.soltour],destinations:[origin],flightDate:seedEnd}
+      ]}}
+  })
+  const availToken=av.availToken
+  if(!availToken) return []  // sem inventário Soltour para este destino
+  // mapa de hotéis a partir da própria resposta de availability (já traz nome+imagem)
+  const hotelMap={}
+  ;(av.hotels||[]).forEach(h=>{
+    const code=h.code||h.numericCode||h.id
+    if(code==null) return
+    hotelMap[String(code)]={name:h.name||h.fullName||'',image:h.mainImage||h.appImageUrl||'',stars:parseInt(h.categoryCode)||0}
+  })
+  // 2) calendário do mês
+  const cal=await api('booking/getPriceCalendar',{
+    availToken,destinationCode:dest.soltour,originCode:origin,productType:'PACKAGE',languageCode:'PT',
+    month:{year:y,month:m},numNights:nights,onlyDirectFlights:false
+  })
+  const days=(cal.days||[]).filter(d=>!d.unavailable && (d.price||d.bestPrice))
+  return days.map(d=>{
+    const code=(d.additionalInformation&&d.additionalInformation.hotel)||''
+    const info=hotelMap[String(code)]||{}
+    return {
+      op:'SOLTOUR', destLabel:dest.label, day:d.day, price:parseFloat(d.bestPrice||d.price)||0,
+      currency:d.currencyCode||'EUR', nights:d.numNights||nights,
+      direct:!!d.directFlight, hotel:info.name||code, hotelCode:code,
+      image:info.image||'', rating:info.stars||0,
+      board:(d.additionalInformation&&d.additionalInformation.mealPlan)||'',
+      provider:d.provider||'', availToken
+    }
+  })
+}
+
+/* ---- SOLTRÓPICO: DynSearchProductAvailableServices(dia 1 do mês) ---- */
+async function pkSoap(action, body){
+  const wrap=`<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
+  const r=await fetch(SOLTROPICO_PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},body:JSON.stringify({soapAction:action,soapBody:wrap})})
+  const data=await r.json()
+  window.jsonHistory=window.jsonHistory||{}
+  window.jsonHistory['SOLTRÓPICO/'+action]=(data.xml||JSON.stringify(data,null,2)||'').slice(0,20000)
+  const sel=document.getElementById('json-selector')
+  if(sel) sel.innerHTML=Object.keys(window.jsonHistory).map(k=>`<option value="${k}">${k}</option>`).join('')
+  if(!r.ok) throw new Error(`Falha proxy (${r.status})`)
+  if(data.error||data.proxyError) throw new Error(data.error||data.proxyError)
+  const doc=new DOMParser().parseFromString((data.xml||'').replace(/^\uFEFF/,'').trim(),'text/xml')
+  if(doc.querySelector('parsererror')) throw new Error('XML inválido')
+  const f=doc.querySelector('faultstring'); if(f) throw new Error(f.textContent)
+  return doc
+}
+function pkCredXML(){ return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">808</System><Client xsi:type="xsd:int">289363</Client><Username xsi:type="xsd:string">admin@apmviagens.pt</Username><Password xsi:type="xsd:string">JA622875</Password></Credentials>` }
+function pkTxt(el,tag){ if(!el) return ''; for(let i=0;i<el.children.length;i++){ const c=el.children[i],l=c.localName||c.tagName.split(':').pop(); if(l===tag) return c.textContent.trim() } const n=el.getElementsByTagName('*'); for(let i=0;i<n.length;i++){ const l=n[i].localName||n[i].tagName.split(':').pop(); if(l===tag) return n[i].textContent.trim() } return '' }
+function pkAll(el,tag){ if(!el) return []; const o=[],n=el.getElementsByTagName('*'); for(let i=0;i<n.length;i++){ const l=n[i].localName||n[i].tagName.split(':').pop(); if(l===tag) o.push(n[i]) } return o }
+function pkDirectChildren(el,tag){ if(!el) return []; const o=[]; for(let i=0;i<el.children.length;i++){ const c=el.children[i],l=c.localName||c.tagName.split(':').pop(); if(l===tag) o.push(c) } return o }
+function pkItems(c){ return c?pkDirectChildren(c,'item'):[] }
+
+async function pkSearchSoltropico(dest,month){
+  const origin=document.getElementById('pk-origin').value
+  const nights=parseInt(document.getElementById('pk-nights').value)||7
+  const {childAges}=pkPassengers()
+  // PASSO A: parâmetros reais do produto (datas, locais, quartos, base locals)
+  const pdoc=await pkSoap('DynGetProductParameters',
+    `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCredXML()}<Productcode xsi:type="xsd:int">${dest.soltropico}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+  const itemsIn=(c)=>{const w=pkAll(pdoc,c)[0]; return w?pkItems(w):[]}
+  const dates=itemsIn('DepartureDates').map(it=>pkTxt(it,'Date')).filter(Boolean)
+  const locals=itemsIn('DepartureLocals').map(it=>({code:pkTxt(it,'Code'),name:pkTxt(it,'Name')})).filter(l=>l.code)
+  const roomTypes=itemsIn('RoomTypes').map(r=>({code:pkTxt(r,'Code'),name:pkTxt(r,'Name')})).filter(r=>r.code)
+  const baseLocals=itemsIn('BaseLocals').map(b=>({code:pkTxt(b,'Code'),min:pkTxt(b,'MinNights')||String(nights)})).filter(b=>b.code)
+  // escolher a 1ª data de partida dentro do mês pedido (ou a 1ª disponível)
+  const depDate=(dates.find(d=>String(d).startsWith(month))||dates[0]||`${month}-01`)
+  const depLocal=(locals.find(l=>l.code===origin)||locals[0]||{code:origin}).code
+  const roomCode=(roomTypes[0]||{code:'437'}).code
+  const baseXML=(baseLocals.length?baseLocals:[{code:'0'}]).map(b=>`<Local><Code>${b.code}</Code><Nights>${nights}</Nights></Local>`).join('')
+  const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges>${childAges.join(',')}</ChildAges></RoomTypeOption>`
+  // PASSO B: disponibilidade com valores reais
+  const doc=await pkSoap('DynSearchProductAvailableServices',
+    `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${pkCredXML()}<ProductCode xsi:type="xsd:int">${dest.soltropico}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+  // extrair hotéis: Itinerary(item) -> HotelOption(contentor) -> item(hotel)
+  const hotels=[]
+  const itinC=pkAll(doc,'Itinerary')[0]
+  const itins=itinC?pkItems(itinC):[]
+  const harvest=(h)=>{
+    const price=parseFloat(pkTxt(h,'PriceFrom'))||0
+    const name=pkTxt(h,'Name')||pkTxt(h,'Code')
+    if(!name) return
+    hotels.push({
+      op:'SOLTRÓPICO', destLabel:dest.label, day:depDate, price, currency:'EUR', nights,
+      direct:null, hotel:name, board:'', provider:'soltropico',
+      image:pkTxt(h,'Image')||'', rating:parseInt(pkTxt(h,'Rating'))||0,
+      addr:pkTxt(h,'Address')||'', local:pkTxt(h,'Local')||'',
+      prodCode:dest.soltropico, depDate
+    })
+  }
+  if(itins.length){
+    itins.forEach(itin=>{
+      const hc=pkDirectChildren(itin,'HotelOption')[0]
+      pkItems(hc).forEach(harvest)
+    })
+  }
+  // fallback: se a estrutura não tinha Itinerary, tentar HotelOption direto como item
+  if(!hotels.length){
+    const hc=pkAll(doc,'HotelOption')[0]
+    if(hc) pkItems(hc).forEach(harvest)
+  }
+  return hotels
+}
+
+/* ---- RENDER: lista unificada ---- */
+function pkRender(dest,month,results){
+  const errs=results.filter(r=>r.error)
+  const notes=results.filter(r=>r.info)
+  const items=results.filter(r=>!r.error && !r.info)
+  const cont=document.getElementById('pk-results')
+  const diag=[...errs.map(e=>`<span style="color:#C62828">${e.op}: ${esc(e.error)}</span>`),
+              ...notes.map(n=>`<span style="color:#E67700">${n.op}: ${esc(n.info)}</span>`)].join(' · ')
+  if(!items.length){
+    let msg=`Sem pacotes para <b>${esc(dest.label)}</b> em ${month}.`+(diag?'<br>'+diag:'')
+    setStatus('pk-status','err',msg); cont.innerHTML=''; return
+  }
+  items.sort((a,b)=>(a.price||1e9)-(b.price||1e9))
+  const nST=items.filter(i=>i.op==='SOLTOUR').length, nSP=items.filter(i=>i.op==='SOLTRÓPICO').length
+  setStatus('pk-status','ok',`✅ ${items.length} resultado(s) — Soltour ${nST} · Soltrópico ${nSP}`+(diag?`<br>${diag}`:''))
+  cont.innerHTML = items.map(pkCard).join('')
+}
+function pkCard(it){
+  const opColor = it.op==='SOLTOUR' ? '#E8395A' : '#1098AD'
+  const opBg = it.op==='SOLTOUR' ? '#FFF0F3' : '#E3FAFC'
+  const dd = it.day ? new Date(it.day).toLocaleDateString('pt-PT',{day:'2-digit',month:'short'}) : ''
+  const flight = it.direct===true ? '<span style="color:#2E7D32;font-weight:600">✈ Voo direto</span>'
+              : it.direct===false ? '<span style="color:#E67700">↔ Com escala</span>'
+              : '<span style="color:#8B92A5">✈ Voo incluído</span>'
+  const board = it.board ? `<span class="tag" style="background:#EEF2FF;color:#3B5BDB;padding:2px 8px;border-radius:20px;font-size:11px">${esc(BOARD_PT_PK[it.board]||it.board)}</span>` : ''
+  const stars = it.rating ? '★'.repeat(Math.min(it.rating,5)) : ''
+  const thumb = it.image
+    ? `<img src="${esc(it.image)}" alt="" onerror="this.parentNode.innerHTML='🏨'" style="width:100%;height:100%;object-fit:cover">`
+    : '🏨'
+  return `<div class="card" style="border-left:4px solid ${opColor};display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+    <div style="width:84px;height:64px;border-radius:8px;overflow:hidden;background:${opBg};display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">${thumb}</div>
+    <div style="flex:1;min-width:180px">
+      <div style="display:inline-block;background:${opBg};color:${opColor};font-weight:700;font-size:11px;padding:2px 9px;border-radius:20px;margin-bottom:6px">${it.op}</div>
+      <div style="font-weight:700">${esc(it.hotel||it.destLabel)} ${stars?`<span style="color:#F59F00;font-size:13px">${stars}</span>`:''}</div>
+      <div style="font-size:12px;color:#8B92A5;margin-top:3px">${esc(it.destLabel)}${dd?` · ${dd}`:''} · ${it.nights} noites · ${flight} ${board}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:20px;font-weight:800;color:${opColor}">${it.price?money(it.price,it.currency):'sob consulta'}</div>
+      <div style="font-size:11px;color:#8B92A5">${it.provider?('via '+esc(it.provider)):''}</div>
+      <button onclick='pkReservar(${JSON.stringify(JSON.stringify({op:it.op,prodCode:it.prodCode||null,depDate:it.depDate||it.day||null,dest:it.destLabel,soltour:it.soltourCode||null}))})' style="margin-top:6px;background:${opColor};color:#fff;border:none;border-radius:7px;padding:7px 14px;font-weight:600;font-size:12px;cursor:pointer">Reservar →</button>
+    </div>
+  </div>`
+}
+function pkReservar(json){
+  let it; try{ it=JSON.parse(json) }catch(e){ return }
+  if(it.op==='SOLTRÓPICO'){
+    if(!it.prodCode){ alert('Sem código de produto Soltrópico para abrir a reserva.'); return }
+    const base='https://escritorioapmviagens-creator.github.io/apm-viagens/soltropico-reservas.html'
+    const u=new URL(base)
+    u.searchParams.set('prod', it.prodCode)
+    if(it.depDate) u.searchParams.set('dep', it.depDate)
+    window.open(u.toString(), '_blank')
+  } else {
+    // SOLTOUR: reserva de pacote ainda por construir (próxima fase)
+    alert('A reserva de pacotes Soltour está a ser construída na próxima fase. Por agora, use a Soltrópico ou a tab "Fazer Reserva" para hotéis Soltour.')
+  }
+}
+
+
 /* ────────── init ────────── */
 ;(function init(){
   const today=new Date(), plus3=new Date(Date.now()+3*864e5)
@@ -640,8 +976,26 @@ async function cancelReservation(pre){
   document.getElementById('rl-to').value=today.toISOString().split('T')[0]
   document.getElementById('cfg-proxy-show').textContent=PROXY_URL
   renderSearchRooms()
-  log('🚀 App pronta. Faça login no separador Diagnóstico antes de pesquisar.','success')
+  pkInitDestList()
+  document.getElementById('pk-month').value=new Date(Date.now()+30*864e5).toISOString().slice(0,7)
+  // modo developer: só com ?dev=1 aparece o Diagnóstico e a pill de sessão
+  const isDev=new URLSearchParams(location.search).get('dev')==='1'
+  if(isDev){
+    const td=document.getElementById('tab-debug'); if(td) td.style.display=''
+  } else {
+    const sp=document.getElementById('session-pill'); if(sp) sp.style.display='none'
+  }
+  // login automático e invisível ao abrir
+  pkAutoLogin()
 })()
+
+const SOLTOUR_CREDS={brand:'SOLTOUR',market:'XMLPT',languageCode:'PT',username:'APMVIA999',password:'XMLAPMVIA'}
+async function pkAutoLogin(){
+  try{
+    const data=await api('login/login', SOLTOUR_CREDS, {noAuth:true})
+    if(data.sessionToken){ setSession(data.sessionToken); log('🔐 Sessão iniciada automaticamente.','success') }
+  }catch(e){ log('⚠️ Falha no login automático: '+e.message,'warn') }
+}
 </script>
 </body>
 </html>
