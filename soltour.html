@@ -658,6 +658,9 @@ async function selectDay(dateStr) {
           rows.push({ name: 'Pacote', pvp: totalPvp, net: totalNet, com: totalCom })
         }
 
+        // Condições de cancelamento do operador, com TETO no PVP aplicado ao cliente
+        const cancelamento = extrairCancelamento(q.budget, totalPvp)
+
         detailData = {
           brand: 'SOLTOUR',
           hotelName: dayData.hotelName,
@@ -672,6 +675,7 @@ async function selectDay(dateStr) {
           totalPvp,
           totalNet,
           totalCom,
+          cancelamento,
           rows
         }
       }
@@ -743,6 +747,19 @@ async function gerarDocumento(tipo, dataJson, destLabel, origin) {
   p.set('net', data.totalNet || '')
   p.set('cnome', cnome)
   if(cid) p.set('cid', cid)
+
+  // Condições de pagamento — regra FIXA da APM (sobrepõe-se ao prazo do operador)
+  p.set('condpag', 'O pagamento total deverá estar concluído até 30 dias antes da data de viagem ou da reserva de hotel.')
+
+  // Condições de cancelamento — do operador, já com teto no PVP do cliente
+  if (Array.isArray(data.cancelamento) && data.cancelamento.length) {
+    const eurStr = v => '€' + Number(v).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    const linhas = data.cancelamento.map(f => {
+      const quando = f.fim ? ('Até ' + f.fim) : (f.desc || 'Cancelamento')
+      return `${quando}: ${eurStr(f.valor)}`
+    })
+    p.set('cancel', linhas.join('\n'))
+  }
   const fotos = (data.images && data.images.length) ? data.images : (data.image ? [data.image] : [])
   fotos.slice(0, 4).forEach((f, i) => { if(f) p.set('foto' + (i+1), f) })
 
@@ -750,6 +767,33 @@ async function gerarDocumento(tipo, dataJson, destLabel, origin) {
   // ambos abrem o ORÇAMENTO (ponto de entrada). O orçamento depois gera o contrato.
   const url = base + 'orcamento.html?' + p.toString() + (tipo === 'contrato' ? '&modo=contrato' : '')
   window.open(url, '_blank')
+}
+
+// ============================================================
+// CONDIÇÕES DE CANCELAMENTO do operador, com TETO no PVP do cliente.
+// Cada faixa (até tal data = X€) é limitada ao PVP aplicado: se a penalização
+// do operador exceder o que o cliente pagou, mostra-se o PVP do cliente.
+// ============================================================
+function extrairCancelamento(budget, pvpCliente) {
+  const cargos = (budget && (budget.cancellationChargeServices || budget.cancellationCharges)) || []
+  const fmtD = s => { if(!s) return ''; try { return new Date(s).toLocaleDateString('pt-PT') } catch(e){ return s } }
+  const teto = parseFloat(pvpCliente) || 0
+  const faixas = []
+  for (const c of cargos) {
+    const pi = c.priceInfo || c
+    let valorOperador = parseFloat(pi.totalAmount != null ? pi.totalAmount : (pi.pvp != null ? pi.pvp : (pi.amount || 0)))
+    // TETO: a penalização nunca excede o PVP que o cliente pagou
+    const valorFinal = (teto > 0 && valorOperador > teto) ? teto : valorOperador
+    faixas.push({
+      desc: c.description || '',
+      inicio: fmtD(c.startDate),
+      fim: fmtD(c.endDate),
+      valorOperador,
+      valor: valorFinal,
+      ajustado: valorFinal !== valorOperador
+    })
+  }
+  return faixas
 }
 
 function renderDetail(data, destLabel, origin) {
