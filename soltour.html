@@ -6,57 +6,40 @@
 <title>📄 Contrato de Viagem · APM Viagens</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',system-ui,sans-serif}
-body{background:#F5F6FA;color:#1A1D2E;font-size:14px;padding:10px}
+body{background:#F5F6FA;color:#1A1D2E;font-size:14px;padding:20px}
 .wrap{max-width:800px;margin:0 auto}
-.card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:20px;margin-bottom:16px}
+.card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:24px;margin-bottom:16px}
 h1{font-size:22px;font-weight:700;margin-bottom:4px}
-h2{font-size:18px;font-weight:600;margin:16px 0 12px;display:flex;align-items:center;gap:8px}
+h2{font-size:18px;font-weight:600;margin:20px 0 12px}
 h3{font-size:15px;font-weight:600;margin:16px 0 8px;color:#3B5BDB}
 .sub{color:#8B92A5;font-size:13px;margin-bottom:18px}
 .divider{border:none;border-top:2px solid #E5E7EB;margin:16px 0}
-.info-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F3F4F6;flex-wrap:wrap;gap:4px}
+.info-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F3F4F6;flex-wrap:wrap}
 .info-row .label{color:#8B92A5;font-weight:500}
 .info-row .value{font-weight:600}
 .total-price{font-size:28px;font-weight:800;color:#E8395A;margin:8px 0}
 .net-price{font-size:20px;font-weight:700;color:#2E7D32}
-
-/* CHECKBOXES */
 .checkbox-group{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #F3F4F6}
 .checkbox-group input[type="checkbox"]{margin-top:3px;width:18px;height:18px;cursor:pointer;flex-shrink:0}
 .checkbox-group label{font-size:14px;line-height:1.5;cursor:pointer}
 .checkbox-group label strong{color:#1A1D2E}
 .required{color:#C62828;font-weight:700;margin-left:4px}
-.obrigatorio{color:#C62828;font-size:12px;font-weight:600}
-
-/* ASSINATURA */
-.assinatura-area{background:#FAFBFC;border:2px dashed #D1D5DB;border-radius:8px;padding:12px;margin:8px 0}
-.assinatura-area canvas{width:100%;height:150px;background:#fff;border-radius:4px;cursor:crosshair;touch-action:none;border:1px solid #E5E7EB}
-.assinatura-area .hint{font-size:12px;color:#8B92A5;text-align:center;margin-top:6px}
-.assinatura-area .btn-sm{padding:4px 12px;font-size:12px;border-radius:4px;border:1px solid #D1D5DB;background:#fff;cursor:pointer}
-.assinatura-area .btn-sm:hover{background:#F3F4F6}
-
-/* BOTÕES */
+.assinatura-area{background:#FAFBFC;border:2px dashed #D1D5DB;border-radius:8px;padding:16px;margin:12px 0}
+.assinatura-area canvas{width:100%;height:150px;background:#fff;border-radius:4px;cursor:crosshair;touch-action:none}
+.assinatura-area .hint{font-size:12px;color:#8B92A5;text-align:center;margin-top:8px}
 .btn-group{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;border:none;transition:all .2s}
 .btn-primary{background:#3B5BDB;color:#fff}.btn-primary:hover{background:#2a4ac7}
 .btn-success{background:#0F6E56;color:#fff}.btn-success:hover{background:#0a4f3d}
 .btn-outline{background:transparent;border:1.5px solid #D1D5DB;color:#1A1D2E}.btn-outline:hover{background:#F3F4F6}
 .btn-danger{background:#E8395A;color:#fff}.btn-danger:hover{background:#c92a4a}
-.btn-warning{background:#F59F00;color:#fff}.btn-warning:hover{background:#e08e00}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-
 .status-bar{padding:12px 16px;border-radius:8px;margin:12px 0;display:none}
 .status-bar.show{display:block}
 .status-bar.success{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
 .status-bar.error{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2}
-
-.footer-notes{font-size:12px;color:#8B92A5;margin-top:16px;line-height:1.8;background:#FAFBFC;padding:12px;border-radius:8px}
-
-/* EDITAR FLUTUANTE */
-.floating-edit{position:fixed;bottom:20px;right:20px;z-index:9999;background:#3B5BDB;color:#fff;padding:14px 24px;border-radius:50px;box-shadow:0 4px 16px rgba(0,0,0,0.3);cursor:pointer;font-weight:600;font-size:14px;border:none;display:flex;align-items:center;gap:8px;transition:all .2s}
-.floating-edit:hover{background:#2a4ac7;transform:scale(1.05)}
-
-@media (max-width:600px){body{padding:8px}.card{padding:14px}.total-price{font-size:22px}.btn{width:100%;justify-content:center}.floating-edit{padding:12px 18px;font-size:13px;bottom:10px;right:10px}}
+.footer-notes{font-size:12px;color:#8B92A5;margin-top:20px;line-height:1.8}
+@media (max-width:600px){body{padding:10px}.card{padding:16px}.total-price{font-size:22px}.btn{width:100%;justify-content:center}}
 </style>
 </head>
 <body>
@@ -70,7 +53,7 @@ h3{font-size:15px;font-weight:600;margin:16px 0 8px;color:#3B5BDB}
       </div>
       <div style="text-align:right">
         <div style="font-size:12px;color:#8B92A5">Nº Proposta</div>
-        <div style="font-weight:700;font-size:16px" id="proposta-id">---</div>
+        <div style="font-weight:700;font-size:16px" id="proposta-id">#---</div>
       </div>
     </div>
   </div>
@@ -107,343 +90,4 @@ h3{font-size:15px;font-weight:600;margin:16px 0 8px;color:#3B5BDB}
     </div>
   </div>
 
-  <!-- ACEITAÇÃO -->
-  <div class="card">
-    <h2>📋 Aceitação do Cliente</h2>
-    <p style="color:#8B92A5;font-size:14px;margin-bottom:12px">
-      Ao assinar este contrato, declara ter lido e aceitado as seguintes condições:
-    </p>
-
-    <!-- 1. Condições Gerais de Reserva -->
-    <div class="checkbox-group">
-      <input type="checkbox" id="aceito_condicoes">
-      <label for="aceito_condicoes">
-        <strong>Condições Gerais de Reserva</strong> — Li e aceito as condições gerais de reserva da APM Viagens, incluindo prazos de cancelamento e reembolso.
-        <span class="required">*</span>
-      </label>
-    </div>
-
-    <!-- 2. FIN - Ficha de Informação Normalizada -->
-    <div class="checkbox-group">
-      <input type="checkbox" id="aceito_fin">
-      <label for="aceito_fin">
-        <strong>FIN</strong> — Confirmo que recebi e li a Ficha de Informação Normalizada (FIN) do pacote turístico, com todos os detalhes do serviço.
-        <span class="required">*</span>
-      </label>
-    </div>
-
-    <!-- 3. RGPD -->
-    <div class="checkbox-group">
-      <input type="checkbox" id="aceito_rgpd">
-      <label for="aceito_rgpd">
-        <strong>RGPD</strong> — Autorizo o tratamento dos meus dados pessoais para a execução do presente contrato, nos termos do Regulamento Geral de Proteção de Dados.
-        <span class="required">*</span>
-      </label>
-    </div>
-
-    <!-- 4. Comunicações de Marketing (opcional) -->
-    <div class="checkbox-group">
-      <input type="checkbox" id="aceito_marketing">
-      <label for="aceito_marketing">
-        <strong>Comunicações de Marketing</strong> — Aceito receber propostas e comunicações de marketing da APM Viagens (opcional).
-        <span style="color:#8B92A5;font-size:12px">(pode alterar a qualquer momento)</span>
-      </label>
-    </div>
-
-    <div style="font-size:12px;color:#C62828;margin:8px 0">
-      * Campos obrigatórios para aceitação do contrato
-    </div>
-  </div>
-
-  <!-- ASSINATURA DIGITAL -->
-  <div class="card">
-    <h2>🖊️ Assinatura Digital</h2>
-    <p style="color:#8B92A5;font-size:14px;margin-bottom:8px">
-      Assine no quadro abaixo para validar o contrato:
-    </p>
-
-    <div class="assinatura-area">
-      <canvas id="assinaturaCanvas" width="600" height="200"></canvas>
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:6px">
-        <span class="hint">✍️ Desenhe a sua assinatura com o rato ou dedo (touch)</span>
-        <button class="btn-sm" onclick="limparAssinatura()">🗑️ Limpar</button>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:#8B92A5;margin-top:4px">
-      <span>Data: <strong id="data-assinatura"></strong></span>
-      <span>Assinado por: <strong id="nome-assinatura">Cliente</strong></span>
-    </div>
-  </div>
-
-  <!-- BOTÕES -->
-  <div class="card">
-    <div class="btn-group">
-      <button class="btn btn-success" onclick="aceitarContrato()" id="btn-aceitar">
-        ✅ Aceitar e contratar
-      </button>
-      <button class="btn btn-outline" onclick="voltar()">← Voltar</button>
-    </div>
-
-    <div id="status-bar" class="status-bar"></div>
-
-    <div class="footer-notes">
-      <strong>Nota:</strong> Após aceitar, receberá um email com a confirmação do contrato.
-      O seu consultor será notificado e preparará a reserva final.
-      <br><br>
-      <strong>Política de Cancelamento:</strong> Consulte as condições gerais para prazos e penalizações.
-    </div>
-  </div>
-</div>
-
-<script>
-// ============================================================
-// VARIÁVEIS GLOBAIS
-// ============================================================
-const SUPABASE_URL = 'https://uiaorfcgvqwxjezgisps.supabase.co'
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
-
-const sb = (window.supabase && window.supabase.createClient) 
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) 
-  : null
-
-let dadosProposta = null
-let propostaId = null
-
-// ============================================================
-// ASSINATURA DIGITAL
-// ============================================================
-const canvas = document.getElementById('assinaturaCanvas')
-const ctx = canvas.getContext('2d')
-let desenhando = false
-let ultimoX = 0, ultimoY = 0
-
-function getCoordenadas(e) {
-  const rect = canvas.getBoundingClientRect()
-  const scaleX = canvas.width / rect.width
-  const scaleY = canvas.height / rect.height
-  
-  let clientX, clientY
-  if (e.touches) {
-    clientX = e.touches[0].clientX
-    clientY = e.touches[0].clientY
-    e.preventDefault()
-  } else {
-    clientX = e.clientX
-    clientY = e.clientY
-  }
-  
-  return {
-    x: (clientX - rect.left) * scaleX,
-    y: (clientY - rect.top) * scaleY
-  }
-}
-
-function iniciarDesenho(e) {
-  e.preventDefault()
-  desenhando = true
-  const coords = getCoordenas(e)
-  ultimoX = coords.x
-  ultimoY = coords.y
-  ctx.beginPath()
-  ctx.moveTo(ultimoX, ultimoY)
-}
-
-function desenhar(e) {
-  e.preventDefault()
-  if (!desenhando) return
-  const coords = getCoordenadas(e)
-  ctx.lineTo(coords.x, coords.y)
-  ctx.strokeStyle = '#1A1D2E'
-  ctx.lineWidth = 2
-  ctx.lineCap = 'round'
-  ctx.stroke()
-  ultimoX = coords.x
-  ultimoY = coords.y
-}
-
-function terminarDesenho(e) {
-  e.preventDefault()
-  desenhando = false
-}
-
-// Mouse events
-canvas.addEventListener('mousedown', iniciarDesenho)
-canvas.addEventListener('mousemove', desenhar)
-canvas.addEventListener('mouseup', terminarDesenho)
-canvas.addEventListener('mouseleave', terminarDesenho)
-
-// Touch events
-canvas.addEventListener('touchstart', iniciarDesenho, { passive: false })
-canvas.addEventListener('touchmove', desenhar, { passive: false })
-canvas.addEventListener('touchend', terminarDesenho, { passive: false })
-
-function limparAssinatura() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  ctx.fillStyle = '#fff'
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-}
-
-// Inicializar canvas com fundo branco
-limparAssinatura()
-
-// ============================================================
-// CARREGAR DADOS DA PROPOSTA
-// ============================================================
-async function carregarProposta() {
-  const urlParams = new URLSearchParams(window.location.search)
-  const id = urlParams.get('proposta')
-  
-  if (!id) {
-    document.getElementById('proposta-id').textContent = '⚠️ Sem ID'
-    showStatus('error', '⚠️ Nenhuma proposta foi carregada.')
-    return
-  }
-  
-  propostaId = id
-  document.getElementById('proposta-id').textContent = '#' + id
-  
-  try {
-    if (!sb) throw new Error('Supabase não carregado')
-    
-    const { data, error } = await sb
-      .from('propostas_viagem')
-      .select('dados')
-      .eq('id', id)
-      .single()
-    
-    if (error) throw new Error(error.message)
-    if (!data || !data.dados) throw new Error('Dados da proposta não encontrados')
-    
-    dadosProposta = data.dados
-    preencherDetalhes(data.dados)
-    
-  } catch (e) {
-    console.error('Erro ao carregar proposta:', e)
-    showStatus('error', '❌ Erro ao carregar a proposta: ' + e.message)
-  }
-}
-
-function preencherDetalhes(dados) {
-  document.getElementById('destino').textContent = dados.dest || '---'
-  document.getElementById('hotel').textContent = dados.hotel || '---'
-  document.getElementById('checkin').textContent = dados.part || '---'
-  document.getElementById('checkout').textContent = dados.volta || dados.fim || '---'
-  document.getElementById('noites').textContent = dados.noites || '---'
-  document.getElementById('regime').textContent = dados.reg || '---'
-  document.getElementById('operador').textContent = dados.fornecedor || '---'
-  
-  document.getElementById('pvp').textContent = dados.sval ? '€' + Number(dados.sval).toFixed(2) : '---'
-  document.getElementById('net').textContent = dados._net ? '€' + Number(dados._net).toFixed(2) : '---'
-  document.getElementById('margem').textContent = dados._margem ? '€' + Number(dados._margem).toFixed(2) : '---'
-  
-  // Data de assinatura
-  document.getElementById('data-assinatura').textContent = new Date().toLocaleDateString('pt-PT', {
-    day: '2-digit', month: '2-digit', year: 'numeric'
-  })
-  
-  // Nome do cliente (se disponível)
-  if (dados.cnome) {
-    document.getElementById('nome-assinatura').textContent = dados.cnome
-  }
-}
-
-// ============================================================
-// ACEITAR CONTRATO
-// ============================================================
-function aceitarContrato() {
-  const checkCondicoes = document.getElementById('aceito_condicoes')
-  const checkFin = document.getElementById('aceito_fin')
-  const checkRgpd = document.getElementById('aceito_rgpd')
-  
-  // Validar obrigatórios
-  const obrigatorios = [
-    { el: checkCondicoes, nome: 'Condições Gerais de Reserva' },
-    { el: checkFin, nome: 'FIN - Ficha de Informação Normalizada' },
-    { el: checkRgpd, nome: 'RGPD' }
-  ]
-  
-  const naoAceitos = obrigatorios.filter(item => !item.el.checked)
-  
-  if (naoAceitos.length > 0) {
-    const nomes = naoAceitos.map(i => i.nome).join(', ')
-    showStatus('error', `❌ Para aceitar o contrato, deve ler e aceitar: ${nomes}`)
-    return
-  }
-  
-  // Verificar se há assinatura
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  const pixels = imageData.data
-  let temAssinatura = false
-  for (let i = 0; i < pixels.length; i += 4) {
-    if (pixels[i] < 255 || pixels[i+1] < 255 || pixels[i+2] < 255) {
-      temAssinatura = true
-      break
-    }
-  }
-  
-  if (!temAssinatura) {
-    showStatus('error', '❌ Por favor, assine no quadro acima para validar o contrato.')
-    return
-  }
-  
-  // Tudo OK - processar
-  const btn = document.getElementById('btn-aceitar')
-  btn.disabled = true
-  btn.textContent = '⏳ A processar...'
-  
-  // Simular processamento
-  setTimeout(() => {
-    showStatus('success', '✅ Contrato aceite com sucesso! O seu consultor será notificado.')
-    btn.textContent = '✅ Aceite!'
-    btn.style.background = '#2E7D32'
-    
-    // Mostrar botão editar flutuante após 2 segundos
-    setTimeout(() => {
-      mostrarBotaoEditar()
-    }, 2000)
-    
-  }, 1500)
-}
-
-function showStatus(type, msg) {
-  const el = document.getElementById('status-bar')
-  el.className = `status-bar show ${type}`
-  el.textContent = msg
-}
-
-function voltar() {
-  window.history.back()
-}
-
-// ============================================================
-// BOTÃO EDITAR FLUTUANTE
-// ============================================================
-function mostrarBotaoEditar() {
-  // Remover botão existente
-  const existente = document.querySelector('.floating-edit')
-  if (existente) existente.remove()
-  
-  const btn = document.createElement('button')
-  btn.className = 'floating-edit'
-  btn.innerHTML = '✏️ Editar documento'
-  btn.onclick = function() {
-    window.open(window.location.href, '_blank')
-  }
-  document.body.appendChild(btn)
-  
-  // Auto-remover após 30 segundos
-  setTimeout(() => {
-    if (btn.parentNode) btn.remove()
-  }, 30000)
-}
-
-// ============================================================
-// INICIAR
-// ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-  carregarProposta()
-})
-</script>
-</body>
-</html>
+  <!-- ACEITAÇÃO - TODOS OS CAMPOS OBRIGATÓRIOS
