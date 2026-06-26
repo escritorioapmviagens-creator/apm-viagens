@@ -703,6 +703,50 @@ async function initApp() {
     window._pedidoOrcId = _urlParams.get('pedido_id')
   }
 
+  // ── PRÉ-PREENCHER A PARTIR DO MOTOR DE PACOTES (?dados=<id>) ──
+  // Busca os dados ricos da oferta (hotel, preço, regime, fotos, vídeo) na Supabase
+  // e preenche o formulário, que fica editável.
+  if(_urlParams.get('dados')) {
+    try {
+      const id = _urlParams.get('dados')
+      const { data: row } = await sb.from('propostas_viagem').select('dados').eq('id', id).single()
+      const D = row && row.dados
+      if(D) {
+        const setV = (elId, val) => { const el = document.getElementById(elId); if(el && val != null && val !== '') el.value = val }
+        setV('f-dest', D.dest)
+        setV('f-hotel', D.hotel)
+        setV('f-sub', D.sub)
+        setV('f-part', D.part)
+        setV('f-reg', D.reg)
+        setV('f-noites', D.noites)
+        setV('f-pax', D.pax)
+        setV('f-fornecedor', D.fornecedor)
+        setV('f-localizador', D.localizador)
+        setV('f-drest', D.drest)
+        setV('f-video', D.videoUrl)
+        // Fotos do operador → grelha de pré-visualização
+        if(Array.isArray(D.hotel_fotos) && D.hotel_fotos.length) {
+          window._hotelFotos = D.hotel_fotos.slice(0, 4)
+          if(typeof renderHotelPreview === 'function') renderHotelPreview()
+        } else if(D.foto) {
+          window._hotelFotos = [D.foto]
+          if(typeof renderHotelPreview === 'function') renderHotelPreview()
+        }
+        // Preço(s): D.prices = [{lbl,val}] ; ou um valor único em D.sval
+        window._prefillPrices = Array.isArray(D.prices) ? D.prices : (D.sval ? [{lbl:'Preço por pessoa', val:D.sval}] : null)
+        // Cliente, se já vier
+        setV('f-cli-nome', D.cli_nome)
+        setV('f-cli-tel', D.cli_tel)
+        setV('f-cli-email', D.cli_email)
+        setV('f-cli-nif', D.cli_nif)
+        // Consultor
+        setV('f-cnome', D.cnome)
+        setV('f-ctel', D.ctel)
+        if(typeof updatePreview === 'function') updatePreview()
+      }
+    } catch(e) { console.warn('Pré-preenchimento ?dados= falhou:', e.message) }
+  }
+
   // Load templates
   const { data: tmpls } = await sb.from('templates_condicoes').select('*').eq('ativo', true).order('nome')
   templates = tmpls || []
@@ -713,7 +757,11 @@ async function initApp() {
     document.getElementById('tmpl-cancel-sel').innerHTML += `<option value="${t.id}">${t.nome}</option>`
   })
   // Add default rows
-  addPrice()
+  if(Array.isArray(window._prefillPrices) && window._prefillPrices.length) {
+    window._prefillPrices.forEach(p => addPrice(p.lbl || p.label || '', p.val || p.value || ''))
+  } else {
+    addPrice()
+  }
   addVoo()
 
   carregarMeusOrcamentos()
@@ -1263,13 +1311,15 @@ function addIncl() {
 }
 
 // ── PRICES ──
-function addPrice() {
+function addPrice(lbl = '', val = '') {
   const wrap = document.getElementById('prices-wrap')
   const div = document.createElement('div')
   div.className = 'price-row-item'
+  const lblEsc = String(lbl).replace(/"/g, '&quot;')
+  const valEsc = (val === '' || val == null) ? '' : String(val).replace(/[^\d.,]/g, '')
   div.innerHTML = `
-    <input style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:.875rem;outline:none;width:100%" placeholder="Descrição (ex: Pacote 2 adultos)">
-    <input type="number" style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:.875rem;outline:none;width:100%" placeholder="€" oninput="updatePreview(); atualizarRefMargem()">
+    <input value="${lblEsc}" style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:.875rem;outline:none;width:100%" placeholder="Descrição (ex: Pacote 2 adultos)">
+    <input type="number" value="${valEsc}" style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:.875rem;outline:none;width:100%" placeholder="€" oninput="updatePreview(); atualizarRefMargem()">
     <button onclick="this.closest('.price-row-item').remove();updatePreview()" class="price-del">✕</button>
   `
   wrap.appendChild(div)
