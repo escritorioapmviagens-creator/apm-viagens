@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teste · Net vs PVP · Soltour</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',system-ui,sans-serif}
+body{background:#F5F6FA;color:#1A1D2E;font-size:14px;padding:22px}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-size:19px;font-weight:700;margin-bottom:4px}.sub{color:#8B92A5;font-size:13px;margin-bottom:18px}
+.card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:18px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+label{font-size:11px;font-weight:600;color:#8B92A5;text-transform:uppercase;display:block;margin-bottom:4px}
+input{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:13px}
+.btn{padding:10px 18px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;background:#3B5BDB;color:#fff;margin-top:14px}
+.btn:disabled{opacity:.5}
+.status{padding:10px 14px;border-radius:8px;font-size:13px;margin:14px 0;display:none}
+.status.show{display:block}.loading{background:#EEF2FF;color:#3251c4}.ok{background:#E8F5E9;color:#2E7D32}.err{background:#FFEBEE;color:#C62828}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+td{padding:9px 12px;border-bottom:1px solid rgba(0,0,0,.06);font-size:14px}
+td.k{color:#8B92A5;font-size:12px;width:55%}
+td.v{text-align:right;font-weight:600;font-family:monospace}
+tr.hi td{background:#FFF8E1}
+.big{font-size:16px}
+.hint{font-size:12px;color:#8B92A5;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔍 Net vs PVP — que campo é o quê?</h1>
+  <div class="sub">Faz uma pesquisa real e mostra todos os campos de preço do 1º pacote. Compara com o site do operador para confirmar qual é o net.</div>
+
+  <div class="card">
+    <div class="grid">
+      <div><label>Origem</label><input id="origin" value="LIS"></div>
+      <div><label>Destino</label><input id="dest" value="AZS"></div>
+      <div><label>Check-in</label><input type="date" id="start" value="2026-09-10"></div>
+      <div><label>Noites</label><input type="number" id="nights" value="7"></div>
+      <div><label>Adultos</label><input type="number" id="adults" value="2"></div>
+    </div>
+    <button class="btn" id="go" onclick="run()">🔍 Pesquisar e revelar preços</button>
+    <div class="hint">Dica: usa um destino/data que consigas verificar no backoffice da Soltour (ex. Samaná AZS, setembro).</div>
+  </div>
+
+  <div id="status" class="status"></div>
+  <div id="out"></div>
+</div>
+
+<script>
+const SUPABASE_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const PROXY=`${SUPABASE_URL}/functions/v1/Soltour-proxy-index-`
+const LOGIN={brand:'SOLTOUR',market:'XMLPT',languageCode:'PT',username:'APMVIA999',password:'XMLAPMVIA'}
+let token=null
+const $=id=>document.getElementById(id)
+const st=(t,m)=>{const e=$('status');e.className=`status show ${t}`;e.textContent=m}
+const eur=v=>v==null?'—':'€'+Number(v).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})
+
+async function call(path,body){
+  const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},body:JSON.stringify({path,token,body})})
+  return r.json()
+}
+async function run(){
+  $('go').disabled=true
+  try{
+    st('loading','A iniciar sessão…')
+    const l=await call('login/login',LOGIN); if(!l.sessionToken)throw new Error('login falhou'); token=l.sessionToken
+    const O=$('origin').value.trim(),D=$('dest').value.trim(),start=$('start').value,nights=+$('nights').value
+    const e=new Date(start);e.setDate(e.getDate()+nights);const end=e.toISOString().slice(0,10)
+    const pax=[];for(let i=0;i<(+$('adults').value||1);i++)pax.push({age:30,type:'ADULT'})
+    st('loading','A pesquisar pacote…')
+    const d=await call('booking/availability',{productType:'PACKAGE',languageCode:'PT',
+      criteria:{order:{direction:'ASC',type:'PRICE'},pagination:{firstItem:0,itemCount:5}},
+      params:{startDate:start,endDate:end,numNights:nights,residentType:'NONE',
+        accomodation:{rooms:[{passengers:pax}]},hotelParams:{destinationCode:D},
+        flightParams:{directFlightsOnly:false,itineraries:[
+          {origins:[O],destinations:[D],flightDate:start},{origins:[D],destinations:[O],flightDate:end}]}}})
+    const budgets=d.budgets||[]
+    if(!budgets.length){ st('err','Sem pacotes para este caso. Tenta outro destino/data.'); $('out').innerHTML=''; return }
+    const b=budgets[0]
+    const pb=b.priceBreakdown||{}
+    const hs=(b.hotelServices&&b.hotelServices[0])||{}
+    st('ok',`✅ Pacote: ${hs.description||hs.hotelCode||'hotel'}. Vê TODOS os campos de preço abaixo.`)
+    // mostrar TODOS os campos numéricos do priceBreakdown (não só os que adivinhei)
+    const allRows=Object.keys(pb).sort().map(k=>{
+      const v=pb[k]
+      const isNum=typeof v==='number'
+      const cand=/net|cost|pvp/i.test(k)
+      return `<tr class="${cand?'hi':''}"><td class="k">${k}</td><td class="v">${isNum?eur(v):(v==null?'∅ vazio':JSON.stringify(v))}</td></tr>`
+    }).join('')
+    // também procurar net dentro de priceBreakdownDetails (por passageiro)
+    let detailsHtml=''
+    if(Array.isArray(pb.priceBreakdownDetails)&&pb.priceBreakdownDetails.length){
+      const det=pb.priceBreakdownDetails[0]
+      detailsHtml=`<div class="card"><b>priceBreakdownDetails[0]</b> (por passageiro/serviço):<table>${
+        Object.keys(det).sort().map(k=>{const v=det[k];const isNum=typeof v==='number';const cand=/net|cost|pvp/i.test(k)
+          return `<tr class="${cand?'hi':''}"><td class="k">${k}</td><td class="v">${isNum?eur(v):(v==null?'∅':JSON.stringify(v).slice(0,40))}</td></tr>`}).join('')
+      }</table></div>`
+    }
+    $('out').innerHTML=`<div class="card"><b>priceBreakdown completo</b> (${Object.keys(pb).length} campos):<table>${allRows}</table>
+      <div class="hint">Campos com "net", "cost" ou "pvp" estão a amarelo. Vê qual tem o valor que bate certo com o net do site. Se todos os net estão vazios, o net vem só na cotação.</div></div>${detailsHtml}`
+    // PASSO 2: cotar este pacote para ver se o net aparece preenchido
+    if(b.budgetId && d.availToken){
+      st('loading','A cotar a oferta para obter o net…')
+      const q=await call('booking/quote',{availToken:d.availToken,budgetIds:[b.budgetId],productType:'PACKAGE',languageCode:'PT'})
+      const qpb=(q.budget&&q.budget.priceBreakdown)||{}
+      const qRows=Object.keys(qpb).sort().filter(k=>typeof qpb[k]==='number'||/net|cost|pvp/i.test(k)).map(k=>{
+        const v=qpb[k];const isNum=typeof v==='number';const cand=/net|cost|pvp/i.test(k)
+        return `<tr class="${cand?'hi':''}"><td class="k">${k}</td><td class="v">${isNum?eur(v):(v==null?'∅ vazio':JSON.stringify(v))}</td></tr>`
+      }).join('')
+      $('out').innerHTML+=`<div class="card" style="border:2px solid #2E7D32"><b>🟢 Depois de COTAR (booking/quote) — é aqui que o net deve aparecer:</b>
+        <table>${qRows||'<tr><td>sem priceBreakdown na cotação</td></tr>'}</table>
+        <div class="hint">Compara o net daqui com o do site. Se agora vier preenchido, é este o valor que a app vai usar no botão "ver net".</div></div>`
+      st('ok','✅ Pesquisa + cotação feitas. Compara o net da cotação (verde) com o site.')
+    }
+  }catch(e){ st('err','❌ '+e.message) }
+  $('go').disabled=false
+}
+</script>
+</body>
+</html>
