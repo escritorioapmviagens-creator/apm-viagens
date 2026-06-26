@@ -42,6 +42,22 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
 .brand-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-right:6px}
 .brand-soltour{background:#FFF0F3;color:#E8395A}
 .brand-soltropico{background:#E3FAFC;color:#1098AD}
+@media (max-width: 600px) {
+  body { padding: 10px; font-size: 13px; }
+  .wrap { max-width: 100%; }
+  .calendar { gap: 3px; margin-top: 8px; }
+  .cal-day { padding: 4px 2px; min-height: 52px; border-radius: 6px; border-width: 1px; }
+  .cal-day .day { font-size: 13px; }
+  .cal-day .price { font-size: 10px; margin-top: 1px; }
+  .cal-day .op { font-size: 8px; padding: 1px 3px; margin-top: 1px; }
+  .cal-day.soltour, .cal-day.soltropico { border-left-width: 2px; }
+  .cal-header { font-size: 9px; padding: 3px 0; }
+  /* o detalhe e qualquer grelha não transbordam */
+  .grid { grid-template-columns: 1fr; }
+  #detail-container, #calendar-container { overflow-x: hidden; }
+  #detail-container table { width: 100%; font-size: 12px; }
+  img { max-width: 100%; height: auto; }
+}
 </style>
 </head>
 <body>
@@ -75,6 +91,10 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
       <div>
         <label>Adultos</label>
         <input type="number" id="adults" value="2" min="1" max="9">
+      </div>
+      <div>
+        <label>Idades crianças</label>
+        <input type="text" id="criancas" value="" placeholder="ex: 5, 8">
       </div>
     </div>
     <button class="btn" id="go" onclick="run()">🔍 Mostrar Calendário</button>
@@ -235,10 +255,11 @@ function pkDirectChildren(el, tag) { if (!el) return []; const o = []; for (let 
 // ============================================================
 // BUSCAR CALENDÁRIO SOLTOUR - RÁPIDO (1 chamada availability + 1 calendário)
 // ============================================================
-async function getSoltourCalendar(destCode, origin, year, month, nights, adults) {
+async function getSoltourCalendar(destCode, origin, year, month, nights, adults, childAges = []) {
   await ensureLogin()
 
   const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
+  childAges.forEach(age => pax.push({ age: age, type: 'CHILD' }))
 
   // Datas-semente espalhadas pelo MÊS INTEIRO (2 em 2 dias), testadas em LOTES
   // PARALELOS de 5 — muito mais rápido que uma a uma. Para assim que um lote
@@ -333,8 +354,7 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults)
 // ============================================================
 // BUSCAR CALENDÁRIO SOLTRÓPICO
 // ============================================================
-async function getSoltropicoCalendar(destCode, origin, year, month, nights, adults) {
-  const childAges = []
+async function getSoltropicoCalendar(destCode, origin, year, month, nights, adults, childAges = []) {
   const results = []
 
   try {
@@ -421,6 +441,7 @@ async function run() {
     const monthVal = $('month').value
     const nights = +$('nights').value
     const adults = +$('adults').value || 1
+    const childAges = ($('criancas').value || '').split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n) && n >= 0 && n < 18)
 
     if (!destInput || !monthVal || !nights) {
       st('err', '⚠️ Preenche todos os campos obrigatórios.')
@@ -442,7 +463,7 @@ async function run() {
 
     if (destInfo.soltour) {
       promises.push(
-        getSoltourCalendar(destInfo.soltour, origin, year, month, nights, adults)
+        getSoltourCalendar(destInfo.soltour, origin, year, month, nights, adults, childAges)
           .then(days => { 
             allDays.push(...days) 
           })
@@ -452,7 +473,7 @@ async function run() {
 
     if (destInfo.soltropico) {
       promises.push(
-        getSoltropicoCalendar(destInfo.soltropico, origin, year, month, nights, adults)
+        getSoltropicoCalendar(destInfo.soltropico, origin, year, month, nights, adults, childAges)
           .then(days => { 
             allDays.push(...days) 
           })
@@ -575,6 +596,8 @@ async function selectDay(dateStr) {
       const endStr = end.toISOString().slice(0, 10)
 
       const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
+      const _chAges = ($('criancas').value || '').split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n) && n >= 0 && n < 18)
+      _chAges.forEach(age => pax.push({ age: age, type: 'CHILD' }))
 
       const availBody = {
         productType: 'PACKAGE',
@@ -698,58 +721,35 @@ async function gerarDocumento(tipo, dataJson, destLabel, origin) {
   let data; try { data = JSON.parse(dataJson) } catch(e) { alert('Erro nos dados da oferta.'); return }
   const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
   const fmtPt = s => { if(!s || s==='—') return ''; try { return new Date(s+'T12:00:00').toLocaleDateString('pt-PT') } catch(e){ return s } }
-  // identidade do consultor (vinda do portal via ?cid/?cnome)
   const up = new URLSearchParams(location.search)
-  const cid = up.get('cid') || null
+  const cid = up.get('cid') || ''
   const cnome = up.get('cnome') || ''
-
-  // montar o objeto 'dados' (consultor_id vai como coluna própria, não dentro de dados)
   const subtitulo = [fmtPt(data.checkIn), data.nights ? data.nights + ' noites' : '', destLabel].filter(Boolean).join(' · ')
-  const dados = {
-    tipo: tipo,
-    dest: `${data.hotelName} · ${destLabel}`,
-    hotel: data.hotelName || '',
-    sub: subtitulo,
-    part: fmtPt(data.checkIn),
-    noites: data.nights || '',
-    reg: data.board || '',
-    pax: '',
-    fornecedor: data.brand || '',
-    localizador: '',
-    drest: originLabel,
-    hotel_fotos: (data.images && data.images.length) ? data.images : (data.image ? [data.image] : []),
-    foto: data.image || (data.images && data.images[0]) || '',
-    videoUrl: '',
-    prices: [{ lbl: 'Preço por pessoa (PVP)', val: data.totalPvp }],
-    sval: data.totalPvp,
-    _net: data.totalNet,
-    _margem: data.totalCom,
-    cnome: cnome,
-    _origem: 'motor-pacotes'
-  }
 
-  const btn = (typeof event !== 'undefined' && event) ? event.target : null
-  try {
-    if(btn){ btn.disabled = true; btn._txt = btn.textContent; btn.textContent = 'A gerar…' }
-    if(!sb) throw new Error('Supabase não carregado')
-    // mesmo padrão que o orçamento/portal já usam com sucesso
-    const { data: res, error } = await sb.from('propostas_viagem')
-      .insert({ consultor_id: cid, dados })
-      .select('id').single()
-    if(error) throw new Error(error.message)
-    const id = res && res.id
-    if(!id) throw new Error('Sem id devolvido')
-    const base = 'https://escritorioapmviagens-creator.github.io/apm-viagens/'
-    const url = tipo === 'orcamento'
-      ? `${base}orcamento.html?dados=${id}`
-      : `${base}proposta-v2.html?proposta=${id}`
-    window.open(url, '_blank')
-  } catch(e) {
-    alert('Não foi possível gerar o documento: ' + e.message)
-    console.error(e)
-  } finally {
-    if(btn){ btn.disabled = false; if(btn._txt) btn.textContent = btn._txt }
-  }
+  // Passar tudo por parâmetros no link (as fotos são URLs curtas, cabe bem).
+  // O motor NÃO grava nada — o registo oficial é criado quando o consultor
+  // clica "Gerar" DENTRO do orçamento (fluxo normal intacto).
+  const p = new URLSearchParams()
+  p.set('motor', '1')
+  p.set('dest', `${data.hotelName} · ${destLabel}`)
+  p.set('hotel', data.hotelName || '')
+  p.set('sub', subtitulo)
+  p.set('part', fmtPt(data.checkIn))
+  p.set('noites', data.nights || '')
+  p.set('reg', data.board || '')
+  p.set('fornecedor', data.brand || '')
+  p.set('drest', originLabel)
+  p.set('pvp', data.totalPvp || '')
+  p.set('net', data.totalNet || '')
+  p.set('cnome', cnome)
+  if(cid) p.set('cid', cid)
+  const fotos = (data.images && data.images.length) ? data.images : (data.image ? [data.image] : [])
+  fotos.slice(0, 4).forEach((f, i) => { if(f) p.set('foto' + (i+1), f) })
+
+  const base = 'https://escritorioapmviagens-creator.github.io/apm-viagens/'
+  // ambos abrem o ORÇAMENTO (ponto de entrada). O orçamento depois gera o contrato.
+  const url = base + 'orcamento.html?' + p.toString() + (tipo === 'contrato' ? '&modo=contrato' : '')
+  window.open(url, '_blank')
 }
 
 function renderDetail(data, destLabel, origin) {
