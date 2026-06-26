@@ -53,16 +53,7 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
       <div>
         <label>Destino</label>
         <input id="dest" list="dest-list" placeholder="Ex: Samaná, Sal, Madeira..." value="Saídia">
-        <datalist id="dest-list">
-          <option value="Samaná"><option value="Sal"><option value="Boa Vista">
-          <option value="Madeira"><option value="São Miguel"><option value="Terceira">
-          <option value="Maiorca"><option value="Ibiza"><option value="Tenerife">
-          <option value="Gran Canária"><option value="Gran Canaria"><option value="Fuerteventura">
-          <option value="Punta Cana"><option value="Cancún"><option value="Monastir">
-          <option value="Djerba"><option value="Saídia"><option value="Saidia">
-          <option value="Marrakech"><option value="Dubai"><option value="Maldivas">
-          <option value="Maurícias"><option value="Mauricias">
-        </datalist>
+        <datalist id="dest-list"></datalist>
       </div>
       <div>
         <label>Origem</label>
@@ -121,22 +112,22 @@ const DEST_MAP = [
   {label:'Formentera', soltour:'FON', soltropico:231},
   {label:'Tenerife', soltour:'TCI', soltropico:229},
   {label:'Gran Canária', soltour:'LPA', soltropico:230},
-  {label:'Gran Canaria', soltour:'LPA', soltropico:230},
+  {label:'Gran Canaria', soltour:'LPA', soltropico:230, alias:true},
   {label:'Fuerteventura', soltour:'FUE', soltropico:242},
   {label:'Faial', soltour:'HOR', soltropico:144},
   {label:'São Miguel', soltour:'PDL', soltropico:11},
-  {label:'Sao Miguel', soltour:'PDL', soltropico:11},
+  {label:'Sao Miguel', soltour:'PDL', soltropico:11, alias:true},
   {label:'Terceira', soltour:'TER', soltropico:12},
   {label:'Madeira', soltour:'FNC', soltropico:5},
   {label:'Porto Santo', soltour:'PXO', soltropico:8},
   {label:'Monastir', soltour:'MIR', soltropico:262},
   {label:'Djerba', soltour:'DJE', soltropico:261},
   {label:'Saídia', soltour:'OUD', soltropico:44},
-  {label:'Saidia', soltour:'OUD', soltropico:44},
+  {label:'Saidia', soltour:'OUD', soltropico:44, alias:true},
   {label:'São Vicente', soltour:'VXE', soltropico:28},
   {label:'Santiago', soltour:'RAI', soltropico:24},
   {label:'Boa Vista', soltour:'BVC', soltropico:41},
-  {label:'Boavista', soltour:'BVC', soltropico:41},
+  {label:'Boavista', soltour:'BVC', soltropico:41, alias:true},
   {label:'Sal', soltour:'SID', soltropico:7},
   {label:'Salvador', soltour:'SSA', soltropico:51},
   {label:'Fortaleza', soltour:'FOR', soltropico:62},
@@ -145,13 +136,13 @@ const DEST_MAP = [
   {label:'Rio de Janeiro', soltour:'RIO', soltropico:91},
   {label:'Marrakech', soltour:'RAK', soltropico:45},
   {label:'Punta Cana', soltour:'PUJ', soltropico:null},
-  {label:'Puntacana', soltour:'PUJ', soltropico:null},
+  {label:'Puntacana', soltour:'PUJ', soltropico:null, alias:true},
   {label:'Cancún', soltour:'CUN', soltropico:null},
-  {label:'Cancun', soltour:'CUN', soltropico:null},
+  {label:'Cancun', soltour:'CUN', soltropico:null, alias:true},
   {label:'Riviera Maya', soltour:'RVM', soltropico:null},
   {label:'La Romana', soltour:'LRM', soltropico:null},
   {label:'Samaná', soltour:'AZS', soltropico:null},
-  {label:'Samana', soltour:'AZS', soltropico:null},
+  {label:'Samana', soltour:'AZS', soltropico:null, alias:true},
   {label:'Puerto Plata', soltour:'POP', soltropico:null},
   {label:'La Palma', soltour:'SPC', soltropico:241},
   {label:'Lanzarote', soltour:'ACE', soltropico:240},
@@ -162,13 +153,13 @@ const DEST_MAP = [
   {label:'Dubai', soltour:null, soltropico:10},
   {label:'Maldivas', soltour:null, soltropico:67},
   {label:'Maurícias', soltour:null, soltropico:22},
-  {label:'Mauricias', soltour:null, soltropico:22},
+  {label:'Mauricias', soltour:null, soltropico:22, alias:true},
   {label:'Zanzibar', soltour:null, soltropico:257},
   {label:'Hammamet', soltour:null, soltropico:222},
   {label:'Istambul', soltour:null, soltropico:249},
   {label:'Alicante', soltour:null, soltropico:224},
   {label:'Málaga', soltour:null, soltropico:225},
-  {label:'Malaga', soltour:null, soltropico:225},
+  {label:'Malaga', soltour:null, soltropico:225, alias:true},
 ]
 
 // ============================================================
@@ -762,6 +753,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const start = new Date(today)
   start.setDate(start.getDate() + 3)
   $('month').value = start.toISOString().slice(0, 7)
+
+  // Preencher a lista de destinos a partir da tabela, SEM aliases (grafias alternativas),
+  // ordenada alfabeticamente — assim cada destino aparece só uma vez.
+  const dl = $('dest-list')
+  if (dl) {
+    const nomes = DEST_MAP.filter(d => !d.alias).map(d => d.label)
+      .sort((a, b) => a.localeCompare(b, 'pt'))
+    dl.innerHTML = nomes.map(n => `<option value="${n}">`).join('')
+  }
 
   document.querySelectorAll('input').forEach(inp => {
     inp.addEventListener('keydown', e => {
