@@ -333,13 +333,18 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults,
   }
 
   const days = (cal.days || [])
+  const numPax = adults + childAges.length   // total de pessoas
   return days.map(d => {
     const code = (d.additionalInformation && d.additionalInformation.hotel) || ''
     const info = hotelMap[String(code)] || {}
-    const precoDia = parseFloat(d.bestPrice || d.price) || 0
+    // O getPriceCalendar da Soltour devolve preço POR PESSOA. A Soltrópico (PriceFrom)
+    // é TOTAL. Normalizar a Soltour para TOTAL (× nº de pessoas) para comparação justa.
+    const precoPP = parseFloat(d.bestPrice || d.price) || 0
+    const precoDia = precoPP * numPax
     return {
       date: d.day,
       price: precoDia,
+      pricePerPerson: precoPP,
       currency: d.currencyCode || 'EUR',
       hotelName: info.name || code || 'Hotel',
       hotelCode: code,
@@ -629,162 +634,104 @@ async function selectDay(dateStr) {
     const adults = +$('adults').value || 1
     const destInfo = data.destInfo
 
-    let detailData = null
-
-    // o dia pode ter os dois operadores; usar o mais barato (dayData.brand) e ler
-    // os dados do sub-objeto correto (soltour/soltropico), não do topo
-    const op = (dayData.brand === 'SOLTOUR') ? dayData.soltour : dayData.soltropico
-    if (!op) { detailContainer.innerHTML = `<div class="card">Sem dados para este dia.</div>`; return }
-
-    if (dayData.brand === 'SOLTOUR' && destInfo.soltour) {
-      const nightsDia = op.nights || nights   // usar as noites DAQUELE dia (pode diferir do pedido)
-      const end = new Date(dateStr)
-      end.setDate(end.getDate() + nightsDia)
-      const endStr = end.toISOString().slice(0, 10)
-
-      const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
-      const _chAges = ($('criancas').value || '').split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n) && n >= 0 && n < 18)
-      _chAges.forEach(age => pax.push({ age: age, type: 'CHILD' }))
-
-      const availBody = {
-        productType: 'PACKAGE',
-        languageCode: 'PT',
-        criteria: { order: { direction: 'ASC', type: 'PRICE' }, pagination: { firstItem: 0, itemCount: 5 } },
-        params: {
-          startDate: dateStr,
-          endDate: endStr,
-          numNights: nightsDia,
-          residentType: 'NONE',
-          accomodation: { rooms: [{ passengers: pax }] },
-          hotelParams: { destinationCode: destInfo.soltour },
-          flightParams: {
-            directFlightsOnly: false,
-            itineraries: [
-              { origins: [origin], destinations: [destInfo.soltour], flightDate: dateStr },
-              { origins: [destInfo.soltour], destinations: [origin], flightDate: endStr }
-            ]
-          }
-        }
-      }
-
-      const av = await call('booking/availability', availBody)
-      const budgets = av.budgets || []
-
-      if (!(budgets.length && budgets[0].budgetId && av.availToken)) {
-        // A availability direta a este dia falhou (a Soltour às vezes só dá o preço
-        // via calendário, não via availability direta). Mostrar o PVP do calendário
-        // sem o net detalhado, em vez de falhar — o net obtém-se na reserva.
-        detailData = {
-          brand: 'SOLTOUR',
-          hotelName: op.hotelName,
-          hotelCode: op.hotelCode,
-          stars: op.stars || 0,
-          board: op.board || '',
-          checkIn: dateStr,
-          checkOut: endStr,
-          nights: nightsDia,
-          image: op.image || '',
-          images: op.images || (op.image ? [op.image] : []),
-          totalPvp: op.price,
-          totalNet: null,
-          totalCom: null,
-          semNet: true,
-          cancelamento: [],
-          rows: [{ name: 'Pacote (preço de calendário)', pvp: op.price, net: null, com: null }]
-        }
-      } else {
-        const q = await call('booking/quote', {
-          availToken: av.availToken,
-          budgetIds: [budgets[0].budgetId],
-          productType: 'PACKAGE',
-          languageCode: 'PT'
-        })
-
-        const qpb = (q.budget && q.budget.priceBreakdown) || {}
-        const details = Array.isArray(qpb.priceBreakdownDetails) ? qpb.priceBreakdownDetails : []
-
-        let totalPvp = 0, totalNet = 0, totalCom = 0
-        const rows = []
-
-        if (details.length) {
-          for (const det of details) {
-            const pi = det.priceInfo || det
-            const pvp = parseFloat(pi.pvp || pi.amount || 0)
-            // CONFIRMADO com o site: o net por linha é netAmount (base+tasas+desconto somados = Importe neto TOTAL)
-            const net = parseFloat(pi.netAmount != null ? pi.netAmount : (pi.net || 0))
-            totalPvp += pvp
-            totalNet += net
-            rows.push({
-              name: det.description || det.priceBreakdownType || 'Componente',
-              pvp, net, com: pvp - net
-            })
-          }
-          totalCom = totalPvp - totalNet
-        } else {
-          totalPvp = parseFloat(qpb.pvp || qpb.amount || op.price)
-          totalNet = parseFloat(qpb.netAmount || qpb.net || 0)
-          totalCom = totalPvp - totalNet
-          rows.push({ name: 'Pacote', pvp: totalPvp, net: totalNet, com: totalCom })
-        }
-
-        // Condições de cancelamento do operador, com TETO no PVP aplicado ao cliente
-        const cancelamento = extrairCancelamento(q.budget, totalPvp)
-
-        detailData = {
-          brand: 'SOLTOUR',
-          hotelName: op.hotelName,
-          hotelCode: op.hotelCode,
-          stars: op.stars || 0,
-          board: op.board || '',
-          checkIn: dateStr,
-          checkOut: endStr,
-          nights: nightsDia,
-          image: op.image || '',
-          images: op.images || (op.image ? [op.image] : []),
-          totalPvp,
-          totalNet,
-          totalCom,
-          cancelamento,
-          rows
-        }
-      }
-    } else if (dayData.brand === 'SOLTRÓPICO' && destInfo.soltropico) {
-      const bruto = op.price
-      const comissaoPct = 15
-      const comissaoEuro = bruto * 0.15
-      const net = bruto - comissaoEuro
-
-      detailData = {
-        brand: 'SOLTRÓPICO',
-        hotelName: op.hotelName,
-        hotelCode: destInfo.soltropico,
-        stars: op.stars || 0,
-        board: op.board || '',
-        checkIn: dateStr,
-        checkOut: '—',
-        nights,
-        image: op.image || '',
-        images: op.images || (op.image ? [op.image] : []),
-        totalPvp: bruto,
-        totalNet: net,
-        totalCom: comissaoEuro,
-        rows: [{ name: 'Pacote Soltrópico', pvp: bruto, net, com: comissaoEuro }]
-      }
+    // Cotar os operadores que existem neste dia (pode ser um ou os dois)
+    const partes = []
+    if (dayData.soltour && destInfo.soltour) {
+      try { partes.push(await detSoltour(dayData.soltour, dateStr, origin, nights, adults, destInfo)) }
+      catch (e) { partes.push(`<div class="card"><span style="color:#C62828">Soltour: ${esc(e.message)}</span></div>`) }
+    }
+    if (dayData.soltropico && destInfo.soltropico) {
+      try { partes.push(await detSoltropico(dayData.soltropico, dateStr, nights, destInfo)) }
+      catch (e) { partes.push(`<div class="card"><span style="color:#C62828">Soltrópico: ${esc(e.message)}</span></div>`) }
     }
 
-    if (detailData) {
-      detailContainer.innerHTML = renderDetail(detailData, destInfo.label, origin)
+    if (partes.length) {
+      detailContainer.innerHTML = partes.join('<div style="height:14px"></div>')
     } else {
-      detailContainer.innerHTML = `<div class="card"><span style="color:#C62828">❌ Não foi possível obter os detalhes da oferta.</span>
-        <div style="font-size:11px;color:#888;margin-top:8px;font-family:monospace">
-        brand=${dayData.brand} · destInfo.soltour=${destInfo.soltour||'∅'} · destInfo.soltropico=${destInfo.soltropico||'∅'} ·
-        op=${op?'existe':'∅'} · soltour=${dayData.soltour?'sim':'não'} · soltropico=${dayData.soltropico?'sim':'não'}</div></div>`
+      detailContainer.innerHTML = `<div class="card"><span style="color:#C62828">❌ Não foi possível obter os detalhes da oferta.</span></div>`
     }
 
   } catch (e) {
     detailContainer.innerHTML = `<div class="card"><span style="color:#C62828">❌ ${esc(e.message)}</span></div>`
     console.error(e)
   }
+}
+
+// Detalhe Soltour: availability + quote (net real); fallback ao PVP do calendário
+async function detSoltour(op, dateStr, origin, nights, adults, destInfo) {
+  const nightsDia = op.nights || nights
+  const end = new Date(dateStr); end.setDate(end.getDate() + nightsDia)
+  const endStr = end.toISOString().slice(0, 10)
+  const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
+  const _chAges = ($('criancas').value || '').split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n) && n >= 0 && n < 18)
+  _chAges.forEach(age => pax.push({ age: age, type: 'CHILD' }))
+  const availBody = {
+    productType: 'PACKAGE', languageCode: 'PT',
+    criteria: { order: { direction: 'ASC', type: 'PRICE' }, pagination: { firstItem: 0, itemCount: 5 } },
+    params: {
+      startDate: dateStr, endDate: endStr, numNights: nightsDia, residentType: 'NONE',
+      accomodation: { rooms: [{ passengers: pax }] },
+      hotelParams: { destinationCode: destInfo.soltour },
+      flightParams: { directFlightsOnly: false, itineraries: [
+        { origins: [origin], destinations: [destInfo.soltour], flightDate: dateStr },
+        { origins: [destInfo.soltour], destinations: [origin], flightDate: endStr }
+      ] }
+    }
+  }
+  const av = await call('booking/availability', availBody)
+  const budgets = av.budgets || []
+  let detailData
+  if (!(budgets.length && budgets[0].budgetId && av.availToken)) {
+    detailData = {
+      brand: 'SOLTOUR', hotelName: op.hotelName, hotelCode: op.hotelCode, stars: op.stars || 0,
+      board: op.board || '', checkIn: dateStr, checkOut: endStr, nights: nightsDia,
+      image: op.image || '', images: op.images || (op.image ? [op.image] : []),
+      totalPvp: op.price, totalNet: null, totalCom: null, semNet: true, cancelamento: [],
+      rows: [{ name: 'Pacote (preço de calendário)', pvp: op.price, net: null, com: null }]
+    }
+  } else {
+    const q = await call('booking/quote', { availToken: av.availToken, budgetIds: [budgets[0].budgetId], productType: 'PACKAGE', languageCode: 'PT' })
+    const qpb = (q.budget && q.budget.priceBreakdown) || {}
+    const details = Array.isArray(qpb.priceBreakdownDetails) ? qpb.priceBreakdownDetails : []
+    let totalPvp = 0, totalNet = 0
+    const rows = []
+    if (details.length) {
+      for (const det of details) {
+        const pi = det.priceInfo || det
+        const pvp = parseFloat(pi.pvp || pi.amount || 0)
+        const net = parseFloat(pi.netAmount != null ? pi.netAmount : (pi.net || 0))
+        totalPvp += pvp; totalNet += net
+        rows.push({ name: det.description || det.priceBreakdownType || 'Componente', pvp, net, com: pvp - net })
+      }
+    } else {
+      totalPvp = parseFloat(qpb.pvp || qpb.amount || op.price)
+      totalNet = parseFloat(qpb.netAmount || qpb.net || 0)
+      rows.push({ name: 'Pacote', pvp: totalPvp, net: totalNet, com: totalPvp - totalNet })
+    }
+    const cancelamento = extrairCancelamento(q.budget, totalPvp)
+    detailData = {
+      brand: 'SOLTOUR', hotelName: op.hotelName, hotelCode: op.hotelCode, stars: op.stars || 0,
+      board: op.board || '', checkIn: dateStr, checkOut: endStr, nights: nightsDia,
+      image: op.image || '', images: op.images || (op.image ? [op.image] : []),
+      totalPvp, totalNet, totalCom: totalPvp - totalNet, cancelamento, rows
+    }
+  }
+  return renderDetail(detailData, destInfo.label, origin)
+}
+
+// Detalhe Soltrópico: net estimado com 15% de comissão
+async function detSoltropico(op, dateStr, nights, destInfo) {
+  const bruto = op.price
+  const comissaoEuro = bruto * 0.15
+  const net = bruto - comissaoEuro
+  const detailData = {
+    brand: 'SOLTRÓPICO', hotelName: op.hotelName, hotelCode: destInfo.soltropico, stars: op.stars || 0,
+    board: op.board || '', checkIn: dateStr, checkOut: '—', nights: op.nights || nights,
+    image: op.image || '', images: op.images || (op.image ? [op.image] : []),
+    totalPvp: bruto, totalNet: net, totalCom: comissaoEuro,
+    rows: [{ name: 'Pacote Soltrópico', pvp: bruto, net, com: comissaoEuro }]
+  }
+  return renderDetail(detailData, destInfo.label, '')
 }
 
 // ============================================================
