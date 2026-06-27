@@ -42,6 +42,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .btn.ghost:hover:not(:disabled){border-color:var(--accent);color:var(--accent);box-shadow:none}
 .btn.go{background:var(--best)}
 .btn.go:hover:not(:disabled){box-shadow:0 6px 16px rgba(30,142,90,.28)}
+.btns .seg{display:flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.btns .seg .btn{border-radius:0;background:transparent;color:var(--ink);border-right:1.5px solid var(--line);padding:11px 13px}
+.btns .seg .btn:last-child{border-right:none}
+.btns .seg .btn:hover:not(:disabled){background:var(--accent-soft);color:var(--accent);transform:none;box-shadow:none}
 .status{padding:11px 15px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none;font-weight:500}
 .status.show{display:block}
 .status.loading{background:var(--accent-soft);color:var(--accent)}
@@ -114,6 +118,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       <div><label>Destino</label><input id="dest" list="dest-list" placeholder="Ex: Sal, Madeira, Saídia…" value="Sal"><datalist id="dest-list"></datalist></div>
       <div><label>Origem</label><select id="origin"><option value="LIS">Lisboa (LIS)</option><option value="OPO">Porto (OPO)</option><option value="FAO">Faro (FAO)</option></select></div>
       <div><label>Mês</label><input type="month" id="month"></div>
+      <div><label>Data exata (opcional)</label><input type="date" id="partida"></div>
       <div><label>Noites</label><input type="number" id="nights" value="7" min="1" max="30"></div>
       <div><label>Adultos</label><input type="number" id="adults" value="2" min="1" max="9"></div>
       <div><label>Idades crianças</label><input type="text" id="criancas" placeholder="ex: 5, 8"></div>
@@ -128,17 +133,25 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     </div>
 
     <div class="btns">
-      <button class="btn go" onclick="runMes()">🔍 Procurar no mês</button>
+      <button class="btn go" onclick="pesquisar('data')">🎯 Data exata</button>
+      <div class="seg">
+        <button class="btn" onclick="pesquisar('semana',1)">1ª semana</button>
+        <button class="btn" onclick="pesquisar('semana',2)">2ª semana</button>
+        <button class="btn" onclick="pesquisar('semana',3)">3ª semana</button>
+        <button class="btn" onclick="pesquisar('semana',4)">4ª semana</button>
+      </div>
+      <button class="btn ghost" onclick="pesquisar('mes')">📅 Mês todo</button>
     </div>
 
     <div class="legend">
       <span><span class="dot" style="background:var(--soltour)"></span> Soltour</span>
       <span><span class="dot" style="background:var(--soltropico)"></span> Soltrópico</span>
       <span><span class="dot" style="background:var(--best)"></span> Melhor preço</span>
-      <span>🔴 Voo direto</span>
-      <span>🟠 Com escalas</span>
+      <span>🔴 Charter Soltour</span>
+      <span>✈️ Voo direto</span>
+      <span>📍 Com escalas</span>
     </div>
-    <div class="hint">Os preços do calendário são indicativos (por pessoa × ocupação). O valor exato e o net aparecem ao abrir o dia.</div>
+    <div class="hint">Preenche a <b>data exata</b> para um resultado rápido só desse dia; deixa-a vazia para varrer o mês todo. Preços do calendário são indicativos — o valor exato e o net aparecem ao abrir o dia.</div>
   </div>
 
   <div id="status" class="status"></div>
@@ -230,7 +243,7 @@ function pkTxt(el,tag){if(!el)return '';for(let i=0;i<el.children.length;i++){co
 function pkAll(el,tag){if(!el)return[];const o=[],n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)o.push(n[i])}return o}
 function pkItems(c){return c?pkAll(c,'item'):[]}
 
-async function getSoltour(destCode,origin,year,month,nights,adults,childAges){
+async function getSoltour(destCode,origin,year,month,nights,adults,childAges,diaIni,diaFim){
   await ensureLogin()
   const directOnly=getDirectOnly()
   const pax=Array(adults).fill({age:30,type:'ADULT'})
@@ -238,7 +251,9 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges){
   const numPax=adults+childAges.length
 
   const lastDay=new Date(year,month,0).getDate()
-  const seeds=[];for(let d=1;d<=lastDay;d+=2)seeds.push(d)
+  diaIni=diaIni||1; diaFim=Math.min(diaFim||lastDay,lastDay)
+  // sementes só dentro do intervalo pedido (menos chamadas = mais rápido)
+  const seeds=[];for(let d=diaIni;d<=diaFim;d+=2)seeds.push(d)
   const mkBody=sd=>{
     const s=`${year}-${String(month).padStart(2,'0')}-${String(sd).padStart(2,'0')}`
     const ed=new Date(s);ed.setDate(ed.getDate()+nights);const e=ed.toISOString().slice(0,10)
@@ -277,14 +292,17 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges){
       date:d.day,price:precoPP*numPax,pricePerPerson:precoPP,currency:d.currencyCode||'EUR',
       hotelName:info.name||code||'Hotel',hotelCode:code,stars:info.stars||0,
       board:(d.additionalInformation&&d.additionalInformation.mealPlan)||'',
-      direct:(d.directFlight===true?true:(d.directFlight===false?false:null)),
+      // tipo de voo (como o site Soltour): directFlight é fiável; provider 'flybase'
+      // = charter próprio Soltour (círculo vermelho). amadeus/lleego = voo regular.
+      direct:d.directFlight===true,
+      charter:(d.provider==='flybase'||((d.additionalInformation&&d.additionalInformation.flightsProvider)==='flybase')),
       brand:'SOLTOUR',image:info.image||'',images:info.images||[],calToken:av.availToken,
       available:!d.unavailable&&precoPP>0,nights:d.numNights||nights
     }
-  })
+  }).filter(d=>{const dia=parseInt(d.date.slice(8,10));return dia>=diaIni&&dia<=diaFim})
 }
 
-async function getSoltropico(destCode,origin,year,month,nights,adults,childAges){
+async function getSoltropico(destCode,origin,year,month,nights,adults,childAges,diaIni,diaFim){
   const out=[]
   const pdoc=await pkSoap('DynGetProductParameters',
     `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCred()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
@@ -294,7 +312,11 @@ async function getSoltropico(destCode,origin,year,month,nights,adults,childAges)
   if(ddWrap)dates=pkItems(ddWrap).map(it=>pkTxt(it,'Date')||it.textContent.trim()).filter(Boolean)
   if(!dates.length)dates=pkAll(pdoc,'item').map(it=>it.textContent.trim()).filter(t=>/^\d{4}-\d{2}-\d{2}/.test(t))
   const mesStr=`${year}-${String(month).padStart(2,'0')}`
-  const datasMes=[...new Set(dates.map(d=>d.slice(0,10)))].filter(d=>d.startsWith(mesStr))
+  const di=diaIni||1, df=diaFim||31
+  const datasMes=[...new Set(dates.map(d=>d.slice(0,10)))].filter(d=>{
+    if(!d.startsWith(mesStr))return false
+    const dia=+d.slice(8,10);return dia>=di&&dia<=df
+  })
   if(!datasMes.length)return []
 
   const locals=[]
@@ -347,11 +369,12 @@ function aplicarFiltros(days,brand){
 }
 
 let _busy=false
-async function runMes(){
+async function pesquisar(modo,semana){
   if(_busy)return
   const dest=findDest($('dest').value.trim())
   const origin=$('origin').value
   const mv=$('month').value
+  const dataExata=$('partida').value
   const nights=+$('nights').value
   const adults=+$('adults').value||1
   const childAges=childAgesFromInput()
@@ -360,28 +383,45 @@ async function runMes(){
 
   $('calendar-container').innerHTML='';$('detail-container').innerHTML=''
   if(!dest){st('err','Destino não reconhecido. Escolhe um da lista.');return}
-  if(!mv){st('err','Escolhe o mês.');return}
   if(!ops.soltour&&!ops.soltropico){st('err','Escolhe pelo menos um operador.');return}
 
-  const[year,month]=mv.split('-').map(Number)
-  const key=`${dest.soltour}|${dest.soltropico}|${origin}|${year}|${month}|${nights}|${adults}|${childAges}|${ops.soltour}${ops.soltropico}|${hotel}|${getDirectOnly()}`
+  // Determinar ANO/MÊS e o intervalo de dias conforme o modo.
+  // Se há data exata preenchida, tem SEMPRE prioridade (resultado rápido só desse dia).
+  let year,month,diaIni,diaFim,etiqueta
+  if(dataExata){
+    year=+dataExata.slice(0,4);month=+dataExata.slice(5,7)
+    const dia=+dataExata.slice(8,10);diaIni=dia;diaFim=dia
+    etiqueta=`${dataExata}`
+  }else{
+    if(!mv){st('err','Escolhe o mês (ou uma data exata).');return}
+    year=+mv.split('-')[0];month=+mv.split('-')[1]
+    const lastDay=new Date(year,month,0).getDate()
+    if(modo==='semana'){
+      diaIni=(semana-1)*7+1; diaFim=Math.min(semana*7,lastDay)
+      etiqueta=`${semana}ª semana (${diaIni}–${diaFim})`
+    }else{ // mês todo
+      diaIni=1;diaFim=lastDay;etiqueta='mês todo'
+    }
+  }
+
+  const key=`${dest.soltour}|${dest.soltropico}|${origin}|${year}|${month}|${diaIni}|${diaFim}|${nights}|${adults}|${childAges}|${ops.soltour}${ops.soltropico}|${hotel}|${getDirectOnly()}`
   if(cache[key]){renderCalendar(year,month,cache[key],dest);st('ok',`${Object.keys(cache[key]).length} dias com disponibilidade (em cache).`);return}
 
   _busy=true
   document.querySelectorAll('.btn').forEach(b=>b.disabled=true)
-  st('loading',`<span class="spinner"></span> A procurar ${dest.label} em ${month}/${year}…`)
+  st('loading',`<span class="spinner"></span> A procurar ${dest.label} · ${etiqueta}…`)
 
   const allDays=[]
   const jobs=[]
-  if(ops.soltour&&dest.soltour)jobs.push(getSoltour(dest.soltour,origin,year,month,nights,adults,childAges).then(d=>allDays.push(...aplicarFiltros(d,'SOLTOUR'))).catch(e=>console.warn('Soltour',e.message)))
-  if(ops.soltropico&&dest.soltropico)jobs.push(getSoltropico(dest.soltropico,origin,year,month,nights,adults,childAges).then(d=>allDays.push(...aplicarFiltros(d,'SOLTRÓPICO'))).catch(e=>console.warn('Soltrópico',e.message)))
+  if(ops.soltour&&dest.soltour)jobs.push(getSoltour(dest.soltour,origin,year,month,nights,adults,childAges,diaIni,diaFim).then(d=>allDays.push(...aplicarFiltros(d,'SOLTOUR'))).catch(e=>console.warn('Soltour',e.message)))
+  if(ops.soltropico&&dest.soltropico)jobs.push(getSoltropico(dest.soltropico,origin,year,month,nights,adults,childAges,diaIni,diaFim).then(d=>allDays.push(...aplicarFiltros(d,'SOLTRÓPICO'))).catch(e=>console.warn('Soltrópico',e.message)))
   await Promise.allSettled(jobs)
 
   document.querySelectorAll('.btn').forEach(b=>b.disabled=false)
   _busy=false
 
   const disp=allDays.filter(d=>d.available&&d.price>0)
-  if(!disp.length){st('err',`Sem disponibilidade para ${dest.label} em ${month}/${year}${hotel?` com hotel "${esc(hotel)}"`:''}.`);return}
+  if(!disp.length){st('err',`Sem disponibilidade para ${dest.label} (${etiqueta})${hotel?` com hotel "${esc(hotel)}"`:''}.`);return}
 
   const bestByDay={}
   for(const day of disp){
@@ -395,9 +435,17 @@ async function runMes(){
   }
   cache[key]=bestByDay
   renderCalendar(year,month,bestByDay,dest)
-  st('ok',`${Object.keys(bestByDay).length} dias com disponibilidade para ${dest.label}.`)
+  st('ok',`${Object.keys(bestByDay).length} dias com disponibilidade para ${dest.label} (${etiqueta}).`)
 }
 
+// Ícone do tipo de voo (mesma lógica do site Soltour):
+// charter próprio (flybase) → 🔴 ; voo direto regular → ✈️ ; com escalas → 📍
+function flyIcon(op){
+  if(op.charter)return `<span class="fly" title="Voo direto Soltour (charter)">🔴</span>`
+  if(op.direct===true)return `<span class="fly" title="Voo direto">✈️</span>`
+  if(op.direct===false)return `<span class="fly" title="Voo com escalas">📍</span>`
+  return ''
+}
 function renderCalendar(year,month,bestByDay,dest){
   const dim=new Date(year,month,0).getDate()
   const first=new Date(year,month-1,1).getDay()
@@ -423,12 +471,11 @@ function renderCalendar(year,month,bestByDay,dest){
     let linhas=''
     if(st_){
       const best=st_.price===menor&&(!sp_||st_.price<=sp_.price)
-      const fly=st_.direct===true?'🔴':(st_.direct===false?'🟠':'')
-      linhas+=`<div class="opline"><span class="pr" style="color:${best?'var(--best)':'var(--soltour)'}">${eur(st_.price)}</span><span class="lbl st">ST</span>${fly?`<span class="fly">${fly}</span>`:''}${best?'<span class="best-tag">★</span>':''}</div>`
+      linhas+=`<div class="opline"><span class="pr" style="color:${best?'var(--best)':'var(--soltour)'}">${eur(st_.price)}</span><span class="lbl st">ST</span>${flyIcon(st_)}${best?'<span class="best-tag">★</span>':''}</div>`
     }
     if(sp_){
       const best=sp_.price===menor&&(!st_||sp_.price<st_.price)
-      linhas+=`<div class="opline"><span class="pr" style="color:${best?'var(--best)':'var(--soltropico)'}">${eur(sp_.price)}</span><span class="lbl sp">SP</span><span class="fly">🔴</span>${best?'<span class="best-tag">★</span>':''}</div>`
+      linhas+=`<div class="opline"><span class="pr" style="color:${best?'var(--best)':'var(--soltropico)'}">${eur(sp_.price)}</span><span class="lbl sp">SP</span>${best?'<span class="best-tag">★</span>':''}</div>`
     }
     h+=`<div class="cell ${cls}" onclick="selectDay('${ds}')" data-date="${ds}"><div class="n">${day}</div>${hotel?`<div class="hotel">${esc(hotel)}</div>`:''}${linhas}</div>`
   }
@@ -466,7 +513,7 @@ async function detSoltour(op,ds,origin,nights,adults,dest){
   let D
   if(!(budgets.length&&budgets[0].budgetId&&av.availToken)){
     D={brand:'SOLTOUR',hotelName:op.hotelName,hotelCode:op.hotelCode,stars:op.stars||0,board:op.board||'',
-      checkIn:ds,checkOut:endStr,nights:nightsDia,image:op.image||'',images:op.images||[],direct:op.direct,
+      checkIn:ds,checkOut:endStr,nights:nightsDia,image:op.image||'',images:op.images||[],direct:op.direct,charter:op.charter,
       totalPvp:op.price,totalNet:null,totalCom:null,cancelamento:[]}
   }else{
     const q=await call('booking/quote',{availToken:av.availToken,budgetIds:[budgets[0].budgetId],productType:'PACKAGE',languageCode:'PT'})
@@ -476,7 +523,7 @@ async function detSoltour(op,ds,origin,nights,adults,dest){
     if(det.length)for(const x of det){const pi=x.priceInfo||x;pvp+=parseFloat(pi.pvp||pi.amount||0);net+=parseFloat(pi.netAmount!=null?pi.netAmount:(pi.net||0))}
     else{pvp=parseFloat(qpb.pvp||qpb.amount||op.price);net=parseFloat(qpb.netAmount||qpb.net||0)}
     D={brand:'SOLTOUR',hotelName:op.hotelName,hotelCode:op.hotelCode,stars:op.stars||0,board:op.board||'',
-      checkIn:ds,checkOut:endStr,nights:nightsDia,image:op.image||'',images:op.images||[],direct:op.direct,
+      checkIn:ds,checkOut:endStr,nights:nightsDia,image:op.image||'',images:op.images||[],direct:op.direct,charter:op.charter,
       totalPvp:pvp,totalNet:net,totalCom:pvp-net,cancelamento:extrairCancelamento(q.budget,pvp)}
   }
   return renderDetail(D,dest.label,origin)
@@ -506,7 +553,7 @@ function renderDetail(d,destLabel,origin){
   const cls=d.brand==='SOLTOUR'?'st':'sp'
   const pill=d.brand==='SOLTOUR'?'pill-soltour':'pill-soltropico'
   const originLabel={LIS:'Lisboa',OPO:'Porto',FAO:'Faro'}[origin]||origin||''
-  const fly=d.direct===true?'🔴 Direto':(d.direct===false?'🟠 Com escalas':'')
+  const fly=d.charter?'🔴 Voo direto Soltour (charter)':(d.direct===true?'✈️ Voo direto':(d.direct===false?'📍 Com escalas':''))
   return `
   <div class="detail ${cls}">
     <div class="detail-h"><div><span class="pill ${pill}">${d.brand}</span> <span class="name">${esc(d.hotelName)}</span> ${d.stars?`<span class="star">${'★'.repeat(Math.min(d.stars,5))}</span>`:''}</div></div>
@@ -560,7 +607,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('month').value=t.toISOString().slice(0,7)
   const dl=$('dest-list')
   if(dl)dl.innerHTML=DEST_MAP.filter(d=>!d.alias).map(d=>d.label).sort((a,b)=>a.localeCompare(b,'pt')).map(n=>`<option value="${n}">`).join('')
-  document.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter')runMes()}))
+  document.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter')pesquisar($('partida').value?'data':'mes')}))
   ensureLogin().catch(e=>console.error('Login:',e.message))
 })
 </script>
