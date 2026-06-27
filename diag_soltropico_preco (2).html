@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diag · Soltrópico preço</title>
+<style>
+*{box-sizing:border-box;font-family:system-ui,sans-serif}body{background:#F5F6FA;padding:20px;font-size:13px}
+.wrap{max-width:820px;margin:0 auto}h1{font-size:18px;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:end}
+label{font-size:11px;color:#666;display:block}input{padding:7px;border:1px solid #ccc;border-radius:6px;width:110px}
+button{padding:9px 16px;background:#0F6E56;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600}
+.log{background:#1a1d2e;color:#c8e1ff;padding:14px;border-radius:8px;font-family:monospace;font-size:12px;white-space:pre-wrap;margin-top:14px;max-height:600px;overflow:auto}
+.ok{color:#6ee7a8}.err{color:#ff9b9b}.warn{color:#ffd479}.hi{color:#7db3ff}
+</style></head><body><div class="wrap">
+<h1>🔍 Soltrópico — preço por tipo de quarto</h1>
+<div class="row">
+<div><label>Cód. produto</label><input id="prod" value="41"></div>
+<div><label>Data partida</label><input id="dep" value="2026-11-03"></div>
+<div><label>Origem</label><input id="origin" value="LIS"></div>
+<div><label>Noites</label><input id="nights" value="7" style="width:60px"></div>
+<button id="go" onclick="run()">Diagnosticar</button>
+</div>
+<div class="log" id="log">Pronto.</div>
+</div>
+<script>
+const SUPABASE_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
+const ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const PROXY=`${SUPABASE_URL}/functions/v1/soltropico-proxy`
+const L=document.getElementById('log')
+const log=(m,c='')=>{L.innerHTML+=`\n<span class="${c}">${m}</span>`;L.scrollTop=L.scrollHeight}
+function cred(){return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">808</System><Client xsi:type="xsd:int">289363</Client><Username xsi:type="xsd:string">admin@apmviagens.pt</Username><Password xsi:type="xsd:string">JA622875</Password></Credentials>`}
+function txt(el,tag){if(!el)return '';const n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)return n[i].textContent.trim()}return ''}
+function all(el,tag){if(!el)return[];const o=[],n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)o.push(n[i])}return o}
+function items(c){return c?all(c,'item'):[]}
+async function soap(action,body){
+  const env=`<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
+  const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${ANON}`},body:JSON.stringify({soapAction:action,soapBody:env})})
+  let t=await r.text()
+  // o proxy devolve {"xml":"..."} — desembrulhar
+  try { const j=JSON.parse(t); if(j && j.xml) t=j.xml } catch(e) {}
+  window._lastRaw=t
+  return new DOMParser().parseFromString(t,'text/xml')
+}
+async function run(){
+  document.getElementById('go').disabled=true;L.innerHTML='A começar…'
+  try{
+    const prod=document.getElementById('prod').value,dep=document.getElementById('dep').value
+    const origin=document.getElementById('origin').value,nights=+document.getElementById('nights').value
+    log('📋 DynGetProductParameters…','hi')
+    const pdoc=await soap('DynGetProductParameters',`<ns1:DynGetProductParameters><DynProductParametersRequest>${cred()}<Productcode xsi:type="xsd:int">${prod}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+    const itemsIn=c=>{const w=all(pdoc,c)[0];return w?items(w):[]}
+    const rooms=itemsIn('RoomTypes').map(r=>({code:txt(r,'Code'),name:txt(r,'Name')})).filter(r=>r.code)
+    const locals=itemsIn('DepartureLocals').map(l=>({code:txt(l,'Code'),name:txt(l,'Name')})).filter(l=>l.code)
+    const baseLocals=itemsIn('BaseLocals').map(b=>({code:txt(b,'Code')})).filter(b=>b.code)
+    log(`  quartos disponíveis (${rooms.length}): ${rooms.map(r=>r.code+'='+r.name).join(' | ')}`,'ok')
+    if(!rooms.length){
+      log('  ⚠️ 0 quartos — eis a resposta crua (início):','warn')
+      log('  '+(window._lastRaw||'').slice(0,800).replace(/</g,'&lt;'),'')
+      // procurar a forma como a resposta traz o erro/credenciais
+      const fault=all(pdoc,'faultstring')[0]||all(pdoc,'Fault')[0]
+      if(fault) log('  FALHA SOAP: '+fault.textContent,'err')
+    }
+    log(`  locais de partida: ${locals.map(l=>l.code).join(', ')}`,'')
+    const depLocal=locals.find(l=>l.code===origin)?.code||locals[0]?.code||origin
+    const baseXML=(baseLocals.length?baseLocals:[{code:'0'}]).map(b=>`<Local><Code>${b.code}</Code><Nights>${nights}</Nights></Local>`).join('')
+
+    log(`\n🏨 A pesquisar cada tipo de quarto no dia ${dep}:`,'hi')
+    for(const room of rooms){
+      const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${room.code}</Code><ChildAges></ChildAges></RoomTypeOption>`
+      const doc=await soap('DynSearchProductAvailableServices',`<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${cred()}<ProductCode xsi:type="xsd:int">${prod}</ProductCode><DepartureDate xsi:type="xsd:string">${dep}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+      const hotels=all(doc,'HotelOption')
+      let linha=`  quarto ${room.code} (${room.name}): `
+      if(!hotels.length){ linha+='sem hotéis'; log(linha,'warn'); continue }
+      const precos=hotels.map(ho=>{const h=items(ho)[0];return {nome:txt(h,'Name'),preco:parseFloat(txt(h,'PriceFrom'))||0}}).filter(p=>p.preco>0).sort((a,b)=>a.preco-b.preco)
+      if(!precos.length){ linha+='sem preços'; log(linha,'warn'); continue }
+      linha+=`${precos.length} hotéis · mais barato: €${precos[0].preco} (${precos[0].nome})`
+      log(linha, room===rooms[0]?'err':'ok')
+    }
+    log(`\n💡 O motor usa SEMPRE o primeiro quarto (${rooms[0]?.code}). Se outro quarto for mais barato, é esse o problema.`,'warn')
+    log(`   Compara o "mais barato" de cada quarto com os 787€ do site.`,'hi')
+  }catch(e){log('erro: '+e.message,'err')}
+  finally{document.getElementById('go').disabled=false}
+}
+</script></body></html>
