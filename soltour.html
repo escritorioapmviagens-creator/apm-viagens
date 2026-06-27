@@ -751,7 +751,10 @@ async function selectDay(dateStr) {
     if (detailData) {
       detailContainer.innerHTML = renderDetail(detailData, destInfo.label, origin)
     } else {
-      detailContainer.innerHTML = `<div class="card"><span style="color:#C62828">❌ Não foi possível obter os detalhes da oferta.</span></div>`
+      detailContainer.innerHTML = `<div class="card"><span style="color:#C62828">❌ Não foi possível obter os detalhes da oferta.</span>
+        <div style="font-size:11px;color:#888;margin-top:8px;font-family:monospace">
+        brand=${dayData.brand} · destInfo.soltour=${destInfo.soltour||'∅'} · destInfo.soltropico=${destInfo.soltropico||'∅'} ·
+        op=${op?'existe':'∅'} · soltour=${dayData.soltour?'sim':'não'} · soltropico=${dayData.soltropico?'sim':'não'}</div></div>`
     }
 
   } catch (e) {
