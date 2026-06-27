@@ -636,8 +636,9 @@ async function selectDay(dateStr) {
     if (!op) { detailContainer.innerHTML = `<div class="card">Sem dados para este dia.</div>`; return }
 
     if (dayData.brand === 'SOLTOUR' && destInfo.soltour) {
+      const nightsDia = op.nights || nights   // usar as noites DAQUELE dia (pode diferir do pedido)
       const end = new Date(dateStr)
-      end.setDate(end.getDate() + nights)
+      end.setDate(end.getDate() + nightsDia)
       const endStr = end.toISOString().slice(0, 10)
 
       const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
@@ -651,7 +652,7 @@ async function selectDay(dateStr) {
         params: {
           startDate: dateStr,
           endDate: endStr,
-          numNights: nights,
+          numNights: nightsDia,
           residentType: 'NONE',
           accomodation: { rooms: [{ passengers: pax }] },
           hotelParams: { destinationCode: destInfo.soltour },
@@ -721,7 +722,7 @@ async function selectDay(dateStr) {
           board: op.board || '',
           checkIn: dateStr,
           checkOut: endStr,
-          nights,
+          nights: nightsDia,
           image: op.image || '',
           images: op.images || (op.image ? [op.image] : []),
           totalPvp,
