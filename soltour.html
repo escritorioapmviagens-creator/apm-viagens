@@ -4,21 +4,34 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📅 Net vs PVP · Calendário de Preços</title>
+<title>📅 Net vs PVP · Pesquisa Híbrida</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',system-ui,sans-serif}
 body{background:#F5F6FA;color:#1A1D2E;font-size:14px;padding:22px}
-.wrap{max-width:900px;margin:0 auto}
+.wrap{max-width:1000px;margin:0 auto}
 h1{font-size:19px;font-weight:700;margin-bottom:4px}.sub{color:#8B92A5;font-size:13px;margin-bottom:18px}
 .card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:18px;margin-bottom:16px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 label{font-size:11px;font-weight:600;color:#8B92A5;text-transform:uppercase;display:block;margin-bottom:4px}
 input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:13px;background:#fff}
-.btn{padding:10px 18px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;background:#3B5BDB;color:#fff;margin-top:14px;transition:opacity .2s}
+.btn{padding:10px 18px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;background:#3B5BDB;color:#fff;transition:all .2s;font-family:inherit}
 .btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,91,219,.3)}
+.btn-success{background:#0F6E56}
+.btn-success:hover:not(:disabled){box-shadow:0 4px 12px rgba(15,110,86,.3)}
+.btn-warning{background:#E67E22}
+.btn-warning:hover:not(:disabled){box-shadow:0 4px 12px rgba(230,126,34,.3)}
+.btn-danger{background:#C0392B}
+.btn-danger:hover:not(:disabled){box-shadow:0 4px 12px rgba(192,57,43,.3)}
+.btn-outline{background:transparent;border:2px solid #3B5BDB;color:#3B5BDB}
+.btn-outline:hover:not(:disabled){background:#3B5BDB;color:#fff}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn-group .btn{flex:1;min-width:80px;padding:8px 12px;font-size:12px}
 .status{padding:10px 14px;border-radius:8px;font-size:13px;margin:14px 0;display:none}
 .status.show{display:block}.loading{background:#EEF2FF;color:#3251c4}.ok{background:#E8F5E9;color:#2E7D32}.err{background:#FFEBEE;color:#C62828}
 .hint{font-size:12px;color:#8B92A5;margin-top:6px}
+.progresso{font-size:12px;color:#3251c4;margin:8px 0;padding:8px 12px;background:#EEF2FF;border-radius:6px;display:none}
+.progresso.show{display:block}
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
 .cal-day{background:#F8F9FC;border-radius:8px;padding:10px 6px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .15s;min-height:70px;display:flex;flex-direction:column;justify-content:center;align-items:center}
 .cal-day:hover{background:#EEF2FF;border-color:#3B5BDB}
@@ -33,8 +46,9 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
 .cal-day .op-soltour{background:#FFF0F3;color:#E8395A}
 .cal-day .op-soltropico{background:#E3FAFC;color:#1098AD}
 .cal-header{font-weight:600;color:#8B92A5;font-size:11px;text-align:center;padding:6px 0;text-transform:uppercase}
-.cal-month-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cal-month-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px}
 .cal-month-nav .month{font-weight:700;font-size:16px}
+.cal-month-nav .intervalo-label{font-size:13px;color:#8B92A5;background:#F0F4FF;padding:4px 12px;border-radius:20px}
 .detail-table td{padding:6px 10px;font-size:13px}
 .detail-table .total-row td{border-top:2px solid #1A1D2E;font-weight:700}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid #E5E7EB;border-top-color:#3B5BDB;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:8px}
@@ -45,35 +59,40 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
 .cal-day.ambos{border-left:3px solid #7c3aed}
 .op-line{display:flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap;margin-top:2px}
 .op-line .price{font-size:11px;font-weight:600}
-.carregando-parcial{background:#FEF9E7;border:1px solid #F9E79F;border-radius:8px;padding:10px 14px;font-size:13px;color:#7D6608;margin:10px 0;display:none}
-.progresso{font-size:12px;color:#3251c4;margin:6px 0}
-@media (max-width: 600px) {
-  body { padding: 10px; font-size: 13px; }
-  .wrap { max-width: 100%; }
-  .calendar { gap: 3px; margin-top: 8px; }
-  .cal-day { padding: 4px 2px; min-height: 52px; border-radius: 6px; border-width: 1px; }
-  .cal-day .day { font-size: 13px; }
-  .cal-day .price { font-size: 10px; margin-top: 1px; }
-  .cal-day .op { font-size: 8px; padding: 1px 3px; margin-top: 1px; }
-  .cal-day.soltour, .cal-day.soltropico { border-left-width: 2px; }
-  .cal-header { font-size: 9px; padding: 3px 0; }
-  .grid { grid-template-columns: 1fr; }
-  #detail-container, #calendar-container { overflow-x: hidden; }
-  #detail-container table { width: 100%; font-size: 12px; }
-  img { max-width: 100%; height: auto; }
+.modo-rapido{background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:10px 14px;margin-top:10px;display:none;font-size:13px;color:#2E7D32}
+.modo-rapido.show{display:block}
+.modo-rapido .destaque{font-weight:700}
+.operadores{display:flex;gap:16px;align-items:center;padding:8px 0;flex-wrap:wrap}
+.operadores label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#1A1D2E;text-transform:none;letter-spacing:0;cursor:pointer}
+.operadores input[type="checkbox"]{width:18px;height:18px;accent-color:#3B5BDB;cursor:pointer}
+.badge-operador{display:inline-block;padding:1px 8px;border-radius:12px;font-size:10px;font-weight:700}
+.badge-soltour{background:#FFF0F3;color:#E8395A}
+.badge-soltropico{background:#E3FAFC;color:#1098AD}
+@media (max-width:600px){
+  body{padding:10px}
+  .btn-group .btn{min-width:60px;font-size:10px;padding:6px 8px}
+  .calendar{gap:3px;margin-top:8px}
+  .cal-day{padding:4px 2px;min-height:52px;border-radius:6px;border-width:1px}
+  .cal-day .day{font-size:13px}
+  .cal-day .price{font-size:10px;margin-top:1px}
+  .cal-day .op{font-size:8px;padding:1px 3px;margin-top:1px}
+  .cal-day.soltour,.cal-day.soltropico{border-left-width:2px}
+  .cal-header{font-size:9px;padding:3px 0}
+  .grid{grid-template-columns:1fr}
+  .operadores{flex-direction:column;align-items:flex-start;gap:4px}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>📅 Net vs PVP — Calendário de Preços</h1>
-  <div class="sub">Escolhe o destino, origem e mês. O calendário mostra o melhor preço para cada dia.</div>
+  <h1>🔍 Net vs PVP — Pesquisa Híbrida</h1>
+  <div class="sub">Escolhe os operadores e o tipo de pesquisa. Quanto menos operadores, mais rápido!</div>
 
   <div class="card">
     <div class="grid">
       <div>
         <label>Destino</label>
-        <input id="dest" list="dest-list" placeholder="Ex: Samaná, Sal, Madeira..." value="Saídia">
+        <input id="dest" list="dest-list" placeholder="Ex: Samaná, Sal, Saídia..." value="Saídia">
         <datalist id="dest-list"></datalist>
       </div>
       <div>
@@ -85,8 +104,8 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
         </select>
       </div>
       <div>
-        <label>Mês</label>
-        <input type="month" id="month">
+        <label>Data específica</label>
+        <input type="date" id="partida">
       </div>
       <div>
         <label>Noites</label>
@@ -101,12 +120,42 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
         <input type="text" id="criancas" value="" placeholder="ex: 5, 8">
       </div>
     </div>
-    <button class="btn" id="go" onclick="run()">🔍 Mostrar Calendário</button>
-    <div class="hint">Escreve o nome do destino, escolhe a origem e o mês. Clica num dia para ver os detalhes.</div>
+
+    <!-- OPERADORES -->
+    <div class="operadores">
+      <span style="font-size:12px;font-weight:600;color:#8B92A5;text-transform:uppercase">Operadores:</span>
+      <label>
+        <input type="checkbox" id="chk-soltour" checked>
+        <span class="badge-operador badge-soltour">Soltour</span>
+        <span style="font-weight:400;font-size:12px;color:#8B92A5">(~15-20s)</span>
+      </label>
+      <label>
+        <input type="checkbox" id="chk-soltropico" checked>
+        <span class="badge-operador badge-soltropico">Soltrópico</span>
+        <span style="font-weight:400;font-size:12px;color:#8B92A5">(~10-15s)</span>
+      </label>
+      <span style="font-size:11px;color:#8B92A5;margin-left:auto">
+        ⚡ Desmarca operadores para acelerar a pesquisa
+      </span>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-success" onclick="runDataFixa()">🎯 Data fixa</button>
+      <button class="btn btn-warning" onclick="runLote(1,7)">📅 1–7</button>
+      <button class="btn" onclick="runLote(8,14)" style="background:#2980B9">📅 8–14</button>
+      <button class="btn" style="background:#8E44AD" onclick="runLote(15,21)">📅 15–21</button>
+      <button class="btn btn-danger" onclick="runLote(22,31)">📅 22–31</button>
+      <button class="btn btn-outline" onclick="runLote(1,31)">📅 Todos</button>
+    </div>
+
+    <div id="modo-rapido" class="modo-rapido">
+      ⚡ <span class="destaque">Modo rápido:</span> A pesquisa por data fixa é instantânea (~2-4s). Use quando souber a data exata.
+    </div>
+
+    <div class="hint">🎯 Data fixa = mais rápido. 📅 Lotes = cobre todo o mês. Desmarca operadores para acelerar.</div>
   </div>
 
   <div id="status" class="status"></div>
-  <div id="carregando-parcial" class="carregando-parcial">⏳ A carregar dados...</div>
   <div id="progresso" class="progresso"></div>
   <div id="calendar-container"></div>
   <div id="detail-container"></div>
@@ -120,12 +169,11 @@ const SUPA_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
 const SUPA_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
 const PROXY=`${SUPA_URL}/functions/v1/Soltour-proxy-index-`
 const SOLTROPICO_PROXY=`${SUPA_URL}/functions/v1/soltropico-proxy`
-const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPA_URL, SUPA_ANON) : null
 const LOGIN={brand:'SOLTOUR',market:'XMLPT',languageCode:'PT',username:'APMVIA999',password:'XMLAPMVIA'}
 
 let token=null
 let cache = {}
-const TIMEOUT_MS = 8000
+const TIMEOUT_MS = 10000
 const MAX_CONCORRENTES = 4
 const $=id=>document.getElementById(id)
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
@@ -212,12 +260,24 @@ function findDest(input) {
   return null
 }
 
-function getCacheKey(destInfo, origin, year, month, nights, adults, childAges) {
-  return `${destInfo.soltour||''}|${destInfo.soltropico||''}|${origin}|${year}|${month}|${nights}|${adults}|${childAges.join(',')}`
+function getOperadoresSelecionados() {
+  return {
+    soltour: $('chk-soltour').checked,
+    soltropico: $('chk-soltropico').checked
+  }
+}
+
+function getCacheKey(destInfo, origin, year, month, nights, adults, childAges, diaInicio, diaFim, dataFixa) {
+  const ops = getOperadoresSelecionados()
+  const opKey = (ops.soltour ? 'ST' : '') + (ops.soltropico ? 'SP' : '')
+  if (dataFixa) {
+    return `${destInfo.soltour||''}|${destInfo.soltropico||''}|${origin}|${year}|${month}|${nights}|${adults}|${childAges.join(',')}|fixa|${dataFixa}|${opKey}`
+  }
+  return `${destInfo.soltour||''}|${destInfo.soltropico||''}|${origin}|${year}|${month}|${nights}|${adults}|${childAges.join(',')}|${diaInicio}|${diaFim}|${opKey}`
 }
 
 // ============================================================
-// API CALLS COM TIMEOUT
+// API CALLS
 // ============================================================
 function withTimeout(promise, ms = TIMEOUT_MS) {
   return Promise.race([
@@ -269,22 +329,102 @@ function pkItems(c) { return c ? pkAll(c, 'item') : [] }
 function pkDirectChildren(el, tag) { if (!el) return []; const o = []; for (let i = 0; i < el.children.length; i++) { const c = el.children[i], l = c.localName || c.tagName.split(':').pop(); if (l === tag) o.push(c) } return o }
 
 // ============================================================
-// BUSCAR CALENDÁRIO SOLTOUR - COMPLETO E OTIMIZADO
+// SOLTOUR - DATA FIXA (RÁPIDO)
 // ============================================================
-async function getSoltourCalendar(destCode, origin, year, month, nights, adults, childAges = []) {
+async function getSoltourDataFixa(destCode, origin, dateStr, nights, adults, childAges) {
   await ensureLogin()
 
   const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
   childAges.forEach(age => pax.push({ age: age, type: 'CHILD' }))
 
-  const lastDay = new Date(year, month, 0).getDate()
+  const ed = new Date(dateStr); ed.setDate(ed.getDate() + nights)
+  const endStr = ed.toISOString().slice(0, 10)
+  
+  const body = {
+    productType: 'PACKAGE', languageCode: 'PT',
+    criteria: { order: { direction: 'ASC', type: 'PRICE' }, pagination: { firstItem: 0, itemCount: 10 } },
+    params: {
+      startDate: dateStr, endDate: endStr, numNights: nights, residentType: 'NONE',
+      accomodation: { rooms: [{ passengers: pax }] },
+      hotelParams: { destinationCode: destCode },
+      flightParams: { directFlightsOnly: false, itineraries: [
+        { origins: [origin], destinations: [destCode], flightDate: dateStr },
+        { origins: [destCode], destinations: [origin], flightDate: endStr }
+      ] }
+    }
+  }
+  
+  try {
+    const r = await withTimeout(call('booking/availability', body), 8000)
+    if (!r || !r.availToken) return []
+    
+    const cal = await withTimeout(call('booking/getPriceCalendar', {
+      availToken: r.availToken,
+      destinationCode: destCode,
+      originCode: origin,
+      productType: 'PACKAGE',
+      languageCode: 'PT',
+      month: { year: parseInt(dateStr.slice(0,4)), month: parseInt(dateStr.slice(5,7)) },
+      numNights: nights,
+      onlyDirectFlights: false
+    }), 8000)
+    
+    const hotelMap = {}
+    if (r.hotels) {
+      for (const h of r.hotels) {
+        const c = h.code || h.numericCode || h.id
+        if (c != null) hotelMap[String(c)] = {
+          name: h.name || h.fullName || '',
+          stars: h.categoryCode,
+          image: h.mainImage || (h.images && h.images[0]) || '',
+          images: (h.images || []).slice(0, 4)
+        }
+      }
+    }
+    
+    const days = (cal.days || [])
+    const numPax = adults + childAges.length
+    return days.map(d => {
+      const code = (d.additionalInformation && d.additionalInformation.hotel) || ''
+      const info = hotelMap[String(code)] || {}
+      const precoPP = parseFloat(d.bestPrice || d.price) || 0
+      const precoDia = precoPP * numPax
+      return {
+        date: d.day,
+        price: precoDia,
+        pricePerPerson: precoPP,
+        currency: d.currencyCode || 'EUR',
+        hotelName: info.name || code || 'Hotel',
+        hotelCode: code,
+        stars: info.stars || 0,
+        board: (d.additionalInformation && d.additionalInformation.mealPlan) || '',
+        direct: !!d.directFlight,
+        brand: 'SOLTOUR',
+        image: info.image || '',
+        images: info.images || [],
+        calToken: r.availToken,
+        available: !d.unavailable && precoDia > 0,
+        nights: d.numNights || nights
+      }
+    })
+  } catch (e) {
+    console.warn('Soltour data fixa:', e.message)
+    return []
+  }
+}
+
+// ============================================================
+// SOLTOUR - LOTE DE DIAS
+// ============================================================
+async function getSoltourLote(destCode, origin, year, month, nights, adults, childAges, diaInicio, diaFim) {
+  await ensureLogin()
+
+  const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
+  childAges.forEach(age => pax.push({ age: age, type: 'CHILD' }))
+
+  const lastDay = Math.min(new Date(year, month, 0).getDate(), diaFim)
   const progresso = $('progresso')
   
-  // Testar TODAS as datas do mês, mas com limite de concorrência
-  const allDays = []
-  const totalDias = lastDay
-  
-  // Função para testar uma data específica
   const testarData = async (dia) => {
     const sDate = `${year}-${String(month).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
     const ed = new Date(sDate); ed.setDate(ed.getDate() + nights)
@@ -309,125 +449,105 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults,
       if (r && r.availToken) {
         return { dia, sDate, eStr, r }
       }
-    } catch (e) {
-      // Timeout ou erro, ignorar
-    }
+    } catch (e) {}
     return null
   }
   
-  // Processar em lotes com limite de concorrência
   const resultados = []
-  const lotes = []
   const BATCH_SIZE = MAX_CONCORRENTES
+  const totalDias = lastDay - diaInicio + 1
   
-  for (let i = 1; i <= totalDias; i += BATCH_SIZE) {
-    lotes.push(Array.from({ length: Math.min(BATCH_SIZE, totalDias - i + 1) }, (_, idx) => i + idx))
-  }
-  
-  let processados = 0
-  let encontrados = 0
-  
-  for (const lote of lotes) {
+  for (let i = diaInicio; i <= lastDay; i += BATCH_SIZE) {
+    const fim = Math.min(i + BATCH_SIZE - 1, lastDay)
+    const lote = Array.from({ length: fim - i + 1 }, (_, idx) => i + idx)
     const promises = lote.map(dia => testarData(dia))
     const results = await Promise.allSettled(promises)
     
     for (const result of results) {
       if (result.status === 'fulfilled' && result.value) {
         resultados.push(result.value)
-        encontrados++
       }
-      processados++
     }
     
-    // Atualizar progresso
     if (progresso) {
-      const pct = Math.round((processados / totalDias) * 100)
-      progresso.textContent = `📊 Soltour: ${processados}/${totalDias} dias testados · ${encontrados} disponíveis`
+      const pct = Math.round(((i - diaInicio + 1) / totalDias) * 100)
+      progresso.textContent = `📊 Soltour: ${i - diaInicio + 1}/${totalDias} dias (${pct}%) · ${resultados.length} disponíveis`
+      progresso.className = 'progresso show'
     }
   }
   
-  if (progresso) progresso.textContent = `✅ Soltour: ${encontrados} datas disponíveis encontradas`
-  
-  // Se não encontrou nenhuma disponibilidade, retornar vazio
   if (resultados.length === 0) return []
   
-  // Para cada data com disponibilidade, obter o calendário
   const todosOsDias = []
   
-  // Processar em paralelo com limite
-  const calendarPromises = resultados.map(async ({ dia, sDate, eStr, r }) => {
-    try {
-      const cal = await withTimeout(call('booking/getPriceCalendar', {
-        availToken: r.availToken,
-        destinationCode: destCode,
-        originCode: origin,
-        productType: 'PACKAGE',
-        languageCode: 'PT',
-        month: { year, month },
-        numNights: nights,
-        onlyDirectFlights: false
-      }), 8000)
-      
-      // Construir mapa de hotéis
-      const hotelMap = {}
-      if (r.hotels) {
-        for (const h of r.hotels) {
-          const c = h.code || h.numericCode || h.id
-          if (c != null) hotelMap[String(c)] = {
-            name: h.name || h.fullName || '',
-            stars: h.categoryCode,
-            image: h.mainImage || (h.images && h.images[0]) || '',
-            images: (h.images || []).slice(0, 4)
+  for (let i = 0; i < resultados.length; i += MAX_CONCORRENTES) {
+    const batch = resultados.slice(i, i + MAX_CONCORRENTES)
+    const promises = batch.map(async ({ dia, r }) => {
+      try {
+        const cal = await withTimeout(call('booking/getPriceCalendar', {
+          availToken: r.availToken,
+          destinationCode: destCode,
+          originCode: origin,
+          productType: 'PACKAGE',
+          languageCode: 'PT',
+          month: { year, month },
+          numNights: nights,
+          onlyDirectFlights: false
+        }), 8000)
+        
+        const hotelMap = {}
+        if (r.hotels) {
+          for (const h of r.hotels) {
+            const c = h.code || h.numericCode || h.id
+            if (c != null) hotelMap[String(c)] = {
+              name: h.name || h.fullName || '',
+              stars: h.categoryCode,
+              image: h.mainImage || (h.images && h.images[0]) || '',
+              images: (h.images || []).slice(0, 4)
+            }
           }
         }
+        
+        const days = (cal.days || [])
+        const numPax = adults + childAges.length
+        return days.map(d => {
+          const code = (d.additionalInformation && d.additionalInformation.hotel) || ''
+          const info = hotelMap[String(code)] || {}
+          const precoPP = parseFloat(d.bestPrice || d.price) || 0
+          const precoDia = precoPP * numPax
+          return {
+            date: d.day,
+            price: precoDia,
+            pricePerPerson: precoPP,
+            currency: d.currencyCode || 'EUR',
+            hotelName: info.name || code || 'Hotel',
+            hotelCode: code,
+            stars: info.stars || 0,
+            board: (d.additionalInformation && d.additionalInformation.mealPlan) || '',
+            direct: !!d.directFlight,
+            brand: 'SOLTOUR',
+            image: info.image || '',
+            images: info.images || [],
+            calToken: r.availToken,
+            available: !d.unavailable && precoDia > 0,
+            nights: d.numNights || nights
+          }
+        })
+      } catch (e) {
+        return []
       }
-      
-      const days = (cal.days || [])
-      const numPax = adults + childAges.length
-      return days.map(d => {
-        const code = (d.additionalInformation && d.additionalInformation.hotel) || ''
-        const info = hotelMap[String(code)] || {}
-        const precoPP = parseFloat(d.bestPrice || d.price) || 0
-        const precoDia = precoPP * numPax
-        return {
-          date: d.day,
-          price: precoDia,
-          pricePerPerson: precoPP,
-          currency: d.currencyCode || 'EUR',
-          hotelName: info.name || code || 'Hotel',
-          hotelCode: code,
-          stars: info.stars || 0,
-          board: (d.additionalInformation && d.additionalInformation.mealPlan) || '',
-          direct: !!d.directFlight,
-          brand: 'SOLTOUR',
-          image: info.image || '',
-          images: info.images || [],
-          calToken: r.availToken,
-          available: !d.unavailable && precoDia > 0,
-          nights: d.numNights || nights
-        }
-      })
-    } catch (e) {
-      console.warn('Erro ao obter calendário para dia', dia, e.message)
-      return []
-    }
-  })
-  
-  // Processar calendários em paralelo com limite
-  const calendarResults = []
-  for (let i = 0; i < calendarPromises.length; i += MAX_CONCORRENTES) {
-    const batch = calendarPromises.slice(i, i + MAX_CONCORRENTES)
-    const results = await Promise.allSettled(batch)
+    })
+    
+    const results = await Promise.allSettled(promises)
     for (const r of results) {
       if (r.status === 'fulfilled' && r.value) {
-        calendarResults.push(...r.value)
+        todosOsDias.push(...r.value)
       }
     }
   }
   
-  // Remover duplicados (mesmo dia, mesmo hotel) mantendo o mais barato
   const seen = new Map()
-  for (const day of calendarResults) {
+  for (const day of todosOsDias) {
     if (!day.available) continue
     const key = day.date + '|' + day.hotelCode
     if (!seen.has(key) || day.price < seen.get(key).price) {
@@ -439,25 +559,23 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults,
 }
 
 // ============================================================
-// BUSCAR CALENDÁRIO SOLTRÓPICO
+// SOLTRÓPICO - DATA FIXA (RÁPIDO)
 // ============================================================
-async function getSoltropicoCalendar(destCode, origin, year, month, nights, adults, childAges = []) {
+async function getSoltropicoDataFixa(destCode, origin, dateStr, nights, adults, childAges) {
   const results = []
-
+  
   try {
     const pdoc = await withTimeout(pkSoap('DynGetProductParameters',
-      `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCredXML()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`))
+      `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCredXML()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`), 10000)
 
     const itemsIn = (c) => { const w = pkAll(pdoc, c)[0]; return w ? pkItems(w) : [] }
-    const dates = itemsIn('DepartureDates').map(it => pkTxt(it, 'Date')).filter(Boolean)
     const locals = itemsIn('DepartureLocals').map(it => ({ code: pkTxt(it, 'Code'), name: pkTxt(it, 'Name') })).filter(l => l.code)
     const roomTypes = itemsIn('RoomTypes').map(r => ({ code: pkTxt(r, 'Code'), name: pkTxt(r, 'Name') })).filter(r => r.code)
     const baseLocals = itemsIn('BaseLocals').map(b => ({ code: pkTxt(b, 'Code'), min: pkTxt(b, 'MinNights') || String(nights) })).filter(b => b.code)
 
-    const startDate = `${year}-${String(month).padStart(2, '0')}-01`
-    const depDate = dates.find(d => String(d).startsWith(startDate.slice(0, 7))) || dates[0] || startDate
     const depLocal = locals.find(l => l.code === origin)?.code || locals[0]?.code || origin
     const nCri = childAges.length
+    
     function escolherOcupacao() {
       const parse = nome => {
         const a = (nome.match(/(\d+)\s*Adulto/i) || [])[1]
@@ -470,12 +588,13 @@ async function getSoltropicoCalendar(destCode, origin, year, month, nights, adul
       m = roomTypes.find(r => parse(r.name).a === adults)
       return (m || roomTypes[0])?.code || '437'
     }
+    
     const roomCode = escolherOcupacao()
     const baseXML = (baseLocals.length ? baseLocals : [{ code: '0' }]).map(b => `<Local><Code>${b.code}</Code><Nights>${nights}</Nights></Local>`).join('')
     const roomsXML = `<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges>${childAges.join(',')}</ChildAges></RoomTypeOption>`
 
     const doc = await withTimeout(pkSoap('DynSearchProductAvailableServices',
-      `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${pkCredXML()}<ProductCode xsi:type="xsd:int">${destCode}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`))
+      `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${pkCredXML()}<ProductCode xsi:type="xsd:int">${destCode}</ProductCode><DepartureDate xsi:type="xsd:string">${dateStr}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`), 10000)
 
     const itinC = pkAll(doc, 'Itinerary')[0]
     const itins = itinC ? pkItems(itinC) : []
@@ -486,7 +605,7 @@ async function getSoltropicoCalendar(destCode, origin, year, month, nights, adul
       if (!name || price === 0) return
       const img = pkTxt(h, 'Image') || pkTxt(h, 'ImageUrl') || pkTxt(h, 'Photo') || ''
       results.push({
-        date: depDate,
+        date: dateStr,
         price: price,
         currency: 'EUR',
         hotelName: name,
@@ -509,9 +628,143 @@ async function getSoltropicoCalendar(destCode, origin, year, month, nights, adul
       })
     }
 
-    if (!results.length) {
+    if (results.length === 0) {
       const hc = pkAll(doc, 'HotelOption')[0]
       if (hc) pkItems(hc).forEach(harvest)
+    }
+
+    return results
+
+  } catch (e) {
+    console.warn('Soltrópico data fixa:', e.message)
+    return []
+  }
+}
+
+// ============================================================
+// SOLTRÓPICO - LOTE DE DIAS
+// ============================================================
+async function getSoltropicoLote(destCode, origin, year, month, nights, adults, childAges, diaInicio, diaFim) {
+  const results = []
+  const progresso = $('progresso')
+  
+  try {
+    const pdoc = await withTimeout(pkSoap('DynGetProductParameters',
+      `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCredXML()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`), 10000)
+
+    const itemsIn = (c) => { const w = pkAll(pdoc, c)[0]; return w ? pkItems(w) : [] }
+    const dates = itemsIn('DepartureDates').map(it => pkTxt(it, 'Date')).filter(Boolean)
+    const locals = itemsIn('DepartureLocals').map(it => ({ code: pkTxt(it, 'Code'), name: pkTxt(it, 'Name') })).filter(l => l.code)
+    const roomTypes = itemsIn('RoomTypes').map(r => ({ code: pkTxt(r, 'Code'), name: pkTxt(r, 'Name') })).filter(r => r.code)
+    const baseLocals = itemsIn('BaseLocals').map(b => ({ code: pkTxt(b, 'Code'), min: pkTxt(b, 'MinNights') || String(nights) })).filter(b => b.code)
+
+    const mesStr = `${year}-${String(month).padStart(2, '0')}`
+    const datesNoMes = dates.filter(d => {
+      const dStr = String(d)
+      if (!dStr.startsWith(mesStr)) return false
+      const dia = parseInt(dStr.slice(8, 10))
+      return dia >= diaInicio && dia <= diaFim
+    })
+    
+    if (datesNoMes.length === 0) return []
+
+    // Limitar a 7 datas para manter velocidade
+    let datasParaTestar = datesNoMes
+    if (datasParaTestar.length > 7) {
+      const step = Math.ceil(datasParaTestar.length / 7)
+      datasParaTestar = datasParaTestar.filter((_, i) => i % step === 0)
+    }
+
+    const consultarData = async (depDate) => {
+      const depLocal = locals.find(l => l.code === origin)?.code || locals[0]?.code || origin
+      const nCri = childAges.length
+      
+      function escolherOcupacao() {
+        const parse = nome => {
+          const a = (nome.match(/(\d+)\s*Adulto/i) || [])[1]
+          const c = (nome.match(/(\d+)\s*Crian/i) || [])[1]
+          return { a: a ? parseInt(a) : 0, c: c ? parseInt(c) : 0 }
+        }
+        let m = roomTypes.find(r => { const p = parse(r.name); return p.a === adults && p.c === nCri })
+        if (m) return m.code
+        if (nCri === 0) { m = roomTypes.find(r => { const p = parse(r.name); return p.a === adults && p.c === 0 }); if (m) return m.code }
+        m = roomTypes.find(r => parse(r.name).a === adults)
+        return (m || roomTypes[0])?.code || '437'
+      }
+      
+      const roomCode = escolherOcupacao()
+      const baseXML = (baseLocals.length ? baseLocals : [{ code: '0' }]).map(b => `<Local><Code>${b.code}</Code><Nights>${nights}</Nights></Local>`).join('')
+      const roomsXML = `<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges>${childAges.join(',')}</ChildAges></RoomTypeOption>`
+
+      try {
+        const doc = await withTimeout(pkSoap('DynSearchProductAvailableServices',
+          `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${pkCredXML()}<ProductCode xsi:type="xsd:int">${destCode}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`), 10000)
+
+        const itinC = pkAll(doc, 'Itinerary')[0]
+        const itins = itinC ? pkItems(itinC) : []
+        const resultadosData = []
+
+        const harvest = (h) => {
+          const price = parseFloat(pkTxt(h, 'PriceFrom')) || 0
+          const name = pkTxt(h, 'Name') || pkTxt(h, 'Code')
+          if (!name || price === 0) return
+          const img = pkTxt(h, 'Image') || pkTxt(h, 'ImageUrl') || pkTxt(h, 'Photo') || ''
+          resultadosData.push({
+            date: depDate,
+            price: price,
+            currency: 'EUR',
+            hotelName: name,
+            hotelCode: destCode,
+            stars: parseInt(pkTxt(h, 'Rating')) || 0,
+            board: '',
+            direct: true,
+            brand: 'SOLTRÓPICO',
+            image: img,
+            images: img ? [img] : [],
+            available: true,
+            nights: nights
+          })
+        }
+
+        if (itins.length) {
+          itins.forEach(itin => {
+            const hc = pkDirectChildren(itin, 'HotelOption')[0]
+            if (hc) pkItems(hc).forEach(harvest)
+          })
+        }
+
+        if (resultadosData.length === 0) {
+          const hc = pkAll(doc, 'HotelOption')[0]
+          if (hc) pkItems(hc).forEach(harvest)
+        }
+
+        return resultadosData
+      } catch (e) {
+        return []
+      }
+    }
+
+    // Processar em lotes
+    let processadas = 0
+    const totalDates = datesNoMes.length
+    
+    for (let i = 0; i < datasParaTestar.length; i += MAX_CONCORRENTES) {
+      const batch = datasParaTestar.slice(i, i + MAX_CONCORRENTES)
+      const promises = batch.map(date => consultarData(date))
+      const resultadosBatch = await Promise.allSettled(promises)
+      
+      for (const r of resultadosBatch) {
+        if (r.status === 'fulfilled' && r.value) {
+          results.push(...r.value)
+        }
+      }
+      
+      processadas += batch.length
+      if (progresso) {
+        const pct = Math.round((processadas / totalDates) * 100)
+        progresso.textContent = `📊 Soltrópico: ${processadas}/${totalDates} datas (${pct}%) · ${results.length} ofertas`
+        progresso.className = 'progresso show'
+      }
     }
 
     return results
@@ -523,36 +776,38 @@ async function getSoltropicoCalendar(destCode, origin, year, month, nights, adul
 }
 
 // ============================================================
-// FUNÇÃO PRINCIPAL
+// FUNÇÃO PRINCIPAL - DATA FIXA
 // ============================================================
-async function run() {
-  const btn = $('go')
-  if (btn.disabled) return
+async function runDataFixa() {
+  const botoes = document.querySelectorAll('.btn-group .btn, .btn-success')
+  botoes.forEach(b => b.disabled = true)
 
-  btn.disabled = true
   const calContainer = $('calendar-container')
   const detailContainer = $('detail-container')
-  const carregandoParcial = $('carregando-parcial')
   const progresso = $('progresso')
   calContainer.innerHTML = ''
   detailContainer.innerHTML = ''
-  carregandoParcial.style.display = 'none'
   progresso.textContent = ''
+  progresso.className = 'progresso'
 
   try {
     const destInput = $('dest').value.trim()
     const origin = $('origin').value
-    const monthVal = $('month').value
+    const dateStr = $('partida').value
     const nights = +$('nights').value
     const adults = +$('adults').value || 1
     const childAges = ($('criancas').value || '').split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n) && n >= 0 && n < 18)
+    const ops = getOperadoresSelecionados()
 
-    if (!destInput || !monthVal || !nights) {
-      st('err', '⚠️ Preenche todos os campos obrigatórios.')
+    if (!destInput || !dateStr || !nights) {
+      st('err', '⚠️ Preenche todos os campos obrigatórios (destino, data, noites).')
       return
     }
 
-    const [year, month] = monthVal.split('-').map(Number)
+    if (!ops.soltour && !ops.soltropico) {
+      st('err', '⚠️ Seleciona pelo menos um operador.')
+      return
+    }
 
     const destInfo = findDest(destInput)
     if (!destInfo) {
@@ -560,63 +815,48 @@ async function run() {
       return
     }
 
+    const ano = parseInt(dateStr.slice(0,4))
+    const mes = parseInt(dateStr.slice(5,7))
+
     // Verificar cache
-    const cacheKey = getCacheKey(destInfo, origin, year, month, nights, adults, childAges)
+    const cacheKey = getCacheKey(destInfo, origin, ano, mes, nights, adults, childAges, null, null, dateStr)
     if (cache[cacheKey]) {
       const cached = cache[cacheKey]
       st('ok', `✅ ${Object.keys(cached).length} dias com disponibilidade (cache)`)
-      renderCalendar(year, month, cached, destInfo)
-      btn.disabled = false
+      renderCalendar(ano, mes, cached, destInfo, 'Data fixa: ' + dateStr)
+      botoes.forEach(b => b.disabled = false)
       return
     }
 
-    st('loading', `🔍 A carregar calendário para ${destInfo.label}...`)
-    carregandoParcial.style.display = 'block'
-    carregandoParcial.textContent = '⏳ A testar todas as datas do mês...'
+    st('loading', `🎯 A pesquisar data fixa ${dateStr} para ${destInfo.label}...`)
+    $('modo-rapido').className = 'modo-rapido show'
 
-    const promises = []
     const allDays = []
+    const promises = []
 
-    if (destInfo.soltour) {
+    if (ops.soltour && destInfo.soltour) {
       promises.push(
-        getSoltourCalendar(destInfo.soltour, origin, year, month, nights, adults, childAges)
-          .then(days => { 
-            allDays.push(...days)
-            carregandoParcial.textContent = `✅ Soltour: ${days.length} ofertas carregadas`
-          })
-          .catch(e => {
-            console.warn('Soltour:', e.message)
-            carregandoParcial.textContent = `⚠️ Soltour: ${e.message}`
-          })
+        getSoltourDataFixa(destInfo.soltour, origin, dateStr, nights, adults, childAges)
+          .then(days => { allDays.push(...days) })
+          .catch(e => console.warn('Soltour:', e.message))
       )
     }
 
-    if (destInfo.soltropico) {
+    if (ops.soltropico && destInfo.soltropico) {
       promises.push(
-        getSoltropicoCalendar(destInfo.soltropico, origin, year, month, nights, adults, childAges)
-          .then(days => { 
-            allDays.push(...days)
-            carregandoParcial.textContent = `✅ Soltrópico: ${days.length} ofertas carregadas`
-          })
-          .catch(e => {
-            console.warn('Soltrópico:', e.message)
-            carregandoParcial.textContent = `⚠️ Soltrópico: ${e.message}`
-          })
+        getSoltropicoDataFixa(destInfo.soltropico, origin, dateStr, nights, adults, childAges)
+          .then(days => { allDays.push(...days) })
+          .catch(e => console.warn('Soltrópico:', e.message))
       )
     }
 
-    // Esperar todas as promessas
     await Promise.allSettled(promises)
 
-    carregandoParcial.style.display = 'none'
-    progresso.textContent = ''
-
     if (!allDays.length) {
-      st('err', `❌ Sem disponibilidade para ${destInfo.label} em ${month}/${year}.`)
+      st('err', `❌ Sem disponibilidade para ${destInfo.label} em ${dateStr}.`)
       return
     }
 
-    // Agrupar por dia
     const bestByDay = {}
     for (const day of allDays) {
       if (!day.available) continue
@@ -635,20 +875,135 @@ async function run() {
       slot.available = true
     }
 
-    // Guardar em cache
     cache[cacheKey] = bestByDay
-
-    renderCalendar(year, month, bestByDay, destInfo)
+    renderCalendar(ano, mes, bestByDay, destInfo, 'Data fixa: ' + dateStr)
 
     const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
-    st('ok', `✅ ${Object.keys(bestByDay).length} dias com disponibilidade para ${destInfo.label} desde ${originLabel}`)
+    st('ok', `✅ ${Object.keys(bestByDay).length} dias com disponibilidade para ${destInfo.label} em ${dateStr}`)
 
   } catch (e) {
     st('err', '❌ ' + e.message)
     console.error(e)
   } finally {
-    btn.disabled = false
-    $('carregando-parcial').style.display = 'none'
+    botoes.forEach(b => b.disabled = false)
+    progresso.className = 'progresso'
+    progresso.textContent = ''
+  }
+}
+
+// ============================================================
+// FUNÇÃO PRINCIPAL - LOTE
+// ============================================================
+async function runLote(diaInicio, diaFim) {
+  const botoes = document.querySelectorAll('.btn-group .btn')
+  botoes.forEach(b => b.disabled = true)
+
+  const calContainer = $('calendar-container')
+  const detailContainer = $('detail-container')
+  const progresso = $('progresso')
+  calContainer.innerHTML = ''
+  detailContainer.innerHTML = ''
+  progresso.textContent = ''
+  progresso.className = 'progresso'
+
+  try {
+    const destInput = $('dest').value.trim()
+    const origin = $('origin').value
+    const monthVal = $('month').value
+    const nights = +$('nights').value
+    const adults = +$('adults').value || 1
+    const childAges = ($('criancas').value || '').split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n) && n >= 0 && n < 18)
+    const ops = getOperadoresSelecionados()
+
+    if (!destInput || !monthVal || !nights) {
+      st('err', '⚠️ Preenche todos os campos obrigatórios.')
+      return
+    }
+
+    if (!ops.soltour && !ops.soltropico) {
+      st('err', '⚠️ Seleciona pelo menos um operador.')
+      return
+    }
+
+    const [year, month] = monthVal.split('-').map(Number)
+
+    const destInfo = findDest(destInput)
+    if (!destInfo) {
+      st('err', `❌ Destino "${esc(destInput)}" não reconhecido.`)
+      return
+    }
+
+    const cacheKey = getCacheKey(destInfo, origin, year, month, nights, adults, childAges, diaInicio, diaFim, null)
+    if (cache[cacheKey]) {
+      const cached = cache[cacheKey]
+      st('ok', `✅ ${Object.keys(cached).length} dias com disponibilidade (cache)`)
+      renderCalendar(year, month, cached, destInfo, `Dias ${diaInicio}–${diaFim}`)
+      botoes.forEach(b => b.disabled = false)
+      return
+    }
+
+    const label = diaFim > 30 ? 'Mês inteiro' : `Dias ${diaInicio}–${diaFim}`
+    st('loading', `📅 A carregar ${label} para ${destInfo.label}...`)
+
+    const allDays = []
+    const promises = []
+
+    if (ops.soltour && destInfo.soltour) {
+      promises.push(
+        getSoltourLote(destInfo.soltour, origin, year, month, nights, adults, childAges, diaInicio, diaFim)
+          .then(days => { allDays.push(...days) })
+          .catch(e => console.warn('Soltour:', e.message))
+      )
+    }
+
+    if (ops.soltropico && destInfo.soltropico) {
+      promises.push(
+        getSoltropicoLote(destInfo.soltropico, origin, year, month, nights, adults, childAges, diaInicio, diaFim)
+          .then(days => { allDays.push(...days) })
+          .catch(e => console.warn('Soltrópico:', e.message))
+      )
+    }
+
+    await Promise.allSettled(promises)
+
+    progresso.className = 'progresso'
+    progresso.textContent = ''
+
+    if (!allDays.length) {
+      st('err', `❌ Sem disponibilidade para ${destInfo.label} em ${month}/${year} (${label}).`)
+      return
+    }
+
+    const bestByDay = {}
+    for (const day of allDays) {
+      if (!day.available) continue
+      const date = day.date
+      if (!bestByDay[date]) bestByDay[date] = { date, soltour: null, soltropico: null }
+      const slot = bestByDay[date]
+      if (day.brand === 'SOLTOUR') {
+        if (!slot.soltour || day.price < slot.soltour.price) slot.soltour = day
+      } else {
+        if (!slot.soltropico || day.price < slot.soltropico.price) slot.soltropico = day
+      }
+      const candidates = [slot.soltour, slot.soltropico].filter(Boolean)
+      const cheapest = candidates.sort((a, b) => a.price - b.price)[0]
+      slot.price = cheapest.price
+      slot.brand = cheapest.brand
+      slot.available = true
+    }
+
+    cache[cacheKey] = bestByDay
+    renderCalendar(year, month, bestByDay, destInfo, label)
+
+    const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
+    st('ok', `✅ ${Object.keys(bestByDay).length} dias com disponibilidade para ${destInfo.label} (${label})`)
+
+  } catch (e) {
+    st('err', '❌ ' + e.message)
+    console.error(e)
+  } finally {
+    botoes.forEach(b => b.disabled = false)
+    progresso.className = 'progresso'
     progresso.textContent = ''
   }
 }
@@ -656,7 +1011,7 @@ async function run() {
 // ============================================================
 // RENDERIZAR CALENDÁRIO
 // ============================================================
-function renderCalendar(year, month, bestByDay, destInfo) {
+function renderCalendar(year, month, bestByDay, destInfo, label) {
   const container = $('calendar-container')
   const daysInMonth = new Date(year, month, 0).getDate()
   const firstDay = new Date(year, month - 1, 1).getDay()
@@ -667,7 +1022,7 @@ function renderCalendar(year, month, bestByDay, destInfo) {
   let html = `<div class="card">
     <div class="cal-month-nav">
       <span class="month">${monthNames[month-1]} ${year}</span>
-      <span style="font-size:13px;color:#8B92A5">${destInfo.label} · ${Object.keys(bestByDay).length} dias disponíveis</span>
+      <span class="intervalo-label">${label} · ${Object.keys(bestByDay).length} dias disponíveis</span>
     </div>
     <div class="calendar">`
 
@@ -714,7 +1069,7 @@ function renderCalendar(year, month, bestByDay, destInfo) {
 }
 
 // ============================================================
-// SELECIONAR DIA
+// SELECIONAR DIA - (mesma lógica das versões anteriores)
 // ============================================================
 async function selectDay(dateStr) {
   const detailContainer = $('detail-container')
@@ -1006,6 +1361,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const start = new Date(today)
   start.setDate(start.getDate() + 3)
   $('month').value = start.toISOString().slice(0, 7)
+  $('partida').value = start.toISOString().slice(0, 10)
 
   const dl = $('dest-list')
   if (dl) {
@@ -1016,8 +1372,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('input').forEach(inp => {
     inp.addEventListener('keydown', e => {
-      if (e.key === 'Enter') run()
+      if (e.key === 'Enter') runLote(1, 31)
     })
+  })
+
+  // Mostrar modo rápido quando data fixa estiver preenchida
+  $('partida').addEventListener('change', () => {
+    if ($('partida').value) {
+      $('modo-rapido').className = 'modo-rapido show'
+    } else {
+      $('modo-rapido').className = 'modo-rapido'
+    }
   })
 
   ensureLogin().catch(() => {})
