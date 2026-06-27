@@ -788,9 +788,21 @@ async function carregarMeusOrcamentos() {
         ${statusBadge}
       </div>
       <div style="font-size:.76rem;color:var(--muted);margin-bottom:10px">${d.cli_nome || d.cli || 'Cliente não identificado'} · ${dataFmt}${total ? ' · €' + total.toLocaleString('pt-PT') : ''}</div>
-      <button onclick="confirmarTransformarCst('${p.id}')" style="width:100%;padding:8px;border-radius:8px;border:1.5px solid var(--coral);background:var(--coral-light, #fdedf0);color:var(--coral);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit">📄 Transformar em CST</button>
+      <div style="display:flex;gap:6px">
+        <button onclick="confirmarTransformarCst('${p.id}')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--coral);background:var(--coral-light, #fdedf0);color:var(--coral);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit">📄 Transformar em CST</button>
+        <button onclick="eliminarOrcamento('${p.id}')" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);background:#fef2f2;color:#dc2626;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit">🗑️ Eliminar</button>
+      </div>
     </div>`
   }).join('')
+}
+
+// ── ELIMINAR ORÇAMENTO ──
+async function eliminarOrcamento(id) {
+  if(!confirm('Tens a certeza que queres eliminar este orçamento? Esta ação não pode ser desfeita.')) return
+  const { error } = await sb.from('propostas_viagem').delete().eq('id', id)
+  if(error) { toast('Erro ao eliminar: ' + error.message, 'err'); return }
+  toast('Orçamento eliminado!', 'ok')
+  carregarMeusOrcamentos()
 }
 
 function confirmarTransformarCst(propostaId) {
@@ -1744,6 +1756,7 @@ async function gerarLink() {
     await sb.from('pedidos_orcamento').update({ estado: 'convertido' }).eq('id', window._pedidoOrcId)
     window._pedidoOrcId = null
   }
+  carregarMeusOrcamentos() // recarregar lista
 }
 
 function v(id) { return document.getElementById(id)?.value || '' }
