@@ -802,7 +802,8 @@ async function eliminarOrcamento(id) {
   const { error } = await sb.from('propostas_viagem').delete().eq('id', id)
   if(error) { toast('Erro ao eliminar: ' + error.message, 'err'); return }
   toast('Orçamento eliminado!', 'ok')
-  carregarMeusOrcamentos()
+  // Recarregar a lista imediatamente
+  await carregarMeusOrcamentos()
 }
 
 function confirmarTransformarCst(propostaId) {
