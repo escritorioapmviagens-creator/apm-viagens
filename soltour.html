@@ -630,6 +630,11 @@ async function selectDay(dateStr) {
 
     let detailData = null
 
+    // o dia pode ter os dois operadores; usar o mais barato (dayData.brand) e ler
+    // os dados do sub-objeto correto (soltour/soltropico), não do topo
+    const op = (dayData.brand === 'SOLTOUR') ? dayData.soltour : dayData.soltropico
+    if (!op) { detailContainer.innerHTML = `<div class="card">Sem dados para este dia.</div>`; return }
+
     if (dayData.brand === 'SOLTOUR' && destInfo.soltour) {
       const end = new Date(dateStr)
       end.setDate(end.getDate() + nights)
@@ -692,7 +697,7 @@ async function selectDay(dateStr) {
           }
           totalCom = totalPvp - totalNet
         } else {
-          totalPvp = parseFloat(qpb.pvp || qpb.amount || dayData.price)
+          totalPvp = parseFloat(qpb.pvp || qpb.amount || op.price)
           totalNet = parseFloat(qpb.netAmount || qpb.net || 0)
           totalCom = totalPvp - totalNet
           rows.push({ name: 'Pacote', pvp: totalPvp, net: totalNet, com: totalCom })
@@ -703,15 +708,15 @@ async function selectDay(dateStr) {
 
         detailData = {
           brand: 'SOLTOUR',
-          hotelName: dayData.hotelName,
-          hotelCode: dayData.hotelCode,
-          stars: dayData.stars || 0,
-          board: dayData.board || '',
+          hotelName: op.hotelName,
+          hotelCode: op.hotelCode,
+          stars: op.stars || 0,
+          board: op.board || '',
           checkIn: dateStr,
           checkOut: endStr,
           nights,
-          image: dayData.image || '',
-          images: dayData.images || (dayData.image ? [dayData.image] : []),
+          image: op.image || '',
+          images: op.images || (op.image ? [op.image] : []),
           totalPvp,
           totalNet,
           totalCom,
@@ -720,22 +725,22 @@ async function selectDay(dateStr) {
         }
       }
     } else if (dayData.brand === 'SOLTRÓPICO' && destInfo.soltropico) {
-      const bruto = dayData.price
+      const bruto = op.price
       const comissaoPct = 15
       const comissaoEuro = bruto * 0.15
       const net = bruto - comissaoEuro
 
       detailData = {
         brand: 'SOLTRÓPICO',
-        hotelName: dayData.hotelName,
+        hotelName: op.hotelName,
         hotelCode: destInfo.soltropico,
-        stars: dayData.stars || 0,
-        board: dayData.board || '',
+        stars: op.stars || 0,
+        board: op.board || '',
         checkIn: dateStr,
         checkOut: '—',
         nights,
-        image: dayData.image || '',
-        images: dayData.images || (dayData.image ? [dayData.image] : []),
+        image: op.image || '',
+        images: op.images || (op.image ? [op.image] : []),
         totalPvp: bruto,
         totalNet: net,
         totalCom: comissaoEuro,
