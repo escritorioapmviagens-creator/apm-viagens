@@ -75,6 +75,8 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
 .hotel-filter .badge-hotel.show{display:inline-block}
 .hotel-filter .clear-hotel{background:none;border:none;color:#C0392B;cursor:pointer;font-size:13px;font-weight:600;display:none;padding:4px 8px}
 .hotel-filter .clear-hotel.show{display:inline-block}
+.campo-mes{display:flex;gap:8px;align-items:center}
+.campo-mes input{flex:1}
 @media (max-width:600px){
   body{padding:10px}
   .btn-group .btn{min-width:60px;font-size:10px;padding:6px 8px}
@@ -89,6 +91,7 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
   .grid{grid-template-columns:1fr}
   .operadores{flex-direction:column;align-items:flex-start;gap:4px}
   .hotel-filter{flex-direction:column;align-items:stretch}
+  .campo-mes{flex-direction:column}
 }
 </style>
 </head>
@@ -111,6 +114,10 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
           <option value="OPO">Porto (OPO)</option>
           <option value="FAO">Faro (FAO)</option>
         </select>
+      </div>
+      <div>
+        <label>Mês</label>
+        <input type="month" id="month">
       </div>
       <div>
         <label>Data específica</label>
@@ -308,7 +315,6 @@ function atualizarFiltroHotel() {
 function limparFiltroHotel() {
   $('hotel-filter').value = ''
   atualizarFiltroHotel()
-  // Recarregar com o filtro limpo se houver resultados
   if (window._ultimaPesquisa) {
     const { tipo, diaInicio, diaFim, dataFixa } = window._ultimaPesquisa
     if (tipo === 'datafixa') runDataFixa()
@@ -472,7 +478,6 @@ async function getSoltourDataFixa(destCode, origin, dateStr, nights, adults, chi
       }
     })
     
-    // Aplicar filtro de hotel
     return filtrarPorHotel(results)
   } catch (e) {
     console.warn('Soltour data fixa:', e.message)
@@ -481,7 +486,7 @@ async function getSoltourDataFixa(destCode, origin, dateStr, nights, adults, chi
 }
 
 // ============================================================
-// SOLTOUR - LOTE DE DIAS (OTIMIZADO PARA FILTRO DE HOTEL)
+// SOLTOUR - LOTE DE DIAS
 // ============================================================
 async function getSoltourLote(destCode, origin, year, month, nights, adults, childAges, diaInicio, diaFim) {
   await ensureLogin()
@@ -525,8 +530,7 @@ async function getSoltourLote(destCode, origin, year, month, nights, adults, chi
   const BATCH_SIZE = MAX_CONCORRENTES
   const totalDias = lastDay - diaInicio + 1
   
-  // Se houver filtro de hotel, podemos testar apenas algumas datas (mais rápido)
-  // Se não houver filtro, testamos todas
+  // Se houver filtro de hotel, testamos apenas algumas datas (mais rápido)
   const diasParaTestar = hotelFiltro ? 
     Array.from({ length: Math.min(totalDias, 7) }, (_, i) => diaInicio + i) : 
     Array.from({ length: totalDias }, (_, i) => diaInicio + i)
@@ -619,7 +623,6 @@ async function getSoltourLote(destCode, origin, year, month, nights, adults, chi
     }
   }
   
-  // Filtrar por hotel e remover duplicados
   const filtrados = filtrarPorHotel(todosOsDias)
   const seen = new Map()
   for (const day of filtrados) {
@@ -708,7 +711,6 @@ async function getSoltropicoDataFixa(destCode, origin, dateStr, nights, adults, 
       if (hc) pkItems(hc).forEach(harvest)
     }
 
-    // Aplicar filtro de hotel
     return filtrarPorHotel(results)
 
   } catch (e) {
@@ -745,7 +747,6 @@ async function getSoltropicoLote(destCode, origin, year, month, nights, adults, 
     
     if (datesNoMes.length === 0) return []
 
-    // Se houver filtro de hotel, testamos menos datas
     let datasParaTestar = datesNoMes
     const maxDatas = hotelFiltro ? 5 : 10
     if (datasParaTestar.length > maxDatas) {
@@ -844,7 +845,6 @@ async function getSoltropicoLote(destCode, origin, year, month, nights, adults, 
       }
     }
 
-    // Aplicar filtro de hotel
     return filtrarPorHotel(results)
 
   } catch (e) {
@@ -897,18 +897,17 @@ async function runDataFixa() {
     const ano = parseInt(dateStr.slice(0,4))
     const mes = parseInt(dateStr.slice(5,7))
 
-    // Verificar cache
     const cacheKey = getCacheKey(destInfo, origin, ano, mes, nights, adults, childAges, null, null, dateStr)
     if (cache[cacheKey]) {
       const cached = cache[cacheKey]
-      const label = hotelFiltro ? `Data fixa: ${dateStr} · Hotel: ${hotelFiltro}` : `Data fixa: ${dateStr}`
+      const label = hotelFiltro ? `Data fixa: ${dateStr} · 🏨 ${hotelFiltro}` : `Data fixa: ${dateStr}`
       st('ok', `✅ ${Object.keys(cached).length} dias com disponibilidade (cache)`)
       renderCalendar(ano, mes, cached, destInfo, label)
       botoes.forEach(b => b.disabled = false)
       return
     }
 
-    const label = hotelFiltro ? `🎯 Data fixa ${dateStr} · Hotel: ${hotelFiltro}` : `🎯 Data fixa ${dateStr}`
+    const label = hotelFiltro ? `🎯 Data fixa ${dateStr} · 🏨 ${hotelFiltro}` : `🎯 Data fixa ${dateStr}`
     st('loading', `${label} para ${destInfo.label}...`)
     $('modo-rapido').className = 'modo-rapido show'
 
@@ -964,6 +963,7 @@ async function runDataFixa() {
     const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
     const msg = hotelFiltro ? `✅ ${Object.keys(bestByDay).length} dias com hotel "${hotelFiltro}" para ${destInfo.label} em ${dateStr}` : `✅ ${Object.keys(bestByDay).length} dias com disponibilidade para ${destInfo.label} em ${dateStr}`
     st('ok', msg)
+    window._ultimaPesquisa = { tipo: 'datafixa' }
 
   } catch (e) {
     st('err', '❌ ' + e.message)
@@ -1001,7 +1001,7 @@ async function runLote(diaInicio, diaFim) {
     const hotelFiltro = getFiltroHotel()
 
     if (!destInput || !monthVal || !nights) {
-      st('err', '⚠️ Preenche todos os campos obrigatórios.')
+      st('err', '⚠️ Preenche todos os campos obrigatórios (destino, mês, noites).')
       return
     }
 
@@ -1011,6 +1011,10 @@ async function runLote(diaInicio, diaFim) {
     }
 
     const [year, month] = monthVal.split('-').map(Number)
+    const lastDay = new Date(year, month, 0).getDate()
+    
+    // Ajustar diaFim se exceder o último dia do mês
+    if (diaFim > lastDay) diaFim = lastDay
 
     const destInfo = findDest(destInput)
     if (!destInfo) {
@@ -1086,6 +1090,7 @@ async function runLote(diaInicio, diaFim) {
     const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
     const msg = hotelFiltro ? `✅ ${Object.keys(bestByDay).length} dias com hotel "${hotelFiltro}" para ${destInfo.label} (${label})` : `✅ ${Object.keys(bestByDay).length} dias com disponibilidade para ${destInfo.label} (${label})`
     st('ok', msg)
+    window._ultimaPesquisa = { tipo: 'lote', diaInicio, diaFim }
 
   } catch (e) {
     st('err', '❌ ' + e.message)
@@ -1133,7 +1138,6 @@ function renderCalendar(year, month, bestByDay, destInfo, label) {
       const cellClass = temAmbos ? 'ambos' : (st_ ? 'soltour' : 'soltropico')
 
       let linhas = ''
-      // Mostrar o nome do hotel se for apenas 1 hotel
       let hotelName = ''
       if (st_ && !sp_) hotelName = st_.hotelName
       else if (sp_ && !st_) hotelName = sp_.hotelName
@@ -1162,7 +1166,6 @@ function renderCalendar(year, month, bestByDay, destInfo, label) {
   container.innerHTML = html
 
   window._calendarData = { bestByDay, destInfo }
-  window._ultimaPesquisa = { tipo: 'lote', diaInicio, diaFim }
 }
 
 // ============================================================
@@ -1288,7 +1291,7 @@ async function detSoltropico(op, dateStr, nights, destInfo) {
 }
 
 // ============================================================
-// GERAR DOCUMENTO - MESMA LÓGICA DAS VERSÕES ANTERIORES
+// GERAR DOCUMENTO
 // ============================================================
 async function gerarDocumento(tipo, dataJson, destLabel, origin) {
   let data; try { data = JSON.parse(dataJson) } catch(e) { alert('Erro nos dados da oferta.'); return }
@@ -1460,6 +1463,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('month').value = start.toISOString().slice(0, 7)
   $('partida').value = start.toISOString().slice(0, 10)
 
+  // Preencher lista de destinos
   const dl = $('dest-list')
   if (dl) {
     const nomes = DEST_MAP.filter(d => !d.alias).map(d => d.label)
@@ -1473,10 +1477,8 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   })
 
-  // Atualizar badge quando o filtro muda
   $('hotel-filter').addEventListener('input', atualizarFiltroHotel)
 
-  // Mostrar modo rápido quando data fixa estiver preenchida
   $('partida').addEventListener('change', () => {
     if ($('partida').value) {
       $('modo-rapido').className = 'modo-rapido show'
