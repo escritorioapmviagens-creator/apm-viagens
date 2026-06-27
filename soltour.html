@@ -349,6 +349,7 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults,
       brand: 'SOLTOUR',
       image: info.image || '',
       images: info.images || [],
+      calToken: av.availToken,   // token que funcionou — para o detalhe reutilizar
       available: !d.unavailable && precoDia > 0,
       nights: d.numNights || nights
     }
@@ -670,13 +671,28 @@ async function selectDay(dateStr) {
       const budgets = av.budgets || []
 
       if (!(budgets.length && budgets[0].budgetId && av.availToken)) {
-        detailContainer.innerHTML = `<div class="card"><span style="color:#C62828">❌ Sem orçamento detalhado para este dia.</span>
-          <div style="font-size:11px;color:#888;margin-top:8px;font-family:monospace">
-          availToken=${av.availToken?'sim':'∅'} · budgets=${budgets.length} · budgetId=${budgets[0]&&budgets[0].budgetId?'sim':'∅'} ·
-          erro=${av.result&&av.result.errorMessage||'—'}</div></div>`
-        return
-      }
-      {
+        // A availability direta a este dia falhou (a Soltour às vezes só dá o preço
+        // via calendário, não via availability direta). Mostrar o PVP do calendário
+        // sem o net detalhado, em vez de falhar — o net obtém-se na reserva.
+        detailData = {
+          brand: 'SOLTOUR',
+          hotelName: op.hotelName,
+          hotelCode: op.hotelCode,
+          stars: op.stars || 0,
+          board: op.board || '',
+          checkIn: dateStr,
+          checkOut: endStr,
+          nights: nightsDia,
+          image: op.image || '',
+          images: op.images || (op.image ? [op.image] : []),
+          totalPvp: op.price,
+          totalNet: null,
+          totalCom: null,
+          semNet: true,
+          cancelamento: [],
+          rows: [{ name: 'Pacote (preço de calendário)', pvp: op.price, net: null, com: null }]
+        }
+      } else {
         const q = await call('booking/quote', {
           availToken: av.availToken,
           budgetIds: [budgets[0].budgetId],
@@ -936,8 +952,10 @@ function renderDetail(data, destLabel, origin) {
 
       <div style="display:flex;gap:24px;flex-wrap:wrap;margin:10px 0;padding:12px 16px;background:#F0F4FF;border-radius:8px">
         <div>📦 Bruto: <b>${eur(data.totalPvp)}</b></div>
-        <div style="color:#2E7D32">🟢 NET: <b style="font-size:18px">${eur(data.totalNet)}</b></div>
-        <div style="color:#3B5BDB">💰 Margem: <b>${eur(margem)}</b></div>
+        ${data.totalNet != null
+          ? `<div style="color:#2E7D32">🟢 NET: <b style="font-size:18px">${eur(data.totalNet)}</b></div>
+             <div style="color:#3B5BDB">💰 Margem: <b>${eur(data.totalPvp - data.totalNet)}</b></div>`
+          : `<div style="color:#888;font-size:12px">Net e margem obtêm-se na fase de reserva (a Soltour não os fornece para este dia na pesquisa).</div>`}
       </div>
 
       <table class="detail-table" style="width:100%;border-collapse:collapse;margin-top:8px">
