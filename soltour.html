@@ -46,6 +46,7 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
 .op-line{display:flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap;margin-top:2px}
 .op-line .price{font-size:11px;font-weight:600}
 .carregando-parcial{background:#FEF9E7;border:1px solid #F9E79F;border-radius:8px;padding:10px 14px;font-size:13px;color:#7D6608;margin:10px 0;display:none}
+.progresso{font-size:12px;color:#3251c4;margin:6px 0}
 @media (max-width: 600px) {
   body { padding: 10px; font-size: 13px; }
   .wrap { max-width: 100%; }
@@ -106,6 +107,7 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
 
   <div id="status" class="status"></div>
   <div id="carregando-parcial" class="carregando-parcial">⏳ A carregar dados...</div>
+  <div id="progresso" class="progresso"></div>
   <div id="calendar-container"></div>
   <div id="detail-container"></div>
 </div>
@@ -122,13 +124,13 @@ const sb = (window.supabase && window.supabase.createClient) ? window.supabase.c
 const LOGIN={brand:'SOLTOUR',market:'XMLPT',languageCode:'PT',username:'APMVIA999',password:'XMLAPMVIA'}
 
 let token=null
-let cache = {} // cache simples: key = destino+origem+mes+noites+adultos
-const TIMEOUT_MS = 8000 // timeout de 8 segundos para cada operador
+let cache = {}
+const TIMEOUT_MS = 8000
+const MAX_CONCORRENTES = 4
 const $=id=>document.getElementById(id)
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
 const st=(t,m)=>{const e=$('status');e.className=`status show ${t}`;e.innerHTML=m}
 const eur=v=>v==null||isNaN(v)?'—':'€'+Number(v).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})
-const pct=v=>v==null||isNaN(v)?'—':Number(v).toFixed(2)+'%'
 
 // ============================================================
 // MAPEAMENTO DE DESTINOS
@@ -190,9 +192,6 @@ const DEST_MAP = [
   {label:'Malaga', soltour:null, soltropico:225, alias:true},
 ]
 
-// ============================================================
-// HELPERS
-// ============================================================
 function normalize(str) {
   if (!str) return ''
   return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
@@ -201,15 +200,12 @@ function normalize(str) {
 function findDest(input) {
   if (!input || input.trim() === '') return null
   const normalized = normalize(input)
-  // Procura exato primeiro
   for (const d of DEST_MAP) {
     if (normalize(d.label) === normalized) return d
   }
-  // Depois prefixo
   for (const d of DEST_MAP) {
     if (normalize(d.label).startsWith(normalized) || normalized.startsWith(normalize(d.label))) return d
   }
-  // Depois contém
   for (const d of DEST_MAP) {
     if (normalize(d.label).includes(normalized) || normalized.includes(normalize(d.label))) return d
   }
@@ -273,7 +269,7 @@ function pkItems(c) { return c ? pkAll(c, 'item') : [] }
 function pkDirectChildren(el, tag) { if (!el) return []; const o = []; for (let i = 0; i < el.children.length; i++) { const c = el.children[i], l = c.localName || c.tagName.split(':').pop(); if (l === tag) o.push(c) } return o }
 
 // ============================================================
-// BUSCAR CALENDÁRIO SOLTOUR - OTIMIZADO
+// BUSCAR CALENDÁRIO SOLTOUR - COMPLETO E OTIMIZADO
 // ============================================================
 async function getSoltourCalendar(destCode, origin, year, month, nights, adults, childAges = []) {
   await ensureLogin()
@@ -282,23 +278,19 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults,
   childAges.forEach(age => pax.push({ age: age, type: 'CHILD' }))
 
   const lastDay = new Date(year, month, 0).getDate()
-  // Testar apenas 5 datas estratégicas (início, meio, fim e 2 intermediárias)
-  const seedDays = []
-  const steps = [1, Math.floor(lastDay * 0.3), Math.floor(lastDay * 0.5), Math.floor(lastDay * 0.7), lastDay - 1]
-  for (const d of steps) {
-    if (d >= 1 && d <= lastDay && !seedDays.includes(d)) seedDays.push(d)
-  }
-  // Se poucos dias, adicionar mais
-  if (lastDay <= 15) {
-    for (let d = 1; d <= lastDay; d += 3) {
-      if (!seedDays.includes(d)) seedDays.push(d)
-    }
-  }
-
-  const buildBody = (sd) => {
-    const sDate = `${year}-${String(month).padStart(2, '0')}-${String(sd).padStart(2, '0')}`
-    const ed = new Date(sDate); ed.setDate(ed.getDate() + nights); const eStr = ed.toISOString().slice(0, 10)
-    return { sDate, eStr, body: {
+  const progresso = $('progresso')
+  
+  // Testar TODAS as datas do mês, mas com limite de concorrência
+  const allDays = []
+  const totalDias = lastDay
+  
+  // Função para testar uma data específica
+  const testarData = async (dia) => {
+    const sDate = `${year}-${String(month).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
+    const ed = new Date(sDate); ed.setDate(ed.getDate() + nights)
+    const eStr = ed.toISOString().slice(0, 10)
+    
+    const body = {
       productType: 'PACKAGE', languageCode: 'PT',
       criteria: { order: { direction: 'ASC', type: 'PRICE' }, pagination: { firstItem: 0, itemCount: 5 } },
       params: {
@@ -310,83 +302,144 @@ async function getSoltourCalendar(destCode, origin, year, month, nights, adults,
           { origins: [destCode], destinations: [origin], flightDate: eStr }
         ] }
       }
-    }}
-  }
-
-  let av = null, startDate = null, endStr = null
-  const BATCH = 2
-  for (let i = 0; i < seedDays.length && !av; i += BATCH) {
-    const lote = seedDays.slice(i, i + BATCH)
+    }
+    
     try {
-      const resultados = await withTimeout(Promise.all(lote.map(async (sd) => {
-        const { sDate, eStr, body } = buildBody(sd)
-        try {
-          const r = await call('booking/availability', body)
-          return (r && r.availToken) ? { sd, sDate, eStr, r } : null
-        } catch (e) { return null }
-      })))
-      const ok = resultados.filter(Boolean).sort((a, b) => a.sd - b.sd)[0]
-      if (ok) { av = ok.r; startDate = ok.sDate; endStr = ok.eStr }
+      const r = await withTimeout(call('booking/availability', body), 7000)
+      if (r && r.availToken) {
+        return { dia, sDate, eStr, r }
+      }
     } catch (e) {
-      // Timeout ou erro neste lote, continuar
+      // Timeout ou erro, ignorar
+    }
+    return null
+  }
+  
+  // Processar em lotes com limite de concorrência
+  const resultados = []
+  const lotes = []
+  const BATCH_SIZE = MAX_CONCORRENTES
+  
+  for (let i = 1; i <= totalDias; i += BATCH_SIZE) {
+    lotes.push(Array.from({ length: Math.min(BATCH_SIZE, totalDias - i + 1) }, (_, idx) => i + idx))
+  }
+  
+  let processados = 0
+  let encontrados = 0
+  
+  for (const lote of lotes) {
+    const promises = lote.map(dia => testarData(dia))
+    const results = await Promise.allSettled(promises)
+    
+    for (const result of results) {
+      if (result.status === 'fulfilled' && result.value) {
+        resultados.push(result.value)
+        encontrados++
+      }
+      processados++
+    }
+    
+    // Atualizar progresso
+    if (progresso) {
+      const pct = Math.round((processados / totalDias) * 100)
+      progresso.textContent = `📊 Soltour: ${processados}/${totalDias} dias testados · ${encontrados} disponíveis`
     }
   }
-  if (!av || !av.availToken) return []
-
-  // 2) Calendário do mês inteiro
-  const cal = await call('booking/getPriceCalendar', {
-    availToken: av.availToken,
-    destinationCode: destCode,
-    originCode: origin,
-    productType: 'PACKAGE',
-    languageCode: 'PT',
-    month: { year, month },
-    numNights: nights,
-    onlyDirectFlights: false
+  
+  if (progresso) progresso.textContent = `✅ Soltour: ${encontrados} datas disponíveis encontradas`
+  
+  // Se não encontrou nenhuma disponibilidade, retornar vazio
+  if (resultados.length === 0) return []
+  
+  // Para cada data com disponibilidade, obter o calendário
+  const todosOsDias = []
+  
+  // Processar em paralelo com limite
+  const calendarPromises = resultados.map(async ({ dia, sDate, eStr, r }) => {
+    try {
+      const cal = await withTimeout(call('booking/getPriceCalendar', {
+        availToken: r.availToken,
+        destinationCode: destCode,
+        originCode: origin,
+        productType: 'PACKAGE',
+        languageCode: 'PT',
+        month: { year, month },
+        numNights: nights,
+        onlyDirectFlights: false
+      }), 8000)
+      
+      // Construir mapa de hotéis
+      const hotelMap = {}
+      if (r.hotels) {
+        for (const h of r.hotels) {
+          const c = h.code || h.numericCode || h.id
+          if (c != null) hotelMap[String(c)] = {
+            name: h.name || h.fullName || '',
+            stars: h.categoryCode,
+            image: h.mainImage || (h.images && h.images[0]) || '',
+            images: (h.images || []).slice(0, 4)
+          }
+        }
+      }
+      
+      const days = (cal.days || [])
+      const numPax = adults + childAges.length
+      return days.map(d => {
+        const code = (d.additionalInformation && d.additionalInformation.hotel) || ''
+        const info = hotelMap[String(code)] || {}
+        const precoPP = parseFloat(d.bestPrice || d.price) || 0
+        const precoDia = precoPP * numPax
+        return {
+          date: d.day,
+          price: precoDia,
+          pricePerPerson: precoPP,
+          currency: d.currencyCode || 'EUR',
+          hotelName: info.name || code || 'Hotel',
+          hotelCode: code,
+          stars: info.stars || 0,
+          board: (d.additionalInformation && d.additionalInformation.mealPlan) || '',
+          direct: !!d.directFlight,
+          brand: 'SOLTOUR',
+          image: info.image || '',
+          images: info.images || [],
+          calToken: r.availToken,
+          available: !d.unavailable && precoDia > 0,
+          nights: d.numNights || nights
+        }
+      })
+    } catch (e) {
+      console.warn('Erro ao obter calendário para dia', dia, e.message)
+      return []
+    }
   })
-
-  const hotelMap = {}
-  if (av.hotels) {
-    for (const h of av.hotels) {
-      const c = h.code || h.numericCode || h.id
-      if (c != null) hotelMap[String(c)] = {
-        name: h.name || h.fullName || '',
-        stars: h.categoryCode,
-        image: h.mainImage || (h.images && h.images[0]) || '',
-        images: (h.images || []).slice(0, 4)
+  
+  // Processar calendários em paralelo com limite
+  const calendarResults = []
+  for (let i = 0; i < calendarPromises.length; i += MAX_CONCORRENTES) {
+    const batch = calendarPromises.slice(i, i + MAX_CONCORRENTES)
+    const results = await Promise.allSettled(batch)
+    for (const r of results) {
+      if (r.status === 'fulfilled' && r.value) {
+        calendarResults.push(...r.value)
       }
     }
   }
-
-  const days = (cal.days || [])
-  const numPax = adults + childAges.length
-  return days.map(d => {
-    const code = (d.additionalInformation && d.additionalInformation.hotel) || ''
-    const info = hotelMap[String(code)] || {}
-    const precoPP = parseFloat(d.bestPrice || d.price) || 0
-    const precoDia = precoPP * numPax
-    return {
-      date: d.day,
-      price: precoDia,
-      pricePerPerson: precoPP,
-      currency: d.currencyCode || 'EUR',
-      hotelName: info.name || code || 'Hotel',
-      hotelCode: code,
-      stars: info.stars || 0,
-      board: (d.additionalInformation && d.additionalInformation.mealPlan) || '',
-      direct: !!d.directFlight,
-      brand: 'SOLTOUR',
-      image: info.image || '',
-      images: info.images || [],
-      calToken: av.availToken,
-      available: !d.unavailable && precoDia > 0,
-      nights: d.numNights || nights
+  
+  // Remover duplicados (mesmo dia, mesmo hotel) mantendo o mais barato
+  const seen = new Map()
+  for (const day of calendarResults) {
+    if (!day.available) continue
+    const key = day.date + '|' + day.hotelCode
+    if (!seen.has(key) || day.price < seen.get(key).price) {
+      seen.set(key, day)
     }
-  })
+  }
+  
+  return Array.from(seen.values())
 }
 
 // ============================================================
-// BUSCAR CALENDÁRIO SOLTRÓPICO - OTIMIZADO
+// BUSCAR CALENDÁRIO SOLTRÓPICO
 // ============================================================
 async function getSoltropicoCalendar(destCode, origin, year, month, nights, adults, childAges = []) {
   const results = []
@@ -470,7 +523,7 @@ async function getSoltropicoCalendar(destCode, origin, year, month, nights, adul
 }
 
 // ============================================================
-// FUNÇÃO PRINCIPAL - OTIMIZADA
+// FUNÇÃO PRINCIPAL
 // ============================================================
 async function run() {
   const btn = $('go')
@@ -480,9 +533,11 @@ async function run() {
   const calContainer = $('calendar-container')
   const detailContainer = $('detail-container')
   const carregandoParcial = $('carregando-parcial')
+  const progresso = $('progresso')
   calContainer.innerHTML = ''
   detailContainer.innerHTML = ''
   carregandoParcial.style.display = 'none'
+  progresso.textContent = ''
 
   try {
     const destInput = $('dest').value.trim()
@@ -517,7 +572,7 @@ async function run() {
 
     st('loading', `🔍 A carregar calendário para ${destInfo.label}...`)
     carregandoParcial.style.display = 'block'
-    carregandoParcial.textContent = '⏳ A carregar dados da Soltour e Soltrópico...'
+    carregandoParcial.textContent = '⏳ A testar todas as datas do mês...'
 
     const promises = []
     const allDays = []
@@ -527,12 +582,11 @@ async function run() {
         getSoltourCalendar(destInfo.soltour, origin, year, month, nights, adults, childAges)
           .then(days => { 
             allDays.push(...days)
-            // Atualizar status parcial
-            carregandoParcial.textContent = `✅ Soltour: ${days.length} ofertas carregadas. Aguardando Soltrópico...`
+            carregandoParcial.textContent = `✅ Soltour: ${days.length} ofertas carregadas`
           })
           .catch(e => {
             console.warn('Soltour:', e.message)
-            carregandoParcial.textContent = `⚠️ Soltour: ${e.message}. Aguardando Soltrópico...`
+            carregandoParcial.textContent = `⚠️ Soltour: ${e.message}`
           })
       )
     }
@@ -542,19 +596,20 @@ async function run() {
         getSoltropicoCalendar(destInfo.soltropico, origin, year, month, nights, adults, childAges)
           .then(days => { 
             allDays.push(...days)
-            carregandoParcial.textContent = `✅ Soltrópico: ${days.length} ofertas carregadas.`
+            carregandoParcial.textContent = `✅ Soltrópico: ${days.length} ofertas carregadas`
           })
           .catch(e => {
             console.warn('Soltrópico:', e.message)
-            carregandoParcial.textContent = `⚠️ Soltrópico: ${e.message}.`
+            carregandoParcial.textContent = `⚠️ Soltrópico: ${e.message}`
           })
       )
     }
 
-    // Esperar todas as promessas (com timeout global)
-    await withTimeout(Promise.allSettled(promises), TIMEOUT_MS + 3000)
+    // Esperar todas as promessas
+    await Promise.allSettled(promises)
 
     carregandoParcial.style.display = 'none'
+    progresso.textContent = ''
 
     if (!allDays.length) {
       st('err', `❌ Sem disponibilidade para ${destInfo.label} em ${month}/${year}.`)
@@ -594,6 +649,7 @@ async function run() {
   } finally {
     btn.disabled = false
     $('carregando-parcial').style.display = 'none'
+    progresso.textContent = ''
   }
 }
 
@@ -658,7 +714,7 @@ function renderCalendar(year, month, bestByDay, destInfo) {
 }
 
 // ============================================================
-// SELECIONAR DIA - COM NET REAL
+// SELECIONAR DIA
 // ============================================================
 async function selectDay(dateStr) {
   const detailContainer = $('detail-container')
@@ -702,7 +758,7 @@ async function selectDay(dateStr) {
   }
 }
 
-// Detalhe Soltour: availability + quote (net real)
+// Detalhe Soltour
 async function detSoltour(op, dateStr, origin, nights, adults, destInfo) {
   const nightsDia = op.nights || nights
   const end = new Date(dateStr); end.setDate(end.getDate() + nightsDia)
@@ -764,7 +820,7 @@ async function detSoltour(op, dateStr, origin, nights, adults, destInfo) {
   return renderDetail(detailData, destInfo.label, origin)
 }
 
-// Detalhe Soltrópico: net estimado com 15% de comissão
+// Detalhe Soltrópico
 async function detSoltropico(op, dateStr, nights, destInfo) {
   const bruto = op.price
   const comissaoEuro = bruto * 0.15
@@ -811,11 +867,6 @@ async function gerarDocumento(tipo, dataJson, destLabel, origin) {
   p.set('cnome', cnome)
   if(cid) p.set('cid', cid)
 
-  if (Array.isArray(data.pagamento) && data.pagamento.length) {
-    const linhas = ajustarPagamento(data.pagamento, data.checkIn)
-    if (linhas) p.set('condpag', linhas)
-  }
-
   if (Array.isArray(data.cancelamento) && data.cancelamento.length) {
     const eurStr = v => '€' + Number(v).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     const linhas = data.cancelamento.map(f => {
@@ -830,29 +881,6 @@ async function gerarDocumento(tipo, dataJson, destLabel, origin) {
   const base = 'https://escritorioapmviagens-creator.github.io/apm-viagens/'
   const url = base + 'orcamento.html?' + p.toString() + (tipo === 'contrato' ? '&modo=contrato' : '')
   window.open(url, '_blank')
-}
-
-function ajustarPagamento(faixas, checkIn) {
-  if (!Array.isArray(faixas) || !faixas.length) return ''
-  let limite30 = null
-  if (checkIn) { try { const d = new Date(checkIn); d.setDate(d.getDate() - 30); limite30 = d } catch(e) {} }
-  const fmtD = dt => { try { return new Date(dt).toLocaleDateString('pt-PT') } catch(e){ return dt } }
-  const eurStr = v => '€' + Number(v).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  const linhas = faixas.map(f => {
-    let dataPag = f.dueDate || f.date || null
-    let quando
-    if (dataPag && limite30) {
-      const dp = new Date(dataPag)
-      quando = (dp > limite30) ? ('Até ' + fmtD(limite30) + ' (30 dias antes)') : ('Até ' + fmtD(dataPag))
-    } else if (dataPag) {
-      quando = 'Até ' + fmtD(dataPag)
-    } else {
-      quando = f.label || f.desc || 'Pagamento'
-    }
-    const valor = (f.amount != null) ? (': ' + eurStr(f.amount)) : (f.pct != null ? (': ' + f.pct + '%') : '')
-    return quando + valor
-  })
-  return linhas.join('\n')
 }
 
 function extrairCancelamento(budget, pvpCliente) {
@@ -880,7 +908,6 @@ function renderDetail(data, destLabel, origin) {
   const brandColor = data.brand === 'SOLTOUR' ? '#E8395A' : '#1098AD'
   const brandClass = data.brand === 'SOLTOUR' ? 'brand-soltour' : 'brand-soltropico'
   const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
-  const margem = data.totalPvp - data.totalNet
 
   let rowsHtml = ''
   for (const row of data.rows) {
@@ -923,7 +950,7 @@ function renderDetail(data, destLabel, origin) {
         ${data.totalNet != null
           ? `<div style="color:#2E7D32">🟢 NET: <b style="font-size:18px">${eur(data.totalNet)}</b></div>
              <div style="color:#3B5BDB">💰 Margem: <b>${eur(data.totalPvp - data.totalNet)}</b></div>`
-          : `<div style="color:#888;font-size:12px">Net e margem obtêm-se na fase de reserva (a Soltour não os fornece para este dia na pesquisa).</div>`}
+          : `<div style="color:#888;font-size:12px">Net e margem obtêm-se na fase de reserva.</div>`}
       </div>
 
       <table class="detail-table" style="width:100%;border-collapse:collapse;margin-top:8px">
