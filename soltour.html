@@ -151,7 +151,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       <span>✈️ Voo direto</span>
       <span>📍 Com escalas</span>
     </div>
-    <div class="hint">Preenche a <b>data exata</b> para um resultado rápido só desse dia; deixa-a vazia para varrer o mês todo. Preços do calendário são indicativos — o valor exato e o net aparecem ao abrir o dia.</div>
+    <div class="hint">Preenche a <b>data exata</b> para um resultado rápido só desse dia; deixa-a vazia para varrer o mês. Os preços do calendário são <b>por pessoa</b> (como nos sites dos operadores) e indicativos — o valor exato e o net aparecem ao abrir o dia.</div>
   </div>
 
   <div id="status" class="status"></div>
@@ -289,7 +289,7 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges,dia
     const info=hotelMap[String(code)]||{}
     const precoPP=parseFloat(d.bestPrice||d.price)||0
     return{
-      date:d.day,price:precoPP*numPax,pricePerPerson:precoPP,currency:d.currencyCode||'EUR',
+      date:d.day,price:precoPP,pricePerPerson:precoPP,totalPrice:precoPP*numPax,currency:d.currencyCode||'EUR',
       hotelName:info.name||code||'Hotel',hotelCode:code,stars:info.stars||0,
       board:(d.additionalInformation&&d.additionalInformation.mealPlan)||'',
       // tipo de voo (como o site Soltour): directFlight é fiável; provider 'flybase'
@@ -339,23 +339,33 @@ async function getSoltropico(destCode,origin,year,month,nights,adults,childAges,
   const baseXML=(baseLocals.length?baseLocals:['0']).map(c=>`<Local><Code>${c}</Code><Nights>${nights}</Nights></Local>`).join('')
   const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges>${childAges.join(',')}</ChildAges></RoomTypeOption>`
 
-  for(const depDate of datasMes.slice(0,12)){
+  // consultar as datas em PARALELO (lotes de 4) em vez de uma a uma — muito mais rápido
+  const consultarData=async depDate=>{
+    const res=[]
     try{
       const doc=await pkSoap('DynSearchProductAvailableServices',
         `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${pkCred()}<ProductCode xsi:type="xsd:int">${destCode}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
-      const hotelOptions=pkAll(doc,'HotelOption')
-      for(const hc of hotelOptions){
+      for(const hc of pkAll(doc,'HotelOption')){
         for(const h of pkItems(hc)){
-          const price=parseFloat(pkTxt(h,'PriceFrom'))||0
+          const priceTotal=parseFloat(pkTxt(h,'PriceFrom'))||0
+          const numPax=adults+childAges.length
+          const price=numPax>0?priceTotal/numPax:priceTotal  // por pessoa (PriceFrom é total)
           const name=pkTxt(h,'Name')||pkTxt(h,'Code')
-          if(!name||price===0)continue
+          if(!name||priceTotal===0)continue
           const img=pkTxt(h,'Image')||pkTxt(h,'ImageUrl')||''
-          out.push({date:depDate,price,currency:'EUR',hotelName:name,hotelCode:destCode,
+          res.push({date:depDate,price,pricePerPerson:price,totalPrice:priceTotal,currency:'EUR',hotelName:name,hotelCode:destCode,
             stars:parseInt(pkTxt(h,'Rating'))||0,board:'',direct:true,brand:'SOLTRÓPICO',
             image:img,images:img?[img]:[],available:true,nights})
         }
       }
     }catch(e){console.warn('Soltrópico',depDate,e.message)}
+    return res
+  }
+  const alvos=datasMes.slice(0,12)
+  for(let i=0;i<alvos.length;i+=4){
+    const lote=alvos.slice(i,i+4)
+    const resultados=await Promise.all(lote.map(consultarData))
+    resultados.forEach(r=>out.push(...r))
   }
   return out
 }
