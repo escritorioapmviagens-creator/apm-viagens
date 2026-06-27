@@ -4,191 +4,149 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📅 Net vs PVP · Pesquisa por Hotel</title>
+<title>Motor de Pacotes · APM Viagens</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',system-ui,sans-serif}
-body{background:#F5F6FA;color:#1A1D2E;font-size:14px;padding:22px}
-.wrap{max-width:1000px;margin:0 auto}
-h1{font-size:19px;font-weight:700;margin-bottom:4px}.sub{color:#8B92A5;font-size:13px;margin-bottom:18px}
-.card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:18px;margin-bottom:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-label{font-size:11px;font-weight:600;color:#8B92A5;text-transform:uppercase;display:block;margin-bottom:4px}
-input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:13px;background:#fff}
-.btn{padding:10px 18px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;background:#3B5BDB;color:#fff;transition:all .2s;font-family:inherit}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,91,219,.3)}
-.btn-success{background:#0F6E56}
-.btn-success:hover:not(:disabled){box-shadow:0 4px 12px rgba(15,110,86,.3)}
-.btn-warning{background:#E67E22}
-.btn-warning:hover:not(:disabled){box-shadow:0 4px 12px rgba(230,126,34,.3)}
-.btn-danger{background:#C0392B}
-.btn-danger:hover:not(:disabled){box-shadow:0 4px 12px rgba(192,57,43,.3)}
-.btn-outline{background:transparent;border:2px solid #3B5BDB;color:#3B5BDB}
-.btn-outline:hover:not(:disabled){background:#3B5BDB;color:#fff}
-.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.btn-group .btn{flex:1;min-width:80px;padding:8px 12px;font-size:12px}
-.status{padding:10px 14px;border-radius:8px;font-size:13px;margin:14px 0;display:none}
-.status.show{display:block}.loading{background:#EEF2FF;color:#3251c4}.ok{background:#E8F5E9;color:#2E7D32}.err{background:#FFEBEE;color:#C62828}
-.hint{font-size:12px;color:#8B92A5;margin-top:6px}
-.progresso{font-size:12px;color:#3251c4;margin:8px 0;padding:8px 12px;background:#EEF2FF;border-radius:6px;display:none}
-.progresso.show{display:block}
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
-.cal-day{background:#F8F9FC;border-radius:8px;padding:10px 6px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .15s;min-height:70px;display:flex;flex-direction:column;justify-content:center;align-items:center}
-.cal-day:hover{background:#EEF2FF;border-color:#3B5BDB}
-.cal-day .day{font-weight:700;font-size:15px;color:#1A1D2E}
-.cal-day .price{font-size:13px;font-weight:600;color:#E8395A;margin-top:3px}
-.cal-day .hotel-name{font-size:10px;color:#6B7280;margin-top:2px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cal-day.unavailable{opacity:.3;cursor:default;background:#F5F5F5}
-.cal-day.unavailable:hover{border-color:transparent;background:#F5F5F5}
-.cal-day.selected{border-color:#3B5BDB;background:#EEF2FF}
-.cal-day.soltour{border-left:3px solid #E8395A}
-.cal-day.soltropico{border-left:3px solid #1098AD}
-.cal-day .op{font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600;margin-top:2px}
-.cal-day .op-soltour{background:#FFF0F3;color:#E8395A}
-.cal-day .op-soltropico{background:#E3FAFC;color:#1098AD}
-.cal-header{font-weight:600;color:#8B92A5;font-size:11px;text-align:center;padding:6px 0;text-transform:uppercase}
-.cal-month-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px}
-.cal-month-nav .month{font-weight:700;font-size:16px}
-.cal-month-nav .intervalo-label{font-size:13px;color:#8B92A5;background:#F0F4FF;padding:4px 12px;border-radius:20px}
-.detail-table td{padding:6px 10px;font-size:13px}
-.detail-table .total-row td{border-top:2px solid #1A1D2E;font-weight:700}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid #E5E7EB;border-top-color:#3B5BDB;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:8px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.brand-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-right:6px}
-.brand-soltour{background:#FFF0F3;color:#E8395A}
-.brand-soltropico{background:#E3FAFC;color:#1098AD}
-.cal-day.ambos{border-left:3px solid #7c3aed}
-.op-line{display:flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap;margin-top:2px}
-.op-line .price{font-size:11px;font-weight:600}
-.modo-rapido{background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:10px 14px;margin-top:10px;display:none;font-size:13px;color:#2E7D32}
-.modo-rapido.show{display:block}
-.modo-rapido .destaque{font-weight:700}
-.operadores{display:flex;gap:16px;align-items:center;padding:8px 0;flex-wrap:wrap}
-.operadores label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#1A1D2E;text-transform:none;letter-spacing:0;cursor:pointer}
-.operadores input[type="checkbox"]{width:18px;height:18px;accent-color:#3B5BDB;cursor:pointer}
-.badge-operador{display:inline-block;padding:1px 8px;border-radius:12px;font-size:10px;font-weight:700}
-.badge-soltour{background:#FFF0F3;color:#E8395A}
-.badge-soltropico{background:#E3FAFC;color:#1098AD}
-.hotel-filter{display:flex;gap:10px;align-items:center;padding:8px 0;flex-wrap:wrap}
-.hotel-filter input{flex:1;min-width:200px}
-.hotel-filter .badge-hotel{background:#EEF2FF;color:#3B5BDB;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;display:none}
-.hotel-filter .badge-hotel.show{display:inline-block}
-.hotel-filter .clear-hotel{background:none;border:none;color:#C0392B;cursor:pointer;font-size:13px;font-weight:600;display:none;padding:4px 8px}
-.hotel-filter .clear-hotel.show{display:inline-block}
-.campo-mes{display:flex;gap:8px;align-items:center}
-.campo-mes input{flex:1}
+:root{
+  --bg:#F4F5F9; --surface:#FFFFFF; --ink:#1A1D2E; --muted:#8A92A6; --line:#E7E9F0;
+  --soltour:#E8395A; --soltour-soft:#FFF0F3;
+  --soltropico:#0E9AAE; --soltropico-soft:#E2F7FA;
+  --best:#1E8E5A; --best-soft:#E7F6EE;
+  --accent:#3B5BDB; --accent-soft:#EDF0FD;
+  --warn:#E67E22;
+  --radius:14px; --shadow:0 1px 3px rgba(20,25,50,.06),0 8px 24px rgba(20,25,50,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;padding:24px 16px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto}
+.head{margin-bottom:20px}
+.head h1{font-size:22px;font-weight:750;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.head .tag{font-size:13px;color:var(--muted);margin-top:3px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;display:block;margin-bottom:5px}
+input,select{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;background:var(--surface);font-family:inherit;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.controls{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.toggle{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;user-select:none}
+.toggle input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.pill-soltour{background:var(--soltour-soft);color:var(--soltour)}
+.pill-soltropico{background:var(--soltropico-soft);color:var(--soltropico)}
+.hotel-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.hotel-row input{flex:1;min-width:200px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.btn{padding:11px 16px;border:none;border-radius:10px;font-weight:650;font-size:13px;cursor:pointer;background:var(--accent);color:#fff;font-family:inherit;transition:transform .12s,box-shadow .12s,opacity .12s}
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px rgba(59,91,219,.28)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn.ghost:hover:not(:disabled){border-color:var(--accent);color:var(--accent);box-shadow:none}
+.btn.go{background:var(--best)}
+.btn.go:hover:not(:disabled){box-shadow:0 6px 16px rgba(30,142,90,.28)}
+.status{padding:11px 15px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none;font-weight:500}
+.status.show{display:block}
+.status.loading{background:var(--accent-soft);color:var(--accent)}
+.status.ok{background:var(--best-soft);color:var(--best)}
+.status.err{background:#FDECEC;color:#C0392B}
+.hint{font-size:12px;color:var(--muted);margin-top:8px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.legend span{display:flex;align-items:center;gap:5px}
+.dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+.cal-top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.cal-top .mes{font-size:18px;font-weight:750;letter-spacing:-.01em}
+.cal-top .info{font-size:12px;color:var(--muted)}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.cal-h{font-size:10px;font-weight:700;color:var(--muted);text-align:center;padding:4px 0;text-transform:uppercase;letter-spacing:.05em}
+.cell{background:var(--bg);border:1.5px solid transparent;border-radius:11px;padding:9px 6px;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;cursor:pointer;transition:border-color .14s,transform .14s,background .14s}
+.cell:hover{border-color:var(--accent);transform:translateY(-1px);background:var(--surface)}
+.cell.empty{background:transparent;cursor:default;border:none}
+.cell.empty .n{color:#C9CDD9}
+.cell.sel{border-color:var(--accent);background:var(--accent-soft)}
+.cell .n{font-size:15px;font-weight:700}
+.cell .hotel{font-size:9px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.cell.both{border-left:3px solid #8B5CF6}
+.opline{display:flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap;margin-top:3px;width:100%}
+.opline .pr{font-size:12px;font-weight:700}
+.opline .lbl{font-size:8px;font-weight:700;padding:0 4px;border-radius:5px;text-transform:uppercase;letter-spacing:.02em}
+.opline .lbl.st{background:var(--soltour-soft);color:var(--soltour)}
+.opline .lbl.sp{background:var(--soltropico-soft);color:var(--soltropico)}
+.opline .fly{font-size:9px}
+.star{color:#E8395A}
+.best-tag{font-size:7px;font-weight:800;background:var(--best);color:#fff;padding:1px 4px;border-radius:5px}
+.detail{border:1.5px solid var(--line);border-radius:var(--radius);padding:0;overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow)}
+.detail.st{border-top:3px solid var(--soltour)}
+.detail.sp{border-top:3px solid var(--soltropico)}
+.detail-h{padding:16px 18px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;background:var(--surface)}
+.detail-h .name{font-size:16px;font-weight:700}
+.detail-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding:0 18px 12px}
+.price-band{display:flex;gap:22px;flex-wrap:wrap;padding:14px 18px;background:var(--accent-soft);margin:0 18px;border-radius:11px;align-items:baseline}
+.price-band .k{font-size:12px;color:var(--muted)}
+.price-band .v{font-size:17px;font-weight:750}
+.price-band .net{color:var(--best)}
+.price-band .mg{color:var(--accent)}
+.note{margin:12px 18px 0;padding:9px 13px;border-radius:9px;font-size:12px;background:#FFF7E8;color:#9A6A1A;border-left:3px solid var(--warn)}
+.dactions{display:flex;gap:10px;flex-wrap:wrap;padding:14px 18px 18px}
+.dactions .btn{flex:1;min-width:170px;padding:12px}
+.spinner{display:inline-block;width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
 @media (max-width:600px){
-  body{padding:10px}
-  .btn-group .btn{min-width:60px;font-size:10px;padding:6px 8px}
-  .calendar{gap:3px;margin-top:8px}
-  .cal-day{padding:4px 2px;min-height:52px;border-radius:6px;border-width:1px}
-  .cal-day .day{font-size:13px}
-  .cal-day .price{font-size:10px;margin-top:1px}
-  .cal-day .op{font-size:8px;padding:1px 3px;margin-top:1px}
-  .cal-day .hotel-name{font-size:8px}
-  .cal-day.soltour,.cal-day.soltropico{border-left-width:2px}
-  .cal-header{font-size:9px;padding:3px 0}
-  .grid{grid-template-columns:1fr}
-  .operadores{flex-direction:column;align-items:flex-start;gap:4px}
-  .hotel-filter{flex-direction:column;align-items:stretch}
-  .campo-mes{flex-direction:column}
+  body{padding:12px 8px}
+  .calendar{gap:3px}
+  .cell{padding:5px 2px;min-height:58px;border-radius:8px}
+  .cell .n{font-size:13px}
+  .opline .pr{font-size:10px}
+  .opline .lbl{font-size:7px}
+  .cal-h{font-size:9px}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .price-band{gap:14px}
+  .dactions .btn{min-width:100%}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>🏨 Net vs PVP — Pesquisa por Hotel</h1>
-  <div class="sub">Pesquisa por hotel específico para ver preços exatos. Mais rápido e preciso!</div>
+  <div class="head">
+    <h1>🧭 Motor de Pacotes</h1>
+    <div class="tag">Pesquisa e compara Soltour e Soltrópico num só sítio. Gera orçamento ou contrato com um clique.</div>
+  </div>
 
   <div class="card">
     <div class="grid">
-      <div>
-        <label>Destino</label>
-        <input id="dest" list="dest-list" placeholder="Ex: Samaná, Sal, Saídia..." value="Saídia">
-        <datalist id="dest-list"></datalist>
-      </div>
-      <div>
-        <label>Origem</label>
-        <select id="origin">
-          <option value="LIS">Lisboa (LIS)</option>
-          <option value="OPO">Porto (OPO)</option>
-          <option value="FAO">Faro (FAO)</option>
-        </select>
-      </div>
-      <div>
-        <label>Mês</label>
-        <input type="month" id="month">
-      </div>
-      <div>
-        <label>Data específica</label>
-        <input type="date" id="partida">
-      </div>
-      <div>
-        <label>Noites</label>
-        <input type="number" id="nights" value="7" min="1" max="30">
-      </div>
-      <div>
-        <label>Adultos</label>
-        <input type="number" id="adults" value="2" min="1" max="9">
-      </div>
-      <div>
-        <label>Idades crianças</label>
-        <input type="text" id="criancas" value="" placeholder="ex: 5, 8">
-      </div>
+      <div><label>Destino</label><input id="dest" list="dest-list" placeholder="Ex: Sal, Madeira, Saídia…" value="Sal"><datalist id="dest-list"></datalist></div>
+      <div><label>Origem</label><select id="origin"><option value="LIS">Lisboa (LIS)</option><option value="OPO">Porto (OPO)</option><option value="FAO">Faro (FAO)</option></select></div>
+      <div><label>Mês</label><input type="month" id="month"></div>
+      <div><label>Noites</label><input type="number" id="nights" value="7" min="1" max="30"></div>
+      <div><label>Adultos</label><input type="number" id="adults" value="2" min="1" max="9"></div>
+      <div><label>Idades crianças</label><input type="text" id="criancas" placeholder="ex: 5, 8"></div>
     </div>
 
-    <!-- HOTEL FILTER -->
-    <div class="hotel-filter">
-      <label style="font-size:11px;font-weight:600;color:#8B92A5;text-transform:uppercase;margin:0">🏨 Hotel específico</label>
-      <input id="hotel-filter" placeholder="Ex: RIU, Meliá, Iberostar..." oninput="atualizarFiltroHotel()">
-      <span class="badge-hotel" id="hotel-badge"></span>
-      <button class="clear-hotel" id="clear-hotel" onclick="limparFiltroHotel()">✕ Limpar</button>
+    <div class="hotel-row"><input id="hotel-filter" placeholder="🏨 Filtrar por hotel (opcional) — ex: RIU, Meliá…"></div>
+
+    <div class="controls">
+      <label class="toggle"><input type="checkbox" id="chk-direct"> Apenas voos diretos</label>
+      <label class="toggle"><input type="checkbox" id="chk-soltour" checked> <span class="pill pill-soltour">Soltour</span></label>
+      <label class="toggle"><input type="checkbox" id="chk-soltropico" checked> <span class="pill pill-soltropico">Soltrópico</span></label>
     </div>
 
-    <!-- OPERADORES -->
-    <div class="operadores">
-      <span style="font-size:12px;font-weight:600;color:#8B92A5;text-transform:uppercase">Operadores:</span>
-      <label>
-        <input type="checkbox" id="chk-soltour" checked>
-        <span class="badge-operador badge-soltour">Soltour</span>
-        <span style="font-weight:400;font-size:12px;color:#8B92A5">(~15-20s)</span>
-      </label>
-      <label>
-        <input type="checkbox" id="chk-soltropico" checked>
-        <span class="badge-operador badge-soltropico">Soltrópico</span>
-        <span style="font-weight:400;font-size:12px;color:#8B92A5">(~10-15s)</span>
-      </label>
-      <span style="font-size:11px;color:#8B92A5;margin-left:auto">
-        ⚡ Desmarca operadores para acelerar a pesquisa
-      </span>
+    <div class="btns">
+      <button class="btn go" onclick="runMes()">🔍 Procurar no mês</button>
     </div>
 
-    <div class="btn-group">
-      <button class="btn btn-success" onclick="runDataFixa()">🎯 Data fixa</button>
-      <button class="btn btn-warning" onclick="runLote(1,7)">📅 1–7</button>
-      <button class="btn" onclick="runLote(8,14)" style="background:#2980B9">📅 8–14</button>
-      <button class="btn" style="background:#8E44AD" onclick="runLote(15,21)">📅 15–21</button>
-      <button class="btn btn-danger" onclick="runLote(22,31)">📅 22–31</button>
-      <button class="btn btn-outline" onclick="runLote(1,31)">📅 Todos</button>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--soltour)"></span> Soltour</span>
+      <span><span class="dot" style="background:var(--soltropico)"></span> Soltrópico</span>
+      <span><span class="dot" style="background:var(--best)"></span> Melhor preço</span>
+      <span>🔴 Voo direto</span>
+      <span>🟠 Com escalas</span>
     </div>
-
-    <div id="modo-rapido" class="modo-rapido">
-      ⚡ <span class="destaque">Modo rápido:</span> Data fixa + Hotel específico = resultado instantâneo (~2-4s).
-    </div>
-
-    <div class="hint">🏨 Escreve o nome do hotel para filtrar apenas as ofertas desse hotel. Mais rápido e preciso!</div>
+    <div class="hint">Os preços do calendário são indicativos (por pessoa × ocupação). O valor exato e o net aparecem ao abrir o dia.</div>
   </div>
 
   <div id="status" class="status"></div>
-  <div id="progresso" class="progresso"></div>
   <div id="calendar-container"></div>
   <div id="detail-container"></div>
 </div>
 
 <script>
-// ============================================================
-// CONFIG
-// ============================================================
 const SUPA_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
 const SUPA_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
 const PROXY=`${SUPA_URL}/functions/v1/Soltour-proxy-index-`
@@ -196,1298 +154,414 @@ const SOLTROPICO_PROXY=`${SUPA_URL}/functions/v1/soltropico-proxy`
 const LOGIN={brand:'SOLTOUR',market:'XMLPT',languageCode:'PT',username:'APMVIA999',password:'XMLAPMVIA'}
 
 let token=null
-let cache = {}
-let filtroHotelAtual = ''
-const TIMEOUT_MS = 10000
-const MAX_CONCORRENTES = 4
+let cache={}
 const $=id=>document.getElementById(id)
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
 const st=(t,m)=>{const e=$('status');e.className=`status show ${t}`;e.innerHTML=m}
-const eur=v=>v==null||isNaN(v)?'—':'€'+Number(v).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})
+const eur=v=>v==null||isNaN(v)?'—':'€'+Number(v).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})
+const eur2=v=>v==null||isNaN(v)?'—':'€'+Number(v).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})
 
-// ============================================================
-// MAPEAMENTO DE DESTINOS
-// ============================================================
-const DEST_MAP = [
-  {label:'Ibiza', soltour:'IBZ', soltropico:228},
-  {label:'Menorca', soltour:'MAH', soltropico:227},
-  {label:'Maiorca', soltour:'PMI', soltropico:226},
-  {label:'Formentera', soltour:'FON', soltropico:231},
-  {label:'Tenerife', soltour:'TCI', soltropico:229},
-  {label:'Gran Canária', soltour:'LPA', soltropico:230},
-  {label:'Gran Canaria', soltour:'LPA', soltropico:230, alias:true},
-  {label:'Fuerteventura', soltour:'FUE', soltropico:242},
-  {label:'Faial', soltour:'HOR', soltropico:144},
-  {label:'São Miguel', soltour:'PDL', soltropico:11},
-  {label:'Sao Miguel', soltour:'PDL', soltropico:11, alias:true},
-  {label:'Terceira', soltour:'TER', soltropico:12},
-  {label:'Madeira', soltour:'FNC', soltropico:5},
-  {label:'Porto Santo', soltour:'PXO', soltropico:8},
-  {label:'Monastir', soltour:'MIR', soltropico:262},
-  {label:'Djerba', soltour:'DJE', soltropico:261},
-  {label:'Saídia', soltour:'OUD', soltropico:44},
-  {label:'Saidia', soltour:'OUD', soltropico:44, alias:true},
-  {label:'São Vicente', soltour:'VXE', soltropico:28},
-  {label:'Santiago', soltour:'RAI', soltropico:24},
-  {label:'Boa Vista', soltour:'BVC', soltropico:41},
-  {label:'Boavista', soltour:'BVC', soltropico:41, alias:true},
-  {label:'Sal', soltour:'SID', soltropico:7},
-  {label:'Salvador', soltour:'SSA', soltropico:51},
-  {label:'Fortaleza', soltour:'FOR', soltropico:62},
-  {label:'Natal', soltour:'NAT', soltropico:60},
-  {label:'Recife', soltour:'REC', soltropico:49},
-  {label:'Rio de Janeiro', soltour:'RIO', soltropico:91},
-  {label:'Marrakech', soltour:'RAK', soltropico:45},
-  {label:'Punta Cana', soltour:'PUJ', soltropico:null},
-  {label:'Puntacana', soltour:'PUJ', soltropico:null, alias:true},
-  {label:'Cancún', soltour:'CUN', soltropico:null},
-  {label:'Cancun', soltour:'CUN', soltropico:null, alias:true},
-  {label:'Riviera Maya', soltour:'RVM', soltropico:null},
-  {label:'La Romana', soltour:'LRM', soltropico:null},
-  {label:'Samaná', soltour:'AZS', soltropico:null},
-  {label:'Samana', soltour:'AZS', soltropico:null, alias:true},
-  {label:'Puerto Plata', soltour:'POP', soltropico:null},
-  {label:'La Palma', soltour:'SPC', soltropico:241},
-  {label:'Lanzarote', soltour:'ACE', soltropico:240},
-  {label:'Agadir', soltour:'AGA', soltropico:46},
-  {label:'Creta', soltour:'HER', soltropico:null},
-  {label:'Corfu', soltour:'CFU', soltropico:null},
-  {label:'Malta', soltour:'MLA', soltropico:null},
-  {label:'Dubai', soltour:null, soltropico:10},
-  {label:'Maldivas', soltour:null, soltropico:67},
-  {label:'Maurícias', soltour:null, soltropico:22},
-  {label:'Mauricias', soltour:null, soltropico:22, alias:true},
-  {label:'Zanzibar', soltour:null, soltropico:257},
-  {label:'Hammamet', soltour:null, soltropico:222},
-  {label:'Istambul', soltour:null, soltropico:249},
-  {label:'Alicante', soltour:null, soltropico:224},
-  {label:'Málaga', soltour:null, soltropico:225},
-  {label:'Malaga', soltour:null, soltropico:225, alias:true},
+const DEST_MAP=[
+  {label:'Ibiza',soltour:'IBZ',soltropico:228},{label:'Menorca',soltour:'MAH',soltropico:227},
+  {label:'Maiorca',soltour:'PMI',soltropico:226},{label:'Formentera',soltour:'FON',soltropico:231},
+  {label:'Tenerife',soltour:'TCI',soltropico:229},{label:'Gran Canária',soltour:'LPA',soltropico:230},
+  {label:'Gran Canaria',soltour:'LPA',soltropico:230,alias:true},{label:'Fuerteventura',soltour:'FUE',soltropico:242},
+  {label:'Faial',soltour:'HOR',soltropico:144},{label:'São Miguel',soltour:'PDL',soltropico:11},
+  {label:'Sao Miguel',soltour:'PDL',soltropico:11,alias:true},{label:'Terceira',soltour:'TER',soltropico:12},
+  {label:'Madeira',soltour:'FNC',soltropico:5},{label:'Porto Santo',soltour:'PXO',soltropico:8},
+  {label:'Monastir',soltour:'MIR',soltropico:262},{label:'Djerba',soltour:'DJE',soltropico:261},
+  {label:'Saídia',soltour:'OUD',soltropico:44},{label:'Saidia',soltour:'OUD',soltropico:44,alias:true},
+  {label:'São Vicente',soltour:'VXE',soltropico:28},{label:'Santiago',soltour:'RAI',soltropico:24},
+  {label:'Boa Vista',soltour:'BVC',soltropico:41},{label:'Boavista',soltour:'BVC',soltropico:41,alias:true},
+  {label:'Sal',soltour:'SID',soltropico:7},{label:'Salvador',soltour:'SSA',soltropico:51},
+  {label:'Fortaleza',soltour:'FOR',soltropico:62},{label:'Natal',soltour:'NAT',soltropico:60},
+  {label:'Recife',soltour:'REC',soltropico:49},{label:'Rio de Janeiro',soltour:'RIO',soltropico:91},
+  {label:'Marrakech',soltour:'RAK',soltropico:45},{label:'Punta Cana',soltour:'PUJ',soltropico:null},
+  {label:'Puntacana',soltour:'PUJ',soltropico:null,alias:true},{label:'Cancún',soltour:'CUN',soltropico:null},
+  {label:'Cancun',soltour:'CUN',soltropico:null,alias:true},{label:'Riviera Maya',soltour:'RVM',soltropico:null},
+  {label:'La Romana',soltour:'LRM',soltropico:null},{label:'Samaná',soltour:'AZS',soltropico:null},
+  {label:'Samana',soltour:'AZS',soltropico:null,alias:true},{label:'Puerto Plata',soltour:'POP',soltropico:null},
+  {label:'La Palma',soltour:'SPC',soltropico:241},{label:'Lanzarote',soltour:'ACE',soltropico:240},
+  {label:'Agadir',soltour:'AGA',soltropico:46},{label:'Creta',soltour:'HER',soltropico:null},
+  {label:'Corfu',soltour:'CFU',soltropico:null},{label:'Malta',soltour:'MLA',soltropico:null},
+  {label:'Dubai',soltour:null,soltropico:10},{label:'Maldivas',soltour:null,soltropico:67},
+  {label:'Maurícias',soltour:null,soltropico:22},{label:'Mauricias',soltour:null,soltropico:22,alias:true},
+  {label:'Zanzibar',soltour:null,soltropico:257},{label:'Hammamet',soltour:null,soltropico:222},
+  {label:'Istambul',soltour:null,soltropico:249},{label:'Alicante',soltour:null,soltropico:224},
+  {label:'Málaga',soltour:null,soltropico:225},{label:'Malaga',soltour:null,soltropico:225,alias:true},
 ]
-
-function normalize(str) {
-  if (!str) return ''
-  return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
+function normalize(s){return s?String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim():''}
+function findDest(input){
+  if(!input||!input.trim())return null
+  const n=normalize(input)
+  return DEST_MAP.find(d=>normalize(d.label)===n)
+    || DEST_MAP.find(d=>normalize(d.label).startsWith(n)||n.startsWith(normalize(d.label)))
+    || DEST_MAP.find(d=>normalize(d.label).includes(n)||n.includes(normalize(d.label)))||null
 }
+const getOps=()=>({soltour:$('chk-soltour').checked,soltropico:$('chk-soltropico').checked})
+const getDirectOnly=()=>$('chk-direct').checked
+const getHotel=()=>$('hotel-filter').value.trim()
+const childAgesFromInput=()=>($('criancas').value||'').split(/[,;\s]+/).map(s=>parseInt(s,10)).filter(n=>!isNaN(n)&&n>=0&&n<18)
 
-function findDest(input) {
-  if (!input || input.trim() === '') return null
-  const normalized = normalize(input)
-  for (const d of DEST_MAP) {
-    if (normalize(d.label) === normalized) return d
-  }
-  for (const d of DEST_MAP) {
-    if (normalize(d.label).startsWith(normalized) || normalized.startsWith(normalize(d.label))) return d
-  }
-  for (const d of DEST_MAP) {
-    if (normalize(d.label).includes(normalized) || normalized.includes(normalize(d.label))) return d
-  }
-  return null
-}
-
-function getOperadoresSelecionados() {
-  return {
-    soltour: $('chk-soltour').checked,
-    soltropico: $('chk-soltropico').checked
-  }
-}
-
-function getFiltroHotel() {
-  return $('hotel-filter').value.trim()
-}
-
-function atualizarFiltroHotel() {
-  const hotel = getFiltroHotel()
-  const badge = $('hotel-badge')
-  const clear = $('clear-hotel')
-  if (hotel) {
-    badge.textContent = '🏨 ' + hotel
-    badge.className = 'badge-hotel show'
-    clear.className = 'clear-hotel show'
-    $('modo-rapido').className = 'modo-rapido show'
-  } else {
-    badge.className = 'badge-hotel'
-    clear.className = 'clear-hotel'
-    $('modo-rapido').className = 'modo-rapido'
-  }
-}
-
-function limparFiltroHotel() {
-  $('hotel-filter').value = ''
-  atualizarFiltroHotel()
-  if (window._ultimaPesquisa) {
-    const { tipo, diaInicio, diaFim, dataFixa } = window._ultimaPesquisa
-    if (tipo === 'datafixa') runDataFixa()
-    else runLote(diaInicio, diaFim)
-  }
-}
-
-function getCacheKey(destInfo, origin, year, month, nights, adults, childAges, diaInicio, diaFim, dataFixa) {
-  const ops = getOperadoresSelecionados()
-  const opKey = (ops.soltour ? 'ST' : '') + (ops.soltropico ? 'SP' : '')
-  const hotel = getFiltroHotel() || ''
-  if (dataFixa) {
-    return `${destInfo.soltour||''}|${destInfo.soltropico||''}|${origin}|${year}|${month}|${nights}|${adults}|${childAges.join(',')}|fixa|${dataFixa}|${opKey}|${hotel}`
-  }
-  return `${destInfo.soltour||''}|${destInfo.soltropico||''}|${origin}|${year}|${month}|${nights}|${adults}|${childAges.join(',')}|${diaInicio}|${diaFim}|${opKey}|${hotel}`
-}
-
-// ============================================================
-// API CALLS
-// ============================================================
-function withTimeout(promise, ms = TIMEOUT_MS) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms))
-  ])
-}
-
-async function call(path, body) {
-  const r = await fetch(PROXY, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPA_ANON}` },
-    body: JSON.stringify({ path, token, body })
-  })
+async function call(path,body){
+  const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPA_ANON}`},body:JSON.stringify({path,token,body})})
   return r.json()
 }
-
-async function ensureLogin() {
-  if (token) return token
-  const l = await call('login/login', LOGIN)
-  if (!l.sessionToken) throw new Error('Login falhou')
-  token = l.sessionToken
-  return token
+async function ensureLogin(){
+  if(token)return token
+  const l=await call('login/login',LOGIN)
+  if(!l.sessionToken)throw new Error('Login Soltour falhou')
+  token=l.sessionToken;return token
 }
 
-// ============================================================
-// SOLTRÓPICO SOAP
-// ============================================================
-async function pkSoap(action, body) {
-  const wrap = `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
-  const r = await fetch(SOLTROPICO_PROXY, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPA_ANON}` },
-    body: JSON.stringify({ soapAction: action, soapBody: wrap })
-  })
-  const data = await r.json()
-  if (!r.ok) throw new Error(`Falha proxy (${r.status})`)
-  if (data.error || data.proxyError) throw new Error(data.error || data.proxyError)
-  const doc = new DOMParser().parseFromString((data.xml || '').replace(/^\uFEFF/, '').trim(), 'text/xml')
-  if (doc.querySelector('parsererror')) throw new Error('XML inválido')
-  const f = doc.querySelector('faultstring')
-  if (f) throw new Error(f.textContent)
+async function pkSoap(action,body){
+  const wrap=`<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
+  const r=await fetch(SOLTROPICO_PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPA_ANON}`},body:JSON.stringify({soapAction:action,soapBody:wrap})})
+  const data=await r.json()
+  if(!r.ok)throw new Error(`Falha proxy (${r.status})`)
+  if(data.error||data.proxyError)throw new Error(data.error||data.proxyError)
+  const doc=new DOMParser().parseFromString((data.xml||'').replace(/^\uFEFF/,'').trim(),'text/xml')
+  if(doc.querySelector('parsererror'))throw new Error('XML inválido')
+  const f=doc.querySelector('faultstring');if(f)throw new Error(f.textContent)
   return doc
 }
-function pkCredXML() { return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">808</System><Client xsi:type="xsd:int">289363</Client><Username xsi:type="xsd:string">admin@apmviagens.pt</Username><Password xsi:type="xsd:string">JA622875</Password></Credentials>` }
-function pkTxt(el, tag) { if (!el) return ''; for (let i = 0; i < el.children.length; i++) { const c = el.children[i], l = c.localName || c.tagName.split(':').pop(); if (l === tag) return c.textContent.trim() } const n = el.getElementsByTagName('*'); for (let i = 0; i < n.length; i++) { const l = n[i].localName || n[i].tagName.split(':').pop(); if (l === tag) return n[i].textContent.trim() } return '' }
-function pkAll(el, tag) { if (!el) return []; const o = [], n = el.getElementsByTagName('*'); for (let i = 0; i < n.length; i++) { const l = n[i].localName || n[i].tagName.split(':').pop(); if (l === tag) o.push(n[i]) } return o }
-function pkItems(c) { return c ? pkAll(c, 'item') : [] }
-function pkDirectChildren(el, tag) { if (!el) return []; const o = []; for (let i = 0; i < el.children.length; i++) { const c = el.children[i], l = c.localName || c.tagName.split(':').pop(); if (l === tag) o.push(c) } return o }
+const pkCred=()=>`<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">808</System><Client xsi:type="xsd:int">289363</Client><Username xsi:type="xsd:string">admin@apmviagens.pt</Username><Password xsi:type="xsd:string">JA622875</Password></Credentials>`
+function pkTxt(el,tag){if(!el)return '';for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)return c.textContent.trim()}const n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)return n[i].textContent.trim()}return ''}
+function pkAll(el,tag){if(!el)return[];const o=[],n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)o.push(n[i])}return o}
+function pkItems(c){return c?pkAll(c,'item'):[]}
 
-// ============================================================
-// FILTRAR POR HOTEL
-// ============================================================
-function filtrarPorHotel(days) {
-  const hotel = getFiltroHotel()
-  if (!hotel) return days
-  
-  const normalized = normalize(hotel)
-  return days.filter(d => {
-    if (!d.hotelName) return false
-    return normalize(d.hotelName).includes(normalized)
+async function getSoltour(destCode,origin,year,month,nights,adults,childAges){
+  await ensureLogin()
+  const directOnly=getDirectOnly()
+  const pax=Array(adults).fill({age:30,type:'ADULT'})
+  childAges.forEach(age=>pax.push({age,type:'CHILD'}))
+  const numPax=adults+childAges.length
+
+  const lastDay=new Date(year,month,0).getDate()
+  const seeds=[];for(let d=1;d<=lastDay;d+=2)seeds.push(d)
+  const mkBody=sd=>{
+    const s=`${year}-${String(month).padStart(2,'0')}-${String(sd).padStart(2,'0')}`
+    const ed=new Date(s);ed.setDate(ed.getDate()+nights);const e=ed.toISOString().slice(0,10)
+    return {body:{productType:'PACKAGE',languageCode:'PT',
+      criteria:{order:{direction:'ASC',type:'PRICE'},pagination:{firstItem:0,itemCount:10}},
+      params:{startDate:s,endDate:e,numNights:nights,residentType:'NONE',
+        accomodation:{rooms:[{passengers:pax}]},hotelParams:{destinationCode:destCode},
+        flightParams:{directFlightsOnly:directOnly,itineraries:[
+          {origins:[origin],destinations:[destCode],flightDate:s},
+          {origins:[destCode],destinations:[origin],flightDate:e}]}}}}
+  }
+  let av=null
+  for(let i=0;i<seeds.length&&!av;i+=5){
+    const lote=seeds.slice(i,i+5)
+    const res=await Promise.all(lote.map(async sd=>{
+      try{const r=await call('booking/availability',mkBody(sd).body);return(r&&r.availToken)?r:null}catch(e){return null}
+    }))
+    av=res.find(Boolean)||null
+  }
+  if(!av||!av.availToken)return []
+
+  const hotelMap={}
+  if(av.hotels)for(const h of av.hotels){
+    const c=h.code||h.numericCode||h.id
+    if(c!=null)hotelMap[String(c)]={name:h.name||h.fullName||'',stars:h.categoryCode,image:h.mainImage||(h.images&&h.images[0])||'',images:(h.images||[]).slice(0,4)}
+  }
+
+  const cal=await call('booking/getPriceCalendar',{availToken:av.availToken,destinationCode:destCode,originCode:origin,
+    productType:'PACKAGE',languageCode:'PT',month:{year,month},numNights:nights,onlyDirectFlights:directOnly})
+
+  return (cal.days||[]).map(d=>{
+    const code=(d.additionalInformation&&d.additionalInformation.hotel)||''
+    const info=hotelMap[String(code)]||{}
+    const precoPP=parseFloat(d.bestPrice||d.price)||0
+    return{
+      date:d.day,price:precoPP*numPax,pricePerPerson:precoPP,currency:d.currencyCode||'EUR',
+      hotelName:info.name||code||'Hotel',hotelCode:code,stars:info.stars||0,
+      board:(d.additionalInformation&&d.additionalInformation.mealPlan)||'',
+      direct:(d.directFlight===true?true:(d.directFlight===false?false:null)),
+      brand:'SOLTOUR',image:info.image||'',images:info.images||[],calToken:av.availToken,
+      available:!d.unavailable&&precoPP>0,nights:d.numNights||nights
+    }
   })
 }
 
-// ============================================================
-// SOLTOUR - DATA FIXA (RÁPIDO)
-// ============================================================
-async function getSoltourDataFixa(destCode, origin, dateStr, nights, adults, childAges) {
-  await ensureLogin()
+async function getSoltropico(destCode,origin,year,month,nights,adults,childAges){
+  const out=[]
+  const pdoc=await pkSoap('DynGetProductParameters',
+    `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCred()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
 
-  const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
-  childAges.forEach(age => pax.push({ age: age, type: 'CHILD' }))
+  const ddWrap=pkAll(pdoc,'DepartureDates')[0]
+  let dates=[]
+  if(ddWrap)dates=pkItems(ddWrap).map(it=>pkTxt(it,'Date')||it.textContent.trim()).filter(Boolean)
+  if(!dates.length)dates=pkAll(pdoc,'item').map(it=>it.textContent.trim()).filter(t=>/^\d{4}-\d{2}-\d{2}/.test(t))
+  const mesStr=`${year}-${String(month).padStart(2,'0')}`
+  const datasMes=[...new Set(dates.map(d=>d.slice(0,10)))].filter(d=>d.startsWith(mesStr))
+  if(!datasMes.length)return []
 
-  const ed = new Date(dateStr); ed.setDate(ed.getDate() + nights)
-  const endStr = ed.toISOString().slice(0, 10)
-  
-  const body = {
-    productType: 'PACKAGE', languageCode: 'PT',
-    criteria: { order: { direction: 'ASC', type: 'PRICE' }, pagination: { firstItem: 0, itemCount: 10 } },
-    params: {
-      startDate: dateStr, endDate: endStr, numNights: nights, residentType: 'NONE',
-      accomodation: { rooms: [{ passengers: pax }] },
-      hotelParams: { destinationCode: destCode },
-      flightParams: { directFlightsOnly: false, itineraries: [
-        { origins: [origin], destinations: [destCode], flightDate: dateStr },
-        { origins: [destCode], destinations: [origin], flightDate: endStr }
-      ] }
-    }
-  }
-  
-  try {
-    const r = await withTimeout(call('booking/availability', body), 8000)
-    if (!r || !r.availToken) return []
-    
-    const cal = await withTimeout(call('booking/getPriceCalendar', {
-      availToken: r.availToken,
-      destinationCode: destCode,
-      originCode: origin,
-      productType: 'PACKAGE',
-      languageCode: 'PT',
-      month: { year: parseInt(dateStr.slice(0,4)), month: parseInt(dateStr.slice(5,7)) },
-      numNights: nights,
-      onlyDirectFlights: false
-    }), 8000)
-    
-    const hotelMap = {}
-    if (r.hotels) {
-      for (const h of r.hotels) {
-        const c = h.code || h.numericCode || h.id
-        if (c != null) hotelMap[String(c)] = {
-          name: h.name || h.fullName || '',
-          stars: h.categoryCode,
-          image: h.mainImage || (h.images && h.images[0]) || '',
-          images: (h.images || []).slice(0, 4)
+  const locals=[]
+  const lw=pkAll(pdoc,'DepartureLocals')[0]
+  if(lw)pkItems(lw).forEach(it=>{const c=pkTxt(it,'Code');if(c)locals.push(c)})
+  const depLocal=locals.find(l=>l===origin)||locals[0]||origin
+
+  const ocup=[]
+  const rw=pkAll(pdoc,'RoomTypes')[0]
+  if(rw)pkItems(rw).forEach(it=>{const c=pkTxt(it,'Code'),n=pkTxt(it,'Name');if(c)ocup.push({code:c,name:n})})
+  const nCri=childAges.length
+  const parseOc=nome=>{const a=(nome.match(/(\d+)\s*Adulto/i)||[])[1];const c=(nome.match(/(\d+)\s*Crian/i)||[])[1];return{a:a?+a:0,c:c?+c:0}}
+  const roomCode=(ocup.find(o=>{const p=parseOc(o.name);return p.a===adults&&p.c===nCri})
+    ||(nCri===0?ocup.find(o=>{const p=parseOc(o.name);return p.a===adults&&p.c===0}):null)
+    ||ocup.find(o=>parseOc(o.name).a===adults)||ocup[0]||{}).code||'437'
+
+  const baseLocals=[]
+  const bw=pkAll(pdoc,'BaseLocals')[0]
+  if(bw)pkItems(bw).forEach(it=>{const c=pkTxt(it,'Code');if(c)baseLocals.push(c)})
+  const baseXML=(baseLocals.length?baseLocals:['0']).map(c=>`<Local><Code>${c}</Code><Nights>${nights}</Nights></Local>`).join('')
+  const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges>${childAges.join(',')}</ChildAges></RoomTypeOption>`
+
+  for(const depDate of datasMes.slice(0,12)){
+    try{
+      const doc=await pkSoap('DynSearchProductAvailableServices',
+        `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${pkCred()}<ProductCode xsi:type="xsd:int">${destCode}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+      const hotelOptions=pkAll(doc,'HotelOption')
+      for(const hc of hotelOptions){
+        for(const h of pkItems(hc)){
+          const price=parseFloat(pkTxt(h,'PriceFrom'))||0
+          const name=pkTxt(h,'Name')||pkTxt(h,'Code')
+          if(!name||price===0)continue
+          const img=pkTxt(h,'Image')||pkTxt(h,'ImageUrl')||''
+          out.push({date:depDate,price,currency:'EUR',hotelName:name,hotelCode:destCode,
+            stars:parseInt(pkTxt(h,'Rating'))||0,board:'',direct:true,brand:'SOLTRÓPICO',
+            image:img,images:img?[img]:[],available:true,nights})
         }
       }
-    }
-    
-    const days = (cal.days || [])
-    const numPax = adults + childAges.length
-    const results = days.map(d => {
-      const code = (d.additionalInformation && d.additionalInformation.hotel) || ''
-      const info = hotelMap[String(code)] || {}
-      const precoPP = parseFloat(d.bestPrice || d.price) || 0
-      const precoDia = precoPP * numPax
-      return {
-        date: d.day,
-        price: precoDia,
-        pricePerPerson: precoPP,
-        currency: d.currencyCode || 'EUR',
-        hotelName: info.name || code || 'Hotel',
-        hotelCode: code,
-        stars: info.stars || 0,
-        board: (d.additionalInformation && d.additionalInformation.mealPlan) || '',
-        direct: !!d.directFlight,
-        brand: 'SOLTOUR',
-        image: info.image || '',
-        images: info.images || [],
-        calToken: r.availToken,
-        available: !d.unavailable && precoDia > 0,
-        nights: d.numNights || nights
-      }
-    })
-    
-    return filtrarPorHotel(results)
-  } catch (e) {
-    console.warn('Soltour data fixa:', e.message)
-    return []
+    }catch(e){console.warn('Soltrópico',depDate,e.message)}
   }
+  return out
 }
 
-// ============================================================
-// SOLTOUR - LOTE DE DIAS
-// ============================================================
-async function getSoltourLote(destCode, origin, year, month, nights, adults, childAges, diaInicio, diaFim) {
-  await ensureLogin()
-
-  const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
-  childAges.forEach(age => pax.push({ age: age, type: 'CHILD' }))
-
-  const lastDay = Math.min(new Date(year, month, 0).getDate(), diaFim)
-  const progresso = $('progresso')
-  const hotelFiltro = getFiltroHotel()
-  
-  const testarData = async (dia) => {
-    const sDate = `${year}-${String(month).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
-    const ed = new Date(sDate); ed.setDate(ed.getDate() + nights)
-    const eStr = ed.toISOString().slice(0, 10)
-    
-    const body = {
-      productType: 'PACKAGE', languageCode: 'PT',
-      criteria: { order: { direction: 'ASC', type: 'PRICE' }, pagination: { firstItem: 0, itemCount: 10 } },
-      params: {
-        startDate: sDate, endDate: eStr, numNights: nights, residentType: 'NONE',
-        accomodation: { rooms: [{ passengers: pax }] },
-        hotelParams: { destinationCode: destCode },
-        flightParams: { directFlightsOnly: false, itineraries: [
-          { origins: [origin], destinations: [destCode], flightDate: sDate },
-          { origins: [destCode], destinations: [origin], flightDate: eStr }
-        ] }
-      }
-    }
-    
-    try {
-      const r = await withTimeout(call('booking/availability', body), 7000)
-      if (r && r.availToken) {
-        return { dia, sDate, eStr, r }
-      }
-    } catch (e) {}
-    return null
-  }
-  
-  const resultados = []
-  const BATCH_SIZE = MAX_CONCORRENTES
-  const totalDias = lastDay - diaInicio + 1
-  
-  // Se houver filtro de hotel, testamos apenas algumas datas (mais rápido)
-  const diasParaTestar = hotelFiltro ? 
-    Array.from({ length: Math.min(totalDias, 7) }, (_, i) => diaInicio + i) : 
-    Array.from({ length: totalDias }, (_, i) => diaInicio + i)
-  
-  for (let i = 0; i < diasParaTestar.length; i += BATCH_SIZE) {
-    const lote = diasParaTestar.slice(i, i + BATCH_SIZE)
-    const promises = lote.map(dia => testarData(dia))
-    const results = await Promise.allSettled(promises)
-    
-    for (const result of results) {
-      if (result.status === 'fulfilled' && result.value) {
-        resultados.push(result.value)
-      }
-    }
-    
-    if (progresso) {
-      const pct = Math.round(((i + BATCH_SIZE) / diasParaTestar.length) * 100)
-      progresso.textContent = `📊 Soltour: ${Math.min(i + BATCH_SIZE, diasParaTestar.length)}/${diasParaTestar.length} datas (${pct}%) · ${resultados.length} disponíveis`
-      progresso.className = 'progresso show'
-    }
-  }
-  
-  if (resultados.length === 0) return []
-  
-  const todosOsDias = []
-  
-  for (let i = 0; i < resultados.length; i += MAX_CONCORRENTES) {
-    const batch = resultados.slice(i, i + MAX_CONCORRENTES)
-    const promises = batch.map(async ({ dia, r }) => {
-      try {
-        const cal = await withTimeout(call('booking/getPriceCalendar', {
-          availToken: r.availToken,
-          destinationCode: destCode,
-          originCode: origin,
-          productType: 'PACKAGE',
-          languageCode: 'PT',
-          month: { year, month },
-          numNights: nights,
-          onlyDirectFlights: false
-        }), 8000)
-        
-        const hotelMap = {}
-        if (r.hotels) {
-          for (const h of r.hotels) {
-            const c = h.code || h.numericCode || h.id
-            if (c != null) hotelMap[String(c)] = {
-              name: h.name || h.fullName || '',
-              stars: h.categoryCode,
-              image: h.mainImage || (h.images && h.images[0]) || '',
-              images: (h.images || []).slice(0, 4)
-            }
-          }
-        }
-        
-        const days = (cal.days || [])
-        const numPax = adults + childAges.length
-        return days.map(d => {
-          const code = (d.additionalInformation && d.additionalInformation.hotel) || ''
-          const info = hotelMap[String(code)] || {}
-          const precoPP = parseFloat(d.bestPrice || d.price) || 0
-          const precoDia = precoPP * numPax
-          return {
-            date: d.day,
-            price: precoDia,
-            pricePerPerson: precoPP,
-            currency: d.currencyCode || 'EUR',
-            hotelName: info.name || code || 'Hotel',
-            hotelCode: code,
-            stars: info.stars || 0,
-            board: (d.additionalInformation && d.additionalInformation.mealPlan) || '',
-            direct: !!d.directFlight,
-            brand: 'SOLTOUR',
-            image: info.image || '',
-            images: info.images || [],
-            calToken: r.availToken,
-            available: !d.unavailable && precoDia > 0,
-            nights: d.numNights || nights
-          }
-        })
-      } catch (e) {
-        return []
-      }
-    })
-    
-    const results = await Promise.allSettled(promises)
-    for (const r of results) {
-      if (r.status === 'fulfilled' && r.value) {
-        todosOsDias.push(...r.value)
-      }
-    }
-  }
-  
-  const filtrados = filtrarPorHotel(todosOsDias)
-  const seen = new Map()
-  for (const day of filtrados) {
-    if (!day.available) continue
-    const key = day.date + '|' + day.hotelCode
-    if (!seen.has(key) || day.price < seen.get(key).price) {
-      seen.set(key, day)
-    }
-  }
-  
-  return Array.from(seen.values())
+function aplicarFiltros(days,brand){
+  let f=days.slice()
+  const hotel=getHotel()
+  if(hotel){const n=normalize(hotel);f=f.filter(d=>d.hotelName&&normalize(d.hotelName).includes(n))}
+  if(getDirectOnly()&&brand==='SOLTOUR')f=f.filter(d=>d.direct!==false)
+  return f
 }
 
-// ============================================================
-// SOLTRÓPICO - DATA FIXA (RÁPIDO)
-// ============================================================
-async function getSoltropicoDataFixa(destCode, origin, dateStr, nights, adults, childAges) {
-  const results = []
-  
-  try {
-    const pdoc = await withTimeout(pkSoap('DynGetProductParameters',
-      `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCredXML()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`), 10000)
+let _busy=false
+async function runMes(){
+  if(_busy)return
+  const dest=findDest($('dest').value.trim())
+  const origin=$('origin').value
+  const mv=$('month').value
+  const nights=+$('nights').value
+  const adults=+$('adults').value||1
+  const childAges=childAgesFromInput()
+  const ops=getOps()
+  const hotel=getHotel()
 
-    const itemsIn = (c) => { const w = pkAll(pdoc, c)[0]; return w ? pkItems(w) : [] }
-    const locals = itemsIn('DepartureLocals').map(it => ({ code: pkTxt(it, 'Code'), name: pkTxt(it, 'Name') })).filter(l => l.code)
-    const roomTypes = itemsIn('RoomTypes').map(r => ({ code: pkTxt(r, 'Code'), name: pkTxt(r, 'Name') })).filter(r => r.code)
-    const baseLocals = itemsIn('BaseLocals').map(b => ({ code: pkTxt(b, 'Code'), min: pkTxt(b, 'MinNights') || String(nights) })).filter(b => b.code)
+  $('calendar-container').innerHTML='';$('detail-container').innerHTML=''
+  if(!dest){st('err','Destino não reconhecido. Escolhe um da lista.');return}
+  if(!mv){st('err','Escolhe o mês.');return}
+  if(!ops.soltour&&!ops.soltropico){st('err','Escolhe pelo menos um operador.');return}
 
-    const depLocal = locals.find(l => l.code === origin)?.code || locals[0]?.code || origin
-    const nCri = childAges.length
-    
-    function escolherOcupacao() {
-      const parse = nome => {
-        const a = (nome.match(/(\d+)\s*Adulto/i) || [])[1]
-        const c = (nome.match(/(\d+)\s*Crian/i) || [])[1]
-        return { a: a ? parseInt(a) : 0, c: c ? parseInt(c) : 0 }
-      }
-      let m = roomTypes.find(r => { const p = parse(r.name); return p.a === adults && p.c === nCri })
-      if (m) return m.code
-      if (nCri === 0) { m = roomTypes.find(r => { const p = parse(r.name); return p.a === adults && p.c === 0 }); if (m) return m.code }
-      m = roomTypes.find(r => parse(r.name).a === adults)
-      return (m || roomTypes[0])?.code || '437'
-    }
-    
-    const roomCode = escolherOcupacao()
-    const baseXML = (baseLocals.length ? baseLocals : [{ code: '0' }]).map(b => `<Local><Code>${b.code}</Code><Nights>${nights}</Nights></Local>`).join('')
-    const roomsXML = `<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges>${childAges.join(',')}</ChildAges></RoomTypeOption>`
+  const[year,month]=mv.split('-').map(Number)
+  const key=`${dest.soltour}|${dest.soltropico}|${origin}|${year}|${month}|${nights}|${adults}|${childAges}|${ops.soltour}${ops.soltropico}|${hotel}|${getDirectOnly()}`
+  if(cache[key]){renderCalendar(year,month,cache[key],dest);st('ok',`${Object.keys(cache[key]).length} dias com disponibilidade (em cache).`);return}
 
-    const doc = await withTimeout(pkSoap('DynSearchProductAvailableServices',
-      `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${pkCredXML()}<ProductCode xsi:type="xsd:int">${destCode}</ProductCode><DepartureDate xsi:type="xsd:string">${dateStr}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`), 10000)
+  _busy=true
+  document.querySelectorAll('.btn').forEach(b=>b.disabled=true)
+  st('loading',`<span class="spinner"></span> A procurar ${dest.label} em ${month}/${year}…`)
 
-    const itinC = pkAll(doc, 'Itinerary')[0]
-    const itins = itinC ? pkItems(itinC) : []
+  const allDays=[]
+  const jobs=[]
+  if(ops.soltour&&dest.soltour)jobs.push(getSoltour(dest.soltour,origin,year,month,nights,adults,childAges).then(d=>allDays.push(...aplicarFiltros(d,'SOLTOUR'))).catch(e=>console.warn('Soltour',e.message)))
+  if(ops.soltropico&&dest.soltropico)jobs.push(getSoltropico(dest.soltropico,origin,year,month,nights,adults,childAges).then(d=>allDays.push(...aplicarFiltros(d,'SOLTRÓPICO'))).catch(e=>console.warn('Soltrópico',e.message)))
+  await Promise.allSettled(jobs)
 
-    const harvest = (h) => {
-      const price = parseFloat(pkTxt(h, 'PriceFrom')) || 0
-      const name = pkTxt(h, 'Name') || pkTxt(h, 'Code')
-      if (!name || price === 0) return
-      const img = pkTxt(h, 'Image') || pkTxt(h, 'ImageUrl') || pkTxt(h, 'Photo') || ''
-      results.push({
-        date: dateStr,
-        price: price,
-        currency: 'EUR',
-        hotelName: name,
-        hotelCode: destCode,
-        stars: parseInt(pkTxt(h, 'Rating')) || 0,
-        board: '',
-        direct: true,
-        brand: 'SOLTRÓPICO',
-        image: img,
-        images: img ? [img] : [],
-        available: true,
-        nights: nights
-      })
-    }
+  document.querySelectorAll('.btn').forEach(b=>b.disabled=false)
+  _busy=false
 
-    if (itins.length) {
-      itins.forEach(itin => {
-        const hc = pkDirectChildren(itin, 'HotelOption')[0]
-        if (hc) pkItems(hc).forEach(harvest)
-      })
-    }
+  const disp=allDays.filter(d=>d.available&&d.price>0)
+  if(!disp.length){st('err',`Sem disponibilidade para ${dest.label} em ${month}/${year}${hotel?` com hotel "${esc(hotel)}"`:''}.`);return}
 
-    if (results.length === 0) {
-      const hc = pkAll(doc, 'HotelOption')[0]
-      if (hc) pkItems(hc).forEach(harvest)
-    }
-
-    return filtrarPorHotel(results)
-
-  } catch (e) {
-    console.warn('Soltrópico data fixa:', e.message)
-    return []
+  const bestByDay={}
+  for(const day of disp){
+    const date=day.date
+    if(!bestByDay[date])bestByDay[date]={date,soltour:null,soltropico:null}
+    const slot=bestByDay[date]
+    if(day.brand==='SOLTOUR'){if(!slot.soltour||day.price<slot.soltour.price)slot.soltour=day}
+    else{if(!slot.soltropico||day.price<slot.soltropico.price)slot.soltropico=day}
+    const cheapest=[slot.soltour,slot.soltropico].filter(Boolean).sort((a,b)=>a.price-b.price)[0]
+    slot.price=cheapest.price;slot.brand=cheapest.brand;slot.available=true
   }
+  cache[key]=bestByDay
+  renderCalendar(year,month,bestByDay,dest)
+  st('ok',`${Object.keys(bestByDay).length} dias com disponibilidade para ${dest.label}.`)
 }
 
-// ============================================================
-// SOLTRÓPICO - LOTE DE DIAS
-// ============================================================
-async function getSoltropicoLote(destCode, origin, year, month, nights, adults, childAges, diaInicio, diaFim) {
-  const results = []
-  const progresso = $('progresso')
-  const hotelFiltro = getFiltroHotel()
-  
-  try {
-    const pdoc = await withTimeout(pkSoap('DynGetProductParameters',
-      `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCredXML()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`), 10000)
+function renderCalendar(year,month,bestByDay,dest){
+  const dim=new Date(year,month,0).getDate()
+  const first=new Date(year,month-1,1).getDay()
+  const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+  const dows=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
+  let menor=Infinity
+  for(const d in bestByDay)if(bestByDay[d].price<menor)menor=bestByDay[d].price
 
-    const itemsIn = (c) => { const w = pkAll(pdoc, c)[0]; return w ? pkItems(w) : [] }
-    const dates = itemsIn('DepartureDates').map(it => pkTxt(it, 'Date')).filter(Boolean)
-    const locals = itemsIn('DepartureLocals').map(it => ({ code: pkTxt(it, 'Code'), name: pkTxt(it, 'Name') })).filter(l => l.code)
-    const roomTypes = itemsIn('RoomTypes').map(r => ({ code: pkTxt(r, 'Code'), name: pkTxt(r, 'Name') })).filter(r => r.code)
-    const baseLocals = itemsIn('BaseLocals').map(b => ({ code: pkTxt(b, 'Code'), min: pkTxt(b, 'MinNights') || String(nights) })).filter(b => b.code)
+  let h=`<div class="card"><div class="cal-top"><span class="mes">${meses[month-1]} ${year}</span><span class="info">${esc(dest.label)} · ${Object.keys(bestByDay).length} dias disponíveis</span></div><div class="calendar">`
+  for(const d of dows)h+=`<div class="cal-h">${d}</div>`
+  for(let i=0;i<first;i++)h+=`<div class="cell empty"></div>`
 
-    const mesStr = `${year}-${String(month).padStart(2, '0')}`
-    const datesNoMes = dates.filter(d => {
-      const dStr = String(d)
-      if (!dStr.startsWith(mesStr)) return false
-      const dia = parseInt(dStr.slice(8, 10))
-      return dia >= diaInicio && dia <= diaFim
-    })
-    
-    if (datesNoMes.length === 0) return []
-
-    let datasParaTestar = datesNoMes
-    const maxDatas = hotelFiltro ? 5 : 10
-    if (datasParaTestar.length > maxDatas) {
-      const step = Math.ceil(datasParaTestar.length / maxDatas)
-      datasParaTestar = datasParaTestar.filter((_, i) => i % step === 0)
+  for(let day=1;day<=dim;day++){
+    const ds=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`
+    const dd=bestByDay[ds]
+    if(!dd){h+=`<div class="cell empty"><div class="n">${day}</div></div>`;continue}
+    const st_=dd.soltour,sp_=dd.soltropico
+    const cls=(st_&&sp_)?'both':''
+    let hotel=''
+    if(st_&&!sp_)hotel=st_.hotelName
+    else if(sp_&&!st_)hotel=sp_.hotelName
+    else if(st_&&sp_&&st_.hotelName===sp_.hotelName)hotel=st_.hotelName
+    let linhas=''
+    if(st_){
+      const best=st_.price===menor&&(!sp_||st_.price<=sp_.price)
+      const fly=st_.direct===true?'🔴':(st_.direct===false?'🟠':'')
+      linhas+=`<div class="opline"><span class="pr" style="color:${best?'var(--best)':'var(--soltour)'}">${eur(st_.price)}</span><span class="lbl st">ST</span>${fly?`<span class="fly">${fly}</span>`:''}${best?'<span class="best-tag">★</span>':''}</div>`
     }
-
-    const consultarData = async (depDate) => {
-      const depLocal = locals.find(l => l.code === origin)?.code || locals[0]?.code || origin
-      const nCri = childAges.length
-      
-      function escolherOcupacao() {
-        const parse = nome => {
-          const a = (nome.match(/(\d+)\s*Adulto/i) || [])[1]
-          const c = (nome.match(/(\d+)\s*Crian/i) || [])[1]
-          return { a: a ? parseInt(a) : 0, c: c ? parseInt(c) : 0 }
-        }
-        let m = roomTypes.find(r => { const p = parse(r.name); return p.a === adults && p.c === nCri })
-        if (m) return m.code
-        if (nCri === 0) { m = roomTypes.find(r => { const p = parse(r.name); return p.a === adults && p.c === 0 }); if (m) return m.code }
-        m = roomTypes.find(r => parse(r.name).a === adults)
-        return (m || roomTypes[0])?.code || '437'
-      }
-      
-      const roomCode = escolherOcupacao()
-      const baseXML = (baseLocals.length ? baseLocals : [{ code: '0' }]).map(b => `<Local><Code>${b.code}</Code><Nights>${nights}</Nights></Local>`).join('')
-      const roomsXML = `<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges>${childAges.join(',')}</ChildAges></RoomTypeOption>`
-
-      try {
-        const doc = await withTimeout(pkSoap('DynSearchProductAvailableServices',
-          `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${pkCredXML()}<ProductCode xsi:type="xsd:int">${destCode}</ProductCode><DepartureDate xsi:type="xsd:string">${depDate}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`), 10000)
-
-        const itinC = pkAll(doc, 'Itinerary')[0]
-        const itins = itinC ? pkItems(itinC) : []
-        const resultadosData = []
-
-        const harvest = (h) => {
-          const price = parseFloat(pkTxt(h, 'PriceFrom')) || 0
-          const name = pkTxt(h, 'Name') || pkTxt(h, 'Code')
-          if (!name || price === 0) return
-          const img = pkTxt(h, 'Image') || pkTxt(h, 'ImageUrl') || pkTxt(h, 'Photo') || ''
-          resultadosData.push({
-            date: depDate,
-            price: price,
-            currency: 'EUR',
-            hotelName: name,
-            hotelCode: destCode,
-            stars: parseInt(pkTxt(h, 'Rating')) || 0,
-            board: '',
-            direct: true,
-            brand: 'SOLTRÓPICO',
-            image: img,
-            images: img ? [img] : [],
-            available: true,
-            nights: nights
-          })
-        }
-
-        if (itins.length) {
-          itins.forEach(itin => {
-            const hc = pkDirectChildren(itin, 'HotelOption')[0]
-            if (hc) pkItems(hc).forEach(harvest)
-          })
-        }
-
-        if (resultadosData.length === 0) {
-          const hc = pkAll(doc, 'HotelOption')[0]
-          if (hc) pkItems(hc).forEach(harvest)
-        }
-
-        return resultadosData
-      } catch (e) {
-        return []
-      }
+    if(sp_){
+      const best=sp_.price===menor&&(!st_||sp_.price<st_.price)
+      linhas+=`<div class="opline"><span class="pr" style="color:${best?'var(--best)':'var(--soltropico)'}">${eur(sp_.price)}</span><span class="lbl sp">SP</span><span class="fly">🔴</span>${best?'<span class="best-tag">★</span>':''}</div>`
     }
-
-    let processadas = 0
-    const totalDates = datesNoMes.length
-    
-    for (let i = 0; i < datasParaTestar.length; i += MAX_CONCORRENTES) {
-      const batch = datasParaTestar.slice(i, i + MAX_CONCORRENTES)
-      const promises = batch.map(date => consultarData(date))
-      const resultadosBatch = await Promise.allSettled(promises)
-      
-      for (const r of resultadosBatch) {
-        if (r.status === 'fulfilled' && r.value) {
-          results.push(...r.value)
-        }
-      }
-      
-      processadas += batch.length
-      if (progresso) {
-        const pct = Math.round((processadas / totalDates) * 100)
-        progresso.textContent = `📊 Soltrópico: ${processadas}/${totalDates} datas (${pct}%) · ${results.length} ofertas`
-        progresso.className = 'progresso show'
-      }
-    }
-
-    return filtrarPorHotel(results)
-
-  } catch (e) {
-    console.warn('Soltrópico:', e.message)
-    return []
+    h+=`<div class="cell ${cls}" onclick="selectDay('${ds}')" data-date="${ds}"><div class="n">${day}</div>${hotel?`<div class="hotel">${esc(hotel)}</div>`:''}${linhas}</div>`
   }
+  h+=`</div></div>`
+  $('calendar-container').innerHTML=h
+  window._cal={bestByDay,dest}
 }
 
-// ============================================================
-// FUNÇÃO PRINCIPAL - DATA FIXA
-// ============================================================
-async function runDataFixa() {
-  const botoes = document.querySelectorAll('.btn-group .btn, .btn-success')
-  botoes.forEach(b => b.disabled = true)
-
-  const calContainer = $('calendar-container')
-  const detailContainer = $('detail-container')
-  const progresso = $('progresso')
-  calContainer.innerHTML = ''
-  detailContainer.innerHTML = ''
-  progresso.textContent = ''
-  progresso.className = 'progresso'
-
-  try {
-    const destInput = $('dest').value.trim()
-    const origin = $('origin').value
-    const dateStr = $('partida').value
-    const nights = +$('nights').value
-    const adults = +$('adults').value || 1
-    const childAges = ($('criancas').value || '').split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n) && n >= 0 && n < 18)
-    const ops = getOperadoresSelecionados()
-    const hotelFiltro = getFiltroHotel()
-
-    if (!destInput || !dateStr || !nights) {
-      st('err', '⚠️ Preenche todos os campos obrigatórios (destino, data, noites).')
-      return
-    }
-
-    if (!ops.soltour && !ops.soltropico) {
-      st('err', '⚠️ Seleciona pelo menos um operador.')
-      return
-    }
-
-    const destInfo = findDest(destInput)
-    if (!destInfo) {
-      st('err', `❌ Destino "${esc(destInput)}" não reconhecido.`)
-      return
-    }
-
-    const ano = parseInt(dateStr.slice(0,4))
-    const mes = parseInt(dateStr.slice(5,7))
-
-    const cacheKey = getCacheKey(destInfo, origin, ano, mes, nights, adults, childAges, null, null, dateStr)
-    if (cache[cacheKey]) {
-      const cached = cache[cacheKey]
-      const label = hotelFiltro ? `Data fixa: ${dateStr} · 🏨 ${hotelFiltro}` : `Data fixa: ${dateStr}`
-      st('ok', `✅ ${Object.keys(cached).length} dias com disponibilidade (cache)`)
-      renderCalendar(ano, mes, cached, destInfo, label)
-      botoes.forEach(b => b.disabled = false)
-      return
-    }
-
-    const label = hotelFiltro ? `🎯 Data fixa ${dateStr} · 🏨 ${hotelFiltro}` : `🎯 Data fixa ${dateStr}`
-    st('loading', `${label} para ${destInfo.label}...`)
-    $('modo-rapido').className = 'modo-rapido show'
-
-    const allDays = []
-    const promises = []
-
-    if (ops.soltour && destInfo.soltour) {
-      promises.push(
-        getSoltourDataFixa(destInfo.soltour, origin, dateStr, nights, adults, childAges)
-          .then(days => { allDays.push(...days) })
-          .catch(e => console.warn('Soltour:', e.message))
-      )
-    }
-
-    if (ops.soltropico && destInfo.soltropico) {
-      promises.push(
-        getSoltropicoDataFixa(destInfo.soltropico, origin, dateStr, nights, adults, childAges)
-          .then(days => { allDays.push(...days) })
-          .catch(e => console.warn('Soltrópico:', e.message))
-      )
-    }
-
-    await Promise.allSettled(promises)
-
-    if (!allDays.length) {
-      const msg = hotelFiltro ? `❌ Sem disponibilidade para ${destInfo.label} em ${dateStr} com hotel "${hotelFiltro}".` : `❌ Sem disponibilidade para ${destInfo.label} em ${dateStr}.`
-      st('err', msg)
-      return
-    }
-
-    const bestByDay = {}
-    for (const day of allDays) {
-      if (!day.available) continue
-      const date = day.date
-      if (!bestByDay[date]) bestByDay[date] = { date, soltour: null, soltropico: null }
-      const slot = bestByDay[date]
-      if (day.brand === 'SOLTOUR') {
-        if (!slot.soltour || day.price < slot.soltour.price) slot.soltour = day
-      } else {
-        if (!slot.soltropico || day.price < slot.soltropico.price) slot.soltropico = day
-      }
-      const candidates = [slot.soltour, slot.soltropico].filter(Boolean)
-      const cheapest = candidates.sort((a, b) => a.price - b.price)[0]
-      slot.price = cheapest.price
-      slot.brand = cheapest.brand
-      slot.available = true
-    }
-
-    cache[cacheKey] = bestByDay
-    const labelFinal = hotelFiltro ? `Data fixa: ${dateStr} · 🏨 ${hotelFiltro}` : `Data fixa: ${dateStr}`
-    renderCalendar(ano, mes, bestByDay, destInfo, labelFinal)
-
-    const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
-    const msg = hotelFiltro ? `✅ ${Object.keys(bestByDay).length} dias com hotel "${hotelFiltro}" para ${destInfo.label} em ${dateStr}` : `✅ ${Object.keys(bestByDay).length} dias com disponibilidade para ${destInfo.label} em ${dateStr}`
-    st('ok', msg)
-    window._ultimaPesquisa = { tipo: 'datafixa' }
-
-  } catch (e) {
-    st('err', '❌ ' + e.message)
-    console.error(e)
-  } finally {
-    botoes.forEach(b => b.disabled = false)
-    progresso.className = 'progresso'
-    progresso.textContent = ''
-  }
+async function selectDay(ds){
+  const data=window._cal;if(!data)return
+  const dd=data.bestByDay[ds];if(!dd)return
+  document.querySelectorAll('.cell').forEach(el=>el.classList.toggle('sel',el.dataset.date===ds))
+  const cont=$('detail-container')
+  cont.innerHTML=`<div class="detail"><div style="padding:18px"><span class="spinner"></span> A obter detalhes…</div></div>`
+  const origin=$('origin').value,nights=+$('nights').value,adults=+$('adults').value||1,dest=data.dest
+  const partes=[]
+  if(dd.soltour&&dest.soltour){try{partes.push(await detSoltour(dd.soltour,ds,origin,nights,adults,dest))}catch(e){partes.push(`<div class="detail st"><div style="padding:18px;color:#C0392B">Soltour: ${esc(e.message)}</div></div>`)}}
+  if(dd.soltropico&&dest.soltropico){try{partes.push(await detSoltropico(dd.soltropico,ds,nights,dest))}catch(e){partes.push(`<div class="detail sp"><div style="padding:18px;color:#C0392B">Soltrópico: ${esc(e.message)}</div></div>`)}}
+  cont.innerHTML=partes.length?partes.join(''):`<div class="detail"><div style="padding:18px;color:#C0392B">Não foi possível obter os detalhes.</div></div>`
 }
 
-// ============================================================
-// FUNÇÃO PRINCIPAL - LOTE
-// ============================================================
-async function runLote(diaInicio, diaFim) {
-  const botoes = document.querySelectorAll('.btn-group .btn')
-  botoes.forEach(b => b.disabled = true)
-
-  const calContainer = $('calendar-container')
-  const detailContainer = $('detail-container')
-  const progresso = $('progresso')
-  calContainer.innerHTML = ''
-  detailContainer.innerHTML = ''
-  progresso.textContent = ''
-  progresso.className = 'progresso'
-
-  try {
-    const destInput = $('dest').value.trim()
-    const origin = $('origin').value
-    const monthVal = $('month').value
-    const nights = +$('nights').value
-    const adults = +$('adults').value || 1
-    const childAges = ($('criancas').value || '').split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n) && n >= 0 && n < 18)
-    const ops = getOperadoresSelecionados()
-    const hotelFiltro = getFiltroHotel()
-
-    if (!destInput || !monthVal || !nights) {
-      st('err', '⚠️ Preenche todos os campos obrigatórios (destino, mês, noites).')
-      return
-    }
-
-    if (!ops.soltour && !ops.soltropico) {
-      st('err', '⚠️ Seleciona pelo menos um operador.')
-      return
-    }
-
-    const [year, month] = monthVal.split('-').map(Number)
-    const lastDay = new Date(year, month, 0).getDate()
-    
-    // Ajustar diaFim se exceder o último dia do mês
-    if (diaFim > lastDay) diaFim = lastDay
-
-    const destInfo = findDest(destInput)
-    if (!destInfo) {
-      st('err', `❌ Destino "${esc(destInput)}" não reconhecido.`)
-      return
-    }
-
-    const cacheKey = getCacheKey(destInfo, origin, year, month, nights, adults, childAges, diaInicio, diaFim, null)
-    if (cache[cacheKey]) {
-      const cached = cache[cacheKey]
-      const label = hotelFiltro ? `Dias ${diaInicio}–${diaFim} · 🏨 ${hotelFiltro}` : `Dias ${diaInicio}–${diaFim}`
-      st('ok', `✅ ${Object.keys(cached).length} dias com disponibilidade (cache)`)
-      renderCalendar(year, month, cached, destInfo, label)
-      botoes.forEach(b => b.disabled = false)
-      return
-    }
-
-    const label = hotelFiltro ? `📅 Dias ${diaInicio}–${diaFim} · 🏨 ${hotelFiltro}` : `📅 Dias ${diaInicio}–${diaFim}`
-    st('loading', `${label} para ${destInfo.label}...`)
-
-    const allDays = []
-    const promises = []
-
-    if (ops.soltour && destInfo.soltour) {
-      promises.push(
-        getSoltourLote(destInfo.soltour, origin, year, month, nights, adults, childAges, diaInicio, diaFim)
-          .then(days => { allDays.push(...days) })
-          .catch(e => console.warn('Soltour:', e.message))
-      )
-    }
-
-    if (ops.soltropico && destInfo.soltropico) {
-      promises.push(
-        getSoltropicoLote(destInfo.soltropico, origin, year, month, nights, adults, childAges, diaInicio, diaFim)
-          .then(days => { allDays.push(...days) })
-          .catch(e => console.warn('Soltrópico:', e.message))
-      )
-    }
-
-    await Promise.allSettled(promises)
-
-    progresso.className = 'progresso'
-    progresso.textContent = ''
-
-    if (!allDays.length) {
-      const msg = hotelFiltro ? `❌ Sem disponibilidade para ${destInfo.label} com hotel "${hotelFiltro}" em ${month}/${year} (${label}).` : `❌ Sem disponibilidade para ${destInfo.label} em ${month}/${year} (${label}).`
-      st('err', msg)
-      return
-    }
-
-    const bestByDay = {}
-    for (const day of allDays) {
-      if (!day.available) continue
-      const date = day.date
-      if (!bestByDay[date]) bestByDay[date] = { date, soltour: null, soltropico: null }
-      const slot = bestByDay[date]
-      if (day.brand === 'SOLTOUR') {
-        if (!slot.soltour || day.price < slot.soltour.price) slot.soltour = day
-      } else {
-        if (!slot.soltropico || day.price < slot.soltropico.price) slot.soltropico = day
-      }
-      const candidates = [slot.soltour, slot.soltropico].filter(Boolean)
-      const cheapest = candidates.sort((a, b) => a.price - b.price)[0]
-      slot.price = cheapest.price
-      slot.brand = cheapest.brand
-      slot.available = true
-    }
-
-    cache[cacheKey] = bestByDay
-    const labelFinal = hotelFiltro ? `Dias ${diaInicio}–${diaFim} · 🏨 ${hotelFiltro}` : `Dias ${diaInicio}–${diaFim}`
-    renderCalendar(year, month, bestByDay, destInfo, labelFinal)
-
-    const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
-    const msg = hotelFiltro ? `✅ ${Object.keys(bestByDay).length} dias com hotel "${hotelFiltro}" para ${destInfo.label} (${label})` : `✅ ${Object.keys(bestByDay).length} dias com disponibilidade para ${destInfo.label} (${label})`
-    st('ok', msg)
-    window._ultimaPesquisa = { tipo: 'lote', diaInicio, diaFim }
-
-  } catch (e) {
-    st('err', '❌ ' + e.message)
-    console.error(e)
-  } finally {
-    botoes.forEach(b => b.disabled = false)
-    progresso.className = 'progresso'
-    progresso.textContent = ''
+async function detSoltour(op,ds,origin,nights,adults,dest){
+  const nightsDia=op.nights||nights
+  const end=new Date(ds);end.setDate(end.getDate()+nightsDia);const endStr=end.toISOString().slice(0,10)
+  const pax=Array(adults).fill({age:30,type:'ADULT'})
+  childAgesFromInput().forEach(age=>pax.push({age,type:'CHILD'}))
+  const av=await call('booking/availability',{productType:'PACKAGE',languageCode:'PT',
+    criteria:{order:{direction:'ASC',type:'PRICE'},pagination:{firstItem:0,itemCount:5}},
+    params:{startDate:ds,endDate:endStr,numNights:nightsDia,residentType:'NONE',
+      accomodation:{rooms:[{passengers:pax}]},hotelParams:{destinationCode:dest.soltour},
+      flightParams:{directFlightsOnly:getDirectOnly(),itineraries:[
+        {origins:[origin],destinations:[dest.soltour],flightDate:ds},
+        {origins:[dest.soltour],destinations:[origin],flightDate:endStr}]}}})
+  const budgets=av.budgets||[]
+  let D
+  if(!(budgets.length&&budgets[0].budgetId&&av.availToken)){
+    D={brand:'SOLTOUR',hotelName:op.hotelName,hotelCode:op.hotelCode,stars:op.stars||0,board:op.board||'',
+      checkIn:ds,checkOut:endStr,nights:nightsDia,image:op.image||'',images:op.images||[],direct:op.direct,
+      totalPvp:op.price,totalNet:null,totalCom:null,cancelamento:[]}
+  }else{
+    const q=await call('booking/quote',{availToken:av.availToken,budgetIds:[budgets[0].budgetId],productType:'PACKAGE',languageCode:'PT'})
+    const qpb=(q.budget&&q.budget.priceBreakdown)||{}
+    const det=Array.isArray(qpb.priceBreakdownDetails)?qpb.priceBreakdownDetails:[]
+    let pvp=0,net=0
+    if(det.length)for(const x of det){const pi=x.priceInfo||x;pvp+=parseFloat(pi.pvp||pi.amount||0);net+=parseFloat(pi.netAmount!=null?pi.netAmount:(pi.net||0))}
+    else{pvp=parseFloat(qpb.pvp||qpb.amount||op.price);net=parseFloat(qpb.netAmount||qpb.net||0)}
+    D={brand:'SOLTOUR',hotelName:op.hotelName,hotelCode:op.hotelCode,stars:op.stars||0,board:op.board||'',
+      checkIn:ds,checkOut:endStr,nights:nightsDia,image:op.image||'',images:op.images||[],direct:op.direct,
+      totalPvp:pvp,totalNet:net,totalCom:pvp-net,cancelamento:extrairCancelamento(q.budget,pvp)}
   }
+  return renderDetail(D,dest.label,origin)
 }
 
-// ============================================================
-// RENDERIZAR CALENDÁRIO
-// ============================================================
-function renderCalendar(year, month, bestByDay, destInfo, label) {
-  const container = $('calendar-container')
-  const daysInMonth = new Date(year, month, 0).getDate()
-  const firstDay = new Date(year, month - 1, 1).getDay()
-
-  const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
-  const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-
-  let html = `<div class="card">
-    <div class="cal-month-nav">
-      <span class="month">${monthNames[month-1]} ${year}</span>
-      <span class="intervalo-label">${label} · ${Object.keys(bestByDay).length} dias disponíveis</span>
-    </div>
-    <div class="calendar">`
-
-  for (const name of dayNames) {
-    html += `<div class="cal-header">${name}</div>`
-  }
-
-  for (let i = 0; i < firstDay; i++) {
-    html += `<div class="cal-day unavailable"></div>`
-  }
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    const dayData = bestByDay[dateStr]
-
-    if (dayData) {
-      const st_ = dayData.soltour, sp_ = dayData.soltropico
-      const temAmbos = st_ && sp_
-      const cellClass = temAmbos ? 'ambos' : (st_ ? 'soltour' : 'soltropico')
-
-      let linhas = ''
-      let hotelName = ''
-      if (st_ && !sp_) hotelName = st_.hotelName
-      else if (sp_ && !st_) hotelName = sp_.hotelName
-      else if (st_ && sp_ && st_.hotelName === sp_.hotelName) hotelName = st_.hotelName
-      
-      if (st_) {
-        linhas += `<div class="op-line"><span class="price" style="color:#E8395A">${eur(st_.price)}</span><span class="op op-soltour">Soltour</span></div>`
-      }
-      if (sp_) {
-        linhas += `<div class="op-line"><span class="price" style="color:#0F6E56">${eur(sp_.price)}</span><span class="op op-soltropico">Soltrópico</span></div>`
-      }
-
-      html += `
-        <div class="cal-day ${cellClass}" onclick="selectDay('${dateStr}')" data-date="${dateStr}">
-          <div class="day">${day}</div>
-          ${hotelName ? `<div class="hotel-name">${esc(hotelName)}</div>` : ''}
-          ${linhas}
-        </div>
-      `
-    } else {
-      html += `<div class="cal-day unavailable"><div class="day" style="color:#ccc">${day}</div></div>`
-    }
-  }
-
-  html += `</div></div>`
-  container.innerHTML = html
-
-  window._calendarData = { bestByDay, destInfo }
+async function detSoltropico(op,ds,nights,dest){
+  const bruto=op.price,com=bruto*0.15
+  const D={brand:'SOLTRÓPICO',hotelName:op.hotelName,hotelCode:dest.soltropico,stars:op.stars||0,board:op.board||'',
+    checkIn:ds,checkOut:'—',nights:op.nights||nights,image:op.image||'',images:op.images||[],direct:true,
+    totalPvp:bruto,totalNet:bruto-com,totalCom:com,cancelamento:[]}
+  return renderDetail(D,dest.label,'')
 }
 
-// ============================================================
-// SELECIONAR DIA
-// ============================================================
-async function selectDay(dateStr) {
-  const detailContainer = $('detail-container')
-  const data = window._calendarData
-  if (!data) return
-
-  const dayData = data.bestByDay[dateStr]
-  if (!dayData) return
-
-  document.querySelectorAll('.cal-day').forEach(el => {
-    el.classList.toggle('selected', el.dataset.date === dateStr)
+function extrairCancelamento(budget,pvpCliente){
+  const cargos=(budget&&(budget.cancellationChargeServices||budget.cancellationCharges))||[]
+  const fmtD=s=>{if(!s)return'';try{return new Date(s).toLocaleDateString('pt-PT')}catch(e){return s}}
+  const teto=parseFloat(pvpCliente)||0
+  return cargos.map(c=>{
+    const pi=c.priceInfo||c
+    const vOp=parseFloat(pi.totalAmount!=null?pi.totalAmount:(pi.pvp!=null?pi.pvp:(pi.amount||0)))
+    const v=(teto>0&&vOp>teto)?teto:vOp
+    return{desc:c.description||'',fim:fmtD(c.endDate),valor:v}
   })
-
-  detailContainer.innerHTML = `<div class="card"><div class="spinner"></div> A carregar detalhes...</div>`
-
-  try {
-    const origin = $('origin').value
-    const nights = +$('nights').value
-    const adults = +$('adults').value || 1
-    const destInfo = data.destInfo
-
-    const partes = []
-    if (dayData.soltour && destInfo.soltour) {
-      try { partes.push(await detSoltour(dayData.soltour, dateStr, origin, nights, adults, destInfo)) }
-      catch (e) { partes.push(`<div class="card"><span style="color:#C62828">Soltour: ${esc(e.message)}</span></div>`) }
-    }
-    if (dayData.soltropico && destInfo.soltropico) {
-      try { partes.push(await detSoltropico(dayData.soltropico, dateStr, nights, destInfo)) }
-      catch (e) { partes.push(`<div class="card"><span style="color:#C62828">Soltrópico: ${esc(e.message)}</span></div>`) }
-    }
-
-    if (partes.length) {
-      detailContainer.innerHTML = partes.join('<div style="height:14px"></div>')
-    } else {
-      detailContainer.innerHTML = `<div class="card"><span style="color:#C62828">❌ Não foi possível obter os detalhes da oferta.</span></div>`
-    }
-
-  } catch (e) {
-    detailContainer.innerHTML = `<div class="card"><span style="color:#C62828">❌ ${esc(e.message)}</span></div>`
-    console.error(e)
-  }
 }
 
-// Detalhe Soltour (resumido)
-async function detSoltour(op, dateStr, origin, nights, adults, destInfo) {
-  const nightsDia = op.nights || nights
-  const end = new Date(dateStr); end.setDate(end.getDate() + nightsDia)
-  const endStr = end.toISOString().slice(0, 10)
-  const pax = Array(adults).fill({ age: 30, type: 'ADULT' })
-  const _chAges = ($('criancas').value || '').split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n) && n >= 0 && n < 18)
-  _chAges.forEach(age => pax.push({ age: age, type: 'CHILD' }))
-  const availBody = {
-    productType: 'PACKAGE', languageCode: 'PT',
-    criteria: { order: { direction: 'ASC', type: 'PRICE' }, pagination: { firstItem: 0, itemCount: 5 } },
-    params: {
-      startDate: dateStr, endDate: endStr, numNights: nightsDia, residentType: 'NONE',
-      accomodation: { rooms: [{ passengers: pax }] },
-      hotelParams: { destinationCode: destInfo.soltour },
-      flightParams: { directFlightsOnly: false, itineraries: [
-        { origins: [origin], destinations: [destInfo.soltour], flightDate: dateStr },
-        { origins: [destInfo.soltour], destinations: [origin], flightDate: endStr }
-      ] }
-    }
-  }
-  const av = await call('booking/availability', availBody)
-  const budgets = av.budgets || []
-  let detailData
-  if (!(budgets.length && budgets[0].budgetId && av.availToken)) {
-    detailData = {
-      brand: 'SOLTOUR', hotelName: op.hotelName, hotelCode: op.hotelCode, stars: op.stars || 0,
-      board: op.board || '', checkIn: dateStr, checkOut: endStr, nights: nightsDia,
-      image: op.image || '', images: op.images || (op.image ? [op.image] : []),
-      totalPvp: op.price, totalNet: null, totalCom: null, semNet: true, cancelamento: [],
-      rows: [{ name: 'Pacote (preço de calendário)', pvp: op.price, net: null, com: null }]
-    }
-  } else {
-    const q = await call('booking/quote', { availToken: av.availToken, budgetIds: [budgets[0].budgetId], productType: 'PACKAGE', languageCode: 'PT' })
-    const qpb = (q.budget && q.budget.priceBreakdown) || {}
-    const details = Array.isArray(qpb.priceBreakdownDetails) ? qpb.priceBreakdownDetails : []
-    let totalPvp = 0, totalNet = 0
-    const rows = []
-    if (details.length) {
-      for (const det of details) {
-        const pi = det.priceInfo || det
-        const pvp = parseFloat(pi.pvp || pi.amount || 0)
-        const net = parseFloat(pi.netAmount != null ? pi.netAmount : (pi.net || 0))
-        totalPvp += pvp; totalNet += net
-        rows.push({ name: det.description || det.priceBreakdownType || 'Componente', pvp, net, com: pvp - net })
-      }
-    } else {
-      totalPvp = parseFloat(qpb.pvp || qpb.amount || op.price)
-      totalNet = parseFloat(qpb.netAmount || qpb.net || 0)
-      rows.push({ name: 'Pacote', pvp: totalPvp, net: totalNet, com: totalPvp - totalNet })
-    }
-    const cancelamento = extrairCancelamento(q.budget, totalPvp)
-    detailData = {
-      brand: 'SOLTOUR', hotelName: op.hotelName, hotelCode: op.hotelCode, stars: op.stars || 0,
-      board: op.board || '', checkIn: dateStr, checkOut: endStr, nights: nightsDia,
-      image: op.image || '', images: op.images || (op.image ? [op.image] : []),
-      totalPvp, totalNet, totalCom: totalPvp - totalNet, cancelamento, rows
-    }
-  }
-  return renderDetail(detailData, destInfo.label, origin)
-}
-
-// Detalhe Soltrópico (resumido)
-async function detSoltropico(op, dateStr, nights, destInfo) {
-  const bruto = op.price
-  const comissaoEuro = bruto * 0.15
-  const net = bruto - comissaoEuro
-  const detailData = {
-    brand: 'SOLTRÓPICO', hotelName: op.hotelName, hotelCode: destInfo.soltropico, stars: op.stars || 0,
-    board: op.board || '', checkIn: dateStr, checkOut: '—', nights: op.nights || nights,
-    image: op.image || '', images: op.images || (op.image ? [op.image] : []),
-    totalPvp: bruto, totalNet: net, totalCom: comissaoEuro,
-    rows: [{ name: 'Pacote Soltrópico', pvp: bruto, net, com: comissaoEuro }]
-  }
-  return renderDetail(detailData, destInfo.label, '')
-}
-
-// ============================================================
-// GERAR DOCUMENTO
-// ============================================================
-async function gerarDocumento(tipo, dataJson, destLabel, origin) {
-  let data; try { data = JSON.parse(dataJson) } catch(e) { alert('Erro nos dados da oferta.'); return }
-  const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
-  const fmtPt = s => { if(!s || s==='—') return ''; try { return new Date(s+'T12:00:00').toLocaleDateString('pt-PT') } catch(e){ return s } }
-  const up = new URLSearchParams(location.search)
-  const cid = up.get('cid') || ''
-  const cnome = up.get('cnome') || ''
-  const subtitulo = [fmtPt(data.checkIn), data.nights ? data.nights + ' noites' : '', destLabel].filter(Boolean).join(' · ')
-  let regresso = (data.checkOut && data.checkOut !== '—') ? data.checkOut : ''
-  if (!regresso && data.checkIn && data.nights) {
-    try { const r = new Date(data.checkIn); r.setDate(r.getDate() + parseInt(data.nights)); regresso = r.toISOString().slice(0,10) } catch(e) {}
-  }
-
-  const p = new URLSearchParams()
-  p.set('motor', '1')
-  p.set('dest', `${data.hotelName} · ${destLabel}`)
-  p.set('hotel', data.hotelName || '')
-  p.set('sub', subtitulo)
-  p.set('part', data.checkIn || '')
-  p.set('regresso', regresso)
-  p.set('noites', data.nights || '')
-  p.set('regime', data.board || '')
-  p.set('fornecedor', data.brand || '')
-  p.set('drest', originLabel)
-  p.set('pvp', data.totalPvp || '')
-  p.set('net', data.totalNet || '')
-  p.set('cnome', cnome)
-  if(cid) p.set('cid', cid)
-
-  if (Array.isArray(data.cancelamento) && data.cancelamento.length) {
-    const eurStr = v => '€' + Number(v).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    const linhas = data.cancelamento.map(f => {
-      const quando = f.fim ? ('Até ' + f.fim) : (f.desc || 'Cancelamento')
-      return `${quando}: ${eurStr(f.valor)}`
-    })
-    p.set('cancel', linhas.join('\n'))
-  }
-  const fotos = (data.images && data.images.length) ? data.images : (data.image ? [data.image] : [])
-  fotos.slice(0, 4).forEach((f, i) => { if(f) p.set('foto' + (i+1), f) })
-
-  const base = 'https://escritorioapmviagens-creator.github.io/apm-viagens/'
-  const url = base + 'orcamento.html?' + p.toString() + (tipo === 'contrato' ? '&modo=contrato' : '')
-  window.open(url, '_blank')
-}
-
-function extrairCancelamento(budget, pvpCliente) {
-  const cargos = (budget && (budget.cancellationChargeServices || budget.cancellationCharges)) || []
-  const fmtD = s => { if(!s) return ''; try { return new Date(s).toLocaleDateString('pt-PT') } catch(e){ return s } }
-  const teto = parseFloat(pvpCliente) || 0
-  const faixas = []
-  for (const c of cargos) {
-    const pi = c.priceInfo || c
-    let valorOperador = parseFloat(pi.totalAmount != null ? pi.totalAmount : (pi.pvp != null ? pi.pvp : (pi.amount || 0)))
-    const valorFinal = (teto > 0 && valorOperador > teto) ? teto : valorOperador
-    faixas.push({
-      desc: c.description || '',
-      inicio: fmtD(c.startDate),
-      fim: fmtD(c.endDate),
-      valorOperador,
-      valor: valorFinal,
-      ajustado: valorFinal !== valorOperador
-    })
-  }
-  return faixas
-}
-
-function renderDetail(data, destLabel, origin) {
-  const brandColor = data.brand === 'SOLTOUR' ? '#E8395A' : '#1098AD'
-  const brandClass = data.brand === 'SOLTOUR' ? 'brand-soltour' : 'brand-soltropico'
-  const originLabel = { LIS: 'Lisboa', OPO: 'Porto', FAO: 'Faro' }[origin] || origin
-
-  let rowsHtml = ''
-  for (const row of data.rows) {
-    const isNegative = row.pvp < 0
-    const cls = isNegative ? 'style="color:#D32F2F"' : ''
-    rowsHtml += `
-      <tr>
-        <td style="padding:6px 10px;font-weight:${isNegative ? '400' : '500'}">${esc(row.name)}</td>
-        <td style="padding:6px 10px;text-align:right;font-family:monospace" ${cls}>${eur(row.pvp)}</td>
-        <td style="padding:6px 10px;text-align:right;font-family:monospace"></td>
-        <td style="padding:6px 10px;text-align:right;font-family:monospace"></td>
-        <td style="padding:6px 10px;text-align:right;font-family:monospace;color:#F57C00">${eur(row.com)}</td>
-        <td style="padding:6px 10px;text-align:right;font-family:monospace">€0,00</td>
-        <td style="padding:6px 10px;text-align:right;font-family:monospace;color:#2E7D32;font-weight:600">${eur(row.net)}</td>
-      </tr>
-    `
-  }
-
+function renderDetail(d,destLabel,origin){
+  const cls=d.brand==='SOLTOUR'?'st':'sp'
+  const pill=d.brand==='SOLTOUR'?'pill-soltour':'pill-soltropico'
+  const originLabel={LIS:'Lisboa',OPO:'Porto',FAO:'Faro'}[origin]||origin||''
+  const fly=d.direct===true?'🔴 Direto':(d.direct===false?'🟠 Com escalas':'')
   return `
-    <div class="card" style="border:2px solid ${brandColor}">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
-        <div>
-          <span class="brand-badge ${brandClass}">${data.brand}</span>
-          <b>${esc(data.hotelName)}</b>
-          ${data.stars ? '★'.repeat(Math.min(data.stars, 5)) : ''}
-        </div>
-        <span style="font-size:12px;color:#8B92A5">Net = Bruto - Comissão</span>
-      </div>
-
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin:8px 0;font-size:13px;color:#8B92A5">
-        <span>📍 ${esc(destLabel)} desde ${originLabel}</span>
-        <span>📅 ${data.checkIn} → ${data.checkOut}</span>
-        <span>🌙 ${data.nights} noites</span>
-        <span>🍽 ${data.board}</span>
-        <span>📋 ${data.hotelCode}</span>
-      </div>
-
-      <div style="display:flex;gap:24px;flex-wrap:wrap;margin:10px 0;padding:12px 16px;background:#F0F4FF;border-radius:8px">
-        <div>📦 Bruto: <b>${eur(data.totalPvp)}</b></div>
-        ${data.totalNet != null
-          ? `<div style="color:#2E7D32">🟢 NET: <b style="font-size:18px">${eur(data.totalNet)}</b></div>
-             <div style="color:#3B5BDB">💰 Margem: <b>${eur(data.totalPvp - data.totalNet)}</b></div>`
-          : `<div style="color:#888;font-size:12px">Net e margem obtêm-se na fase de reserva.</div>`}
-      </div>
-
-      <table class="detail-table" style="width:100%;border-collapse:collapse;margin-top:8px">
-        <thead>
-          <tr style="background:#F5F6FA;font-size:10px;font-weight:600;color:#8B92A5;text-transform:uppercase">
-            <td style="padding:6px 10px">Conceito</td>
-            <td style="padding:6px 10px;text-align:right">Bruto</td>
-            <td style="padding:6px 10px;text-align:right">Comissão</td>
-            <td style="padding:6px 10px;text-align:right">Over</td>
-            <td style="padding:6px 10px;text-align:right">Montante</td>
-            <td style="padding:6px 10px;text-align:right">Imposto</td>
-            <td style="padding:6px 10px;text-align:right;color:#2E7D32">Importe neto</td>
-          </tr>
-        </thead>
-        <tbody>
-          ${rowsHtml}
-          <tr class="total-row">
-            <td style="padding:6px 10px;font-weight:700">TOTAL</td>
-            <td style="padding:6px 10px;text-align:right;font-family:monospace;font-weight:700">${eur(data.totalPvp)}</td>
-            <td style="padding:6px 10px;text-align:right;font-family:monospace"></td>
-            <td style="padding:6px 10px;text-align:right;font-family:monospace"></td>
-            <td style="padding:6px 10px;text-align:right;font-family:monospace;font-weight:700;color:#F57C00">${eur(data.totalCom)}</td>
-            <td style="padding:6px 10px;text-align:right;font-family:monospace;font-weight:700">€0,00</td>
-            <td style="padding:6px 10px;text-align:right;font-family:monospace;font-weight:700;color:#2E7D32;font-size:16px">${eur(data.totalNet)}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="hint" style="margin-top:10px;background:#FFF8E1;padding:8px 12px;border-radius:6px;border-left:3px solid #F57C00">
-        💡 <b>Net total: ${eur(data.totalNet)}</b> — valor que o agente paga ao operador.
-        ${data.brand === 'SOLTRÓPICO' ? '<br>⚠️ Soltrópico: net estimado com 15% de comissão.' : ''}
-      </div>
-
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
-        <button onclick='gerarDocumento("orcamento", ${JSON.stringify(JSON.stringify(data))}, ${JSON.stringify(destLabel)}, ${JSON.stringify(origin)})'
-          style="flex:1;min-width:180px;background:#3B5BDB;color:#fff;border:none;border-radius:8px;padding:12px;font-weight:600;font-size:14px;cursor:pointer">
-          📄 Gerar orçamento
-        </button>
-        <button onclick='gerarDocumento("contrato", ${JSON.stringify(JSON.stringify(data))}, ${JSON.stringify(destLabel)}, ${JSON.stringify(origin)})'
-          style="flex:1;min-width:180px;background:#0F6E56;color:#fff;border:none;border-radius:8px;padding:12px;font-weight:600;font-size:14px;cursor:pointer">
-          ✍️ Gerar contrato
-        </button>
-      </div>
+  <div class="detail ${cls}">
+    <div class="detail-h"><div><span class="pill ${pill}">${d.brand}</span> <span class="name">${esc(d.hotelName)}</span> ${d.stars?`<span class="star">${'★'.repeat(Math.min(d.stars,5))}</span>`:''}</div></div>
+    <div class="detail-meta">
+      <span>📍 ${esc(destLabel)}${originLabel?` · desde ${originLabel}`:''}</span>
+      <span>📅 ${d.checkIn} → ${d.checkOut}</span>
+      <span>🌙 ${d.nights} noites</span>
+      ${d.board?`<span>🍽 ${esc(d.board)}</span>`:''}
+      ${fly?`<span>✈️ ${fly}</span>`:''}
     </div>
-  `
+    <div class="price-band">
+      <div><div class="k">Bruto (PVP)</div><div class="v">${eur2(d.totalPvp)}</div></div>
+      ${d.totalNet!=null
+        ?`<div><div class="k">Net</div><div class="v net">${eur2(d.totalNet)}</div></div><div><div class="k">Margem</div><div class="v mg">${eur2(d.totalPvp-d.totalNet)}</div></div>`
+        :`<div style="align-self:center;color:var(--muted);font-size:12px;max-width:260px">Net e margem obtêm-se na fase de reserva — a Soltour não os fornece para este dia na pesquisa.</div>`}
+    </div>
+    ${d.brand==='SOLTRÓPICO'?`<div class="note">Net estimado com 15% de comissão. O valor exato confirma-se na reserva.</div>`:''}
+    <div class="dactions">
+      <button class="btn" onclick='gerarDocumento("orcamento", ${JSON.stringify(JSON.stringify(d))}, ${JSON.stringify(destLabel)}, ${JSON.stringify(origin)})'>📄 Gerar orçamento</button>
+      <button class="btn go" onclick='gerarDocumento("contrato", ${JSON.stringify(JSON.stringify(d))}, ${JSON.stringify(destLabel)}, ${JSON.stringify(origin)})'>✍️ Gerar contrato</button>
+    </div>
+  </div>`
 }
 
-// ============================================================
-// INIT
-// ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-  const today = new Date()
-  const start = new Date(today)
-  start.setDate(start.getDate() + 3)
-  $('month').value = start.toISOString().slice(0, 7)
-  $('partida').value = start.toISOString().slice(0, 10)
+function gerarDocumento(tipo,dataJson,destLabel,origin){
+  let d;try{d=JSON.parse(dataJson)}catch(e){alert('Erro nos dados.');return}
+  const originLabel={LIS:'Lisboa',OPO:'Porto',FAO:'Faro'}[origin]||origin||''
+  const fmtPt=s=>{if(!s||s==='—')return'';try{return new Date(s+'T12:00:00').toLocaleDateString('pt-PT')}catch(e){return s}}
+  const up=new URLSearchParams(location.search)
+  const cid=up.get('cid')||'',cnome=up.get('cnome')||''
+  let regresso=(d.checkOut&&d.checkOut!=='—')?d.checkOut:''
+  if(!regresso&&d.checkIn&&d.nights){try{const r=new Date(d.checkIn);r.setDate(r.getDate()+parseInt(d.nights));regresso=r.toISOString().slice(0,10)}catch(e){}}
+  const sub=[fmtPt(d.checkIn),d.nights?d.nights+' noites':'',destLabel].filter(Boolean).join(' · ')
 
-  // Preencher lista de destinos
-  const dl = $('dest-list')
-  if (dl) {
-    const nomes = DEST_MAP.filter(d => !d.alias).map(d => d.label)
-      .sort((a, b) => a.localeCompare(b, 'pt'))
-    dl.innerHTML = nomes.map(n => `<option value="${n}">`).join('')
-  }
+  const p=new URLSearchParams()
+  p.set('motor','1');p.set('dest',`${d.hotelName} · ${destLabel}`);p.set('hotel',d.hotelName||'')
+  p.set('sub',sub);p.set('part',d.checkIn||'');p.set('regresso',regresso);p.set('noites',d.nights||'')
+  p.set('regime',d.board||'');p.set('fornecedor',d.brand||'');p.set('drest',originLabel)
+  p.set('pvp',d.totalPvp||'');if(d.totalNet!=null)p.set('net',d.totalNet);p.set('cnome',cnome)
+  if(cid)p.set('cid',cid)
+  if(Array.isArray(d.cancelamento)&&d.cancelamento.length)p.set('cancel',d.cancelamento.map(f=>`${f.fim?'Até '+f.fim:(f.desc||'Cancelamento')}: ${eur2(f.valor)}`).join('\n'))
+  const fotos=(d.images&&d.images.length)?d.images:(d.image?[d.image]:[])
+  fotos.slice(0,4).forEach((f,i)=>{if(f)p.set('foto'+(i+1),f)})
 
-  document.querySelectorAll('input').forEach(inp => {
-    inp.addEventListener('keydown', e => {
-      if (e.key === 'Enter') runLote(1, 31)
-    })
-  })
+  const base='https://escritorioapmviagens-creator.github.io/apm-viagens/'
+  window.open(base+'orcamento.html?'+p.toString()+(tipo==='contrato'?'&modo=contrato':''),'_blank')
+}
 
-  $('hotel-filter').addEventListener('input', atualizarFiltroHotel)
-
-  $('partida').addEventListener('change', () => {
-    if ($('partida').value) {
-      $('modo-rapido').className = 'modo-rapido show'
-    } else {
-      $('modo-rapido').className = 'modo-rapido'
-    }
-  })
-
-  ensureLogin().catch(() => {})
+document.addEventListener('DOMContentLoaded',()=>{
+  const t=new Date();t.setDate(t.getDate()+7)
+  $('month').value=t.toISOString().slice(0,7)
+  const dl=$('dest-list')
+  if(dl)dl.innerHTML=DEST_MAP.filter(d=>!d.alias).map(d=>d.label).sort((a,b)=>a.localeCompare(b,'pt')).map(n=>`<option value="${n}">`).join('')
+  document.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter')runMes()}))
+  ensureLogin().catch(e=>console.error('Login:',e.message))
 })
 </script>
 </body>
