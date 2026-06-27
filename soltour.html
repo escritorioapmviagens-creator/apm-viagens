@@ -42,6 +42,9 @@ input,select{width:100%;padding:9px 11px;border:1.5px solid rgba(0,0,0,.08);bord
 .brand-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-right:6px}
 .brand-soltour{background:#FFF0F3;color:#E8395A}
 .brand-soltropico{background:#E3FAFC;color:#1098AD}
+.cal-day.ambos{border-left:3px solid #7c3aed}
+.op-line{display:flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap;margin-top:2px}
+.op-line .price{font-size:11px;font-weight:600}
 @media (max-width: 600px) {
   body { padding: 10px; font-size: 13px; }
   .wrap { max-width: 100%; }
@@ -371,7 +374,27 @@ async function getSoltropicoCalendar(destCode, origin, year, month, nights, adul
     const startDate = `${year}-${String(month).padStart(2, '0')}-01`
     const depDate = dates.find(d => String(d).startsWith(startDate.slice(0, 7))) || dates[0] || startDate
     const depLocal = locals.find(l => l.code === origin)?.code || locals[0]?.code || origin
-    const roomCode = roomTypes[0]?.code || '437'
+    // ESCOLHER a configuração de ocupação certa (os "RoomTypes" são ocupações:
+    // "1 Adulto", "2 Adultos", "2 Adultos + 2 Crianças"...). Usar a que corresponde
+    // ao nº de adultos e crianças pesquisado — NÃO a primeira (que é "1 Adulto").
+    const nCri = childAges.length
+    function escolherOcupacao() {
+      // normalizar nome -> {adultos, criancas}
+      const parse = nome => {
+        const a = (nome.match(/(\d+)\s*Adulto/i) || [])[1]
+        const c = (nome.match(/(\d+)\s*Crian/i) || [])[1]
+        return { a: a ? parseInt(a) : 0, c: c ? parseInt(c) : 0 }
+      }
+      // match exato adultos+crianças
+      let m = roomTypes.find(r => { const p = parse(r.name); return p.a === adults && p.c === nCri })
+      if (m) return m.code
+      // match só adultos (sem crianças no nome) se não houver crianças
+      if (nCri === 0) { m = roomTypes.find(r => { const p = parse(r.name); return p.a === adults && p.c === 0 }); if (m) return m.code }
+      // fallback: primeira que tenha pelo menos os adultos certos
+      m = roomTypes.find(r => parse(r.name).a === adults)
+      return (m || roomTypes[0])?.code || '437'
+    }
+    const roomCode = escolherOcupacao()
     const baseXML = (baseLocals.length ? baseLocals : [{ code: '0' }]).map(b => `<Local><Code>${b.code}</Code><Nights>${nights}</Nights></Local>`).join('')
     const roomsXML = `<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges>${childAges.join(',')}</ChildAges></RoomTypeOption>`
 
@@ -489,14 +512,24 @@ async function run() {
       return
     }
 
-    // Agrupar por dia (melhor preço)
+    // Agrupar por dia, guardando o melhor preço de CADA operador (não esconder nenhum)
     const bestByDay = {}
     for (const day of allDays) {
       if (!day.available) continue
       const date = day.date
-      if (!bestByDay[date] || day.price < bestByDay[date].price) {
-        bestByDay[date] = day
+      if (!bestByDay[date]) bestByDay[date] = { date, soltour: null, soltropico: null }
+      const slot = bestByDay[date]
+      if (day.brand === 'SOLTOUR') {
+        if (!slot.soltour || day.price < slot.soltour.price) slot.soltour = day
+      } else {
+        if (!slot.soltropico || day.price < slot.soltropico.price) slot.soltropico = day
       }
+      // 'price' e 'brand' do slot = o mais barato dos dois (para ordenar/destacar)
+      const candidates = [slot.soltour, slot.soltropico].filter(Boolean)
+      const cheapest = candidates.sort((a, b) => a.price - b.price)[0]
+      slot.price = cheapest.price
+      slot.brand = cheapest.brand
+      slot.available = true
     }
 
     renderCalendar(year, month, bestByDay, destInfo)
@@ -543,16 +576,22 @@ function renderCalendar(year, month, bestByDay, destInfo) {
     const dayData = bestByDay[dateStr]
 
     if (dayData) {
-      const brandClass = dayData.brand === 'SOLTOUR' ? 'soltour' : 'soltropico'
-      const opClass = dayData.brand === 'SOLTOUR' ? 'op-soltour' : 'op-soltropico'
-      const brandLabel = dayData.brand === 'SOLTOUR' ? 'Soltour' : 'Soltrópico'
+      const st_ = dayData.soltour, sp_ = dayData.soltropico
+      const temAmbos = st_ && sp_
+      const cellClass = temAmbos ? 'ambos' : (st_ ? 'soltour' : 'soltropico')
+
+      let linhas = ''
+      if (st_) {
+        linhas += `<div class="op-line"><span class="price" style="color:#E8395A">${eur(st_.price)}</span><span class="op op-soltour">Soltour</span></div>`
+      }
+      if (sp_) {
+        linhas += `<div class="op-line"><span class="price" style="color:#0F6E56">${eur(sp_.price)}</span><span class="op op-soltropico">Soltrópico</span></div>`
+      }
 
       html += `
-        <div class="cal-day ${brandClass}" onclick="selectDay('${dateStr}')" data-date="${dateStr}">
+        <div class="cal-day ${cellClass}" onclick="selectDay('${dateStr}')" data-date="${dateStr}">
           <div class="day">${day}</div>
-          <div class="price">${eur(dayData.price)}</div>
-          <span class="op ${opClass}">${brandLabel}</span>
-          ${dayData.hotelName ? `<div style="font-size:9px;color:#8B92A5;margin-top:2px;overflow:hidden;text-overflow:ellipsis;max-width:100%;white-space:nowrap">${esc(dayData.hotelName)}</div>` : ''}
+          ${linhas}
         </div>
       `
     } else {
