@@ -54,6 +54,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .status.ok{background:var(--best-soft);color:var(--best)}
 .status.err{background:#FDECEC;color:#C0392B}
 .hint{font-size:12px;color:var(--muted);margin-top:8px}
+.progresso{display:none;margin-bottom:16px;background:var(--accent-soft);border-radius:10px;padding:12px 15px;font-size:13px;color:var(--accent);font-weight:500}
+.progresso.show{display:block}
+.progresso .barra{height:6px;background:rgba(59,91,219,.18);border-radius:99px;margin-top:8px;overflow:hidden}
+.progresso .barra > i{display:block;height:100%;background:var(--accent);border-radius:99px;width:0;transition:width .3s ease}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 .legend span{display:flex;align-items:center;gap:5px}
 .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
@@ -158,10 +162,11 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       <span>✈️ Voo direto</span>
       <span>📍 Com escalas</span>
     </div>
-    <div class="hint">Escolhe o âmbito (mês ou semana) e carrega <b>Pesquisar</b>. Se preencheres a <b>data exata</b>, ela tem prioridade (resultado rápido só desse dia). Preços por pessoa, como nos sites dos operadores; o valor exato e o net aparecem ao abrir o dia.</div>
+    <div class="hint">Escolhe o âmbito (mês ou semana) e carrega <b>Pesquisar</b>. A <b>data exata</b> tem prioridade (resultado rápido). O <b>filtro por hotel</b> é mais demorado — usa-o com data exata ou semana. Preços por pessoa, como nos sites dos operadores.</div>
   </div>
 
   <div id="status" class="status"></div>
+  <div id="progresso" class="progresso"></div>
   <div id="calendar-container"></div>
   <div id="detail-container"></div>
 </div>
@@ -178,6 +183,14 @@ let cache={}
 const $=id=>document.getElementById(id)
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
 const st=(t,m)=>{const e=$('status');e.className=`status show ${t}`;e.innerHTML=m}
+const prog=(feito,total,texto)=>{
+  const e=$('progresso')
+  if(feito>=total){e.className='progresso';return}
+  e.className='progresso show'
+  const pct=total?Math.round(feito/total*100):0
+  e.innerHTML=`${texto||'A consultar…'} (${feito}/${total})<div class="barra"><i style="width:${pct}%"></i></div>`
+}
+const progFim=()=>{$('progresso').className='progresso'}
 const eur=v=>v==null||isNaN(v)?'—':'€'+Number(v).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})
 const eur2=v=>v==null||isNaN(v)?'—':'€'+Number(v).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})
 
@@ -335,10 +348,15 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges,dia
       }catch(e){return []}
     }
     const todas=[];for(let d=diaIni;d<=diaFim;d++)todas.push(d)
+    let feitos=0
+    prog(0,todas.length,`🏨 A procurar "${filtroHotel}" na Soltour`)
     for(let i=0;i<todas.length;i+=5){
       const resultados=await Promise.all(todas.slice(i,i+5).map(consultarData))
       resultados.forEach(r=>dias.push(...r))
+      feitos=Math.min(i+5,todas.length)
+      prog(feitos,todas.length,`🏨 A procurar "${filtroHotel}" na Soltour`)
     }
+    progFim()
     return dias
   }
 
@@ -528,6 +546,13 @@ async function pesquisar(modo,semana){
     }
   }
 
+  // O filtro de hotel na Soltour usa availability (lenta, ~18s por dia). No mês inteiro
+  // seriam dezenas de chamadas — proibitivo. Limitar a data exata ou semana.
+  if(hotel&&!dataExata&&modo!=='semana'){
+    st('err','🏨 O filtro por hotel é mais lento. Escolhe uma <b>data exata</b> ou uma <b>semana</b> (não o mês inteiro) para filtrar por hotel.')
+    return
+  }
+
   const key=`${dest.soltour}|${dest.soltropico}|${origin}|${year}|${month}|${diaIni}|${diaFim}|${nights}|${adults}|${childAges}|${ops.soltour}${ops.soltropico}|${hotel}|${getDirectOnly()}`
   if(cache[key]){renderCalendar(year,month,cache[key],dest);st('ok',`${Object.keys(cache[key]).length} dias com disponibilidade (em cache).`);return}
 
@@ -543,6 +568,7 @@ async function pesquisar(modo,semana){
 
   document.querySelectorAll('.btn').forEach(b=>b.disabled=false)
   _busy=false
+  progFim()
 
   const disp=allDays.filter(d=>d.available&&d.price>0)
   if(!disp.length){st('err',`Sem disponibilidade para ${dest.label} (${etiqueta})${hotel?` com hotel "${esc(hotel)}"`:''}.`);return}
