@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diag WSDL Soltrópico</title><style>body{font-family:system-ui;padding:20px;background:#f5f6fa}
+button{padding:10px 18px;background:#1098AD;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;margin:3px}
+.log{background:#1a1d2e;color:#c8e1ff;padding:14px;border-radius:8px;font-family:monospace;font-size:11px;white-space:pre-wrap;margin-top:14px;max-height:680px;overflow:auto}</style></head><body>
+<h2>🔍 Especificação da API (WSDL) — campos de voo especial</h2>
+<button onclick="getWsdl()">1. Obter WSDL</button>
+<button onclick="searchProds()">2. Testar SearchProducts</button>
+<button onclick="flightTypes()">3. Campos de tipo de voo (FlightType/charter)</button>
+<div class="log" id="log">Pronto.</div>
+<script>
+const SUPA_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
+const ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const PROXY=`${SUPA_URL}/functions/v1/soltropico-proxy`
+const CREDS={System:808,Client:289363,Username:'admin@apmviagens.pt',Password:'JA622875'}
+const L=document.getElementById('log'),log=(m)=>{L.textContent+='\n'+m}
+function credXML(){return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">${CREDS.System}</System><Client xsi:type="xsd:int">${CREDS.Client}</Client><Username xsi:type="xsd:string">${CREDS.Username}</Username><Password xsi:type="xsd:string">${CREDS.Password}</Password></Credentials>`}
+function directChildren(el,tag){if(!el)return [];const o=[];for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)o.push(c)}return o}
+function itemsOf(c){return c?directChildren(c,'item'):[]}
+function txt(el,tag){if(!el)return '';const n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)return n[i].textContent.trim()}return ''}
+function all(el,tag){if(!el)return [];const o=[],n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)o.push(n[i])}return o}
+async function rawSoap(action,body){
+  const wrap=`<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
+  const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${ANON}`},body:JSON.stringify({soapAction:action,soapBody:wrap}))
+  return await r.json()
+}
+// tenta obter o WSDL pedindo ao proxy para buscar a URL com ?wsdl
+async function getWsdl(){
+  L.textContent='A obter WSDL...'
+  // tentativa: alguns proxies aceitam um campo "url" ou "wsdl"; tentamos várias formas
+  for(const payload of [{wsdl:true},{url:'http://www3.optitravel.net/optitravel/export/wbs/pkt/server.php?wsdl'},{getWsdl:true}]){
+    try{
+      const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${ANON}`},body:JSON.stringify(payload)})
+      const t=await r.text()
+      log(`\n[payload ${JSON.stringify(payload).slice(0,30)}]: ${t.slice(0,400)}`)
+    }catch(e){log('erro '+e.message)}
+  }
+  log('\n(Se o proxy não devolve WSDL, vê o botão 3 — inspeciona os campos de voo reais)')
+}
+async function searchProds(){
+  L.textContent='A testar SearchProducts...'
+  try{
+    const data=await rawSoap('SearchProducts',`<ns1:SearchProducts><SearchProductsRequest>${credXML()}<ProductCode xsi:type="xsd:int">7</ProductCode></SearchProductsRequest></ns1:SearchProducts>`)
+    log('resposta (300 chars): '+(data.xml||JSON.stringify(data)).slice(0,500))
+  }catch(e){log('erro: '+e.message)}
+}
+// inspeciona TODOS os campos de um DynFlight individual numa pesquisa real
+async function flightTypes(){
+  L.textContent='A inspecionar campos de voo...'
+  try{
+    const pd=await rawSoap('DynGetProductParameters',`<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">7</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+    const pdoc=new DOMParser().parseFromString((pd.xml||'').replace(/^\uFEFF/,'').trim(),'text/xml')
+    const lw=all(pdoc,'DepartureLocals')[0];const locals=[];if(lw)itemsOf(lw).forEach(it=>{const c=txt(it,'Code');if(c)locals.push(c)})
+    const rw=all(pdoc,'RoomTypes')[0];let roomCode='437';if(rw){for(const it of itemsOf(rw)){if(/2\s*Adulto/i.test(txt(it,'Name'))){roomCode=txt(it,'Code');break}}}
+    const bw=all(pdoc,'BaseLocals')[0];const bl=[];if(bw)itemsOf(bw).forEach(it=>{const c=txt(it,'Code');if(c)bl.push(c)})
+    const baseXML=(bl.length?bl:['0']).map(c=>`<Local><Code>${c}</Code><Nights>7</Nights></Local>`).join('')
+    const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges></ChildAges></RoomTypeOption>`
+    const dep=locals[0]||'LIS'
+    for(const data of ['2026-07-04','2026-07-22']){
+      log(`\n===== ${data} (${data==='2026-07-04'?'ESPECIAL':'normal'}) — TODOS os campos do voo individual =====`)
+      const sd=await rawSoap('DynSearchProductAvailableServices',`<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">7</ProductCode><DepartureDate xsi:type="xsd:string">${data}</DepartureDate><DepartureLocal xsi:type="xsd:string">${dep}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+      const doc=new DOMParser().parseFromString((sd.xml||'').replace(/^\uFEFF/,'').trim(),'text/xml')
+      // descer até um DynFlight individual (dentro de Flights → item)
+      const seg=all(doc,'FlightSegments')[0]
+      const flightsC=seg?itemsOf(seg)[0]:null
+      const flC=flightsC?directChildren(flightsC,'Flights')[0]:null
+      const voo=flC?itemsOf(flC)[0]:null
+      if(voo){
+        log('  campos do voo (recursivo):')
+        const dump=(el,ind)=>{for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(c.children.length){log(`${ind}${l}:`);if(ind.length<8)dump(c,ind+'  ')}else log(`${ind}${l} = ${c.textContent.trim()}`)}}
+        dump(voo,'    ')
+      }else log('  (não encontrei voo individual)')
+    }
+  }catch(e){log('erro: '+e.message)}
+}
+</script></body></html>
