@@ -634,7 +634,8 @@ async function selectDay(ds){
   cont.innerHTML=`<div class="detail"><div style="padding:18px"><span class="spinner"></span> A obter detalhes…</div></div>`
   const origin=$('origin').value,nights=+$('nights').value,adults=+$('adults').value||1,dest=data.dest
   const partes=[]
-  if(dd.soltour&&dest.soltour){try{partes.push(await detSoltour(dd.soltour,ds,origin,nights,adults,dest))}catch(e){partes.push(`<div class="detail st"><div style="padding:18px;color:#C0392B">Soltour: ${esc(e.message)}</div></div>`)}}
+  console.log('[DETALHE] dia',ds,'| tem soltour?',!!dd.soltour,'| tem soltropico?',!!dd.soltropico,'| dest.soltour=',dest.soltour)
+  if(dd.soltour&&dest.soltour){try{console.log('[DETALHE] a chamar detSoltour...');partes.push(await detSoltour(dd.soltour,ds,origin,nights,adults,dest));console.log('[DETALHE] detSoltour OK')}catch(e){console.log('[DETALHE] detSoltour ERRO:',e.message);partes.push(`<div class="detail st"><div style="padding:18px;color:#C0392B">Soltour: ${esc(e.message)}</div></div>`)}}
   if(dd.soltropico&&dest.soltropico){try{partes.push(await detSoltropico(dd.soltropico,ds,nights,dest,origin,adults,childAgesFromInput()))}catch(e){partes.push(`<div class="detail sp"><div style="padding:18px;color:#C0392B">Soltrópico: ${esc(e.message)}</div></div>`)}}
   cont.innerHTML=partes.length?partes.join(''):`<div class="detail"><div style="padding:18px;color:#C0392B">Não foi possível obter os detalhes.</div></div>`
 }
