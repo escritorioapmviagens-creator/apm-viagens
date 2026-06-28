@@ -29,32 +29,34 @@ async function run(){
   try{
     const D=document.getElementById('dest').value
     const pdoc=await soapCall('DynGetProductParameters',`<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${D}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
-    // localizar o wrapper de datas de partida
-    const ddWrap=all(pdoc,'DepartureDates')[0]
-    const its=itemsOf(ddWrap)
-    log('DepartureDates: '+its.length+' itens\n')
-    // mostrar a estrutura COMPLETA dos primeiros itens (todas as tags filhas)
-    log('=== Estrutura de cada data (primeiras 8) ===')
-    its.slice(0,8).forEach((it,idx)=>{
-      const campos=[]
-      for(let i=0;i<it.children.length;i++){const c=it.children[i],l=c.localName||c.tagName.split(':').pop();campos.push(`${l}=${c.textContent.trim()}`)}
-      log(`  [${idx}] ${campos.join(' | ')}`)
-    })
-    // procurar especificamente os dias 4, 11, 22 de julho e comparar
-    log('\n=== Comparar dia 4 (especial) vs 22 (normal) de julho ===')
-    ;['2026-07-04','2026-07-11','2026-07-22'].forEach(alvo=>{
-      const it=its.find(x=>{const d=txt(x,'Date')||x.textContent.trim();return d.startsWith(alvo)})
-      if(it){
-        const campos=[]
-        for(let i=0;i<it.children.length;i++){const c=it.children[i],l=c.localName||c.tagName.split(':').pop();campos.push(`${l}=${c.textContent.trim()}`)}
-        log(`  ${alvo}: ${campos.join(' | ')}`)
-      }else log(`  ${alvo}: (não encontrado nesta lista)`)
-    })
-    // listar TODOS os nomes de tags únicos dentro das datas (para caçar o campo "especial")
-    log('\n=== Todos os nomes de campos que aparecem nas datas ===')
-    const nomes={}
-    its.forEach(it=>{for(let i=0;i<it.children.length;i++){const l=it.children[i].localName||it.children[i].tagName.split(':').pop();nomes[l]=(nomes[l]||0)+1}})
-    log('  '+Object.keys(nomes).map(n=>`${n}(${nomes[n]})`).join(', '))
+    const rw=all(pdoc,'RoomTypes')[0];let roomCode='437'
+    if(rw){for(const it of itemsOf(rw)){if(/2\s*Adulto/i.test(txt(it,'Name'))){roomCode=txt(it,'Code');break}}}
+    const lw=all(pdoc,'DepartureLocals')[0];const locals=[];if(lw)itemsOf(lw).forEach(it=>{const c=txt(it,'Code');if(c)locals.push(c)})
+    const bw=all(pdoc,'BaseLocals')[0];const bl=[];if(bw)itemsOf(bw).forEach(it=>{const c=txt(it,'Code');if(c)bl.push(c)})
+    const baseXML=(bl.length?bl:['0']).map(c=>`<Local><Code>${c}</Code><Nights>7</Nights></Local>`).join('')
+    const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges></ChildAges></RoomTypeOption>`
+    const depLocal=locals[0]||'LIS'
+    // pesquisar 2 datas: dia 4 (especial) e dia 22 (normal) e comparar os dados de voo
+    for(const data of ['2026-07-04','2026-07-22']){
+      log(`\n========== ${data} (${data==='2026-07-04'?'ESPECIAL':'normal'}) ==========`)
+      const doc=await soapCall('DynSearchProductAvailableServices',`<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${D}</ProductCode><DepartureDate xsi:type="xsd:string">${data}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+      // procurar grupos de voo e os seus campos
+      ;['FlightMainGroup','Flight','FlightSegment','FlightGroup','DynFlight','Itinerary'].forEach(bloco=>{
+        const els=all(doc,bloco)
+        if(!els.length)return
+        log(`  <${bloco}> (${els.length}) — campos do 1º:`)
+        const el=els[0]
+        for(let i=0;i<Math.min(el.children.length,20);i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();const v=c.children.length?`[${c.children.length} filhos]`:c.textContent.trim().slice(0,40);log(`     ${l} = ${v}`)}
+      })
+      // caçar qualquer tag com "special/especial/charter/block/tipo/type"
+      log('  -- tags com special/charter/block/type --')
+      const tall=doc.getElementsByTagName('*');const vis={}
+      for(let i=0;i<tall.length;i++){
+        const c=tall[i];if(c.children.length)continue
+        const l=c.localName||c.tagName.split(':').pop(),v=c.textContent.trim()
+        if(/special|especial|charter|block|bloque|tipo|type|regular|scheduled|vuelo/i.test(l)){const k=l+'|'+v;if(!vis[k]){vis[k]=1;log(`     ${l} = ${v}`)}}
+      }
+    }
   }catch(e){log('erro: '+e.message)}
 }
 </script></body></html>
