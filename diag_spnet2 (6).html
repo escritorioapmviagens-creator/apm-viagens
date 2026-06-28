@@ -1,0 +1,179 @@
+<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diag net Soltrópico — fluxo completo</title><style>body{font-family:system-ui;padding:20px;background:#f5f6fa}
+button{padding:10px 18px;background:#1098AD;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600}
+.log{background:#1a1d2e;color:#c8e1ff;padding:14px;border-radius:8px;font-family:monospace;font-size:11px;white-space:pre-wrap;margin-top:14px;max-height:680px;overflow:auto}
+input{padding:7px;border:1px solid #ccc;border-radius:6px;margin:4px}
+.hit{color:#7CFFB0;font-weight:bold}</style></head><body>
+<h2>🔍 Fluxo completo → tags de NET na simulação (Total Agência / Total Comissão)</h2>
+<div><input id="dest" value="7" style="width:55px"> (Sal=7) <input type="date" id="data" value="2026-07-04"> <input id="nights" value="7" style="width:50px"></div>
+<button onclick="run()">Diagnosticar fluxo completo</button>
+<div class="log" id="log">Pronto.</div>
+<script>
+const SUPA_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
+const ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const PROXY=`${SUPA_URL}/functions/v1/soltropico-proxy`
+const CREDS={System:808,Client:289363,Username:'admin@apmviagens.pt',Password:'JA622875'}
+const L=document.getElementById('log'),log=(m)=>{L.textContent+='\n'+m}
+function credXML(){return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">${CREDS.System}</System><Client xsi:type="xsd:int">${CREDS.Client}</Client><Username xsi:type="xsd:string">${CREDS.Username}</Username><Password xsi:type="xsd:string">${CREDS.Password}</Password></Credentials>`}
+function directChildren(el,tag){if(!el)return [];const o=[];for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)o.push(c)}return o}
+function itemsOf(c){return c?directChildren(c,'item'):[]}
+function txt(el,tag){if(!el)return '';for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)return c.textContent.trim()}return ''}
+function all(el,tag){if(!el)return [];const o=[],n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)o.push(n[i])}return o}
+function txt2(el,tag){const e=all(el,tag)[0];return e?e.textContent.trim():''}
+async function soapCall(action,body){
+  const wrap=`<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
+  const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${ANON}`},body:JSON.stringify({soapAction:action,soapBody:wrap})})
+  const data=await res.json()
+  return new DOMParser().parseFromString((data.xml||'').replace(/^\uFEFF/,'').trim(),'text/xml')
+}
+async function run(){
+  L.textContent='A começar...'
+  try{
+    const D=document.getElementById('dest').value,data=document.getElementById('data').value,nights=+document.getElementById('nights').value
+    // 1. parâmetros
+    const pdoc=await soapCall('DynGetProductParameters',`<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${D}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+    const rw=all(pdoc,'RoomTypes')[0];let roomCode='437'
+    if(rw){for(const it of itemsOf(rw)){if(/2\s*Adulto/i.test(txt(it,'Name'))){roomCode=txt(it,'Code');break}}}
+    const lw=all(pdoc,'DepartureLocals')[0];const locals=[];if(lw)itemsOf(lw).forEach(it=>{const c=txt(it,'Code');if(c)locals.push(c)})
+    const bw=all(pdoc,'BaseLocals')[0];const bl=[];if(bw)itemsOf(bw).forEach(it=>{const c=txt(it,'Code');if(c)bl.push(c)})
+    const baseXML=(bl.length?bl:['0']).map(c=>`<Local><Code>${c}</Code><Nights>${nights}</Nights></Local>`).join('')
+    const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges></ChildAges></RoomTypeOption>`
+    const depLocal=locals[0]||'LIS'
+    log('1. params ok — roomCode='+roomCode+' depLocal='+depLocal)
+    // 2. pesquisa → SessionHash
+    const doc=await soapCall('DynSearchProductAvailableServices',`<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${D}</ProductCode><DepartureDate xsi:type="xsd:string">${data}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+    const shEl=all(doc,'SessionHash')[0]
+    const sessionHash=shEl?shEl.textContent.trim():''
+    log('2. pesquisa ok — SessionHash='+(sessionHash?sessionHash.slice(0,20)+'…':'(vazio!)'))
+    if(!sessionHash){
+      log('   ⚠️ SessionHash vazio. Tags no topo da resposta:')
+      const env=doc.documentElement
+      const corpo=all(doc,'DynProductAvailableServicesResponse')[0]||all(doc,'Body')[0]||env
+      for(let i=0;i<Math.min(corpo.children.length,15);i++){const c=corpo.children[i];log('     '+(c.localName||c.tagName))}
+    }
+    // parse itinerário/hotel como no reservas
+    const itinC=all(doc,'Itinerary')[0];let hotelSel=null,itinMeta={iface:'htl_hub',connector:'HTL_HUB'},itinCode='0'
+    const candidatos=[]
+    itemsOf(itinC).forEach(itin=>{
+      const ic=txt(itin,'Code')||'0',iface=txt(itin,'Interface')||'htl_hub',conn=txt(itin,'Connector')||'HTL_HUB'
+      const hc=directChildren(itin,'HotelOption')[0]
+      itemsOf(hc).forEach(h=>{
+        const occ=directChildren(h,'RoomsOccupancy')[0],occI=itemsOf(occ)[0],roomsC=occI?directChildren(occI,'Rooms')[0]:null
+        const rooms=itemsOf(roomsC).filter(rm=>txt(rm,'AvailStatus')==='OK').map(rm=>({code:txt(rm,'Code'),board:txt(rm,'BoardCode')||'TI'}))
+        const boards=itemsOf(directChildren(h,'Boards')[0]).map(b=>({code:txt(b,'Code'),name:txt(b,'Name')}))
+        if(rooms.length)candidatos.push({code:txt(h,'Code'),name:txt(h,'Name'),room:rooms[0],boards,ic,iface,conn})
+      })
+    })
+    // preferir Murdeira (da imagem do utilizador), senão o primeiro
+    const escolhido=candidatos.find(c=>/murdeira/i.test(c.name))||candidatos[0]
+    if(escolhido){
+      // se o board do quarto parecer inválido (número gigante), usar o 1º board real do hotel
+      let board=escolhido.room.board
+      if(!/^[A-Z]{2,4}$/.test(board)&&escolhido.boards&&escolhido.boards.length)board=escolhido.boards[0].code
+      hotelSel={code:escolhido.code,name:escolhido.name,room:{code:escolhido.room.code,board}};itinCode=escolhido.ic;itinMeta={iface:escolhido.iface,connector:escolhido.conn}
+    }
+    log('   hotéis disponíveis: '+candidatos.map(c=>c.name).join(', ').slice(0,150))
+    if(!hotelSel){log('✗ sem hotel disponível para selecionar');return}
+    log('3. hotel a selecionar: '+hotelSel.name+' (room '+hotelSel.room.code+' board '+hotelSel.room.board+')')
+    // 3. DynSetServicesSelected
+    const roomsSelXML=`<item xsi:type="ns1:DynRoomsSelect"><RoomNum xsi:type="xsd:string">0</RoomNum><RoomCode xsi:type="xsd:string">${hotelSel.room.code}</RoomCode><BoardCode xsi:type="xsd:string">${hotelSel.room.board}</BoardCode></item>`
+    await soapCall('DynSetServicesSelected',`<ns1:DynSetServicesSelected><DynServicesSelectedRequest xsi:type="ns1:DynServicesSelectedRequest">${credXML()}<SessionHash xsi:type="xsd:string">${sessionHash}</SessionHash><Reserve xsi:nil="true"/><Local xsi:nil="true"/><Regime xsi:nil="true"/><Connector xsi:nil="true"/><Skeleton_id xsi:nil="true"/><Action xsi:nil="true"/><DepLocal xsi:nil="true"/><OptionId xsi:nil="true"/><FlightsSelected xsi:nil="true"/><FlightsSelectedSuperBB xsi:nil="true"/><FlightsSelectedFlightEngine xsi:nil="true"/><FlightsSelectedAirAvailFlightEngine xsi:nil="true"/><BusSelected xsi:nil="true"/><HotelsSelected SOAP-ENC:arrayType="ns1:DynHotelsSelected[1]" xsi:type="ns1:DynHotelsSelectedArray"><item xsi:type="ns1:DynHotelsSelected"><ItineraryCode xsi:type="xsd:string">${itinCode}</ItineraryCode><Interface xsi:type="xsd:string">${itinMeta.iface}</Interface><Connector xsi:type="xsd:string">${itinMeta.connector}</Connector><HtlSession xsi:type="xsd:string">${sessionHash}</HtlSession><HotelRPH xsi:type="xsd:string">${hotelSel.code}</HotelRPH><HotelSelected xsi:type="xsd:string">${hotelSel.code}</HotelSelected><HotelSelectedPrice xsi:nil="true"/><RoomsSelected SOAP-ENC:arrayType="ns1:DynRoomsSelect[1]" xsi:type="ns1:DynRoomsSelectArray">${roomsSelXML}</RoomsSelected><BoardSelected xsi:type="xsd:string">${hotelSel.room.board}</BoardSelected><SuplementSelected xsi:type="xsd:string"/></item></HotelsSelected><OptionalsSelected xsi:nil="true"/><RoomsOfi xsi:nil="true"/><RoomsSeniorOfi xsi:nil="true"/><RoomsPktStatic xsi:nil="true"/><RoomsSeniorPktStatic xsi:nil="true"/></DynServicesSelectedRequest></ns1:DynSetServicesSelected>`)
+    log('4. serviços selecionados ok')
+    // 4. DynGetSimulation
+    const sim=await soapCall('DynGetSimulation',`<ns1:DynGetSimulation><DynGetSimulationRequest>${credXML()}<SessionHash xsi:type="xsd:string">${sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
+    log('5. simulação obtida — TotalPrice='+txt(sim,'TotalPrice'))
+    // DESPEJAR todas as tags com valores numéricos e destacar net/comissão
+    log('\n=== TAGS da simulação que parecem TOTAIS/NET/COMISSÃO ===')
+    const todas=sim.getElementsByTagName('*');const vistas={}
+    for(let i=0;i<todas.length;i++){
+      const l=todas[i].localName||todas[i].tagName.split(':').pop()
+      const v=todas[i].children.length?'':todas[i].textContent.trim()
+      if(/agenc|comis|comm|total|neto|net|profit|margin|pvp|amount|val|price|importe|gross|nett/i.test(l)){
+        const key=l+'='+v
+        if(vistas[key])continue;vistas[key]=1
+        const hit=/agenc|comis|neto|profit|nett/i.test(l)?' ⬅️':''
+        log(`  ${l} = ${v}${hit}`)
+      }
+    }
+    // procurar tag de NET TOTAL: despejar a estrutura completa de qualquer bloco "Price"/"Totals"/"Resume"
+    log('\n=== Blocos de preço/totais (estrutura completa) ===')
+    ;['PriceInfo','Totals','Resume','PriceResume','Price','TotalsInfo','CommissionInfo','AgencyInfo','PriceBreakdown'].forEach(bloco=>{
+      const els=all(sim,bloco)
+      els.slice(0,2).forEach(el=>{
+        log(`  <${bloco}>`)
+        for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();const v=c.children.length?`[${c.children.length} filhos]`:c.textContent.trim();log(`     ${l} = ${v}`)}
+      })
+    })
+    // listar TODAS as tags únicas com valor numérico (para caçar o net por outro nome)
+    log('\n=== TODAS as tags com valor numérico (nome = valor) ===')
+    const numVistas={}
+    for(let i=0;i<todas.length;i++){
+      const c=todas[i];if(c.children.length)continue
+      const l=c.localName||c.tagName.split(':').pop(),v=c.textContent.trim()
+      if(/^-?\d+[.,]?\d*$/.test(v)&&+v>50){const k=l+'|'+v;if(!numVistas[k]){numVistas[k]=1;log(`  ${l} = ${v}`)}}
+    }
+    // CALCULAR o net a partir das linhas (cada linha = GrossTotalVal + ComissionPerc da mesma linha)
+    log('\n=== CÁLCULO DO NET (a partir das linhas, como o quadro de cálculos) ===')
+    // cada linha de preço tem um GrossTotalVal e uma ComissionPerc — emparelhar por nó-pai
+    const grossEls=all(sim,'GrossTotalVal')
+    let pvpCalc=0,comissaoTotal=0
+    grossEls.forEach(g=>{
+      const gross=parseFloat(g.textContent.trim())||0
+      // procurar a ComissionPerc no mesmo pai (mesma linha)
+      const pai=g.parentElement
+      let perc=0
+      if(pai){const pc=directChildren(pai,'ComissionPerc')[0]||all(pai,'ComissionPerc')[0];if(pc)perc=parseFloat(pc.textContent.trim())||0}
+      pvpCalc+=gross
+      comissaoTotal+=gross*perc/100
+      log(`  linha: gross=${gross.toFixed(2)} × ${perc}% = comissão ${(gross*perc/100).toFixed(2)}`)
+    })
+    const netCalc=pvpCalc-comissaoTotal
+    log(`\n  PVP (soma gross) = ${pvpCalc.toFixed(2)}`)
+    log(`  TotalPrice (API) = ${txt2(sim,'TotalPrice')}`)
+    log(`  Total Comissão   = ${comissaoTotal.toFixed(2)}`)
+    log(`  Total Agência (NET) = ${netCalc.toFixed(2)}`)
+    log(`\n  (na tua imagem dia 4: PVP 1507.98 · Comissão 135.00 · Agência 1372.98)`)
+    // === CONDIÇÕES DE CANCELAMENTO e DATAS DE PAGAMENTO ===
+    log('\n=== Blocos de CANCELAMENTO / PAGAMENTO (procurar tags) ===')
+    ;['Policies','RoomsPenalties','CancellationPolicy','Cancellation','Penalties','Penalty','PaymentDates','Payments','PaymentDate','Payment','PaymentConditions','DueDates'].forEach(bloco=>{
+      const els=all(sim,bloco)
+      if(els.length){
+        log(`\n  <${bloco}> (${els.length})`)
+        const primeiro=els[0]
+        const its=itemsOf(primeiro).length?itemsOf(primeiro):[primeiro]
+        its.slice(0,3).forEach((it,idx)=>{
+          log(`    item[${idx}]:`)
+          for(let i=0;i<it.children.length;i++){const c=it.children[i],l=c.localName||c.tagName.split(':').pop();const v=c.children.length?`[${c.children.length} filhos]`:c.textContent.trim();log(`       ${l} = ${v}`)}
+        })
+      }
+    })
+    // procurar tags que contenham datas (AAAA-MM-DD) ou "100.00" (penalização) ou pagamento
+    log('\n=== Tags com DATAS ou indícios de cancelamento/pagamento ===')
+    const tall=sim.getElementsByTagName('*');const vv={}
+    for(let i=0;i<tall.length;i++){
+      const c=tall[i];if(c.children.length)continue
+      const l=c.localName||c.tagName.split(':').pop(),v=c.textContent.trim()
+      if(/cancel|penal|payment|pagamen|sinal|deposit|due|montant|acumul|prazo|deadline|term/i.test(l)||/^\d{4}-\d{2}-\d{2}/.test(v)){
+        const k=l+'|'+v;if(!vv[k]){vv[k]=1;log(`  ${l} = ${v}`)}
+      }
+    }
+    // listar TODOS os nomes de elementos com filhos (blocos) para caçar pagamento
+    log('\n=== TODOS os blocos (elementos com filhos) na simulação ===')
+    const blocos={}
+    for(let i=0;i<tall.length;i++){
+      const c=tall[i];if(!c.children.length)continue
+      const l=c.localName||c.tagName.split(':').pop()
+      blocos[l]=(blocos[l]||0)+1
+    }
+    log('  '+Object.keys(blocos).map(b=>`${b}(${blocos[b]})`).join(', '))
+    log('\n=== procurar valores 1372 / 135 (da tua imagem) em QUALQUER tag ===')
+    for(let i=0;i<todas.length;i++){
+      const v=todas[i].children.length?'':todas[i].textContent.trim()
+      if(/^1372|^135\b|1372\.|135\.0/.test(v)){
+        const l=todas[i].localName||todas[i].tagName.split(':').pop()
+        log(`  <span class="hit">${l} = ${v}</span>`)
+      }
+    }
+  }catch(e){log('erro: '+e.message)}
+}
+</script></body></html>
