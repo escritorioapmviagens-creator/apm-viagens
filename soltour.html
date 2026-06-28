@@ -228,6 +228,19 @@ async function ensureLogin(){
   if(!l.sessionToken)throw new Error('Login Soltour falhou')
   token=l.sessionToken;return token
 }
+// Como ensureLogin mas com retry: se a resposta vier vazia/sem dados (token expirado),
+// força novo login uma vez e repete. Resolve o "sem budgets" intermitente.
+async function callAuth(path,body){
+  await ensureLogin()
+  let r=await call(path,body)
+  const vazio=!r||(r.result&&r.result.ok===false)||(path.includes('availability')&&!r.budgets&&!r.availToken)
+  if(vazio){
+    token=null               // forçar re-login
+    await ensureLogin()
+    r=await call(path,body)
+  }
+  return r
+}
 
 async function pkSoap(action,body){
   const wrap=`<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
@@ -287,7 +300,6 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges,dia
   // entre os mais baratos), e extraímos o preço do hotel filtrado.
   const filtroHotel=getHotel()
   if(filtroHotel){
-    console.log('[FILTRO] Soltour caminho-filtro ativo para:',filtroHotel,'dias',diaIni,'-',diaFim)
     const nf=normalize(filtroHotel)
     const dias=[]
     const consultarData=async sd=>{
@@ -301,16 +313,13 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges,dia
             {origins:[origin],destinations:[destCode],flightDate:s},
             {origins:[destCode],destinations:[origin],flightDate:e}]}}}
       try{
-        const r=await call('booking/availability',body)
-        if(!r||!r.budgets){console.log('[FILTRO]',s,'sem budgets | chaves de r:',r?Object.keys(r).join(','):'r nulo','| result:',r&&r.result?JSON.stringify(r.result).slice(0,150):'-');return []}
+        const r=await callAuth('booking/availability',body)
+        if(!r||!r.budgets)return []
         const porHotel=precosPorHotel(r,numPax)
-        const nomesEncontrados=Object.values(porHotel).map(h=>h.info&&h.info.name).filter(Boolean)
-        console.log('[FILTRO]',s,'hotéis:',nomesEncontrados.length,'| tem melia?',nomesEncontrados.some(n=>normalize(n).includes(nf)))
         const res=[]
         for(const code in porHotel){
           const h=porHotel[code]
           if(h.info&&h.info.name&&normalize(h.info.name).includes(nf)){
-            console.log('[FILTRO] MATCH:',h.info.name,h.pp,'€/pp')
             res.push({date:s,price:h.pp,pricePerPerson:h.pp,totalPrice:h.pp*numPax,currency:'EUR',
               hotelName:h.info.name,hotelCode:code,stars:0,board:'',direct:null,charter:false,
               brand:'SOLTOUR',image:h.info.image||'',images:h.info.images||[],calToken:r.availToken,
@@ -318,14 +327,13 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges,dia
           }
         }
         return res
-      }catch(e){console.log('[FILTRO]',s,'ERRO',e.message);return []}
+      }catch(e){return []}
     }
     const todas=[];for(let d=diaIni;d<=diaFim;d++)todas.push(d)
     for(let i=0;i<todas.length;i+=5){
       const resultados=await Promise.all(todas.slice(i,i+5).map(consultarData))
       resultados.forEach(r=>dias.push(...r))
     }
-    console.log('[FILTRO] Soltour total dias encontrados:',dias.length)
     return dias
   }
 
@@ -603,7 +611,7 @@ async function detSoltour(op,ds,origin,nights,adults,dest){
   const end=new Date(ds);end.setDate(end.getDate()+nightsDia);const endStr=end.toISOString().slice(0,10)
   const pax=Array(adults).fill({age:30,type:'ADULT'})
   childAgesFromInput().forEach(age=>pax.push({age,type:'CHILD'}))
-  const av=await call('booking/availability',{productType:'PACKAGE',languageCode:'PT',
+  const av=await callAuth('booking/availability',{productType:'PACKAGE',languageCode:'PT',
     criteria:{order:{direction:'ASC',type:'PRICE'},pagination:{firstItem:0,itemCount:5}},
     params:{startDate:ds,endDate:endStr,numNights:nightsDia,residentType:'NONE',
       accomodation:{rooms:[{passengers:pax}]},hotelParams:{destinationCode:dest.soltour},
