@@ -392,22 +392,34 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges,dia
   }).filter(d=>{const dia=parseInt(d.date.slice(8,10));return dia>=diaIni&&dia<=diaFim})
 }
 
-// cache dos parâmetros do produto Soltrópico (datas, ocupações, locais) por destino —
-// não mudam na sessão, por isso pedimos uma vez e reutilizamos (poupa SOAP pesado)
-const _pdocCache={}
+// cache dos parâmetros do produto Soltrópico JÁ EXTRAÍDOS (datas, ocupações, locais).
+// Cacheamos os dados simples, não o documento DOM (reutilizar o DOM dava problemas).
+const _paramCache={}
 async function getSoltropico(destCode,origin,year,month,nights,adults,childAges,diaIni,diaFim){
   const out=[]
-  let pdoc=_pdocCache[destCode]
-  if(!pdoc){
-    pdoc=await pkSoap('DynGetProductParameters',
+  let P=_paramCache[destCode]
+  if(!P){
+    const pdoc=await pkSoap('DynGetProductParameters',
       `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCred()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
-    _pdocCache[destCode]=pdoc
+    // extrair tudo de uma vez para dados simples
+    const ddWrap=pkAll(pdoc,'DepartureDates')[0]
+    let dates=[]
+    if(ddWrap)dates=pkItems(ddWrap).map(it=>pkTxt(it,'Date')||it.textContent.trim()).filter(Boolean)
+    if(!dates.length)dates=pkAll(pdoc,'item').map(it=>it.textContent.trim()).filter(t=>/^\d{4}-\d{2}-\d{2}/.test(t))
+    const locals=[]
+    const lw=pkAll(pdoc,'DepartureLocals')[0]
+    if(lw)pkItems(lw).forEach(it=>{const c=pkTxt(it,'Code');if(c)locals.push(c)})
+    const ocup=[]
+    const rw=pkAll(pdoc,'RoomTypes')[0]
+    if(rw)pkItems(rw).forEach(it=>{const c=pkTxt(it,'Code'),n=pkTxt(it,'Name');if(c)ocup.push({code:c,name:n})})
+    const baseLocals=[]
+    const bw=pkAll(pdoc,'BaseLocals')[0]
+    if(bw)pkItems(bw).forEach(it=>{const c=pkTxt(it,'Code');if(c)baseLocals.push(c)})
+    P={dates,locals,ocup,baseLocals}
+    _paramCache[destCode]=P
   }
+  const {dates,locals,ocup,baseLocals}=P
 
-  const ddWrap=pkAll(pdoc,'DepartureDates')[0]
-  let dates=[]
-  if(ddWrap)dates=pkItems(ddWrap).map(it=>pkTxt(it,'Date')||it.textContent.trim()).filter(Boolean)
-  if(!dates.length)dates=pkAll(pdoc,'item').map(it=>it.textContent.trim()).filter(t=>/^\d{4}-\d{2}-\d{2}/.test(t))
   const mesStr=`${year}-${String(month).padStart(2,'0')}`
   const di=diaIni||1, df=diaFim||31
   const datasMes=[...new Set(dates.map(d=>d.slice(0,10)))].filter(d=>{
@@ -416,23 +428,14 @@ async function getSoltropico(destCode,origin,year,month,nights,adults,childAges,
   })
   if(!datasMes.length)return []
 
-  const locals=[]
-  const lw=pkAll(pdoc,'DepartureLocals')[0]
-  if(lw)pkItems(lw).forEach(it=>{const c=pkTxt(it,'Code');if(c)locals.push(c)})
   const depLocal=locals.find(l=>l===origin)||locals[0]||origin
 
-  const ocup=[]
-  const rw=pkAll(pdoc,'RoomTypes')[0]
-  if(rw)pkItems(rw).forEach(it=>{const c=pkTxt(it,'Code'),n=pkTxt(it,'Name');if(c)ocup.push({code:c,name:n})})
   const nCri=childAges.length
   const parseOc=nome=>{const a=(nome.match(/(\d+)\s*Adulto/i)||[])[1];const c=(nome.match(/(\d+)\s*Crian/i)||[])[1];return{a:a?+a:0,c:c?+c:0}}
   const roomCode=(ocup.find(o=>{const p=parseOc(o.name);return p.a===adults&&p.c===nCri})
     ||(nCri===0?ocup.find(o=>{const p=parseOc(o.name);return p.a===adults&&p.c===0}):null)
     ||ocup.find(o=>parseOc(o.name).a===adults)||ocup[0]||{}).code||'437'
 
-  const baseLocals=[]
-  const bw=pkAll(pdoc,'BaseLocals')[0]
-  if(bw)pkItems(bw).forEach(it=>{const c=pkTxt(it,'Code');if(c)baseLocals.push(c)})
   const baseXML=(baseLocals.length?baseLocals:['0']).map(c=>`<Local><Code>${c}</Code><Nights>${nights}</Nights></Local>`).join('')
   const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges>${childAges.join(',')}</ChildAges></RoomTypeOption>`
 
