@@ -41,20 +41,25 @@ async function run(){
       log(`\n========== ${data} (${data==='2026-07-04'?'ESPECIAL':'normal'}) ==========`)
       const doc=await soapCall('DynSearchProductAvailableServices',`<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${D}</ProductCode><DepartureDate xsi:type="xsd:string">${data}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
       // procurar grupos de voo e os seus campos
-      ;['FlightMainGroup','Flight','FlightSegment','FlightGroup','DynFlight','Itinerary'].forEach(bloco=>{
-        const els=all(doc,bloco)
-        if(!els.length)return
-        log(`  <${bloco}> (${els.length}) — campos do 1º:`)
-        const el=els[0]
-        for(let i=0;i<Math.min(el.children.length,20);i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();const v=c.children.length?`[${c.children.length} filhos]`:c.textContent.trim().slice(0,40);log(`     ${l} = ${v}`)}
-      })
-      // caçar qualquer tag com "special/especial/charter/block/tipo/type"
-      log('  -- tags com special/charter/block/type --')
+      const fmg=all(doc,'FlightMainGroup')[0]
+      if(fmg){
+        log('  <FlightMainGroup> — abrir todos os níveis:')
+        const dump=(el,ind)=>{
+          for(let i=0;i<el.children.length;i++){
+            const c=el.children[i],l=c.localName||c.tagName.split(':').pop()
+            if(c.children.length){log(`  ${ind}${l}:`);if(ind.length<10)dump(c,ind+'  ')}
+            else{const v=c.textContent.trim();log(`  ${ind}${l} = ${v}`)}
+          }
+        }
+        dump(fmg,'   ')
+      }
+      // caçar qualquer tag com "special/especial/charter/block/tipo/type" COM VALOR
+      log('  -- tags com valor (special/charter/block/type/flight) --')
       const tall=doc.getElementsByTagName('*');const vis={}
       for(let i=0;i<tall.length;i++){
         const c=tall[i];if(c.children.length)continue
         const l=c.localName||c.tagName.split(':').pop(),v=c.textContent.trim()
-        if(/special|especial|charter|block|bloque|tipo|type|regular|scheduled|vuelo/i.test(l)){const k=l+'|'+v;if(!vis[k]){vis[k]=1;log(`     ${l} = ${v}`)}}
+        if(/special|especial|charter|block|bloque|flighttype|transport|prodtype|regular|scheduled|vuelo|chark/i.test(l)){const k=l+'|'+v;if(!vis[k]){vis[k]=1;log(`     ${l} = "${v}"`)}}
       }
     }
   }catch(e){log('erro: '+e.message)}
