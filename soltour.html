@@ -111,8 +111,13 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 <body>
 <div class="wrap">
   <div class="head">
-    <h1>🧭 Motor de Pacotes</h1>
-    <div class="tag">Pesquisa e compara Soltour e Soltrópico num só sítio. Gera orçamento ou contrato com um clique.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <h1>🧭 Motor de Pacotes</h1>
+        <div class="tag">Pesquisa e compara Soltour e Soltrópico num só sítio. Gera orçamento ou contrato com um clique.</div>
+      </div>
+      <a id="btn-voltar" href="#" class="btn ghost" style="text-decoration:none;white-space:nowrap">← Central de recursos</a>
+    </div>
   </div>
 
   <div class="card">
@@ -129,7 +134,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <div class="hotel-row"><input id="hotel-filter" placeholder="🏨 Filtrar por hotel (opcional) — ex: RIU, Meliá…"></div>
 
     <div class="controls">
-      <label class="toggle"><input type="checkbox" id="chk-direct"> Apenas voos diretos</label>
+      <label class="toggle"><input type="checkbox" id="chk-direct" checked> Apenas voos diretos</label>
       <label class="toggle"><input type="checkbox" id="chk-soltour" checked> <span class="pill pill-soltour">Soltour</span></label>
       <label class="toggle"><input type="checkbox" id="chk-soltropico" checked> <span class="pill pill-soltropico">Soltrópico</span></label>
     </div>
@@ -387,10 +392,17 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges,dia
   }).filter(d=>{const dia=parseInt(d.date.slice(8,10));return dia>=diaIni&&dia<=diaFim})
 }
 
+// cache dos parâmetros do produto Soltrópico (datas, ocupações, locais) por destino —
+// não mudam na sessão, por isso pedimos uma vez e reutilizamos (poupa SOAP pesado)
+const _pdocCache={}
 async function getSoltropico(destCode,origin,year,month,nights,adults,childAges,diaIni,diaFim){
   const out=[]
-  const pdoc=await pkSoap('DynGetProductParameters',
-    `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCred()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+  let pdoc=_pdocCache[destCode]
+  if(!pdoc){
+    pdoc=await pkSoap('DynGetProductParameters',
+      `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCred()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+    _pdocCache[destCode]=pdoc
+  }
 
   const ddWrap=pkAll(pdoc,'DepartureDates')[0]
   let dates=[]
@@ -712,6 +724,14 @@ function gerarDocumento(tipo,dataJson,destLabel,origin){
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
+  // botão voltar ao portal, preservando a identidade do consultor (cid/cnome/admin)
+  const up=new URLSearchParams(location.search)
+  const idp=new URLSearchParams()
+  if(up.get('cid'))idp.set('cid',up.get('cid'))
+  if(up.get('cnome'))idp.set('cnome',up.get('cnome'))
+  if(up.get('admin'))idp.set('admin',up.get('admin'))
+  const qs=idp.toString()
+  $('btn-voltar').href='index.html'+(qs?'?'+qs:'')
   const t=new Date();t.setDate(t.getDate()+7)
   $('month').value=t.toISOString().slice(0,7)
   const dl=$('dest-list')
