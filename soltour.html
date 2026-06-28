@@ -302,7 +302,7 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges,dia
             {origins:[destCode],destinations:[origin],flightDate:e}]}}}
       try{
         const r=await call('booking/availability',body)
-        if(!r||!r.budgets){console.log('[FILTRO]',s,'sem budgets');return []}
+        if(!r||!r.budgets){console.log('[FILTRO]',s,'sem budgets | chaves de r:',r?Object.keys(r).join(','):'r nulo','| result:',r&&r.result?JSON.stringify(r.result).slice(0,150):'-');return []}
         const porHotel=precosPorHotel(r,numPax)
         const nomesEncontrados=Object.values(porHotel).map(h=>h.info&&h.info.name).filter(Boolean)
         console.log('[FILTRO]',s,'hotéis:',nomesEncontrados.length,'| tem melia?',nomesEncontrados.some(n=>normalize(n).includes(nf)))
