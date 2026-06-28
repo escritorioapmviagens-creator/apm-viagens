@@ -1,0 +1,60 @@
+<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diag voos especiais Soltrópico</title><style>body{font-family:system-ui;padding:20px;background:#f5f6fa}
+button{padding:10px 18px;background:#1098AD;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600}
+.log{background:#1a1d2e;color:#c8e1ff;padding:14px;border-radius:8px;font-family:monospace;font-size:11px;white-space:pre-wrap;margin-top:14px;max-height:680px;overflow:auto}
+input{padding:7px;border:1px solid #ccc;border-radius:6px;margin:4px}</style></head><body>
+<h2>🔍 Onde está a marca de VOO ESPECIAL? (dia 4=especial vs dia 22=normal)</h2>
+<div><input id="dest" value="7" style="width:55px"> (Sal=7)</div>
+<button onclick="run()">Diagnosticar</button>
+<div class="log" id="log">Pronto.</div>
+<script>
+const SUPA_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
+const ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const PROXY=`${SUPA_URL}/functions/v1/soltropico-proxy`
+const CREDS={System:808,Client:289363,Username:'admin@apmviagens.pt',Password:'JA622875'}
+const L=document.getElementById('log'),log=(m)=>{L.textContent+='\n'+m}
+function credXML(){return `<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">${CREDS.System}</System><Client xsi:type="xsd:int">${CREDS.Client}</Client><Username xsi:type="xsd:string">${CREDS.Username}</Username><Password xsi:type="xsd:string">${CREDS.Password}</Password></Credentials>`}
+function directChildren(el,tag){if(!el)return [];const o=[];for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)o.push(c)}return o}
+function itemsOf(c){return c?directChildren(c,'item'):[]}
+function txt(el,tag){if(!el)return '';const n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)return n[i].textContent.trim()}return ''}
+function all(el,tag){if(!el)return [];const o=[],n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)o.push(n[i])}return o}
+async function soapCall(action,body){
+  const wrap=`<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
+  const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${ANON}`},body:JSON.stringify({soapAction:action,soapBody:wrap})})
+  const data=await r.json()
+  return new DOMParser().parseFromString((data.xml||'').replace(/^\uFEFF/,'').trim(),'text/xml')
+}
+async function run(){
+  L.textContent='A começar...'
+  try{
+    const D=document.getElementById('dest').value
+    const pdoc=await soapCall('DynGetProductParameters',`<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${D}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+    // localizar o wrapper de datas de partida
+    const ddWrap=all(pdoc,'DepartureDates')[0]
+    const its=itemsOf(ddWrap)
+    log('DepartureDates: '+its.length+' itens\n')
+    // mostrar a estrutura COMPLETA dos primeiros itens (todas as tags filhas)
+    log('=== Estrutura de cada data (primeiras 8) ===')
+    its.slice(0,8).forEach((it,idx)=>{
+      const campos=[]
+      for(let i=0;i<it.children.length;i++){const c=it.children[i],l=c.localName||c.tagName.split(':').pop();campos.push(`${l}=${c.textContent.trim()}`)}
+      log(`  [${idx}] ${campos.join(' | ')}`)
+    })
+    // procurar especificamente os dias 4, 11, 22 de julho e comparar
+    log('\n=== Comparar dia 4 (especial) vs 22 (normal) de julho ===')
+    ;['2026-07-04','2026-07-11','2026-07-22'].forEach(alvo=>{
+      const it=its.find(x=>{const d=txt(x,'Date')||x.textContent.trim();return d.startsWith(alvo)})
+      if(it){
+        const campos=[]
+        for(let i=0;i<it.children.length;i++){const c=it.children[i],l=c.localName||c.tagName.split(':').pop();campos.push(`${l}=${c.textContent.trim()}`)}
+        log(`  ${alvo}: ${campos.join(' | ')}`)
+      }else log(`  ${alvo}: (não encontrado nesta lista)`)
+    })
+    // listar TODOS os nomes de tags únicos dentro das datas (para caçar o campo "especial")
+    log('\n=== Todos os nomes de campos que aparecem nas datas ===')
+    const nomes={}
+    its.forEach(it=>{for(let i=0;i<it.children.length;i++){const l=it.children[i].localName||it.children[i].tagName.split(':').pop();nomes[l]=(nomes[l]||0)+1}})
+    log('  '+Object.keys(nomes).map(n=>`${n}(${nomes[n]})`).join(', '))
+  }catch(e){log('erro: '+e.message)}
+}
+</script></body></html>
