@@ -29,50 +29,32 @@ async function run(){
   try{
     const D=document.getElementById('dest').value
     const pdoc=await soapCall('DynGetProductParameters',`<ns1:DynGetProductParameters><DynProductParametersRequest>${credXML()}<Productcode xsi:type="xsd:int">${D}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
-    const rw=all(pdoc,'RoomTypes')[0];let roomCode='437'
-    if(rw){for(const it of itemsOf(rw)){if(/2\s*Adulto/i.test(txt(it,'Name'))){roomCode=txt(it,'Code');break}}}
-    const lw=all(pdoc,'DepartureLocals')[0];const locals=[];if(lw)itemsOf(lw).forEach(it=>{const c=txt(it,'Code');if(c)locals.push(c)})
-    const bw=all(pdoc,'BaseLocals')[0];const bl=[];if(bw)itemsOf(bw).forEach(it=>{const c=txt(it,'Code');if(c)bl.push(c)})
-    const baseXML=(bl.length?bl:['0']).map(c=>`<Local><Code>${c}</Code><Nights>7</Nights></Local>`).join('')
-    const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges></ChildAges></RoomTypeOption>`
-    const depLocal=locals[0]||'LIS'
-    // pesquisar 2 datas: dia 4 (especial) e dia 22 (normal) e comparar os dados de voo
-    for(const data of ['2026-07-04','2026-07-22']){
-      log(`\n========== ${data} (${data==='2026-07-04'?'ESPECIAL':'normal'}) ==========`)
-      const doc=await soapCall('DynSearchProductAvailableServices',`<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${D}</ProductCode><DepartureDate xsi:type="xsd:string">${data}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
-      // procurar grupos de voo e os seus campos — focar nos SEGMENTOS (companhia/charter)
-      const fmg=all(doc,'FlightMainGroup')[0]
-      if(fmg){
-        // primeira opção de voo e os seus segmentos
-        const opts=all(fmg,'FlightOptionsSuperBB')[0]
-        const primeiraOpt=opts?itemsOf(opts)[0]:null
-        if(primeiraOpt){
-          log('  1ª opção de voo — SEGMENTOS → FLIGHTS (companhias):')
-          const segsC=directChildren(primeiraOpt,'FlightSegments')[0]
-          itemsOf(segsC).forEach((seg,idx)=>{
-            log(`     Leg[${idx}] ${txt(seg,'FromIATA')}→${txt(seg,'ToIATA')} ${txt(seg,'Date')}:`)
-            const flightsC=directChildren(seg,'Flights')[0]
-            itemsOf(flightsC).forEach((fl,fi)=>{
-              const comp=txt(fl,'AirCompCode'),num=txt(fl,'FlightNumber')||txt(fl,'FlightNum')||txt(fl,'Number')
-              const cls=txt(fl,'Class')||txt(fl,'BookingClass')
-              // mostrar TODAS as tags do voo para ver o que distingue
-              const campos=[]
-              for(let i=0;i<fl.children.length;i++){const c=fl.children[i],l=c.localName||c.tagName.split(':').pop();if(!c.children.length)campos.push(`${l}=${c.textContent.trim()}`)}
-              log(`        voo[${fi}]: ${campos.join(' | ')}`)
-            })
-          })
+    // despejar TODOS os ramos de topo da resposta (procurar um wrapper de datas especiais)
+    const ret=all(pdoc,'DynProductParametersResponse')[0]||all(pdoc,'return')[0]||pdoc.documentElement
+    log('=== TODOS os ramos de topo de DynGetProductParameters ===')
+    const dump=(el,ind,prof)=>{
+      for(let i=0;i<el.children.length;i++){
+        const c=el.children[i],l=c.localName||c.tagName.split(':').pop()
+        const nf=c.children.length
+        if(nf){
+          log(`${ind}${l}: [${nf} filhos]`)
+          // se o nome sugere voos/especiais/charter, abrir mais fundo
+          if(prof<3&&/special|charter|flight|vuelo|date|depart|block|calendar|price|bloque/i.test(l))dump(c,ind+'  ',prof+1)
+        }else{
+          const v=c.textContent.trim();if(v||prof<2)log(`${ind}${l} = ${v}`)
         }
       }
-      // caçar tags de companhia/charter COM VALOR
-      log('  -- companhias distintas e tags special/charter --')
-      const tall=doc.getElementsByTagName('*');const vis={},comps={}
-      for(let i=0;i<tall.length;i++){
-        const c=tall[i];if(c.children.length)continue
-        const l=c.localName||c.tagName.split(':').pop(),v=c.textContent.trim()
-        if(l==='AirCompCode'&&v)comps[v]=(comps[v]||0)+1
-        if(/special|especial|charter|block|bloque|chark|broker|tipo|category|class/i.test(l)&&v){const k=l+'|'+v;if(!vis[k]){vis[k]=1;log(`     ${l} = "${v}"`)}}
+    }
+    dump(ret,'  ',0)
+    // procurar QUALQUER tag cujo nome sugira voo especial/charter em toda a resposta
+    log('\n=== Tags com special/charter/flight/bloque em toda a resposta ===')
+    const tall=pdoc.getElementsByTagName('*');const vis={}
+    for(let i=0;i<tall.length;i++){
+      const c=tall[i],l=c.localName||c.tagName.split(':').pop()
+      if(/special|especial|charter|chark|bloque|flighttype|vueloesp/i.test(l)){
+        const v=c.children.length?`[${c.children.length} filhos]`:c.textContent.trim()
+        const k=l+'|'+v;if(!vis[k]){vis[k]=1;log(`  ${l} = ${v}`)}
       }
-      log('     companhias presentes: '+Object.keys(comps).map(c=>`${c}(${comps[c]})`).join(', '))
     }
   }catch(e){log('erro: '+e.message)}
 }
