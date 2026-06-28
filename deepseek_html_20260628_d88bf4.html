@@ -15,13 +15,6 @@ const LOGIN={brand:'SOLTOUR',market:'XMLPT',languageCode:'PT',username:'APMVIA99
 const out = document.getElementById('out')
 function log(t){ out.textContent += t + '\n' }
 
-const pkCred=()=>`<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">808</System><Client xsi:type="xsd:int">289363</Client><Username xsi:type="xsd:string">admin@apmviagens.pt</Username><Password xsi:type="xsd:string">JA622875</Password></Credentials>`
-
-function pkTxt(el,tag){if(!el)return '';for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)return c.textContent.trim()}const n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)return n[i].textContent.trim()}return ''}
-function pkAll(el,tag){if(!el)return[];const o=[],n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)o.push(n[i])}return o}
-function pkItems(c){return c?pkAll(c,'item'):[]}
-function pkDirectChildren(el,tag){if(!el)return[];const o=[];for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)o.push(c)}return o}
-
 let token=null
 
 async function call(path,body){
@@ -32,146 +25,29 @@ async function call(path,body){
 async function ensureLogin(){
   if(token)return token
   const l=await call('login/login',LOGIN)
-  if(!l.sessionToken)throw new Error('Login falhou')
+  if(!l.sessionToken)throw new Error('Login falhou: '+JSON.stringify(l))
   token=l.sessionToken
   return token
 }
 
-async function pkSoap(action,body){
-  const wrap=`<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body>${body}</soapenv:Body></soapenv:Envelope>`
-  const r=await fetch(SOLTROPICO_PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPA_ANON}`},body:JSON.stringify({soapAction:action,soapBody:wrap})})
-  const data=await r.json()
-  if(!r.ok)throw new Error('Falha proxy')
-  if(data.error||data.proxyError)throw new Error(data.error||data.proxyError)
-  // 🔥 Retornar o XML bruto
-  return data.xml || ''
-}
-
-async function diag(){
+async function teste(){
   try{
     await ensureLogin()
     log('✅ Login OK')
+    log('Token: '+token.slice(0,20)+'...')
     
-    const ds = '2026-08-01'
-    const destinoCode = 7
-    const origem = 'LIS'
-    const noites = 7
-    const adultos = 2
+    // SIMPLES: chamar o proxy diretamente com o XML da simulação
+    const body = `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www3.optitravel.net/optitravel/export/wbs/pkt/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><soapenv:Header/><soapenv:Body><ns1:DynGetSimulation><DynGetSimulationRequest><Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type="xsd:int">808</System><Client xsi:type="xsd:int">289363</Client><Username xsi:type="xsd:string">admin@apmviagens.pt</Username><Password xsi:type="xsd:string">JA622875</Password></Credentials><SessionHash>123456789</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation></soapenv:Body></soapenv:Envelope>`
     
-    log(`\n📡 A testar: ${ds} · destino ${destinoCode} · origem ${origem}`)
-    
-    // Obter parâmetros
-    const pdocXML = await pkSoap('DynGetProductParameters',
-      `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCred()}<Productcode xsi:type="xsd:int">${destinoCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
-    
-    // Parse do XML para extrair dados
-    const pdoc = new DOMParser().parseFromString(pdocXML, 'text/xml')
-    
-    // RoomTypes
-    const rw=pkAll(pdoc,'RoomTypes')[0]
-    const ocup=[]
-    if(rw)pkItems(rw).forEach(it=>{const c=pkTxt(it,'Code'),n=pkTxt(it,'Name');if(c)ocup.push({code:c,name:n})})
-    let roomCode = '437'
-    for(const o of ocup){
-      if(o.name.includes('2 Adultos') && !o.name.includes('Criança')){
-        roomCode = o.code
-        break
-      }
-    }
-    log(`📋 RoomCode: ${roomCode}`)
-    
-    // BaseLocal
-    const bw=pkAll(pdoc,'BaseLocals')[0]
-    const baseLocals=[]
-    if(bw)pkItems(bw).forEach(it=>{const c=pkTxt(it,'Code');if(c)baseLocals.push(c)})
-    const baseLocal = baseLocals.length > 0 ? baseLocals[0] : '0'
-    log(`📋 BaseLocal: ${baseLocal}`)
-    const baseXML = `<Local><Code>${baseLocal}</Code><Nights>${noites}</Nights></Local>`
-    
-    // Pesquisar
-    const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges></ChildAges></RoomTypeOption>`
-    
-    const docPesquisaXML = await pkSoap('DynSearchProductAvailableServices',
-      `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${pkCred()}<ProductCode xsi:type="xsd:int">${destinoCode}</ProductCode><DepartureDate xsi:type="xsd:string">${ds}</DepartureDate><DepartureLocal xsi:type="xsd:string">${origem}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
-    
-    const docPesquisa = new DOMParser().parseFromString(docPesquisaXML, 'text/xml')
-    const sessionHash = pkAll(docPesquisa,'SessionHash')[0]?.textContent?.trim()||''
-    log(`🔑 SessionHash: ${sessionHash ? 'OK' : 'VAZIO'}`)
-    if(!sessionHash) return
-    
-    // Encontrar hotel
-    let hotelRPH = ''
-    const hoteis = pkAll(docPesquisa,'HotelOption')
-    for(const hc of hoteis){
-      const hotels = pkItems(hc)
-      for(const h of hotels){
-        const name = pkTxt(h,'Name') || ''
-        const rph = pkTxt(h,'HotelRPH') || pkTxt(h,'RPH')
-        if(name && rph && !hotelRPH){
-          hotelRPH = rph
-          log(`🏷️ Hotel: ${name} (RPH: ${hotelRPH})`)
-          break
-        }
-      }
-      if(hotelRPH) break
-    }
-    
-    if(!hotelRPH){ log('❌ Nenhum hotel encontrado'); return }
-    
-    // Selecionar com BoardCode MP
-    const boardCode = 'MP'
-    log(`📋 BoardCode: ${boardCode}`)
-    
-    const selectXML=`
-      <ns1:DynSetServicesSelected>
-        <DynSetServicesSelectedRequest>
-          ${pkCred()}
-          <SessionHash>${sessionHash}</SessionHash>
-          <HotelSelected>
-            <HotelRPH>${hotelRPH}</HotelRPH>
-            <RoomNumber>0</RoomNumber>
-            <BoardCode>${boardCode}</BoardCode>
-          </HotelSelected>
-          <ServicesSelected>
-            <FlightClass>ECO</FlightClass>
-          </ServicesSelected>
-        </DynSetServicesSelectedRequest>
-      </ns1:DynSetServicesSelected>
-    `
-    await pkSoap('DynSetServicesSelected', selectXML)
-    
-    // 🔥 OBTER SIMULAÇÃO - MOSTRAR XML BRUTO
-    log('\n📡 A obter simulação (XML BRUTO)...')
-    const simXML = await pkSoap('DynGetSimulation',
-      `<ns1:DynGetSimulation><DynGetSimulationRequest>${pkCred()}<SessionHash>${sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
-    
-    log('\n📋 XML BRUTO DA SIMULAÇÃO:')
-    log('='.repeat(80))
-    // Mostrar apenas os primeiros 10000 caracteres para não sobrecarregar
-    const xmlAmostra = simXML.length > 15000 ? simXML.slice(0, 15000) + '\n... (truncado)' : simXML
-    log(xmlAmostra)
-    log('='.repeat(80))
-    
-    // Tentar extrair TotalPrice
-    const simDoc = new DOMParser().parseFromString(simXML, 'text/xml')
-    const totalPrice = pkTxt(simDoc, 'TotalPrice')
-    log(`\n💰 TotalPrice extraído: ${totalPrice}`)
-    
-    // Procurar por qualquer tag com valor
-    log('\n🔍 Tags com valores:')
-    const allTags = pkAll(simDoc, '*')
-    let count = 0
-    for(const tag of allTags){
-      const name = tag.tagName?.split(':').pop() || ''
-      const value = tag.textContent?.trim() || ''
-      if(value && !tag.children?.length){
-        log(`  ${name} = ${value}`)
-        count++
-      }
-    }
-    log(`\nTotal de tags com valores: ${count}`)
-    
-    log('\n✅ Diagnóstico concluído!')
+    log('\n📡 A chamar proxy...')
+    const r = await fetch(SOLTROPICO_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPA_ANON}` },
+      body: JSON.stringify({ soapAction: 'DynGetSimulation', soapBody: body })
+    })
+    const data = await r.json()
+    log('Resposta:')
+    log(JSON.stringify(data, null, 2))
     
   }catch(e){
     log('❌ ERRO: '+e.message)
@@ -179,7 +55,7 @@ async function diag(){
   }
 }
 
-diag()
+teste()
 </script>
 </body>
 </html>
