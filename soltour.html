@@ -200,6 +200,24 @@ const progFim=()=>{$('progresso').className='progresso'}
 const eur=v=>v==null||isNaN(v)?'—':'€'+Number(v).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})
 const eur2=v=>v==null||isNaN(v)?'—':'€'+Number(v).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})
 
+// ════════════════════════════════════════════════════════════════════════
+// VOOS ESPECIAIS SOLTRÓPICO — lista de datas (charters/blocos próprios).
+// A API da Soltrópico não devolve esta marca, por isso é mantida aqui à mão.
+// COMO EDITAR: para cada código de destino Soltrópico, lista as datas de
+// partida (AAAA-MM-DD) que são voo especial. Atualiza por época.
+// Exemplo: 7 = Sal. Adiciona/remove datas conforme o calendário da Soltrópico.
+const VOOS_ESPECIAIS={
+  // Sal (cód. 7) — julho 2026 (da imagem do calendário Soltrópico)
+  7:['2026-07-04','2026-07-05','2026-07-10','2026-07-11','2026-07-12','2026-07-13',
+     '2026-07-17','2026-07-18','2026-07-19','2026-07-24','2026-07-26','2026-07-31'],
+  // Adiciona outros destinos aqui, ex: 41:['2026-07-05', ...] para Boa Vista
+}
+function ehVooEspecial(destCodeSP,dataISO){
+  if(!destCodeSP||!dataISO)return false
+  const lista=VOOS_ESPECIAIS[destCodeSP]
+  return !!(lista&&lista.includes(dataISO.slice(0,10)))
+}
+
 const DEST_MAP=[
   {label:'Ibiza',soltour:'IBZ',soltropico:228},{label:'Menorca',soltour:'MAH',soltropico:227},
   {label:'Maiorca',soltour:'PMI',soltropico:226},{label:'Formentera',soltour:'FON',soltropico:231},
@@ -617,7 +635,8 @@ function renderCalendar(year,month,bestByDay,dest){
     }
     if(sp_){
       const best=sp_.price===menor&&(!st_||sp_.price<st_.price)
-      linhas+=`<div class="opline"><span class="pr" style="color:${best?'var(--best)':'var(--soltropico)'}">${eur(sp_.price)}</span><span class="lbl sp">SP</span>${best?'<span class="best-tag">★</span>':''}</div>`
+      const esp=ehVooEspecial(dest.soltropico,ds)?'<span class="fly" title="Voo especial Soltrópico (charter)">🔴</span>':''
+      linhas+=`<div class="opline"><span class="pr" style="color:${best?'var(--best)':'var(--soltropico)'}">${eur(sp_.price)}</span><span class="lbl sp">SP</span>${esp}${best?'<span class="best-tag">★</span>':''}</div>`
     }
     h+=`<div class="cell ${cls}" onclick="selectDay('${ds}')" data-date="${ds}"><div class="n">${day}</div>${hotel?`<div class="hotel">${esc(hotel)}</div>`:''}${linhas}</div>`
   }
@@ -695,7 +714,7 @@ async function detSoltropico(op,ds,nights,dest,origin,adults,childAges){
   const fallback=()=>{
     const D={brand:'SOLTRÓPICO',hotelName:op.hotelName,hotelCode:destCode,stars:op.stars||0,board:op.board||'',
       checkIn:ds,checkOut:'—',nights:op.nights||nights,image:op.image||'',images:op.images||[],direct:true,
-      totalPvp:op.price,totalNet:null,totalCom:null,cancelamento:[]}
+      vooEspecial:ehVooEspecial(destCode,ds),totalPvp:op.price,totalNet:null,totalCom:null,cancelamento:[]}
     return renderDetail(D,dest.label,'')
   }
   try{
@@ -770,7 +789,7 @@ async function detSoltropico(op,ds,nights,dest,origin,adults,childAges){
     })
     const D={brand:'SOLTRÓPICO',hotelName:alvo.name||op.hotelName,hotelCode:destCode,stars:alvo.rating||op.stars||0,
       board:op.board||'',checkIn:ds,checkOut:'—',nights:op.nights||nights,image:alvo.img||op.image||'',images:op.images||[],
-      direct:true,totalPvp:pvpTotal,totalNet:net,totalCom:comissao,linhas,cancelamento:canc}
+      direct:true,vooEspecial:ehVooEspecial(destCode,ds),totalPvp:pvpTotal,totalNet:net,totalCom:comissao,linhas,cancelamento:canc}
     return renderDetail(D,dest.label,'')
   }catch(e){
     return fallback()
@@ -806,7 +825,7 @@ function renderDetail(d,destLabel,origin){
   const cls=d.brand==='SOLTOUR'?'st':'sp'
   const pill=d.brand==='SOLTOUR'?'pill-soltour':'pill-soltropico'
   const originLabel={LIS:'Lisboa',OPO:'Porto',FAO:'Faro'}[origin]||origin||''
-  const fly=d.charter?'🔴 Voo direto Soltour (charter)':(d.direct===true?'✈️ Voo direto':(d.direct===false?'📍 Com escalas':''))
+  const fly=d.charter?'🔴 Voo direto Soltour (charter)':(d.vooEspecial?'🔴 Voo especial Soltrópico (charter)':(d.direct===true?'✈️ Voo direto':(d.direct===false?'📍 Com escalas':'')))
   return `
   <div class="detail ${cls}">
     <div class="detail-h"><div><span class="pill ${pill}">${d.brand}</span> <span class="name">${esc(d.hotelName)}</span> ${d.stars?`<span class="star">${'★'.repeat(Math.min(d.stars,5))}</span>`:''}</div></div>
