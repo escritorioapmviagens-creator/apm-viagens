@@ -40,26 +40,28 @@ async function run(){
     for(const data of ['2026-07-04','2026-07-22']){
       log(`\n========== ${data} (${data==='2026-07-04'?'ESPECIAL':'normal'}) ==========`)
       const doc=await soapCall('DynSearchProductAvailableServices',`<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">${D}</ProductCode><DepartureDate xsi:type="xsd:string">${data}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
-      // procurar grupos de voo e os seus campos
+      // procurar grupos de voo e os seus campos — focar nos SEGMENTOS (companhia/charter)
       const fmg=all(doc,'FlightMainGroup')[0]
       if(fmg){
-        log('  <FlightMainGroup> — abrir todos os níveis:')
-        const dump=(el,ind)=>{
-          for(let i=0;i<el.children.length;i++){
-            const c=el.children[i],l=c.localName||c.tagName.split(':').pop()
-            if(c.children.length){log(`  ${ind}${l}:`);if(ind.length<10)dump(c,ind+'  ')}
-            else{const v=c.textContent.trim();log(`  ${ind}${l} = ${v}`)}
-          }
+        // primeira opção de voo e os seus segmentos
+        const opts=all(fmg,'FlightOptionsSuperBB')[0]
+        const primeiraOpt=opts?itemsOf(opts)[0]:null
+        if(primeiraOpt){
+          log('  1ª opção de voo — SEGMENTOS (companhia/charter):')
+          const segsC=directChildren(primeiraOpt,'FlightSegments')[0]
+          itemsOf(segsC).forEach((seg,idx)=>{
+            log(`     segmento[${idx}]:`)
+            for(let i=0;i<seg.children.length;i++){const c=seg.children[i],l=c.localName||c.tagName.split(':').pop();const v=c.children.length?`[${c.children.length} filhos]`:c.textContent.trim();log(`        ${l} = ${v}`)}
+          })
         }
-        dump(fmg,'   ')
       }
-      // caçar qualquer tag com "special/especial/charter/block/tipo/type" COM VALOR
-      log('  -- tags com valor (special/charter/block/type/flight) --')
+      // caçar tags de companhia/charter COM VALOR
+      log('  -- tags de companhia/transportadora --')
       const tall=doc.getElementsByTagName('*');const vis={}
       for(let i=0;i<tall.length;i++){
         const c=tall[i];if(c.children.length)continue
         const l=c.localName||c.tagName.split(':').pop(),v=c.textContent.trim()
-        if(/special|especial|charter|block|bloque|flighttype|transport|prodtype|regular|scheduled|vuelo|chark/i.test(l)){const k=l+'|'+v;if(!vis[k]){vis[k]=1;log(`     ${l} = "${v}"`)}}
+        if(/airline|carrier|company|compan|charter|flightnum|marketing|operating|airco|iata|vuelo|transport/i.test(l)&&v){const k=l+'|'+v;if(!vis[k]){vis[k]=1;log(`     ${l} = "${v}"`)}}
       }
     }
   }catch(e){log('erro: '+e.message)}
