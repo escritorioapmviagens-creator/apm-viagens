@@ -46,6 +46,8 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .btns .seg .btn{border-radius:0;background:transparent;color:var(--ink);border-right:1.5px solid var(--line);padding:11px 13px}
 .btns .seg .btn:last-child{border-right:none}
 .btns .seg .btn:hover:not(:disabled){background:var(--accent-soft);color:var(--accent);transform:none;box-shadow:none}
+.btns .seg .btn.ativo{background:var(--accent);color:#fff}
+.btns .seg .btn.ativo:hover{background:var(--accent);color:#fff}
 .status{padding:11px 15px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none;font-weight:500}
 .status.show{display:block}
 .status.loading{background:var(--accent-soft);color:var(--accent)}
@@ -133,14 +135,14 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     </div>
 
     <div class="btns">
-      <button class="btn go" onclick="pesquisar('data')">🎯 Data exata</button>
-      <div class="seg">
-        <button class="btn" onclick="pesquisar('semana',1)">1ª semana</button>
-        <button class="btn" onclick="pesquisar('semana',2)">2ª semana</button>
-        <button class="btn" onclick="pesquisar('semana',3)">3ª semana</button>
-        <button class="btn" onclick="pesquisar('semana',4)">4ª semana</button>
+      <div class="seg" id="seg-ambito">
+        <button class="btn sel-ambito ativo" data-ambito="mes" onclick="escolherAmbito(this)">📅 Mês todo</button>
+        <button class="btn sel-ambito" data-ambito="s1" onclick="escolherAmbito(this)">1ª sem</button>
+        <button class="btn sel-ambito" data-ambito="s2" onclick="escolherAmbito(this)">2ª sem</button>
+        <button class="btn sel-ambito" data-ambito="s3" onclick="escolherAmbito(this)">3ª sem</button>
+        <button class="btn sel-ambito" data-ambito="s4" onclick="escolherAmbito(this)">4ª sem</button>
       </div>
-      <button class="btn ghost" onclick="pesquisar('mes')">📅 Mês todo</button>
+      <button class="btn go" onclick="executarPesquisa()">🔍 Pesquisar</button>
     </div>
 
     <div class="legend">
@@ -151,7 +153,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       <span>✈️ Voo direto</span>
       <span>📍 Com escalas</span>
     </div>
-    <div class="hint">Preenche a <b>data exata</b> para um resultado rápido só desse dia; deixa-a vazia para varrer o mês. Os preços do calendário são <b>por pessoa</b> (como nos sites dos operadores) e indicativos — o valor exato e o net aparecem ao abrir o dia.</div>
+    <div class="hint">Escolhe o âmbito (mês ou semana) e carrega <b>Pesquisar</b>. Se preencheres a <b>data exata</b>, ela tem prioridade (resultado rápido só desse dia). Preços por pessoa, como nos sites dos operadores; o valor exato e o net aparecem ao abrir o dia.</div>
   </div>
 
   <div id="status" class="status"></div>
@@ -308,11 +310,23 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges,dia
   if(filtroHotel){
     const nf=normalize(filtroHotel)
     const dias=[]
-    const consultarSemente=async sd=>{
+    // body próprio: MUITOS budgets (o hotel filtrado pode não estar entre os mais baratos)
+    // e sem directOnly aqui (o filtro de voo é aplicado depois, não pode esconder o hotel)
+    const mkBodyFiltro=sd=>{
       const s=`${year}-${String(month).padStart(2,'0')}-${String(sd).padStart(2,'0')}`
       const ed=new Date(s);ed.setDate(ed.getDate()+nights);const e=ed.toISOString().slice(0,10)
+      return {s,body:{productType:'PACKAGE',languageCode:'PT',
+        criteria:{order:{direction:'ASC',type:'PRICE'},pagination:{firstItem:0,itemCount:120}},
+        params:{startDate:s,endDate:e,numNights:nights,residentType:'NONE',
+          accomodation:{rooms:[{passengers:pax}]},hotelParams:{destinationCode:destCode},
+          flightParams:{directFlightsOnly:false,itineraries:[
+            {origins:[origin],destinations:[destCode],flightDate:s},
+            {origins:[destCode],destinations:[origin],flightDate:e}]}}}}
+    }
+    const consultarSemente=async sd=>{
+      const {s,body}=mkBodyFiltro(sd)
       try{
-        const r=await call('booking/availability',mkBody(sd).body)
+        const r=await call('booking/availability',body)
         if(!r||!r.budgets)return []
         const porHotel=precosPorHotel(r,numPax)
         const res=[]
@@ -329,7 +343,6 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges,dia
         return res
       }catch(e){return []}
     }
-    // todas as datas do intervalo (não só de 2 em 2) para não falhar dias de partida
     const todasDatas=[];for(let d=diaIni;d<=diaFim;d++)todasDatas.push(d)
     for(let i=0;i<todasDatas.length;i+=5){
       const lote=todasDatas.slice(i,i+5)
@@ -443,6 +456,20 @@ function aplicarFiltros(days,brand){
 }
 
 let _busy=false
+// Seleção do âmbito (mês / semana) — só marca, não pesquisa
+let _ambito='mes'
+function escolherAmbito(btn){
+  _ambito=btn.dataset.ambito
+  document.querySelectorAll('.sel-ambito').forEach(b=>b.classList.toggle('ativo',b===btn))
+}
+// Botão Pesquisar: data exata tem prioridade; senão usa o âmbito selecionado
+function executarPesquisa(){
+  if($('partida').value){pesquisar('data');return}
+  if(_ambito==='mes'){pesquisar('mes');return}
+  const semana=+_ambito.slice(1) // s1→1, s2→2...
+  pesquisar('semana',semana)
+}
+
 async function pesquisar(modo,semana){
   if(_busy)return
   const dest=findDest($('dest').value.trim())
@@ -681,7 +708,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('month').value=t.toISOString().slice(0,7)
   const dl=$('dest-list')
   if(dl)dl.innerHTML=DEST_MAP.filter(d=>!d.alias).map(d=>d.label).sort((a,b)=>a.localeCompare(b,'pt')).map(n=>`<option value="${n}">`).join('')
-  document.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter')pesquisar($('partida').value?'data':'mes')}))
+  document.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter')executarPesquisa()}))
   ensureLogin().catch(e=>console.error('Login:',e.message))
 })
 </script>
