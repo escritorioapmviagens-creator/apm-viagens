@@ -60,15 +60,15 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .cal-top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .cal-top .mes{font-size:18px;font-weight:750;letter-spacing:-.01em}
 .cal-top .info{font-size:12px;color:var(--muted)}
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
 .cal-h{font-size:10px;font-weight:700;color:var(--muted);text-align:center;padding:4px 0;text-transform:uppercase;letter-spacing:.05em}
-.cell{background:var(--bg);border:1.5px solid transparent;border-radius:11px;padding:9px 6px;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;cursor:pointer;transition:border-color .14s,transform .14s,background .14s}
+.cell{background:var(--bg);border:1.5px solid transparent;border-radius:11px;padding:9px 6px;min-height:74px;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;cursor:pointer;transition:border-color .14s,transform .14s,background .14s}
 .cell:hover{border-color:var(--accent);transform:translateY(-1px);background:var(--surface)}
 .cell.empty{background:transparent;cursor:default;border:none}
 .cell.empty .n{color:#C9CDD9}
 .cell.sel{border-color:var(--accent);background:var(--accent-soft)}
 .cell .n{font-size:15px;font-weight:700}
-.cell .hotel{font-size:9px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.cell .hotel{font-size:9px;color:var(--muted);max-width:100%;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;text-align:center}
 .cell.both{border-left:3px solid #8B5CF6}
 .opline{display:flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap;margin-top:3px;width:100%}
 .opline .pr{font-size:12px;font-weight:700}
@@ -280,6 +280,55 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges,dia
 
   const lastDay=new Date(year,month,0).getDate()
   diaIni=diaIni||1; diaFim=Math.min(diaFim||lastDay,lastDay)
+
+  // CAMINHO COM FILTRO DE HOTEL (independente): o getPriceCalendar só dá o hotel mais
+  // barato por dia, ignorando hotéis específicos (ex: Melia). Quando há filtro, fazemos
+  // availability a cada data do intervalo, pedindo MUITOS budgets (o hotel pode não estar
+  // entre os mais baratos), e extraímos o preço do hotel filtrado.
+  const filtroHotel=getHotel()
+  if(filtroHotel){
+    console.log('[FILTRO] Soltour caminho-filtro ativo para:',filtroHotel,'dias',diaIni,'-',diaFim)
+    const nf=normalize(filtroHotel)
+    const dias=[]
+    const consultarData=async sd=>{
+      const s=`${year}-${String(month).padStart(2,'0')}-${String(sd).padStart(2,'0')}`
+      const ed=new Date(s);ed.setDate(ed.getDate()+nights);const e=ed.toISOString().slice(0,10)
+      const body={productType:'PACKAGE',languageCode:'PT',
+        criteria:{order:{direction:'ASC',type:'PRICE'},pagination:{firstItem:0,itemCount:120}},
+        params:{startDate:s,endDate:e,numNights:nights,residentType:'NONE',
+          accomodation:{rooms:[{passengers:pax}]},hotelParams:{destinationCode:destCode},
+          flightParams:{directFlightsOnly:false,itineraries:[
+            {origins:[origin],destinations:[destCode],flightDate:s},
+            {origins:[destCode],destinations:[origin],flightDate:e}]}}}
+      try{
+        const r=await call('booking/availability',body)
+        if(!r||!r.budgets){console.log('[FILTRO]',s,'sem budgets');return []}
+        const porHotel=precosPorHotel(r,numPax)
+        const nomesEncontrados=Object.values(porHotel).map(h=>h.info&&h.info.name).filter(Boolean)
+        console.log('[FILTRO]',s,'hotéis:',nomesEncontrados.length,'| tem melia?',nomesEncontrados.some(n=>normalize(n).includes(nf)))
+        const res=[]
+        for(const code in porHotel){
+          const h=porHotel[code]
+          if(h.info&&h.info.name&&normalize(h.info.name).includes(nf)){
+            console.log('[FILTRO] MATCH:',h.info.name,h.pp,'€/pp')
+            res.push({date:s,price:h.pp,pricePerPerson:h.pp,totalPrice:h.pp*numPax,currency:'EUR',
+              hotelName:h.info.name,hotelCode:code,stars:0,board:'',direct:null,charter:false,
+              brand:'SOLTOUR',image:h.info.image||'',images:h.info.images||[],calToken:r.availToken,
+              available:true,nights})
+          }
+        }
+        return res
+      }catch(e){console.log('[FILTRO]',s,'ERRO',e.message);return []}
+    }
+    const todas=[];for(let d=diaIni;d<=diaFim;d++)todas.push(d)
+    for(let i=0;i<todas.length;i+=5){
+      const resultados=await Promise.all(todas.slice(i,i+5).map(consultarData))
+      resultados.forEach(r=>dias.push(...r))
+    }
+    console.log('[FILTRO] Soltour total dias encontrados:',dias.length)
+    return dias
+  }
+
   // sementes só dentro do intervalo pedido (menos chamadas = mais rápido)
   const seeds=[];for(let d=diaIni;d<=diaFim;d+=2)seeds.push(d)
   const mkBody=sd=>{
@@ -302,55 +351,6 @@ async function getSoltour(destCode,origin,year,month,nights,adults,childAges,dia
     av=res.find(Boolean)||null
   }
   if(!av||!av.availToken)return []
-
-  // CAMINHO COM FILTRO DE HOTEL: o getPriceCalendar só dá o hotel mais barato por dia,
-  // por isso ignora hotéis específicos (ex: Melia). Quando há filtro, fazemos availability
-  // a cada data-semente e extraímos o preço do hotel filtrado de cada uma.
-  const filtroHotel=getHotel()
-  if(filtroHotel){
-    const nf=normalize(filtroHotel)
-    const dias=[]
-    // body próprio: MUITOS budgets (o hotel filtrado pode não estar entre os mais baratos)
-    // e sem directOnly aqui (o filtro de voo é aplicado depois, não pode esconder o hotel)
-    const mkBodyFiltro=sd=>{
-      const s=`${year}-${String(month).padStart(2,'0')}-${String(sd).padStart(2,'0')}`
-      const ed=new Date(s);ed.setDate(ed.getDate()+nights);const e=ed.toISOString().slice(0,10)
-      return {s,body:{productType:'PACKAGE',languageCode:'PT',
-        criteria:{order:{direction:'ASC',type:'PRICE'},pagination:{firstItem:0,itemCount:120}},
-        params:{startDate:s,endDate:e,numNights:nights,residentType:'NONE',
-          accomodation:{rooms:[{passengers:pax}]},hotelParams:{destinationCode:destCode},
-          flightParams:{directFlightsOnly:false,itineraries:[
-            {origins:[origin],destinations:[destCode],flightDate:s},
-            {origins:[destCode],destinations:[origin],flightDate:e}]}}}}
-    }
-    const consultarSemente=async sd=>{
-      const {s,body}=mkBodyFiltro(sd)
-      try{
-        const r=await call('booking/availability',body)
-        if(!r||!r.budgets)return []
-        const porHotel=precosPorHotel(r,numPax)
-        const res=[]
-        for(const code in porHotel){
-          const h=porHotel[code]
-          if(h.info&&h.info.name&&normalize(h.info.name).includes(nf)){
-            res.push({date:s,price:h.pp,pricePerPerson:h.pp,totalPrice:h.pp*numPax,currency:'EUR',
-              hotelName:h.info.name,hotelCode:code,stars:0,board:'',
-              direct:null,charter:false,brand:'SOLTOUR',
-              image:h.info.image||'',images:h.info.images||[],calToken:r.availToken,
-              available:true,nights})
-          }
-        }
-        return res
-      }catch(e){return []}
-    }
-    const todasDatas=[];for(let d=diaIni;d<=diaFim;d++)todasDatas.push(d)
-    for(let i=0;i<todasDatas.length;i+=5){
-      const lote=todasDatas.slice(i,i+5)
-      const resultados=await Promise.all(lote.map(consultarSemente))
-      resultados.forEach(r=>dias.push(...r))
-    }
-    return dias
-  }
 
   const hotelMap={}
   if(av.hotels)for(const h of av.hotels){
