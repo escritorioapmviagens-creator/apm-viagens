@@ -72,6 +72,9 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .ofertas-t td{padding:8px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
 .ofertas-t tr:last-child td{border-bottom:none}
 .ofertas-t tr:hover{background:var(--bg)}
+.ofertas-t th{padding:7px 14px;font-size:11px;color:var(--muted);font-weight:600;text-align:left;border-bottom:1px solid var(--line)}
+.btn-net{padding:4px 10px;font-size:11px;font-weight:600;background:var(--bg);color:var(--accent);border:1px solid var(--line);border-radius:7px;cursor:pointer;white-space:nowrap}
+.btn-net:hover{background:var(--accent);color:#fff}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 .legend span{display:flex;align-items:center;gap:5px}
 .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
@@ -714,7 +717,7 @@ async function verTodasOfertas(ds){
             {origins:[dest.soltour],destinations:[origin],flightDate:endStr}]}}})
       const porHotel=precosPorHotel(av,numPax)
       for(const code in porHotel){const h=porHotel[code]
-        if(h.info&&h.info.name)ofertas.push({brand:'SOLTOUR',hotel:h.info.name,stars:h.info.stars||0,pp:h.pp})}
+        if(h.info&&h.info.name)ofertas.push({brand:'SOLTOUR',hotel:h.info.name,stars:h.info.stars||0,pp:h.pp,pvp:h.pp*numPax,hotelCode:code})}
     }catch(e){}
   }
   // Soltrópico: pesquisa devolve todos os hotéis do dia
@@ -730,27 +733,88 @@ async function verTodasOfertas(ds){
       const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges>${childAges.join(',')}</ChildAges></RoomTypeOption>`
       const doc=await pkSoap('DynSearchProductAvailableServices',`<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${pkCred()}<ProductCode xsi:type="xsd:int">${dest.soltropico}</ProductCode><DepartureDate xsi:type="xsd:string">${ds}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
       const itinC=pkAll(doc,'Itinerary')[0]
+      const sessionHash=(pkAll(doc,'SessionHash')[0]||{}).textContent||''
       pkItems(itinC).forEach(itin=>{
+        const ic=pkTxt(itin,'Code')||'0',iface=pkTxt(itin,'Interface')||'htl_hub',conn=pkTxt(itin,'Connector')||'HTL_HUB'
         const hc=pkDirectChildren(itin,'HotelOption')[0]
         pkItems(hc).forEach(h=>{
           const pf=parseFloat(pkTxt(h,'PriceFrom'));const nome=pkTxt(h,'Name')
-          if(nome&&pf>0)ofertas.push({brand:'SOLTRÓPICO',hotel:nome,stars:parseInt(pkTxt(h,'Rating'))||0,pp:pf/numPax})
+          if(!nome||!(pf>0))return
+          // capturar dados para a simulação do net (quarto/board/itinerário)
+          const occ=pkDirectChildren(h,'RoomsOccupancy')[0],occI=pkItems(occ)[0],roomsC=occI?pkDirectChildren(occI,'Rooms')[0]:null
+          const rooms=pkItems(roomsC).filter(rm=>pkTxt(rm,'AvailStatus')==='OK').map(rm=>({code:pkTxt(rm,'Code'),board:pkTxt(rm,'BoardCode')||'TI'}))
+          const boards=pkItems(pkDirectChildren(h,'Boards')[0]).map(b=>({code:pkTxt(b,'Code')}))
+          let board=rooms[0]?rooms[0].board:'TI'
+          if(!/^[A-Z]{2,4}$/.test(board)&&boards.length)board=boards[0].code
+          ofertas.push({brand:'SOLTRÓPICO',hotel:nome,stars:parseInt(pkTxt(h,'Rating'))||0,pp:pf/numPax,pvp:pf,
+            sim:rooms[0]?{sessionHash,code:pkTxt(h,'Code'),room:rooms[0].code,board,ic,iface,conn}:null})
         })
       })
     }catch(e){}
   }
   if(!ofertas.length){cont.innerHTML=`<div style="padding:14px;color:var(--muted)">Não foi possível obter as ofertas deste dia.</div>`;return}
   ofertas.sort((a,b)=>a.pp-b.pp)
-  const linhas=ofertas.map(o=>`<tr>
+  // guardar globalmente para os botões "ver NET"
+  window._ofertasDia={ds,nights,adults,childAges,numPax,lista:ofertas}
+  const linhas=ofertas.map((o,i)=>`<tr id="of-${i}">
     <td><span class="lbl ${o.brand==='SOLTOUR'?'st':'sp'}">${o.brand==='SOLTOUR'?'ST':'SP'}</span></td>
     <td>${esc(o.hotel)} ${o.stars?`<span class="star">${'★'.repeat(Math.min(o.stars,5))}</span>`:''}</td>
-    <td style="text-align:right;font-weight:600">${eur2(o.pp)}<span style="color:var(--muted);font-weight:400">/pp</span></td>
+    <td style="text-align:right"><div style="font-weight:600">${eur2(o.pvp)}</div><div style="font-size:11px;color:var(--muted)">${eur2(o.pp)}/pp</div></td>
+    <td class="net-cell" style="text-align:right;min-width:96px">
+      <button class="btn-net" onclick="verNetHotel(${i})">ver NET</button>
+    </td>
   </tr>`).join('')
   cont.innerHTML=`<div class="ofertas-box">
-    <div class="ofertas-h">${ofertas.length} ofertas em ${ds} — preço por pessoa</div>
-    <table class="ofertas-t"><tbody>${linhas}</tbody></table>
+    <div class="ofertas-h">${ofertas.length} ofertas em ${ds} — PVP total e por pessoa</div>
+    <table class="ofertas-t"><thead><tr><th></th><th>Hotel</th><th style="text-align:right">PVP</th><th style="text-align:right">Net</th></tr></thead><tbody>${linhas}</tbody></table>
   </div>`
 }
+
+// Calcula o net de UM hotel específico da lista (a pedido, só quando carregado)
+async function verNetHotel(i){
+  const O=window._ofertasDia;if(!O)return
+  const o=O.lista[i];if(!o)return
+  const cell=document.querySelector(`#of-${i} .net-cell`)
+  if(!cell)return
+  cell.innerHTML=`<span class="spinner" style="width:14px;height:14px"></span>`
+  try{
+    if(o.brand==='SOLTRÓPICO'){
+      if(!o.sim){cell.innerHTML='<span style="color:var(--muted);font-size:11px">n/d</span>';return}
+      const s=o.sim
+      const roomsSelXML=`<item xsi:type="ns1:DynRoomsSelect"><RoomNum xsi:type="xsd:string">0</RoomNum><RoomCode xsi:type="xsd:string">${s.room}</RoomCode><BoardCode xsi:type="xsd:string">${s.board}</BoardCode></item>`
+      await pkSoap('DynSetServicesSelected',`<ns1:DynSetServicesSelected><DynServicesSelectedRequest xsi:type="ns1:DynServicesSelectedRequest">${pkCred()}<SessionHash xsi:type="xsd:string">${s.sessionHash}</SessionHash><Reserve xsi:nil="true"/><Local xsi:nil="true"/><Regime xsi:nil="true"/><Connector xsi:nil="true"/><Skeleton_id xsi:nil="true"/><Action xsi:nil="true"/><DepLocal xsi:nil="true"/><OptionId xsi:nil="true"/><FlightsSelected xsi:nil="true"/><FlightsSelectedSuperBB xsi:nil="true"/><FlightsSelectedFlightEngine xsi:nil="true"/><FlightsSelectedAirAvailFlightEngine xsi:nil="true"/><BusSelected xsi:nil="true"/><HotelsSelected SOAP-ENC:arrayType="ns1:DynHotelsSelected[1]" xsi:type="ns1:DynHotelsSelectedArray"><item xsi:type="ns1:DynHotelsSelected"><ItineraryCode xsi:type="xsd:string">${s.ic}</ItineraryCode><Interface xsi:type="xsd:string">${s.iface}</Interface><Connector xsi:type="xsd:string">${s.conn}</Connector><HtlSession xsi:type="xsd:string">${s.sessionHash}</HtlSession><HotelRPH xsi:type="xsd:string">${s.code}</HotelRPH><HotelSelected xsi:type="xsd:string">${s.code}</HotelSelected><HotelSelectedPrice xsi:nil="true"/><RoomsSelected SOAP-ENC:arrayType="ns1:DynRoomsSelect[1]" xsi:type="ns1:DynRoomsSelectArray">${roomsSelXML}</RoomsSelected><BoardSelected xsi:type="xsd:string">${s.board}</BoardSelected><SuplementSelected xsi:type="xsd:string"/></item></HotelsSelected><OptionalsSelected xsi:nil="true"/><RoomsOfi xsi:nil="true"/><RoomsSeniorOfi xsi:nil="true"/><RoomsPktStatic xsi:nil="true"/><RoomsSeniorPktStatic xsi:nil="true"/></DynServicesSelectedRequest></ns1:DynSetServicesSelected>`)
+      const sim=await pkSoap('DynGetSimulation',`<ns1:DynGetSimulation><DynGetSimulationRequest>${pkCred()}<SessionHash xsi:type="xsd:string">${s.sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
+      const pvp=parseFloat(pkTxt(sim,'TotalPrice'))||0
+      let com=0
+      pkAll(sim,'GrossTotalVal').forEach(g=>{const gross=parseFloat(g.textContent.trim())||0;const pai=g.parentElement;const pc=pai?(pkDirectChildren(pai,'ComissionPerc')[0]||pkAll(pai,'ComissionPerc')[0]):null;const perc=pc?parseFloat(pc.textContent.trim())||0:0;com+=gross*perc/100})
+      const net=pvp-com
+      if(pvp>0)cell.innerHTML=`<div style="font-weight:600;color:var(--best)">${eur2(net)}</div><div style="font-size:11px;color:var(--muted)">margem ${eur2(com)}</div>`
+      else cell.innerHTML='<span style="color:var(--muted);font-size:11px">n/d</span>'
+    }else{
+      // Soltour: availability + quote do hotel específico
+      const O2=window._ofertasDia
+      const pax=Array(O2.adults).fill({age:30,type:'ADULT'});O2.childAges.forEach(a=>pax.push({age:a,type:'CHILD'}))
+      const end=new Date(O2.ds);end.setDate(end.getDate()+O2.nights);const endStr=end.toISOString().slice(0,10)
+      const av=await callAuth('booking/availability',{productType:'PACKAGE',languageCode:'PT',
+        criteria:{order:{direction:'ASC',type:'PRICE'},pagination:{firstItem:0,itemCount:120}},
+        params:{startDate:O2.ds,endDate:endStr,numNights:O2.nights,residentType:'NONE',
+          accomodation:{rooms:[{passengers:pax}]},hotelParams:{destinationCode:data_destSoltour()},
+          flightParams:{directFlightsOnly:false,itineraries:[
+            {origins:[$('origin').value],destinations:[data_destSoltour()],flightDate:O2.ds},
+            {origins:[data_destSoltour()],destinations:[$('origin').value],flightDate:endStr}]}}})
+      const bg=(av.budgets||[]).find(b=>{const hs=(b.hotelServices||[])[0]||{};return (hs.hotelCode||hs.code)===o.hotelCode})
+      if(bg){
+        const q=await call('booking/quote',{availToken:av.availToken,budgetIds:[bg.budgetId],productType:'PACKAGE',languageCode:'PT'})
+        const det=(q.budget&&q.budget.priceBreakdown&&q.budget.priceBreakdown.priceBreakdownDetails)||[]
+        const pvp=det.reduce((s,d)=>s+((d.priceInfo&&d.priceInfo.pvp)||0),0)
+        const net=det.reduce((s,d)=>s+((d.priceInfo&&d.priceInfo.netAmount)||0),0)
+        if(net>0)cell.innerHTML=`<div style="font-weight:600;color:var(--best)">${eur2(net)}</div><div style="font-size:11px;color:var(--muted)">margem ${eur2(pvp-net)}</div>`
+        else cell.innerHTML='<span style="color:var(--muted);font-size:11px">n/d</span>'
+      }else cell.innerHTML='<span style="color:var(--muted);font-size:11px">n/d</span>'
+    }
+  }catch(e){cell.innerHTML='<span style="color:#C0392B;font-size:11px">erro</span>'}
+}
+function data_destSoltour(){return window._cal&&window._cal.dest?window._cal.dest.soltour:''}
 
 async function detSoltour(op,ds,origin,nights,adults,dest){
   const nightsDia=op.nights||nights
