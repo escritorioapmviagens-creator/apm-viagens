@@ -792,14 +792,14 @@ function extrairParams(pdoc){
 
 function extrairCancelamento(budget,pvpCliente){
   const cargos=(budget&&(budget.cancellationChargeServices||budget.cancellationCharges))||[]
-  const fmtD=s=>{if(!s)return'';try{return new Date(s).toLocaleDateString('pt-PT')}catch(e){return s}}
   const teto=parseFloat(pvpCliente)||0
   return cargos.map(c=>{
     const pi=c.priceInfo||c
     const vOp=parseFloat(pi.totalAmount!=null?pi.totalAmount:(pi.pvp!=null?pi.pvp:(pi.amount||0)))
     const v=(teto>0&&vOp>teto)?teto:vOp
-    return{desc:c.description||'',fim:fmtD(c.endDate),valor:v}
-  })
+    return{desc:c.description||'Cancelamento',dateFrom:(c.startDate||'').slice(0,10),dateTo:(c.endDate||'').slice(0,10),
+      penal:(teto>0&&v>0)?Math.round(v/teto*100):null,montante:v}
+  }).filter(c=>c.montante>0||c.dateFrom||c.dateTo)  // descartar linhas sem qualquer informação
 }
 
 function renderDetail(d,destLabel,origin){
@@ -827,7 +827,7 @@ function renderDetail(d,destLabel,origin){
     ${d.cancelamento&&d.cancelamento.length?`<div class="cancela">
       <div class="cancela-h">⚠️ Condições de cancelamento</div>
       <table class="cancela-t"><thead><tr><th>Tipo</th><th>Datas</th><th>Penalização</th><th>Montante</th></tr></thead><tbody>
-      ${d.cancelamento.map(c=>`<tr><td>${esc(c.desc||'—')}</td><td>${c.dateFrom||''}${c.dateTo?` a ${c.dateTo}`:''}</td><td>${c.penal!=null?c.penal+'%':'—'}</td><td>${eur2(c.montante)}</td></tr>`).join('')}
+      ${d.cancelamento.map(c=>`<tr><td>${esc((c.desc||'—').replace(/cancelaci[oó]n/gi,'cancelamento').replace(/Gastos de/gi,'Gastos de'))}</td><td>${c.dateFrom||''}${c.dateTo?` a ${c.dateTo}`:''}</td><td>${c.penal!=null?c.penal+'%':'—'}</td><td>${c.montante>0?eur2(c.montante):'—'}</td></tr>`).join('')}
       </tbody></table></div>`:''}
     <div class="dactions">
       <button class="btn" onclick='gerarDocumento("orcamento", ${JSON.stringify(JSON.stringify(d))}, ${JSON.stringify(destLabel)}, ${JSON.stringify(origin)})'>📄 Gerar orçamento</button>
