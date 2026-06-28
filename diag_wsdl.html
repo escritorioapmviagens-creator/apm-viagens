@@ -40,7 +40,16 @@ async function searchProds(){
   L.textContent='A testar SearchProducts...'
   try{
     const data=await rawSoap('SearchProducts',`<ns1:SearchProducts><SearchProductsRequest>${credXML()}<ProductCode xsi:type="xsd:int">7</ProductCode></SearchProductsRequest></ns1:SearchProducts>`)
-    log('resposta (300 chars): '+(data.xml||JSON.stringify(data)).slice(0,500))
+    const doc=new DOMParser().parseFromString((data.xml||'').replace(/^\uFEFF/,'').trim(),'text/xml')
+    // despejar a estrutura de topo
+    const ret=all(doc,'return')[0]||doc.documentElement
+    log('=== estrutura de SearchProducts ===')
+    const dump=(el,ind,prof)=>{for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();const nf=c.children.length;if(nf){log(`${ind}${l}: [${nf}]`);if(prof<3)dump(c,ind+'  ',prof+1)}else{const v=c.textContent.trim();if(v)log(`${ind}${l} = ${v}`)}}}
+    dump(ret,'  ',0)
+    // procurar special/charter/flight em toda a resposta
+    log('\n=== tags special/charter/flight/date ===')
+    const tall=doc.getElementsByTagName('*');const vis={}
+    for(let i=0;i<tall.length;i++){const c=tall[i],l=c.localName||c.tagName.split(':').pop();if(/special|especial|charter|flight|vuelo|bloque|chark/i.test(l)){const v=c.children.length?`[${c.children.length}]`:c.textContent.trim();const k=l+'|'+v;if(!vis[k]){vis[k]=1;log(`  ${l} = ${v}`)}}}
   }catch(e){log('erro: '+e.message)}
 }
 // inspeciona TODOS os campos de um DynFlight individual numa pesquisa real
@@ -55,21 +64,19 @@ async function flightTypes(){
     const baseXML=(bl.length?bl:['0']).map(c=>`<Local><Code>${c}</Code><Nights>7</Nights></Local>`).join('')
     const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges></ChildAges></RoomTypeOption>`
     const dep=locals[0]||'LIS'
-    for(const data of ['2026-07-04','2026-07-22']){
-      log(`\n===== ${data} (${data==='2026-07-04'?'ESPECIAL':'normal'}) — TODOS os campos do voo individual =====`)
+    for(const data of ['2026-07-04','2026-07-05','2026-07-11','2026-07-18','2026-07-22','2026-07-23']){
+      const esp=['2026-07-04','2026-07-05','2026-07-11','2026-07-18'].includes(data)
       const sd=await rawSoap('DynSearchProductAvailableServices',`<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${credXML()}<ProductCode xsi:type="xsd:int">7</ProductCode><DepartureDate xsi:type="xsd:string">${data}</DepartureDate><DepartureLocal xsi:type="xsd:string">${dep}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
       const doc=new DOMParser().parseFromString((sd.xml||'').replace(/^\uFEFF/,'').trim(),'text/xml')
-      // descer até um DynFlight individual (dentro de Flights → item)
-      const seg=all(doc,'FlightSegments')[0]
-      const flightsC=seg?itemsOf(seg)[0]:null
-      const flC=flightsC?directChildren(flightsC,'Flights')[0]:null
-      const voo=flC?itemsOf(flC)[0]:null
-      if(voo){
-        log('  campos do voo (recursivo):')
-        const dump=(el,ind)=>{for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(c.children.length){log(`${ind}${l}:`);if(ind.length<8)dump(c,ind+'  ')}else log(`${ind}${l} = ${c.textContent.trim()}`)}}
-        dump(voo,'    ')
-      }else log('  (não encontrei voo individual)')
+      // recolher TODAS as classes e bagagens de TODOS os voos da 1ª opção
+      const opt=itemsOf(all(doc,'FlightOptionsSuperBB')[0])[0]
+      const classes=new Set(),bags=new Set()
+      if(opt)all(opt,'item').forEach(fl=>{const cl=txt(fl,'Class'),bg=txt(fl,'Bag');if(cl&&fl.getElementsByTagName('*').length<20){classes.add(cl);if(bg)bags.add(bg)}})
+      // contar nº de opções de voo
+      const nOpts=itemsOf(all(doc,'FlightOptionsSuperBB')[0]).length
+      log(`${data} [${esp?'ESPECIAL':'normal  '}]: classes={${[...classes].join(',')}} bags={${[...bags].join(' | ')}} nOpções=${nOpts}`)
     }
+    log('\n>>> procurar: que classe/bag/nOpções distingue consistentemente ESPECIAL de normal?')
   }catch(e){log('erro: '+e.message)}
 }
 </script></body></html>
