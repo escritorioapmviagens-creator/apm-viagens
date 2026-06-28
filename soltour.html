@@ -58,6 +58,12 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .progresso.show{display:block}
 .progresso .barra{height:6px;background:rgba(59,91,219,.18);border-radius:99px;margin-top:8px;overflow:hidden}
 .progresso .barra > i{display:block;height:100%;background:var(--accent);border-radius:99px;width:0;transition:width .3s ease}
+.cancela{margin:12px 16px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.cancela-h{background:#FFF4E5;color:#B05A00;font-size:12px;font-weight:600;padding:8px 12px}
+.cancela-t{width:100%;border-collapse:collapse;font-size:12px}
+.cancela-t th{text-align:left;background:var(--bg);color:var(--muted);font-weight:600;padding:6px 12px;border-bottom:1px solid var(--line)}
+.cancela-t td{padding:6px 12px;border-bottom:1px solid var(--line)}
+.cancela-t tr:last-child td{border-bottom:none}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 .legend span{display:flex;align-items:center;gap:5px}
 .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
@@ -275,6 +281,7 @@ const pkCred=()=>`<Credentials xsi:type="ns1:CredentialsStruct"><System xsi:type
 function pkTxt(el,tag){if(!el)return '';for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)return c.textContent.trim()}const n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)return n[i].textContent.trim()}return ''}
 function pkAll(el,tag){if(!el)return[];const o=[],n=el.getElementsByTagName('*');for(let i=0;i<n.length;i++){const l=n[i].localName||n[i].tagName.split(':').pop();if(l===tag)o.push(n[i])}return o}
 function pkItems(c){return c?pkAll(c,'item'):[]}
+function pkDirectChildren(el,tag){if(!el)return[];const o=[];for(let i=0;i<el.children.length;i++){const c=el.children[i],l=c.localName||c.tagName.split(':').pop();if(l===tag)o.push(c)}return o}
 
 // Extrai, de uma availability, o preço por pessoa mais barato de cada hotel.
 // Usado quando há filtro de hotel (o getPriceCalendar só dá o mais barato global).
@@ -419,22 +426,7 @@ async function getSoltropico(destCode,origin,year,month,nights,adults,childAges,
   if(!P){
     const pdoc=await pkSoap('DynGetProductParameters',
       `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCred()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
-    // extrair tudo de uma vez para dados simples
-    const ddWrap=pkAll(pdoc,'DepartureDates')[0]
-    let dates=[]
-    if(ddWrap)dates=pkItems(ddWrap).map(it=>pkTxt(it,'Date')||it.textContent.trim()).filter(Boolean)
-    if(!dates.length)dates=pkAll(pdoc,'item').map(it=>it.textContent.trim()).filter(t=>/^\d{4}-\d{2}-\d{2}/.test(t))
-    const locals=[]
-    const lw=pkAll(pdoc,'DepartureLocals')[0]
-    if(lw)pkItems(lw).forEach(it=>{const c=pkTxt(it,'Code');if(c)locals.push(c)})
-    const ocup=[]
-    const rw=pkAll(pdoc,'RoomTypes')[0]
-    if(rw)pkItems(rw).forEach(it=>{const c=pkTxt(it,'Code'),n=pkTxt(it,'Name');if(c)ocup.push({code:c,name:n})})
-    const baseLocals=[]
-    const bw=pkAll(pdoc,'BaseLocals')[0]
-    if(bw)pkItems(bw).forEach(it=>{const c=pkTxt(it,'Code');if(c)baseLocals.push(c)})
-    P={dates,locals,ocup,baseLocals}
-    _paramCache[destCode]=P
+    P=extrairParams(pdoc);_paramCache[destCode]=P
   }
   const {dates,locals,ocup,baseLocals}=P
 
@@ -643,7 +635,7 @@ async function selectDay(ds){
   const origin=$('origin').value,nights=+$('nights').value,adults=+$('adults').value||1,dest=data.dest
   const partes=[]
   if(dd.soltour&&dest.soltour){try{partes.push(await detSoltour(dd.soltour,ds,origin,nights,adults,dest))}catch(e){partes.push(`<div class="detail st"><div style="padding:18px;color:#C0392B">Soltour: ${esc(e.message)}</div></div>`)}}
-  if(dd.soltropico&&dest.soltropico){try{partes.push(await detSoltropico(dd.soltropico,ds,nights,dest))}catch(e){partes.push(`<div class="detail sp"><div style="padding:18px;color:#C0392B">Soltrópico: ${esc(e.message)}</div></div>`)}}
+  if(dd.soltropico&&dest.soltropico){try{partes.push(await detSoltropico(dd.soltropico,ds,nights,dest,origin,adults,childAgesFromInput()))}catch(e){partes.push(`<div class="detail sp"><div style="padding:18px;color:#C0392B">Soltrópico: ${esc(e.message)}</div></div>`)}}
   cont.innerHTML=partes.length?partes.join(''):`<div class="detail"><div style="padding:18px;color:#C0392B">Não foi possível obter os detalhes.</div></div>`
 }
 
@@ -679,12 +671,106 @@ async function detSoltour(op,ds,origin,nights,adults,dest){
   return renderDetail(D,dest.label,origin)
 }
 
-async function detSoltropico(op,ds,nights,dest){
-  const bruto=op.price,com=bruto*0.15
-  const D={brand:'SOLTRÓPICO',hotelName:op.hotelName,hotelCode:dest.soltropico,stars:op.stars||0,board:op.board||'',
-    checkIn:ds,checkOut:'—',nights:op.nights||nights,image:op.image||'',images:op.images||[],direct:true,
-    totalPvp:bruto,totalNet:bruto-com,totalCom:com,cancelamento:[]}
-  return renderDetail(D,dest.label,'')
+async function detSoltropico(op,ds,nights,dest,origin,adults,childAges){
+  const destCode=dest.soltropico
+  const numPax=adults+(childAges?childAges.length:0)
+  // Fallback: se o fluxo de simulação falhar, mostra o bruto e deixa net por confirmar (nunca inventa)
+  const fallback=()=>{
+    const D={brand:'SOLTRÓPICO',hotelName:op.hotelName,hotelCode:destCode,stars:op.stars||0,board:op.board||'',
+      checkIn:ds,checkOut:'—',nights:op.nights||nights,image:op.image||'',images:op.images||[],direct:true,
+      totalPvp:op.price,totalNet:null,totalCom:null,cancelamento:[]}
+    return renderDetail(D,dest.label,'')
+  }
+  try{
+    // 1. parâmetros (cacheados)
+    let P=_paramCache[destCode]
+    if(!P){
+      const pdoc=await pkSoap('DynGetProductParameters',
+        `<ns1:DynGetProductParameters><DynProductParametersRequest>${pkCred()}<Productcode xsi:type="xsd:int">${destCode}</Productcode></DynProductParametersRequest></ns1:DynGetProductParameters>`)
+      P=extrairParams(pdoc);_paramCache[destCode]=P
+    }
+    const nCri=childAges?childAges.length:0
+    const parseOc=nome=>{const a=(nome.match(/(\d+)\s*Adulto/i)||[])[1];const c=(nome.match(/(\d+)\s*Crian/i)||[])[1];return{a:a?+a:0,c:c?+c:0}}
+    const roomCode=(P.ocup.find(o=>{const p=parseOc(o.name);return p.a===adults&&p.c===nCri})
+      ||P.ocup.find(o=>parseOc(o.name).a===adults)||P.ocup[0]||{}).code||'437'
+    const depLocal=P.locals.find(l=>l===origin)||P.locals[0]||origin
+    const baseXML=(P.baseLocals.length?P.baseLocals:['0']).map(c=>`<Local><Code>${c}</Code><Nights>${nights}</Nights></Local>`).join('')
+    const roomsXML=`<RoomTypeOption><RoomNum>0</RoomNum><Code>${roomCode}</Code><ChildAges>${(childAges||[]).join(',')}</ChildAges></RoomTypeOption>`
+    // 2. pesquisa → SessionHash + hotéis
+    const doc=await pkSoap('DynSearchProductAvailableServices',
+      `<ns1:DynSearchProductAvailableServices><DynProductAvailableServicesRequest>${pkCred()}<ProductCode xsi:type="xsd:int">${destCode}</ProductCode><DepartureDate xsi:type="xsd:string">${ds}</DepartureDate><DepartureLocal xsi:type="xsd:string">${depLocal}</DepartureLocal><RoomTypes>${roomsXML}</RoomTypes><BaseLocals>${baseXML}</BaseLocals><ExtraNights xsi:type="xsd:int">0</ExtraNights></DynProductAvailableServicesRequest></ns1:DynSearchProductAvailableServices>`)
+    const sessionHash=(pkAll(doc,'SessionHash')[0]||{}).textContent
+    if(!sessionHash)return fallback()
+    // escolher o hotel que corresponde à oferta (pelo nome), senão o 1º disponível
+    const itinC=pkAll(doc,'Itinerary')[0];const cands=[]
+    pkItems(itinC).forEach(itin=>{
+      const ic=pkTxt(itin,'Code')||'0',iface=pkTxt(itin,'Interface')||'htl_hub',conn=pkTxt(itin,'Connector')||'HTL_HUB'
+      const hc=pkDirectChildren(itin,'HotelOption')[0]
+      pkItems(hc).forEach(h=>{
+        const occ=pkDirectChildren(h,'RoomsOccupancy')[0],occI=pkItems(occ)[0],roomsC=occI?pkDirectChildren(occI,'Rooms')[0]:null
+        const rooms=pkItems(roomsC).filter(rm=>pkTxt(rm,'AvailStatus')==='OK').map(rm=>({code:pkTxt(rm,'Code'),board:pkTxt(rm,'BoardCode')||'TI'}))
+        const boards=pkItems(pkDirectChildren(h,'Boards')[0]).map(b=>({code:pkTxt(b,'Code')}))
+        if(rooms.length)cands.push({code:pkTxt(h,'Code'),name:pkTxt(h,'Name'),img:pkTxt(h,'Image'),rating:parseInt(pkTxt(h,'Rating'))||0,room:rooms[0],boards,ic,iface,conn})
+      })
+    })
+    if(!cands.length)return fallback()
+    const alvo=cands.find(c=>op.hotelName&&normalize(c.name)===normalize(op.hotelName))
+      ||cands.find(c=>op.hotelName&&normalize(c.name).includes(normalize(op.hotelName)))||cands[0]
+    let board=alvo.room.board
+    if(!/^[A-Z]{2,4}$/.test(board)&&alvo.boards.length)board=alvo.boards[0].code
+    // 3. selecionar serviços
+    const roomsSelXML=`<item xsi:type="ns1:DynRoomsSelect"><RoomNum xsi:type="xsd:string">0</RoomNum><RoomCode xsi:type="xsd:string">${alvo.room.code}</RoomCode><BoardCode xsi:type="xsd:string">${board}</BoardCode></item>`
+    await pkSoap('DynSetServicesSelected',
+      `<ns1:DynSetServicesSelected><DynServicesSelectedRequest xsi:type="ns1:DynServicesSelectedRequest">${pkCred()}<SessionHash xsi:type="xsd:string">${sessionHash}</SessionHash><Reserve xsi:nil="true"/><Local xsi:nil="true"/><Regime xsi:nil="true"/><Connector xsi:nil="true"/><Skeleton_id xsi:nil="true"/><Action xsi:nil="true"/><DepLocal xsi:nil="true"/><OptionId xsi:nil="true"/><FlightsSelected xsi:nil="true"/><FlightsSelectedSuperBB xsi:nil="true"/><FlightsSelectedFlightEngine xsi:nil="true"/><FlightsSelectedAirAvailFlightEngine xsi:nil="true"/><BusSelected xsi:nil="true"/><HotelsSelected SOAP-ENC:arrayType="ns1:DynHotelsSelected[1]" xsi:type="ns1:DynHotelsSelectedArray"><item xsi:type="ns1:DynHotelsSelected"><ItineraryCode xsi:type="xsd:string">${alvo.ic}</ItineraryCode><Interface xsi:type="xsd:string">${alvo.iface}</Interface><Connector xsi:type="xsd:string">${alvo.conn}</Connector><HtlSession xsi:type="xsd:string">${sessionHash}</HtlSession><HotelRPH xsi:type="xsd:string">${alvo.code}</HotelRPH><HotelSelected xsi:type="xsd:string">${alvo.code}</HotelSelected><HotelSelectedPrice xsi:nil="true"/><RoomsSelected SOAP-ENC:arrayType="ns1:DynRoomsSelect[1]" xsi:type="ns1:DynRoomsSelectArray">${roomsSelXML}</RoomsSelected><BoardSelected xsi:type="xsd:string">${board}</BoardSelected><SuplementSelected xsi:type="xsd:string"/></item></HotelsSelected><OptionalsSelected xsi:nil="true"/><RoomsOfi xsi:nil="true"/><RoomsSeniorOfi xsi:nil="true"/><RoomsPktStatic xsi:nil="true"/><RoomsSeniorPktStatic xsi:nil="true"/></DynServicesSelectedRequest></ns1:DynSetServicesSelected>`)
+    // 4. simulação → preços reais
+    const sim=await pkSoap('DynGetSimulation',
+      `<ns1:DynGetSimulation><DynGetSimulationRequest>${pkCred()}<SessionHash xsi:type="xsd:string">${sessionHash}</SessionHash></DynGetSimulationRequest></ns1:DynGetSimulation>`)
+    const pvpTotal=parseFloat(pkTxt(sim,'TotalPrice'))||0
+    if(!pvpTotal)return fallback()
+    // calcular comissão e net a partir das linhas (GrossTotalVal × ComissionPerc da mesma linha)
+    let comissao=0
+    const linhas=[]
+    pkAll(sim,'GrossTotalVal').forEach(g=>{
+      const gross=parseFloat(g.textContent.trim())||0
+      const pai=g.parentElement
+      const pc=pai?(pkDirectChildren(pai,'ComissionPerc')[0]||pkAll(pai,'ComissionPerc')[0]):null
+      const perc=pc?parseFloat(pc.textContent.trim())||0:0
+      comissao+=gross*perc/100
+      const desc=pai?(pkTxt(pai,'Description')||pkTxt(pai,'Concept')||pkTxt(pai,'Type')||''):''
+      linhas.push({desc,gross,perc})
+    })
+    comissao=Math.round(comissao*100)/100
+    const net=Math.round((pvpTotal-comissao)*100)/100
+    // cancelamento — vem no bloco <Policies> da simulação
+    const canc=[]
+    pkItems(pkAll(sim,'Policies')[0]).forEach(p=>{
+      const tipo=pkTxt(p,'Type'),serv=pkTxt(p,'Service')
+      if(tipo&&tipo.toUpperCase()!=='CANCEL'&&!serv)return
+      const dFrom=pkTxt(p,'DateFrom'),dTo=pkTxt(p,'DateTo')
+      const vType=pkTxt(p,'ValueType'),val=parseFloat(pkTxt(p,'Value'))||0
+      canc.push({desc:serv||'Cancelamento',dateFrom:dFrom,dateTo:dTo,
+        penal:vType==='PERCENTAGE'&&pvpTotal?Math.round(val/pvpTotal*100):null,montante:val})
+    })
+    const D={brand:'SOLTRÓPICO',hotelName:alvo.name||op.hotelName,hotelCode:destCode,stars:alvo.rating||op.stars||0,
+      board:op.board||'',checkIn:ds,checkOut:'—',nights:op.nights||nights,image:alvo.img||op.image||'',images:op.images||[],
+      direct:true,totalPvp:pvpTotal,totalNet:net,totalCom:comissao,linhas,cancelamento:canc}
+    return renderDetail(D,dest.label,'')
+  }catch(e){
+    return fallback()
+  }
+}
+function extrairParams(pdoc){
+  const ddWrap=pkAll(pdoc,'DepartureDates')[0]
+  let dates=[]
+  if(ddWrap)dates=pkItems(ddWrap).map(it=>pkTxt(it,'Date')||it.textContent.trim()).filter(Boolean)
+  if(!dates.length)dates=pkAll(pdoc,'item').map(it=>it.textContent.trim()).filter(t=>/^\d{4}-\d{2}-\d{2}/.test(t))
+  const locals=[];const lw=pkAll(pdoc,'DepartureLocals')[0]
+  if(lw)pkItems(lw).forEach(it=>{const c=pkTxt(it,'Code');if(c)locals.push(c)})
+  const ocup=[];const rw=pkAll(pdoc,'RoomTypes')[0]
+  if(rw)pkItems(rw).forEach(it=>{const c=pkTxt(it,'Code'),n=pkTxt(it,'Name');if(c)ocup.push({code:c,name:n})})
+  const baseLocals=[];const bw=pkAll(pdoc,'BaseLocals')[0]
+  if(bw)pkItems(bw).forEach(it=>{const c=pkTxt(it,'Code');if(c)baseLocals.push(c)})
+  return {dates,locals,ocup,baseLocals}
 }
 
 function extrairCancelamento(budget,pvpCliente){
@@ -720,7 +806,12 @@ function renderDetail(d,destLabel,origin){
         ?`<div><div class="k">Net</div><div class="v net">${eur2(d.totalNet)}</div></div><div><div class="k">Margem</div><div class="v mg">${eur2(d.totalPvp-d.totalNet)}</div></div>`
         :`<div style="align-self:center;color:var(--muted);font-size:12px;max-width:260px">Net e margem obtêm-se na fase de reserva — a Soltour não os fornece para este dia na pesquisa.</div>`}
     </div>
-    ${d.brand==='SOLTRÓPICO'?`<div class="note">Net estimado com 15% de comissão. O valor exato confirma-se na reserva.</div>`:''}
+    ${d.brand==='SOLTRÓPICO'&&d.totalNet==null?`<div class="note">Não foi possível simular o net neste momento. O preço de venda está correto; o net e a margem confirmam-se na reserva.</div>`:''}
+    ${d.cancelamento&&d.cancelamento.length?`<div class="cancela">
+      <div class="cancela-h">⚠️ Condições de cancelamento</div>
+      <table class="cancela-t"><thead><tr><th>Tipo</th><th>Datas</th><th>Penalização</th><th>Montante</th></tr></thead><tbody>
+      ${d.cancelamento.map(c=>`<tr><td>${esc(c.desc||'—')}</td><td>${c.dateFrom||''}${c.dateTo?` a ${c.dateTo}`:''}</td><td>${c.penal!=null?c.penal+'%':'—'}</td><td>${eur2(c.montante)}</td></tr>`).join('')}
+      </tbody></table></div>`:''}
     <div class="dactions">
       <button class="btn" onclick='gerarDocumento("orcamento", ${JSON.stringify(JSON.stringify(d))}, ${JSON.stringify(destLabel)}, ${JSON.stringify(origin)})'>📄 Gerar orçamento</button>
       <button class="btn go" onclick='gerarDocumento("contrato", ${JSON.stringify(JSON.stringify(d))}, ${JSON.stringify(destLabel)}, ${JSON.stringify(origin)})'>✍️ Gerar contrato</button>
