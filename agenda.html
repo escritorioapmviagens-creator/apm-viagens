@@ -399,12 +399,13 @@ function renderMetrics(ini,fim){
   // reservas a partir em <40 dias COM pagamento em falta
   const pagFalta=_reservas.filter(r=>r.data_partida&&r.data_partida>=hoje&&r.data_partida<=limite40&&faltaPagar(r)>0)
   const valorFalta=pagFalta.reduce((s,r)=>s+faltaPagar(r),0)
-  const valorPipe=_props.filter(p=>!p.aceite).reduce((s,p)=>{const pr=(p.dados&&p.dados.prices)||[];return s+pr.reduce((a,x)=>a+(parseFloat(x.val)||0),0)},0)
+  // tarefas por concluir dentro da semana que estamos a ver
+  const tarefasSem=_tarefas.filter(t=>!t.concluida && t.data>=ini && t.data<=fim).length
   const m=[
     {label:'Partidas esta semana',val:partidasSem,foot:'viagens a iniciar',cls:'accent-coral'},
     {label:'Pagam. em falta <40d',val:pagFalta.length,foot:valorFalta>0?('€'+Math.round(valorFalta).toLocaleString('pt-PT')+' por receber'):'tudo pago ✓',cls:'accent-amber'},
     {label:'Orçamentos por aceitar',val:propAbertas,foot:'gerados, sem aceitação',cls:'accent-blue'},
-    {label:'Pipeline aberto',val:'€'+Math.round(valorPipe).toLocaleString('pt-PT'),foot:'valor por fechar',cls:'accent-green'},
+    {label:'Tarefas esta semana',val:tarefasSem,foot:tarefasSem?'por concluir':'tudo feito ✓',cls:'accent-green'},
   ]
   document.getElementById('metrics').innerHTML=m.map(x=>`<div class="metric ${x.cls}">
     <div class="mlabel">${x.label}</div><div class="mval">${x.val}</div><div class="mfoot">${x.foot}</div></div>`).join('')
