@@ -80,6 +80,7 @@ button{font-family:var(--font);cursor:pointer}
 .ev.k-partida{border-left-color:var(--coral);background:var(--coral-light)}
 .ev.k-complementar{border-left-color:var(--amber);background:var(--amber-light)}
 .ev.k-tarefa{border-left-color:var(--green);background:var(--green-light)}
+.ev.k-pagamento{border-left-color:#C0392B;background:#fdeaea}
 .ev .done-btn{margin-left:auto;border:none;background:none;color:var(--muted);font-size:1rem;padding:2px}
 .ev .done-btn:hover{color:var(--green)}
 .empty-day{font-size:.78rem;color:#b9bfc9;font-style:italic;padding:4px 2px}
@@ -221,7 +222,7 @@ let _props=[], _reservas=[], _tarefas=[]
 // ── util de datas ──
 function startOfWeek(d){const x=new Date(d);const dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);x.setHours(0,0,0,0);return x}
 function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
-function iso(d){return d.toISOString().slice(0,10)}
+function iso(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dia=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${dia}`}
 function fmtDia(d){return d.toLocaleDateString('pt-PT',{weekday:'long'})}
 function fmtCurto(d){return d.toLocaleDateString('pt-PT',{day:'2-digit',month:'short'})}
 function diasEntre(a,b){return Math.round((new Date(b)-new Date(a))/864e5)}
@@ -260,7 +261,7 @@ async function carregarDados(){
   _props=props||[]
   // reservas do consultor
   const {data:res}=await sb.from('reservas')
-    .select('id,rnavt,destino,hotel,data_partida,estado,complementar_preenchido,lead_nome,valor_total')
+    .select('id,rnavt,destino,hotel,data_partida,estado,complementar_preenchido,lead_nome,valor_total,valor_pago_cliente')
     .eq('consultor_id',currentUser.id).order('data_partida',{ascending:true}).limit(200)
   _reservas=res||[]
   // tarefas manuais (tabela agenda_tarefas)
@@ -277,9 +278,11 @@ function eventosDaSemana(ini,fim){
   // reservas a partir nesta semana
   _reservas.forEach(r=>{
     if(r.data_partida && r.data_partida>=ini && r.data_partida<=fim){
-      evs.push({date:r.data_partida,kind:'partida',ico:'✈️',
+      const falta=faltaPagar(r)
+      evs.push({date:r.data_partida,kind:falta>0?'pagamento':'partida',ico:falta>0?'💰':'✈️',
         titulo:`Partida — ${r.destino||r.hotel||'viagem'}`,
-        sub:`${r.lead_nome||''} · ${r.rnavt||''}`.trim(),ref:{tipo:'reserva',id:r.id}})
+        sub:falta>0?`${r.lead_nome||''} · falta €${Math.round(falta)}`.trim():`${r.lead_nome||''} · ${r.rnavt||''}`.trim(),
+        ref:{tipo:'reserva',id:r.id}})
     }
   })
   // tarefas manuais nesta semana
@@ -314,6 +317,17 @@ function recomendacoes(proxIni,proxFim){
       desc:`Reservas com partida nas próximas 3 semanas ainda sem complementar preenchido.`,
       accao:'Agendar preparação',
       fn:()=>{aPartir.slice(0,5).forEach((r,i)=>{const d=iso(addDays(new Date(proxIni),i%5));criarTarefaAuto(`Complementar: ${r.rnavt||r.destino}`,d,'complementar',`Partida ${r.data_partida}`)});toast('Preparações agendadas');carregarDados()}})
+  }
+  // 2b) Reservas a partir em <40 dias com pagamento em falta → cobrar
+  const limite40=iso(addDays(new Date(),40))
+  const pagFalta=_reservas.filter(r=>r.data_partida&&r.data_partida>=hoje&&r.data_partida<=limite40&&faltaPagar(r)>0)
+  if(pagFalta.length){
+    const tot=pagFalta.reduce((s,r)=>s+faltaPagar(r),0)
+    recs.push({prio:'alta',tag:'Pagamento',
+      titulo:`${pagFalta.length} reserva(s) com pagamento em falta`,
+      desc:`Viagens a partir em menos de 40 dias com €${Math.round(tot).toLocaleString('pt-PT')} ainda por receber. Contacta os clientes para regularizar.`,
+      accao:'Agendar cobranças',
+      fn:()=>{pagFalta.slice(0,6).forEach((r,i)=>{const d=iso(addDays(new Date(proxIni),i%5));criarTarefaAuto(`Cobrança: ${r.lead_nome||r.rnavt||r.destino} (€${Math.round(faltaPagar(r))})`,d,'followup',`Partida ${r.data_partida} · falta €${Math.round(faltaPagar(r))}`)});toast('Cobranças agendadas');carregarDados()}})
   }
   // 3) Aceites pendentes (cliente aceitou, falta ação do consultor)
   const aceitesPend=_reservas.filter(r=>(r.estado||'').toLowerCase().includes('pendente'))
@@ -371,17 +385,22 @@ function render(){
   renderRecs(recs)
 }
 
+function faltaPagar(r){return Math.max(0,(Number(r.valor_total)||0)-(Number(r.valor_pago_cliente)||0))}
+
 function renderMetrics(ini,fim){
   const hoje=iso(new Date())
+  const limite40=iso(addDays(new Date(),40))
   const partidasSem=_reservas.filter(r=>r.data_partida>=ini&&r.data_partida<=fim).length
   const propAbertas=_props.filter(p=>!p.aceite).length
-  const aceitesMes=_props.filter(p=>p.aceite&&p.aceite_at&&diasEntre(p.aceite_at,hoje)<=30).length
+  // reservas a partir em <40 dias COM pagamento em falta
+  const pagFalta=_reservas.filter(r=>r.data_partida&&r.data_partida>=hoje&&r.data_partida<=limite40&&faltaPagar(r)>0)
+  const valorFalta=pagFalta.reduce((s,r)=>s+faltaPagar(r),0)
   const valorPipe=_props.filter(p=>!p.aceite).reduce((s,p)=>{const pr=(p.dados&&p.dados.prices)||[];return s+pr.reduce((a,x)=>a+(parseFloat(x.val)||0),0)},0)
   const m=[
     {label:'Partidas esta semana',val:partidasSem,foot:'viagens a iniciar',cls:'accent-coral'},
+    {label:'Pagam. em falta <40d',val:pagFalta.length,foot:valorFalta>0?('€'+Math.round(valorFalta).toLocaleString('pt-PT')+' por receber'):'tudo pago ✓',cls:'accent-amber'},
     {label:'Propostas abertas',val:propAbertas,foot:'à espera de resposta',cls:'accent-blue'},
-    {label:'Aceites (30 dias)',val:aceitesMes,foot:'fechos recentes',cls:'accent-green'},
-    {label:'Pipeline aberto',val:'€'+Math.round(valorPipe).toLocaleString('pt-PT'),foot:'valor por fechar',cls:'accent-amber'},
+    {label:'Pipeline aberto',val:'€'+Math.round(valorPipe).toLocaleString('pt-PT'),foot:'valor por fechar',cls:'accent-green'},
   ]
   document.getElementById('metrics').innerHTML=m.map(x=>`<div class="metric ${x.cls}">
     <div class="mlabel">${x.label}</div><div class="mval">${x.val}</div><div class="mfoot">${x.foot}</div></div>`).join('')
