@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agenda · APM Viagens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --coral:#E8395A; --coral-light:#fff0f3; --coral-mid:#ffd6de;
+  --blue:#3B5BDB; --blue-light:#eef2ff;
+  --green:#1E8E5A; --green-light:#e8f7ef;
+  --amber:#B0710A; --amber-light:#fdf3e3;
+  --text:#1a1a2e; --muted:#6b7280; --border:#e5e7eb; --bg:#f8f9ff; --surface:#fff;
+  --font:'Plus Jakarta Sans',system-ui,sans-serif;
+  --radius:16px; --shadow:0 2px 14px rgba(26,26,46,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font-family:var(--font);cursor:pointer}
+.wrap{max-width:1200px;margin:0 auto;padding:20px 16px 60px}
+
+/* Login */
+#login-wall{position:fixed;inset:0;background:linear-gradient(135deg,#fff5f7,#eef2ff);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.login-card{background:#fff;border-radius:20px;box-shadow:0 12px 40px rgba(232,57,90,.15);padding:36px 30px;width:100%;max-width:380px}
+.login-card h1{font-size:1.3rem;font-weight:800;margin-bottom:4px}
+.login-card p{color:var(--muted);font-size:.85rem;margin-bottom:22px}
+.login-card input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:11px;font-family:var(--font);font-size:.9rem;margin-bottom:11px;outline:none}
+.login-card input:focus{border-color:var(--coral)}
+.login-card button{width:100%;padding:12px;background:var(--coral);color:#fff;border:none;border-radius:11px;font-weight:700;font-size:.92rem;margin-top:6px}
+.login-err{color:var(--coral);font-size:.82rem;margin-top:8px;display:none}
+
+/* Header */
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.head .eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--coral)}
+.head h1{font-size:1.7rem;font-weight:800;letter-spacing:-.02em;margin-top:2px}
+.head .sub{color:var(--muted);font-size:.9rem;margin-top:3px}
+.head-actions{display:flex;gap:8px;align-items:center}
+.wk-nav{display:flex;align-items:center;gap:4px;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:3px}
+.wk-nav button{border:none;background:none;padding:7px 11px;border-radius:8px;font-weight:600;font-size:.85rem;color:var(--text)}
+.wk-nav button:hover{background:var(--bg)}
+.wk-nav .wk-label{font-weight:700;font-size:.85rem;padding:0 6px;min-width:140px;text-align:center}
+.back-link{text-decoration:none;color:var(--muted);font-size:.85rem;font-weight:600;padding:8px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface);white-space:nowrap}
+.back-link:hover{color:var(--text)}
+
+/* Metrics */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0 22px}
+.metric{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:15px 16px;box-shadow:var(--shadow)}
+.metric .mlabel{font-size:.74rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.metric .mval{font-size:1.7rem;font-weight:800;letter-spacing:-.02em;margin-top:5px}
+.metric .mfoot{font-size:.76rem;color:var(--muted);margin-top:2px}
+.metric.accent-coral .mval{color:var(--coral)} .metric.accent-blue .mval{color:var(--blue)}
+.metric.accent-green .mval{color:var(--green)} .metric.accent-amber .mval{color:var(--amber)}
+
+/* Layout: agenda + copilot */
+.grid{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+
+/* Week board */
+.board{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.board-h{padding:14px 18px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.board-h .t{font-weight:700;font-size:1rem}
+.board-h .add{border:none;background:var(--blue);color:#fff;border-radius:9px;padding:7px 13px;font-weight:600;font-size:.83rem}
+.days{display:flex;flex-direction:column}
+.day{display:grid;grid-template-columns:92px 1fr;border-bottom:1px solid var(--border)}
+.day:last-child{border-bottom:none}
+.day.today{background:linear-gradient(90deg,var(--coral-light),transparent 60%)}
+.day-label{padding:14px 12px;border-right:1px solid var(--border)}
+.day-label .dow{font-weight:700;font-size:.9rem;text-transform:capitalize}
+.day-label .dnum{font-size:.78rem;color:var(--muted);margin-top:1px}
+.day.today .day-label .dow{color:var(--coral)}
+.day-items{padding:9px 12px;display:flex;flex-direction:column;gap:6px;min-height:54px}
+.ev{display:flex;align-items:flex-start;gap:9px;padding:8px 11px;border-radius:10px;background:var(--bg);border-left:3px solid var(--muted);cursor:pointer;transition:transform .12s}
+.ev:hover{transform:translateX(2px)}
+.ev .ico{font-size:1rem;line-height:1.3}
+.ev .body .ev-t{font-weight:600;font-size:.86rem}
+.ev .body .ev-s{font-size:.77rem;color:var(--muted)}
+.ev.k-followup{border-left-color:var(--blue);background:var(--blue-light)}
+.ev.k-partida{border-left-color:var(--coral);background:var(--coral-light)}
+.ev.k-complementar{border-left-color:var(--amber);background:var(--amber-light)}
+.ev.k-tarefa{border-left-color:var(--green);background:var(--green-light)}
+.ev .done-btn{margin-left:auto;border:none;background:none;color:var(--muted);font-size:1rem;padding:2px}
+.ev .done-btn:hover{color:var(--green)}
+.empty-day{font-size:.78rem;color:#b9bfc9;font-style:italic;padding:4px 2px}
+
+/* Copilot panel */
+.copilot{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);position:sticky;top:18px}
+.copilot-h{background:linear-gradient(135deg,#1a1a2e,#2d2d4e);color:#fff;padding:16px 18px}
+.copilot-h .ce{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#ffd6de}
+.copilot-h .ct{font-weight:700;font-size:1.05rem;margin-top:3px}
+.copilot-h .cs{font-size:.8rem;color:#b9bfc9;margin-top:3px}
+.recs{padding:12px;display:flex;flex-direction:column;gap:9px;max-height:560px;overflow-y:auto}
+.rec{border:1.5px solid var(--border);border-radius:12px;padding:12px 13px;transition:border-color .15s}
+.rec:hover{border-color:var(--coral-mid)}
+.rec .rtag{display:inline-block;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:20px;margin-bottom:7px}
+.rec.prio-alta .rtag{background:var(--coral-light);color:var(--coral)}
+.rec.prio-media .rtag{background:var(--blue-light);color:var(--blue)}
+.rec.prio-baixa .rtag{background:var(--green-light);color:var(--green)}
+.rec .rt{font-weight:600;font-size:.88rem}
+.rec .rd{font-size:.8rem;color:var(--muted);margin-top:3px}
+.rec .ra{margin-top:9px;border:none;background:var(--text);color:#fff;border-radius:8px;padding:6px 12px;font-weight:600;font-size:.78rem}
+.rec .ra:hover{background:var(--coral)}
+.recs-empty{padding:30px 18px;text-align:center;color:var(--muted);font-size:.85rem}
+
+/* Modal add task */
+.modal-bg{position:fixed;inset:0;background:rgba(26,26,46,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:18px;padding:24px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h3{font-size:1.1rem;font-weight:800;margin-bottom:16px}
+.modal label{display:block;font-size:.78rem;font-weight:600;color:var(--muted);margin:10px 0 4px}
+.modal input,.modal select,.modal textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--font);font-size:.88rem;outline:none}
+.modal input:focus,.modal select:focus,.modal textarea:focus{border-color:var(--coral)}
+.modal-actions{display:flex;gap:9px;margin-top:18px}
+.modal-actions button{flex:1;padding:11px;border:none;border-radius:10px;font-weight:700;font-size:.88rem}
+.btn-cancel{background:var(--bg);color:var(--muted)}
+.btn-save{background:var(--coral);color:#fff}
+
+.loading{text-align:center;padding:60px 20px;color:var(--muted)}
+.spinner{display:inline-block;width:22px;height:22px;border:3px solid var(--coral-mid);border-top-color:var(--coral);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:11px 20px;border-radius:11px;font-size:.86rem;font-weight:600;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.err{background:var(--coral)}
+
+@media(max-width:880px){
+  .grid{grid-template-columns:1fr}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .copilot{position:static}
+  .day{grid-template-columns:72px 1fr}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="login-wall">
+  <div class="login-card">
+    <h1>Agenda APM</h1>
+    <p>Entra com a tua conta de consultor.</p>
+    <input type="email" id="login-email" placeholder="Email" autocomplete="username">
+    <input type="password" id="login-pass" placeholder="Palavra-passe" autocomplete="current-password">
+    <button onclick="doLogin()">Entrar</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Bancada semanal</div>
+      <h1 id="hello">A tua semana</h1>
+      <div class="sub" id="head-sub">A carregar…</div>
+    </div>
+    <div class="head-actions">
+      <div class="wk-nav">
+        <button onclick="mudarSemana(-1)">‹</button>
+        <span class="wk-label" id="wk-label">—</span>
+        <button onclick="mudarSemana(1)">›</button>
+      </div>
+      <a class="back-link" id="back-link" href="index.html">← Central</a>
+    </div>
+  </div>
+
+  <div class="metrics" id="metrics"></div>
+
+  <div class="grid">
+    <div class="board">
+      <div class="board-h">
+        <div class="t" id="board-title">Semana</div>
+        <button class="add" onclick="abrirModal()">＋ Tarefa</button>
+      </div>
+      <div class="days" id="days"><div class="loading"><span class="spinner"></span></div></div>
+    </div>
+
+    <div class="copilot">
+      <div class="copilot-h">
+        <div class="ce">Copiloto</div>
+        <div class="ct">Recomendações</div>
+        <div class="cs" id="copilot-sub">Para a próxima semana</div>
+      </div>
+      <div class="recs" id="recs"><div class="recs-empty"><span class="spinner"></span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h3>Nova tarefa</h3>
+    <label>O quê</label>
+    <input id="m-titulo" placeholder="Ex: Ligar à cliente Ana sobre o Sal">
+    <label>Quando</label>
+    <input type="date" id="m-data">
+    <label>Tipo</label>
+    <select id="m-tipo">
+      <option value="tarefa">Tarefa geral</option>
+      <option value="followup">Follow-up de proposta</option>
+      <option value="complementar">Complementar de reserva</option>
+    </select>
+    <label>Notas (opcional)</label>
+    <textarea id="m-notas" rows="2" placeholder="Detalhes…"></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-save" onclick="guardarTarefa()">Guardar tarefa</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPA_URL='https://uiaorfcgvqwxjezgisps.supabase.co'
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpYW9yZmNndnF3eGplemdpc3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTE1MzAsImV4cCI6MjA5MTk4NzUzMH0.2AzDuZHLXsQ9NAK96b26ovu29I5xRh-UzNSNph02YhU'
+const { createClient } = supabase
+const sb = createClient(SUPA_URL, SUPA_KEY)
+
+let currentUser=null, perfilNome='', semanaOffset=0
+let _props=[], _reservas=[], _tarefas=[]
+
+// ── util de datas ──
+function startOfWeek(d){const x=new Date(d);const dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);x.setHours(0,0,0,0);return x}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function iso(d){return d.toISOString().slice(0,10)}
+function fmtDia(d){return d.toLocaleDateString('pt-PT',{weekday:'long'})}
+function fmtCurto(d){return d.toLocaleDateString('pt-PT',{day:'2-digit',month:'short'})}
+function diasEntre(a,b){return Math.round((new Date(b)-new Date(a))/864e5)}
+
+function toast(m,t){const e=document.getElementById('toast');e.textContent=m;e.className='toast show'+(t==='err'?' err':'');setTimeout(()=>e.className='toast',2600)}
+
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim()
+  const pass=document.getElementById('login-pass').value
+  const err=document.getElementById('login-err');err.style.display='none'
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pass})
+  if(error){err.textContent='Credenciais inválidas.';err.style.display='block';return}
+  currentUser=data.user
+  document.getElementById('login-wall').style.display='none'
+  document.getElementById('app').style.display='block'
+  initApp()
+}
+
+async function initApp(){
+  // identidade do consultor (para o link de voltar e saudação)
+  const {data:perfil}=await sb.from('perfis').select('nome').eq('id',currentUser.id).single()
+  perfilNome=perfil?.nome||''
+  if(perfilNome)document.getElementById('hello').textContent='Olá, '+perfilNome.split(' ')[0]
+  const params=new URLSearchParams(location.search)
+  const idp=new URLSearchParams()
+  ;['cid','cnome','admin'].forEach(k=>{if(params.get(k))idp.set(k,params.get(k))})
+  document.getElementById('back-link').href='index.html'+(idp.toString()?'?'+idp:'')
+  await carregarDados()
+}
+
+async function carregarDados(){
+  // propostas do consultor
+  const {data:props}=await sb.from('propostas_viagem')
+    .select('id,dados,aceite,aceite_at,created_at').eq('consultor_id',currentUser.id)
+    .order('created_at',{ascending:false}).limit(200)
+  _props=props||[]
+  // reservas do consultor
+  const {data:res}=await sb.from('reservas')
+    .select('id,rnavt,destino,hotel,data_partida,estado,complementar_preenchido,lead_nome,valor_total')
+    .eq('consultor_id',currentUser.id).order('data_partida',{ascending:true}).limit(200)
+  _reservas=res||[]
+  // tarefas manuais (tabela agenda_tarefas)
+  try{
+    const {data:tar}=await sb.from('agenda_tarefas').select('*').eq('consultor_id',currentUser.id).order('data')
+    _tarefas=tar||[]
+  }catch(e){_tarefas=[]}
+  render()
+}
+
+// ── construir eventos da semana a partir dos dados ──
+function eventosDaSemana(ini,fim){
+  const evs=[] // {date, kind, ico, titulo, sub, ref}
+  // reservas a partir nesta semana
+  _reservas.forEach(r=>{
+    if(r.data_partida && r.data_partida>=ini && r.data_partida<=fim){
+      evs.push({date:r.data_partida,kind:'partida',ico:'✈️',
+        titulo:`Partida — ${r.destino||r.hotel||'viagem'}`,
+        sub:`${r.lead_nome||''} · ${r.rnavt||''}`.trim(),ref:{tipo:'reserva',id:r.id}})
+    }
+  })
+  // tarefas manuais nesta semana
+  _tarefas.forEach(t=>{
+    if(t.data>=ini && t.data<=fim && !t.concluida){
+      evs.push({date:t.data,kind:t.tipo||'tarefa',ico:t.tipo==='followup'?'📞':(t.tipo==='complementar'?'📋':'✅'),
+        titulo:t.titulo,sub:t.notas||'',ref:{tipo:'tarefa',id:t.id}})
+    }
+  })
+  return evs
+}
+
+// ── motor de recomendações para a SEMANA SEGUINTE (regras sobre dados reais) ──
+function recomendacoes(proxIni,proxFim){
+  const recs=[]
+  const hoje=iso(new Date())
+  // 1) Propostas enviadas sem resposta há mais de 4 dias → follow-up
+  const pendentes=_props.filter(p=>!p.aceite && p.created_at && diasEntre(p.created_at,hoje)>=4)
+  if(pendentes.length){
+    recs.push({prio:'alta',tag:'Follow-up',
+      titulo:`${pendentes.length} proposta(s) sem resposta`,
+      desc:`Há propostas enviadas há mais de 4 dias sem aceitação. Agenda follow-ups para a próxima semana.`,
+      accao:'Agendar follow-ups',
+      fn:()=>{pendentes.slice(0,5).forEach((p,i)=>{const d=iso(addDays(new Date(proxIni),i%5));criarTarefaAuto(`Follow-up: ${nomeProp(p)}`,d,'followup',`Proposta de ${(p.dados&&p.dados.dest)||'destino'} sem resposta`)});toast('Follow-ups agendados');carregarDados()}})
+  }
+  // 2) Reservas a partir nas próximas 2 semanas sem complementar → preparar
+  const limite=iso(addDays(new Date(),21))
+  const aPartir=_reservas.filter(r=>r.data_partida && r.data_partida>=hoje && r.data_partida<=limite && !r.complementar_preenchido)
+  if(aPartir.length){
+    recs.push({prio:'alta',tag:'Preparar',
+      titulo:`${aPartir.length} viagem(ns) a partir em breve`,
+      desc:`Reservas com partida nas próximas 3 semanas ainda sem complementar preenchido.`,
+      accao:'Agendar preparação',
+      fn:()=>{aPartir.slice(0,5).forEach((r,i)=>{const d=iso(addDays(new Date(proxIni),i%5));criarTarefaAuto(`Complementar: ${r.rnavt||r.destino}`,d,'complementar',`Partida ${r.data_partida}`)});toast('Preparações agendadas');carregarDados()}})
+  }
+  // 3) Aceites pendentes (cliente aceitou, falta ação do consultor)
+  const aceitesPend=_reservas.filter(r=>(r.estado||'').toLowerCase().includes('pendente'))
+  if(aceitesPend.length){
+    recs.push({prio:'media',tag:'Confirmar',
+      titulo:`${aceitesPend.length} aceite(s) por confirmar`,
+      desc:`Contratos aceites pelo cliente à espera de confirmação/reserva junto do operador.`,
+      accao:'Rever aceites',
+      fn:()=>{window.open('reservas.html','_blank')}})
+  }
+  // 4) Semana seguinte com poucos eventos → sugerir prospeção
+  const evsProx=eventosDaSemana(proxIni,proxFim)
+  if(evsProx.length<3){
+    recs.push({prio:'baixa',tag:'Crescer',
+      titulo:'Semana com espaço para prospeção',
+      desc:'A próxima semana está pouco preenchida. Reserva um bloco para contactar leads e reativar clientes antigos.',
+      accao:'Bloquear tempo',
+      fn:()=>{criarTarefaAuto('Bloco de prospeção e leads',iso(addDays(new Date(proxIni),1)),'tarefa','Contactar leads e reativar clientes');toast('Bloco criado');carregarDados()}})
+  }
+  // 5) Ritmo de propostas: nenhuma proposta nos últimos 7 dias
+  const recentes=_props.filter(p=>p.created_at && diasEntre(p.created_at,hoje)<=7)
+  if(recentes.length===0){
+    recs.push({prio:'media',tag:'Atividade',
+      titulo:'Sem propostas esta semana',
+      desc:'Não criaste propostas nos últimos 7 dias. Define uma meta para a próxima semana.',
+      accao:'Abrir motor de pesquisa',
+      fn:()=>{window.open('Motor_de_pesquisa.html','_blank')}})
+  }
+  return recs
+}
+function nomeProp(p){const d=p.dados||{};return d.cli_nome||d.cli||d.dest||'cliente'}
+
+async function criarTarefaAuto(titulo,data,tipo,notas){
+  try{await sb.from('agenda_tarefas').insert({consultor_id:currentUser.id,titulo,data,tipo,notas,concluida:false})}
+  catch(e){console.warn('tarefa auto falhou',e.message)}
+}
+
+// ── render ──
+function render(){
+  const base=startOfWeek(addDays(new Date(),semanaOffset*7))
+  const ini=iso(base), fim=iso(addDays(base,6))
+  const proxBase=addDays(base,7)
+  const proxIni=iso(proxBase), proxFim=iso(addDays(proxBase,6))
+
+  document.getElementById('wk-label').textContent=`${fmtCurto(base)} – ${fmtCurto(addDays(base,6))}`
+  document.getElementById('board-title').textContent=semanaOffset===0?'Esta semana':(semanaOffset===1?'Próxima semana':`Semana de ${fmtCurto(base)}`)
+  document.getElementById('head-sub').textContent=`${_reservas.length} reservas · ${_props.length} propostas no teu pipeline`
+
+  renderMetrics(ini,fim)
+  renderDias(base,ini,fim)
+
+  // recomendações são sempre para a semana A SEGUIR à que estás a ver
+  const recs=recomendacoes(proxIni,proxFim)
+  document.getElementById('copilot-sub').textContent=`Para a semana de ${fmtCurto(proxBase)}`
+  renderRecs(recs)
+}
+
+function renderMetrics(ini,fim){
+  const hoje=iso(new Date())
+  const partidasSem=_reservas.filter(r=>r.data_partida>=ini&&r.data_partida<=fim).length
+  const propAbertas=_props.filter(p=>!p.aceite).length
+  const aceitesMes=_props.filter(p=>p.aceite&&p.aceite_at&&diasEntre(p.aceite_at,hoje)<=30).length
+  const valorPipe=_props.filter(p=>!p.aceite).reduce((s,p)=>{const pr=(p.dados&&p.dados.prices)||[];return s+pr.reduce((a,x)=>a+(parseFloat(x.val)||0),0)},0)
+  const m=[
+    {label:'Partidas esta semana',val:partidasSem,foot:'viagens a iniciar',cls:'accent-coral'},
+    {label:'Propostas abertas',val:propAbertas,foot:'à espera de resposta',cls:'accent-blue'},
+    {label:'Aceites (30 dias)',val:aceitesMes,foot:'fechos recentes',cls:'accent-green'},
+    {label:'Pipeline aberto',val:'€'+Math.round(valorPipe).toLocaleString('pt-PT'),foot:'valor por fechar',cls:'accent-amber'},
+  ]
+  document.getElementById('metrics').innerHTML=m.map(x=>`<div class="metric ${x.cls}">
+    <div class="mlabel">${x.label}</div><div class="mval">${x.val}</div><div class="mfoot">${x.foot}</div></div>`).join('')
+}
+
+function renderDias(base,ini,fim){
+  const evs=eventosDaSemana(ini,fim)
+  const hoje=iso(new Date())
+  let html=''
+  for(let i=0;i<7;i++){
+    const d=addDays(base,i),ds=iso(d)
+    const isToday=ds===hoje
+    const dayEvs=evs.filter(e=>e.date===ds).sort((a,b)=>a.kind.localeCompare(b.kind))
+    html+=`<div class="day ${isToday?'today':''}">
+      <div class="day-label"><div class="dow">${fmtDia(d)}</div><div class="dnum">${fmtCurto(d)}</div></div>
+      <div class="day-items">${dayEvs.length?dayEvs.map(evHtml).join(''):'<div class="empty-day">Livre</div>'}</div>
+    </div>`
+  }
+  document.getElementById('days').innerHTML=html
+}
+
+function evHtml(e){
+  const doneBtn=e.ref&&e.ref.tipo==='tarefa'?`<button class="done-btn" title="Concluir" onclick="concluirTarefa('${e.ref.id}',event)">✓</button>`:''
+  return `<div class="ev k-${e.kind}">
+    <span class="ico">${e.ico}</span>
+    <div class="body"><div class="ev-t">${esc(e.titulo)}</div>${e.sub?`<div class="ev-s">${esc(e.sub)}</div>`:''}</div>
+    ${doneBtn}
+  </div>`
+}
+
+function renderRecs(recs){
+  const el=document.getElementById('recs')
+  if(!recs.length){el.innerHTML=`<div class="recs-empty">Tudo em dia. Sem recomendações para já. 🎯</div>`;return}
+  el.innerHTML=recs.map((r,i)=>`<div class="rec prio-${r.prio}">
+    <span class="rtag">${r.tag}</span>
+    <div class="rt">${esc(r.titulo)}</div>
+    <div class="rd">${esc(r.desc)}</div>
+    <button class="ra" onclick="execRec(${i})">${esc(r.accao)}</button>
+  </div>`).join('')
+  window._recs=recs
+}
+function execRec(i){const r=window._recs&&window._recs[i];if(r&&r.fn)r.fn()}
+
+async function concluirTarefa(id,ev){
+  ev.stopPropagation()
+  try{await sb.from('agenda_tarefas').update({concluida:true}).eq('id',id);toast('Tarefa concluída');carregarDados()}
+  catch(e){toast('Erro ao concluir','err')}
+}
+
+function mudarSemana(n){semanaOffset+=n;render()}
+
+// modal
+function abrirModal(){document.getElementById('m-data').value=iso(new Date());document.getElementById('modal-bg').classList.add('show')}
+function fecharModal(){document.getElementById('modal-bg').classList.remove('show')}
+async function guardarTarefa(){
+  const titulo=document.getElementById('m-titulo').value.trim()
+  const data=document.getElementById('m-data').value
+  const tipo=document.getElementById('m-tipo').value
+  const notas=document.getElementById('m-notas').value.trim()
+  if(!titulo||!data){toast('Preenche o quê e o quando','err');return}
+  try{
+    await sb.from('agenda_tarefas').insert({consultor_id:currentUser.id,titulo,data,tipo,notas,concluida:false})
+    document.getElementById('m-titulo').value='';document.getElementById('m-notas').value=''
+    fecharModal();toast('Tarefa adicionada');carregarDados()
+  }catch(e){toast('Erro: a tabela agenda_tarefas existe? '+e.message,'err')}
+}
+
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+// auto-login se já houver sessão
+;(async()=>{
+  const {data}=await sb.auth.getSession()
+  if(data&&data.session){currentUser=data.session.user;document.getElementById('login-wall').style.display='none';document.getElementById('app').style.display='block';initApp()}
+})()
+</script>
+</body>
+</html>
