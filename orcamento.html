@@ -627,7 +627,6 @@ let fotoUrl = null
 let dayCount = 0
 let inclCount = 0
 let priceCount = 0
-let orcamentosCache = [] // cache para evitar recarregamentos desnecessários
 
 // ── LOGIN ──
 async function doLogin() {
@@ -649,6 +648,7 @@ async function initApp() {
   if(data) {
     if(data.nome) { document.getElementById('f-cnome').value = data.nome; updateConsulInitials(data.nome) }
     if(data.telefone) document.getElementById('f-ctel').value = data.telefone
+    // Load profile photo automatically
     if(data.foto_perfil) {
       consulFotoUrl = data.foto_perfil
       document.getElementById('consul-foto-img').src = data.foto_perfil
@@ -680,6 +680,7 @@ async function initApp() {
     if(el) el.value = _urlParams.get('pax')
   }
   if(_urlParams.get('notas')) {
+    // Extrair hotel preferido das notas
     const notas = _urlParams.get('notas')
     const hotelMatch = notas.match(/Hotel preferido:\s*([^·]+)/)
     if(hotelMatch) {
@@ -697,34 +698,35 @@ async function initApp() {
       updatePreview && updatePreview()
     }
   }
+  // Guardar pedido_id para marcar como convertido quando gerar orçamento
   if(_urlParams.get('pedido_id')) {
     window._pedidoOrcId = _urlParams.get('pedido_id')
   }
 
+  // ── Pré-preenchimento vindo do MOTOR DE PESQUISA (motor=1) ──
+  // O motor envia dados ricos (hotel, datas, preço, fornecedor, fotos). Mapeamos
+  // para os campos do formulário para o consultor só confirmar e gerar.
   if(_urlParams.get('motor') === '1') {
-    try {
-      const g = k => _urlParams.get(k) || ''
-      const setV = (elId, val) => { const el = document.getElementById(elId); if(el && val) el.value = val }
-      setV('f-dest', g('dest'))
-      setV('f-hotel', g('hotel'))
-      setV('f-sub', g('sub'))
-      setV('f-part', g('part'))
-      setV('f-reg', g('reg'))
-      setV('f-noites', g('noites'))
-      setV('f-fornecedor', g('fornecedor'))
-      setV('f-localizador', g('localizador'))
-      setV('f-drest', g('drest'))
-      setV('f-cnome', g('cnome'))
-      setV('f-condpag', g('condpag'))
-      setV('f-cancel', g('cancel'))
-      const fotos = ['foto1','foto2','foto3','foto4'].map(k => g(k)).filter(Boolean)
-      if(fotos.length) {
-        window._hotelFotos = fotos
-        if(typeof renderHotelPreview === 'function') renderHotelPreview()
-      }
-      if(g('pvp')) window._prefillPrices = [{ lbl: 'Preço por pessoa (PVP)', val: g('pvp') }]
-      if(typeof updatePreview === 'function') updatePreview()
-    } catch(e) { console.warn('Pré-preenchimento do motor falhou:', e.message) }
+    const setIf = (id, val) => { const el = document.getElementById(id); if(el && val) { el.value = val; } }
+    setIf('f-hotel', _urlParams.get('hotel'))
+    setIf('f-fornecedor', _urlParams.get('fornecedor'))
+    setIf('f-part', _urlParams.get('part'))
+    setIf('f-reg', _urlParams.get('regresso'))
+    setIf('f-noites', _urlParams.get('noites'))
+    setIf('f-drest', _urlParams.get('drest'))
+    setIf('f-sub', _urlParams.get('sub'))
+    setIf('f-cancel', _urlParams.get('cancel'))
+    setIf('f-cnome', _urlParams.get('cnome'))
+    // foto principal (motor envia foto1..foto4)
+    setIf('f-foto-url', _urlParams.get('foto1'))
+    // preço: o motor envia o PVP — adicionar como primeira linha de preço
+    const pvp = _urlParams.get('pvp')
+    if(pvp && typeof addPrice === 'function') {
+      // addPrice() já é chamado mais abaixo; guardamos para preencher depois
+      window._motorPvp = pvp
+      window._motorPvpDesc = (_urlParams.get('hotel') || 'Pacote') + (_urlParams.get('sub') ? ' · ' + _urlParams.get('sub') : '')
+    }
+    if(typeof updatePreview === 'function') updatePreview()
   }
 
   // Load templates
@@ -736,111 +738,62 @@ async function initApp() {
   templates.filter(t => t.tipo === 'cancelamento').forEach(t => {
     document.getElementById('tmpl-cancel-sel').innerHTML += `<option value="${t.id}">${t.nome}</option>`
   })
-  if(Array.isArray(window._prefillPrices) && window._prefillPrices.length) {
-    window._prefillPrices.forEach(p => addPrice(p.lbl || p.label || '', p.val || p.value || ''))
-  } else {
-    addPrice()
-  }
+  // Add default rows
+  addPrice()
   addVoo()
+
+  // Preencher a 1ª linha de preço com o PVP vindo do motor
+  if(window._motorPvp) {
+    const row = document.querySelector('#prices-wrap .price-row-item')
+    if(row) {
+      const inputs = row.querySelectorAll('input')
+      if(inputs[0]) inputs[0].value = window._motorPvpDesc || 'Pacote'
+      if(inputs[1]) inputs[1].value = window._motorPvp
+    }
+    window._motorPvp = null; window._motorPvpDesc = null
+    if(typeof updatePreview === 'function') updatePreview()
+    if(typeof atualizarRefMargem === 'function') atualizarRefMargem()
+  }
 
   carregarMeusOrcamentos()
 }
 
-// ── MEUS ORÇAMENTOS ENVIADOS ──
+// ── MEUS ORÇAMENTOS ENVIADOS + TRANSFORMAR EM CST ──
 async function carregarMeusOrcamentos() {
   const el = document.getElementById('meus-orcamentos-lista')
   if(!el) return
-  el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:10px 0">⏳ A carregar...</div>'
+  el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:10px 0">A carregar...</div>'
 
-  try {
-    const { data, error } = await sb.from('propostas_viagem')
-      .select('id,dados,created_at,aceite')
-      .eq('consultor_id', currentUser.id)
-      .order('created_at', { ascending: false })
-      .limit(30)
+  const { data, error } = await sb.from('propostas_viagem')
+    .select('id,dados,created_at,aceite')
+    .eq('consultor_id', currentUser.id)
+    .order('created_at', { ascending: false })
+    .limit(30)
 
-    if(error || !data) { 
-      el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:10px 0">⚠️ Erro ao carregar.</div>'
-      return 
-    }
+  if(error || !data) { el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:10px 0">Não foi possível carregar.</div>'; return }
 
-    // Só orçamentos (não CSTs)
-    const orcamentos = data.filter(p => (p.dados?.tipo || 'orcamento') === 'orcamento')
-    orcamentosCache = orcamentos
+  // Só orçamentos (não CSTs já gerados) — dados.tipo é 'orcamento' ou ausente (propostas antigas)
+  const orcamentos = data.filter(p => (p.dados?.tipo || 'orcamento') === 'orcamento')
 
-    if(!orcamentos.length) { 
-      el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:10px 0">📭 Ainda não enviou nenhum orçamento.</div>'
-      return 
-    }
+  if(!orcamentos.length) { el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:10px 0">Ainda não enviou nenhum orçamento.</div>'; return }
 
-    el.innerHTML = orcamentos.map(p => {
-      const d = p.dados || {}
-      const dataFmt = new Date(p.created_at).toLocaleDateString('pt-PT', { day:'2-digit', month:'short' })
-      const total = (d.prices||[]).reduce((s,pr) => s + (parseFloat(pr.val)||0), 0)
-      const statusBadge = p.aceite
-        ? '<span style="background:#e7f7ed;color:#1a7a3f;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px">✅ Aceite</span>'
-        : '<span style="background:var(--bg);color:var(--muted);font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px">⏳ Pendente</span>'
+  el.innerHTML = orcamentos.map(p => {
+    const d = p.dados || {}
+    const dataFmt = new Date(p.created_at).toLocaleDateString('pt-PT', { day:'2-digit', month:'short' })
+    const total = (d.prices||[]).reduce((s,pr) => s + (parseFloat(pr.val)||0), 0)
+    const statusBadge = p.aceite
+      ? '<span style="background:#e7f7ed;color:#1a7a3f;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px">✅ Aceite</span>'
+      : '<span style="background:var(--bg);color:var(--muted);font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px">⏳ Pendente</span>'
 
-      return `<div id="orcamento-${p.id}" style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--surface)">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
-          <div style="font-weight:700;font-size:.85rem">${d.dest || 'Sem destino'}</div>
-          ${statusBadge}
-        </div>
-        <div style="font-size:.76rem;color:var(--muted);margin-bottom:10px">${d.cli_nome || d.cli || 'Cliente não identificado'} · ${dataFmt}${total ? ' · €' + total.toLocaleString('pt-PT') : ''}</div>
-        <div style="display:flex;gap:6px">
-          <button onclick="confirmarTransformarCst('${p.id}')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--coral);background:var(--coral-light, #fdedf0);color:var(--coral);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit">📄 Transformar em CST</button>
-          <button onclick="eliminarOrcamento('${p.id}')" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);background:#fef2f2;color:#dc2626;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit">🗑️ Eliminar</button>
-        </div>
-      </div>`
-    }).join('')
-  } catch(e) {
-    console.error('Erro ao carregar orçamentos:', e)
-    el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:10px 0">⚠️ Erro ao carregar orçamentos.</div>'
-  }
-}
-
-// ── ELIMINAR ORÇAMENTO ──
-async function eliminarOrcamento(id) {
-  if(!confirm('⚠️ Tens a certeza que queres eliminar este orçamento? Esta ação não pode ser desfeita.')) return
-  
-  // Mostrar feedback visual no botão
-  const orcamentoEl = document.getElementById('orcamento-' + id)
-  if(orcamentoEl) {
-    orcamentoEl.style.opacity = '0.5'
-    orcamentoEl.style.transition = 'opacity 0.3s'
-  }
-  
-  try {
-    const { error } = await sb.from('propostas_viagem').delete().eq('id', id)
-    if(error) { 
-      toast('Erro ao eliminar: ' + error.message, 'err')
-      if(orcamentoEl) orcamentoEl.style.opacity = '1'
-      return 
-    }
-    
-    toast('🗑️ Orçamento eliminado!', 'ok')
-    
-    // Remover o elemento da lista imediatamente
-    if(orcamentoEl) {
-      orcamentoEl.style.opacity = '0'
-      setTimeout(() => {
-        orcamentoEl.remove()
-        // Verificar se a lista ficou vazia
-        const lista = document.getElementById('meus-orcamentos-lista')
-        if(lista && lista.children.length === 0) {
-          lista.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:10px 0">📭 Ainda não enviou nenhum orçamento.</div>'
-        }
-      }, 300)
-    }
-    
-    // Atualizar cache
-    orcamentosCache = orcamentosCache.filter(p => p.id !== id)
-    
-  } catch(e) {
-    console.error('Erro ao eliminar:', e)
-    toast('Erro ao eliminar orçamento.', 'err')
-    if(orcamentoEl) orcamentoEl.style.opacity = '1'
-  }
+    return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
+        <div style="font-weight:700;font-size:.85rem">${d.dest || 'Sem destino'}</div>
+        ${statusBadge}
+      </div>
+      <div style="font-size:.76rem;color:var(--muted);margin-bottom:10px">${d.cli_nome || d.cli || 'Cliente não identificado'} · ${dataFmt}${total ? ' · €' + total.toLocaleString('pt-PT') : ''}</div>
+      <button onclick="confirmarTransformarCst('${p.id}')" style="width:100%;padding:8px;border-radius:8px;border:1.5px solid var(--coral);background:var(--coral-light, #fdedf0);color:var(--coral);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit">📄 Transformar em CST</button>
+    </div>`
+  }).join('')
 }
 
 function confirmarTransformarCst(propostaId) {
@@ -871,12 +824,14 @@ function handleConsulFoto(file) {
   if(!file) return
   const reader = new FileReader()
   reader.onload = e => {
+    // Show preview immediately
     document.getElementById('consul-foto-img').src = e.target.result
     document.getElementById('consul-foto-img').style.display = 'block'
     document.getElementById('consul-avatar-initials').style.display = 'none'
   }
   reader.readAsDataURL(file)
 
+  // Upload to Supabase Storage (not base64 in DB)
   if(currentUser?.id) {
     const ext = file.name.split('.').pop()
     const path = `avatars/${currentUser.id}.${ext}`
@@ -900,10 +855,13 @@ function handleConsulFotoUrl(url) {
   document.getElementById('consul-foto-img').src = url
   document.getElementById('consul-foto-img').style.display = 'block'
   document.getElementById('consul-avatar-initials').style.display = 'none'
+  // Save to perfis
   if(currentUser?.id) {
     sb.from('perfis').update({ foto_perfil: url }).eq('id', currentUser.id)
   }
 }
+
+
 
 // ── MULTIBANCO ──
 const IFT_ENTIDADE    = '12378'
@@ -988,6 +946,7 @@ function handleHotelDrop(e) {
 function updateHotelUrlPreview() {
   const urls = [1,2,3,4].map(n => document.getElementById('hotel-url-'+n)?.value?.trim()).filter(u => u?.startsWith('http'))
   if(urls.length) {
+    // merge with file uploads
     window._hotelFotos = [...(window._hotelFotos.filter(f=>f&&f.startsWith('data:'))), ...urls].slice(0,4)
     renderHotelPreview()
   }
@@ -1007,6 +966,7 @@ function renderHotelPreview() {
 }
 
 function getHotelFotos() {
+  // Priority: uploaded files, then URLs
   const urls = [1,2,3,4].map(n => document.getElementById('hotel-url-'+n)?.value?.trim()).filter(u => u?.startsWith('http'))
   const files = (window._hotelFotos || []).filter(f => f?.startsWith('data:'))
   return [...files, ...urls].slice(0,4)
@@ -1034,6 +994,7 @@ function getVoos() {
 
 // ── EXEMPLO ──
 function preencherExemplo() {
+  // Viagem
   document.getElementById('f-dest').value = 'Maldivas'
   document.getElementById('f-hotel').value = 'Anantara Veli Resort & Spa'
   document.getElementById('f-sub').value = 'Anantara Veli Resort · Tudo Incluído · 10 noites'
@@ -1042,14 +1003,19 @@ function preencherExemplo() {
   document.getElementById('f-pax').value = '2 pessoas'
   document.getElementById('f-noites').value = '10 noites'
 
+  // Voos
   document.getElementById('voos-wrap').innerHTML = ''
   addVoo('TP267 · Lisboa (LIS) → Malé (MLE) · 01/08 10:30 → 02/08 06:45')
   addVoo('TP268 · Malé (MLE) → Lisboa (LIS) · 11/08 08:00 → 11/08 20:15')
 
+  // Limpar estado de média anterior
   fotoBase64 = null; fotoUrl = null; window._v2VideoUrl = null
   v2RemoverMedia()
+
+  // Foto via URL (Maldivas stock)
   handleFotoUrl('https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=1600')
 
+  // Fotos do hotel via URL
   window._hotelFotos = []
   const hotelUrls = [
     'https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=800',
@@ -1063,8 +1029,10 @@ function preencherExemplo() {
   })
   updateHotelUrlPreview()
 
+  // Vídeo
   document.getElementById('f-video').value = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
 
+  // Itinerário
   document.getElementById('days-wrap').innerHTML = ''
   const dias = [
     ['Chegada ao paraíso', 'Chegada ao aeroporto de Malé e transfer de speedboat para o resort. Check-in e jantar de boas-vindas ao pôr do sol.'],
@@ -1075,35 +1043,47 @@ function preencherExemplo() {
   ]
   dias.forEach(([t, d]) => { addDay(); const rows = document.querySelectorAll('#days-wrap .day-row'); const last = rows[rows.length-1]; last.querySelectorAll('input')[0].value = t; last.querySelectorAll('textarea')[0].value = d })
 
+  // Incluídos
   document.getElementById('incls-wrap').innerHTML = ''
   const incls = ['Voo de ida e volta em classe económica', 'Transfer de speedboat aeroporto ↔ resort', '10 noites em bangalô sobre a água', 'Regime Tudo Incluído (todas as refeições e bebidas)', 'Snorkeling e kayak incluídos', 'Wi-Fi em todo o resort', 'Seguro de viagem']
   incls.forEach(i => { addIncl(); document.querySelectorAll('#incls-wrap .incl-row input').pop().value = i })
 
+  // Preços
   document.getElementById('prices-wrap').innerHTML = ''
   addPrice()
   const rows = document.querySelectorAll('#prices-wrap .price-row-item')
   rows[0].querySelectorAll('input')[0].value = 'Pacote 2 adultos (voo + hotel + regime)'
   rows[0].querySelectorAll('input')[1].value = '6490'
 
+  // Sinal
   document.getElementById('f-spct').value = '30'
   document.getElementById('f-sval').value = '1947'
   document.getElementById('f-drest').value = '15 Jun 2026'
 
+  // Interno
+  document.getElementById('f-net').value = '5200'
+  document.getElementById('f-pvp').value = '6490'
+  calcComissao()
+
+  // Condições
   document.getElementById('f-condpag').value = '30% no momento da reserva (€1.947)\nSaldo de €4.543 até 15 de junho de 2026'
   document.getElementById('f-cancel').value = 'Até 60 dias antes da partida: reembolso total\nDe 59 a 30 dias: 30% de penalização\nDe 29 a 15 dias: 60% de penalização\nMenos de 15 dias: sem reembolso'
   document.getElementById('f-metodo').value = 'transferencia'
 
+  // Cliente
   document.getElementById('f-cli-nome').value = 'Maria Silva Santos'
   document.getElementById('f-cli-nif').value = '123456789'
   document.getElementById('f-cli-tel').value = '351912345678'
   document.getElementById('f-cli-email').value = 'maria.silva@email.com'
 
+  // Consultor
   document.getElementById('f-localizador').value = 'MLD-2026-001'
   document.getElementById('f-fornecedor').value = 'Newblue'
 
   updatePreview()
   toast('✨ Exemplo carregado!', 'ok')
 
+  // Abrir todas as secções
   document.querySelectorAll('.section-hdr:not(.open)').forEach(h => {
     h.classList.add('open')
     h.nextElementSibling.classList.add('open')
@@ -1144,6 +1124,7 @@ async function v2BuscarMedia() {
 
   try {
     if(v2MediaTab === 'foto') {
+      // Unsplash
       for(const qr of queries.slice(0,2)) {
         try {
           const r = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(qr)}&per_page=12&orientation=landscape`, { headers: { Authorization: `Client-ID ${UNSPLASH_KEY}` } })
@@ -1154,6 +1135,7 @@ async function v2BuscarMedia() {
           })
         } catch(e) {}
       }
+      // Pexels
       for(const qr of queries.slice(0,2)) {
         try {
           const r = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(qr)}&per_page=12&orientation=landscape`, { headers: { Authorization: PEXELS_KEY } })
@@ -1164,6 +1146,7 @@ async function v2BuscarMedia() {
           })
         } catch(e) {}
       }
+      // Pixabay
       for(const qr of queries.slice(0,2)) {
         try {
           const r = await fetch(`https://pixabay.com/api/?key=${PIXABAY_KEY}&q=${encodeURIComponent(qr)}&image_type=photo&orientation=horizontal&per_page=12&safesearch=true`)
@@ -1187,6 +1170,7 @@ async function v2BuscarMedia() {
           </div>`).join('')
       }
     } else {
+      // Pexels Videos
       try {
         const r = await fetch(`https://api.pexels.com/videos/search?query=${encodeURIComponent(q)}&per_page=6&orientation=landscape`, { headers: { Authorization: PEXELS_KEY } })
         const d = await r.json()
@@ -1195,6 +1179,7 @@ async function v2BuscarMedia() {
           if(file) results.push({ src:'pexels-video', thumb:v.image, videoUrl:file.link, credit:`🎬 ${v.user?.name||'Pexels'} · Pexels` })
         })
       } catch(e) {}
+      // Pixabay Videos
       try {
         const r = await fetch(`https://pixabay.com/api/videos/?key=${PIXABAY_KEY}&q=${encodeURIComponent(q)}&per_page=6`)
         const d = await r.json()
@@ -1224,8 +1209,9 @@ async function v2BuscarMedia() {
 function v2EscolherFoto(i) {
   const item = v2MediaResults[i]; if(!item) return
   fotoBase64 = null
+  // Usar sempre thumb (webformatURL para pixabay, small para unsplash) — hotlink permitido
   fotoUrl = item.src === 'unsplash' ? item.thumb : (item.full || item.thumb)
-  window._v2VideoUrl = null
+  window._v2VideoUrl = null  // limpar vídeo anterior
   document.getElementById('v2-foto-thumb').src = fotoUrl
   document.getElementById('v2-foto-thumb').style.display = 'block'
   document.getElementById('v2-video-thumb').style.display = 'none'
@@ -1239,12 +1225,13 @@ function v2EscolherFoto(i) {
 
 function v2EscolherVideo(i) {
   const item = v2MediaResults[i]; if(!item?.videoUrl) return
-  fotoBase64 = null; fotoUrl = null
+  fotoBase64 = null; fotoUrl = null  // limpar foto anterior
   document.getElementById('v2-video-thumb').src = item.videoUrl
   document.getElementById('v2-video-thumb').style.display = 'block'
   document.getElementById('v2-foto-thumb').style.display = 'none'
   document.getElementById('v2-media-selected').style.display = 'block'
   document.getElementById('v2-media-credit').textContent = item.credit
+  // Limpar preview de foto
   document.getElementById('prev-img').src = ''
   document.getElementById('prev-img').style.display = 'none'
   window._v2VideoUrl = item.videoUrl
@@ -1315,15 +1302,13 @@ function addIncl() {
 }
 
 // ── PRICES ──
-function addPrice(lbl = '', val = '') {
+function addPrice() {
   const wrap = document.getElementById('prices-wrap')
   const div = document.createElement('div')
   div.className = 'price-row-item'
-  const lblEsc = String(lbl).replace(/"/g, '&quot;')
-  const valEsc = (val === '' || val == null) ? '' : String(val).replace(/[^\d.,]/g, '')
   div.innerHTML = `
-    <input value="${lblEsc}" style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:.875rem;outline:none;width:100%" placeholder="Descrição (ex: Pacote 2 adultos)">
-    <input type="number" value="${valEsc}" style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:.875rem;outline:none;width:100%" placeholder="€" oninput="updatePreview(); atualizarRefMargem()">
+    <input style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:.875rem;outline:none;width:100%" placeholder="Descrição (ex: Pacote 2 adultos)">
+    <input type="number" style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:.875rem;outline:none;width:100%" placeholder="€" oninput="updatePreview(); atualizarRefMargem()">
     <button onclick="this.closest('.price-row-item').remove();updatePreview()" class="price-del">✕</button>
   `
   wrap.appendChild(div)
@@ -1333,7 +1318,7 @@ function addPrice(lbl = '', val = '') {
 let _refMargemTimer = null
 function atualizarRefMargem() {
   clearTimeout(_refMargemTimer)
-  _refMargemTimer = setTimeout(consultarRefMargem, 600)
+  _refMargemTimer = setTimeout(consultarRefMargem, 600) // debounce
 }
 
 function extrairNumPax(texto) {
@@ -1399,6 +1384,19 @@ function getTotal() {
   let t = 0
   document.querySelectorAll('#prices-wrap .price-row-item input[type=number]').forEach(i => t += parseFloat(i.value)||0)
   return t
+}
+
+// ── COMISSAO ──
+function calcComissao() {
+  const net = parseFloat(document.getElementById('f-net').value) || 0
+  const pvp = parseFloat(document.getElementById('f-pvp').value) || 0
+  if(net && pvp) {
+    const margem = pvp - net
+    const consul = margem * 0.8
+    document.getElementById('f-comissao').value = '€' + consul.toLocaleString('pt-PT', {minimumFractionDigits:2})
+  } else {
+    document.getElementById('f-comissao').value = ''
+  }
 }
 
 // ── PHOTO ──
@@ -1493,12 +1491,14 @@ async function lerPDF(inp) {
       text += content.items.map(it => it.str).join(' ') + '\n'
     }
 
+    // Basic extraction
     const t = text.replace(/\s+/g, ' ').trim()
     let filled = 0
     const set = (id, val) => { if(!val) return; const el = document.getElementById(id); if(el && !el.value) { el.value = val; filled++ } }
     const after = (patterns) => { for(const p of patterns) { const m = t.match(p); if(m && m[1]) return m[1].trim() } return null }
     const toISO = s => { if(!s) return null; const m = s.match(/(\d{2})\/(\d{2})\/(\d{2,4})/); if(m) return `${m[3].length===2?'20'+m[3]:m[3]}-${m[2]}-${m[1]}`; return null }
 
+    // Detect operator
     const isNewblue = /newblue|NBLPT|Localizador\s+Locator/i.test(t)
     const isTravelplan = /travelplan|Gregal/i.test(t)
     const isSoltour = /Soltour|Viagens Soltour/i.test(t)
@@ -1508,22 +1508,28 @@ async function lerPDF(inp) {
     const operador = isNewblue?'Newblue':isTravelplan?'Travelplan':isSoltour?'Soltour':isNortravel?'Nortravel':isLePlan?'LePlan':null
     if(operador) { set('f-fornecedor', operador); sugerirTmplOperador(operador) }
 
+    // Newblue — Destino + Datas
     if(isNewblue) {
+      // Destino: "Produto Product - Riviera Maya - Essence" ou "- Fuerteventura - Dynamic"
       const destM = t.match(/Produto Product\s*[-–]\s*([\w\s,áéíóúàâêîôûãõç]+?)\s*[-–]\s*(?:Essence|Dynamic|Classic|Premium)/i)
                  || t.match(/Produto Product\s*[-–]\s*([\w\s,áéíóúàâêîôûãõç]+?)\s+Data do orçamento/i)
       if(destM) set('f-dest', destM[1].trim())
 
+      // Datas: "Data de check in Departure date DD/MM/YYYY" e "Data de check out Return date DD/MM/YYYY"
       const dpM = t.match(/Data de check in\s+Departure date\s+(\d{2}\/\d{2}\/\d{4})/i)
       const drM = t.match(/Data de check out\s+Return date\s+(\d{2}\/\d{2}\/\d{4})/i)
       if(dpM) { const dp=toISO(dpM[1]); if(dp){ document.getElementById('f-part').value=dp; filled++ } }
       if(drM) { const dr=toISO(drM[1]); if(dr){ document.getElementById('f-reg').value=dr; filled++ } }
+      // Localizador
       set('f-localizador', after([/Localizador\s+Locator\s+(\d{6,})/i, /N[oº]\s*Reserva[:\s]+(\d{6,})/i]))
+      // Hotel + regime
       const hotelM = t.match(/ACOMODAÇÃO\s+Accommodation\s+([A-Z][A-Z\s]+?)\s+Categoria/i)
       const regimeM = t.match(/(All Inclusive|Tudo Incluído|Meia Pensão|Só Alojamento)/i)
       const quartoM = t.match(/(JUNIOR SUITE|SUITE|DOUBLE|SINGLE|TWIN|TRIPLE|STANDARD)[^A-Z]*?(All Inclusive|Meia Pensão|Só Alojamento)/i)
       const hotelName = hotelM?.[1]?.trim() || null
       if(hotelName) set('f-hotel', hotelName)
       if(hotelName || regimeM) set('f-sub', [quartoM?.[1]?.trim()||null, regimeM?.[1]||null].filter(Boolean).join(' · ') || (hotelName + (regimeM ? ' · '+regimeM[1] : '')))
+      // Pax
       const adtM2 = t.match(/Adultos\s+Adults\s+(\d+)/i)
       const chdM2 = t.match(/Crianças\s+Children\s+(\d+)/i)
       const adt2 = adtM2 ? parseInt(adtM2[1]) : 0
@@ -1534,6 +1540,7 @@ async function lerPDF(inp) {
         if(chd2>0) paxStr += ' ('+adt2+' adulto'+(adt2!==1?'s':'')+' + '+chd2+' criança'+(chd2!==1?'s':'')+')'
         set('f-pax', paxStr)
       }
+      // Preço
       const totalM = t.match(/TOTAL RESERVA\s+BOOKING TOTAL\s+([\d\s]+[,.][\d]+)€/i) ||
                      t.match(/Preço da Viagem Organizada[:\s]+([\d\s]+[,.][\d]+)\s*€/i)
       if(totalM) {
@@ -1543,6 +1550,7 @@ async function lerPDF(inp) {
         const last = rows[rows.length-1]
         if(last) { last.querySelectorAll('input')[0].value='Total reserva (Newblue)'; last.querySelectorAll('input')[1].value=preco; filled++; updatePreview() }
       }
+      // Voos
       const vooRe = /(Vueling|TAP|Ryanair|EasyJet|[\w]+)\s+(VY|TP|FR|U2|IB|[\w]{2})(\d+)\s+(?:\w+\s+)?(\w{3})\s+(\w{3})\s+\w+\s+([\d\/]+)\s+-\s+([\d:]+)/gi
       const voos2 = []
       let vm2
@@ -1557,6 +1565,7 @@ async function lerPDF(inp) {
     else if(isNortravel) set('f-dest', after([/Pacote:\s*Package:\s*([\w\s\-,]+?)(?:\s*-\s*\d|\s+Titular)/i]))
     else set('f-dest', after([/Destino[:\s]+([\w\s,]+?)(?:\s+Data|\s+Hotel|\n)/i]))
 
+    // Dates (non-Newblue operators)
     if(!isNewblue) {
       const dp = toISO(after([/Data de check in\s+Departure date\s+([\d\/]+)/i, /(?:Data de entrada|check.?in|Entry date)[:\s]*([\d\/]+)/i]))
       const dr = toISO(after([/Data de check out\s+Return date\s+([\d\/]+)/i, /(?:Data de sa[íi]da|check.?out)[:\s]*([\d\/]+)/i]))
@@ -1564,16 +1573,20 @@ async function lerPDF(inp) {
       if(dr) { document.getElementById('f-reg').value = dr; filled++ }
     }
 
+    // Noites
     const noites = after([/Noites de estadia\s+Nights stay\s+(\d+)/i, /N[oº]\s*Noites[^:]*:\s*(\d+)/i, /No\.\s*Nights[^:]*:\s*(\d+)/i])
     if(noites) { set('f-noites', noites + ' noites') }
 
+    // Passageiros (Soltour)
     if(isSoltour) {
       const pax = after([/Passageiros:\s*(\d+)/i])
       if(pax) { set('f-pax', pax + (parseInt(pax)===1?' pessoa':' pessoas')) }
     }
 
+    // Localizador (non-Newblue)
     if(!isNewblue) set('f-localizador', after([/Informações da reserva\s+(SPT\w+)/i, /(?:Localizador|Locator|Booking ref)[:\s]+(\w+)/i]))
 
+    // Hotel + regime (Soltour)
     if(isSoltour) {
       const hotelM = t.match(/Estado\s+State[:\s]+Confi[rn]mado\s+([\w\s&\-]+?)\s+Passageiros/i) ||
                      t.match(/Confi[rn]mado\s+([\w\s&\-]+?)\s+Passageiros Passengers/i)
@@ -1581,6 +1594,7 @@ async function lerPDF(inp) {
       if(hotelM || regime) set('f-sub', [hotelM?.[1]?.trim(), regime?.[1]].filter(Boolean).join(' · '))
     }
 
+    // Preço (Soltour)
     if(isSoltour) {
       const preco = after([/Pre[çc]o final\s+([\d.,]+)\s*€/i, /TOTAL\s+([\d.,]+)€/i])
       if(preco) {
@@ -1595,6 +1609,7 @@ async function lerPDF(inp) {
       }
     }
 
+    // Titular (Soltour)
     if(isSoltour) {
       const titM = t.match(/Nome Name\s+Sobrenome Surnames\s+Telefone Phone\s+Email E-mail\s+([\w\s]+?)\s+(\d{9,})\s+([\w@.]+)/i)
       if(titM) {
@@ -1604,6 +1619,7 @@ async function lerPDF(inp) {
       }
     }
 
+    // Cancelamento
     const cIdx = t.search(/Custos de cancelamento|Cancellation Expenses|Condi[çc][õo]es de cancelamento/i)
     if(cIdx > 0) {
       const cSeg = t.substring(cIdx, cIdx + 600)
@@ -1645,6 +1661,7 @@ async function gerarLink() {
   const btn = document.getElementById('gen-btn')
   btn.disabled = true; btn.textContent = 'A gerar...'
 
+  // Collect data
   const days = []
   document.querySelectorAll('#days-wrap .day-row').forEach((d,i) => {
     const inputs = d.querySelectorAll('input, textarea')
@@ -1658,7 +1675,8 @@ async function gerarLink() {
     if(inputs[0]?.value) prices.push({ lbl: inputs[0].value, val: inputs[1]?.value||'0' })
   })
 
-  let fotoFinal = fotoUrl
+  // Foto: usar URL externo se disponível, senão tentar upload de base64
+  let fotoFinal = fotoUrl  // URL externo (Unsplash/Pixabay/Pexels) — preferido
   if(!fotoFinal && fotoBase64 && fotoBase64.startsWith('data:')) {
     try {
       const blob = await fetch(fotoBase64).then(r => r.blob())
@@ -1668,9 +1686,15 @@ async function gerarLink() {
       if(!upErr) {
         const { data: pub } = sb.storage.from('fotos').getPublicUrl(path)
         fotoFinal = pub.publicUrl
+      } else {
+        console.warn('Upload falhou:', upErr.message)
       }
     } catch(e) { console.warn('Erro upload foto:', e) }
   }
+
+  console.log('fotoFinal:', fotoFinal ? fotoFinal.substring(0,80) : 'null')
+  console.log('fotoUrl:', fotoUrl ? fotoUrl.substring(0,80) : 'null')
+  console.log('fotoBase64:', fotoBase64 ? 'base64 presente' : 'null')
 
   const dados = {
     dest, sub: v('f-sub'), hotel: v('f-hotel'), part: v('f-part'), reg: v('f-reg'),
@@ -1680,6 +1704,7 @@ async function gerarLink() {
     spct: v('f-spct'), sval: v('f-sval'), drest: v('f-drest'),
     cnome: v('f-cnome'), ctel,
     consul_foto: consulFotoUrl || null,
+    
     val: '0',
     condpag: v('f-condpag'), cancel: v('f-cancel'),
     metodo_pag: v('f-metodo') ? {
@@ -1706,6 +1731,7 @@ async function gerarLink() {
   propostaId = res.id
   url = base + '?proposta=' + res.id
 
+
   document.getElementById('link-url').value = url
   document.getElementById('link-result').style.display = 'block'
 
@@ -1714,11 +1740,11 @@ async function gerarLink() {
 
   btn.disabled = false; btn.textContent = 'Gerar orçamento →'
   toast('Link gerado!', 'ok')
+  // Marcar pedido de orçamento original como convertido
   if(window._pedidoOrcId) {
     await sb.from('pedidos_orcamento').update({ estado: 'convertido' }).eq('id', window._pedidoOrcId)
     window._pedidoOrcId = null
   }
-  carregarMeusOrcamentos()
 }
 
 function v(id) { return document.getElementById(id)?.value || '' }
