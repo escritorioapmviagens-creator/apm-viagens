@@ -402,10 +402,10 @@ function renderMetrics(ini,fim){
   // tarefas por concluir dentro da semana que estamos a ver
   const tarefasSem=_tarefas.filter(t=>!t.concluida && t.data>=ini && t.data<=fim).length
   const m=[
-    {label:'Partidas esta semana',val:partidasSem,foot:'viagens a iniciar',cls:'accent-coral'},
-    {label:'Pagam. em falta <40d',val:pagFalta.length,foot:valorFalta>0?('€'+Math.round(valorFalta).toLocaleString('pt-PT')+' por receber'):'tudo pago ✓',cls:'accent-amber'},
-    {label:'Orçamentos por aceitar',val:propAbertas,foot:'gerados, sem aceitação',cls:'accent-blue'},
     {label:'Tarefas esta semana',val:tarefasSem,foot:tarefasSem?'por concluir':'tudo feito ✓',cls:'accent-green'},
+    {label:'Orçamentos por aceitar',val:propAbertas,foot:'gerados, sem aceitação',cls:'accent-blue'},
+    {label:'Pagam. em falta <40d',val:pagFalta.length,foot:valorFalta>0?('€'+Math.round(valorFalta).toLocaleString('pt-PT')+' por receber'):'tudo pago ✓',cls:'accent-amber'},
+    {label:'Partidas esta semana',val:partidasSem,foot:'viagens a iniciar',cls:'accent-coral'},
   ]
   document.getElementById('metrics').innerHTML=m.map(x=>`<div class="metric ${x.cls}">
     <div class="mlabel">${x.label}</div><div class="mval">${x.val}</div><div class="mfoot">${x.foot}</div></div>`).join('')
