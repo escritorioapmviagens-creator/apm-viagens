@@ -418,6 +418,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-item" onclick="abrirModalMomentoCerto()"><span class="nav-icon">🎯</span> Momento Certo <span class="nav-badge" id="mc-badge" style="display:none">0</span></div>
 
       <div class="nav-section" data-s="recursos">Recursos</div>
+      <div class="nav-item" onclick="abrirAgenda()"><span class="nav-icon">🗓️</span> Agenda</div>
       <div class="nav-item" onclick="navTo('recursos',this)"><span class="nav-icon">🧰</span> Central de Recursos</div>
       <div class="nav-item" onclick="navTo('marketing',this)"><span class="nav-icon">📣</span> Centro de Marketing</div>
       <div class="nav-item" onclick="navTo('questionario',this)"><span class="nav-icon">🎓</span> Validação de Conhecimentos <span class="nav-badge" id="quiz-consultor-badge" style="display:none">!</span></div>
@@ -888,8 +889,8 @@ textarea.finput{resize:vertical;min-height:72px}
               </div>
               <div class="rec-card" id="rec-card-soltour" style="display:none;--rc-color:#E8395A;--rc-bg:#ffe3eb" onclick="abrirSoltour()">
                 <div class="rec-card-top"><div class="rec-card-icon">🌅</div></div>
-                <div class="rec-card-title">Motor de Pacotes</div>
-                <div class="rec-card-desc">Pesquisa unificada de pacotes Soltour e Soltrópico, com reserva</div>
+                <div class="rec-card-title">Soltour</div>
+                <div class="rec-card-desc">Pesquisa e reservas de hotéis Soltour (Grupo Piñero)</div>
                 <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
               </div>
             </div>
@@ -4218,8 +4219,8 @@ function enterApp() {
     }
   }
 
-  // Card Motor de Pacotes na Central de Recursos: visível para todos os consultores
-  { const rct=document.getElementById('rec-card-soltour'); if(rct) rct.style.display = 'flex' }
+  // Card Soltour na Central de Recursos: só acesso completo (etapa 3 / admin) — reservas reais
+  { const rct=document.getElementById('rec-card-soltour'); if(rct) rct.style.display = (etapa>=3) ? 'flex' : 'none' }
   const na=document.getElementById('nav-avaliacoes'); if(na) na.style.display='flex'
   if(currentPerfil.role==='admin') { const nperf=document.getElementById('nav-performance'); if(nperf) nperf.style.display='flex' }
   if(currentPerfil.role==='admin') { const el=document.getElementById('nav-mensalidades'); if(el) el.style.display='flex' }
@@ -4593,9 +4594,9 @@ async function loadRecursos() {
   const soltCard = document.getElementById('rec-card-soltropico')
   if (soltCard && isAdmin) soltCard.style.display = 'block'
 
-  // Mostrar card do motor a todos os consultores
+  // Mostrar card soltour só se disponível (admin)
   const soltourCard = document.getElementById('rec-card-soltour')
-  if (soltourCard) soltourCard.style.display = 'flex'
+  if (soltourCard && isAdmin) soltourCard.style.display = 'block'
 
   // Carregar métricas para os cards do funil
   const uid = currentPerfil?.id
@@ -6217,6 +6218,20 @@ APM Viagens`
 
   window.open(waUrl, '_blank')
 }
+function abrirAgenda() {
+  // A agenda usa a mesma sessão Supabase (não exige novo login).
+  // Passa a identidade do consultor para o botão "voltar" da agenda.
+  const base = 'https://escritorioapmviagens-creator.github.io/apm-viagens/agenda.html'
+  const p = new URLSearchParams()
+  try {
+    if (currentPerfil && currentPerfil.id) p.set('cid', currentPerfil.id)
+    if (currentPerfil && currentPerfil.nome) p.set('cnome', currentPerfil.nome)
+    if (currentPerfil && currentPerfil.role === 'admin') p.set('admin', '1')
+  } catch(e) {}
+  const qs = p.toString()
+  window.open(base + (qs ? '?' + qs : ''), '_blank')
+}
+
 function abrirSoltropico() {
   // Etapa 2 = modo treino (não permite reservar); Etapa 3 / admin = real
   const etapa = (currentPerfil && currentPerfil.role==='admin') ? 3 : ((currentPerfil && currentPerfil.etapa_formacao) || 1)
@@ -6226,14 +6241,8 @@ function abrirSoltropico() {
 }
 
 function abrirSoltour() {
-  // Motor de Pacotes unificado (Soltour + Soltrópico). Passa identidade do consultor.
-  const base = 'https://escritorioapmviagens-creator.github.io/apm-viagens/soltour.html'
-  const params = new URLSearchParams()
-  if (currentPerfil && currentPerfil.id) params.set('cid', currentPerfil.id)
-  if (currentPerfil && currentPerfil.nome) params.set('cnome', currentPerfil.nome)
-  if (currentPerfil && currentPerfil.role === 'admin') params.set('admin', '1')
-  const qs = params.toString()
-  window.open(qs ? (base + '?' + qs) : base, '_blank')
+  // Soltour: apenas acesso completo (reservas reais — Grupo Piñero). Sem modo treino.
+  window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/soltour.html', '_blank')
 }
 
 function abrirOperadores() {
