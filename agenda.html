@@ -81,6 +81,21 @@ button{font-family:var(--font);cursor:pointer}
 .ev.k-complementar{border-left-color:var(--amber);background:var(--amber-light)}
 .ev.k-tarefa{border-left-color:var(--green);background:var(--green-light)}
 .ev.k-pagamento{border-left-color:#C0392B;background:#fdeaea}
+
+/* Momento Certo */
+.mc-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:22px}
+.mc-head{background:linear-gradient(135deg,#1a1a2e,#2d2d4e);color:#fff;padding:13px 18px;display:flex;align-items:center;justify-content:space-between}
+.mc-h-t{font-weight:700;font-size:1rem}
+.mc-h-n{background:var(--coral);color:#fff;font-weight:700;font-size:.8rem;min-width:24px;height:24px;border-radius:12px;display:flex;align-items:center;justify-content:center;padding:0 7px}
+.mc-grid{padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.mc-card{border:1.5px solid var(--border);border-radius:12px;padding:13px 15px}
+.mc-nome{font-weight:700;font-size:.95rem;margin-bottom:8px}
+.mc-motivos{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.mc-motivo{font-size:.8rem;color:var(--muted);display:flex;gap:7px;align-items:flex-start}
+.mc-acoes{display:flex;gap:8px}
+.mc-wa{flex:1;text-align:center;background:#25d366;color:#fff;border-radius:8px;padding:8px;font-size:.8rem;font-weight:600;text-decoration:none}
+.mc-disp{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:.8rem;cursor:pointer;font-family:var(--font)}
+.mc-disp:hover{background:var(--coral-light);color:var(--coral)}
 .ev .done-btn{margin-left:auto;border:none;background:none;color:var(--muted);font-size:1rem;padding:2px}
 .ev .done-btn:hover{color:var(--green)}
 .empty-day{font-size:.78rem;color:#b9bfc9;font-style:italic;padding:4px 2px}
@@ -165,6 +180,8 @@ button{font-family:var(--font);cursor:pointer}
 
   <div class="metrics" id="metrics"></div>
 
+  <div id="mc-section" style="display:none"></div>
+
   <div class="grid">
     <div class="board">
       <div class="board-h">
@@ -217,7 +234,8 @@ const { createClient } = supabase
 const sb = createClient(SUPA_URL, SUPA_KEY)
 
 let currentUser=null, perfilNome='', semanaOffset=0
-let _props=[], _reservas=[], _tarefas=[]
+let _props=[], _reservas=[], _tarefas=[], _momentoCerto=[]
+const MC_ICONS={orcamento_parado:'⏳',pos_viagem:'⭐',aniversario:'🎉',cliente_frio:'🌙'}
 
 // ── util de datas ──
 function startOfWeek(d){const x=new Date(d);const dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);x.setHours(0,0,0,0);return x}
@@ -267,12 +285,17 @@ async function carregarDados(){
     .select('id,rnavt,destino,hotel,data_partida,estado,complementar_preenchido,lead_nome,valor_total,valor_pago_cliente')
     .eq('consultor_id',currentUser.id).order('data_partida',{ascending:true}).limit(200)
   const qTar=sb.from('agenda_tarefas').select('*').eq('consultor_id',currentUser.id).order('data')
+  // alertas "Momento Certo" de hoje (mesma tabela do portal)
+  const hojeMC=iso(new Date())
+  const qMC=sb.from('alertas_momento_certo').select('*').eq('consultor_id',currentUser.id)
+    .eq('data_alerta',hojeMC).eq('dispensado',false).order('prioridade',{ascending:false})
 
-  const r=await Promise.allSettled([qProps,qRes,qTar])
+  const r=await Promise.allSettled([qProps,qRes,qTar,qMC])
   const pega=(res)=>{ if(res.status==='fulfilled'&&res.value&&!res.value.error) return res.value.data||[]; if(res.status==='fulfilled'&&res.value&&res.value.error) console.warn('query erro:',res.value.error.message); else if(res.status==='rejected') console.warn('query falhou:',res.reason); return [] }
   _props=pega(r[0])
   _reservas=pega(r[1])
   _tarefas=pega(r[2])
+  _momentoCerto=pega(r[3])
   render()
 }
 
@@ -381,6 +404,7 @@ function render(){
   document.getElementById('head-sub').textContent=`${_reservas.length} reservas · ${_props.length} orçamentos no teu pipeline`
 
   renderMetrics(ini,fim)
+  renderMomentoCerto()
   renderDias(base,ini,fim)
 
   // recomendações são sempre para a semana A SEGUIR à que estás a ver
@@ -390,6 +414,43 @@ function render(){
 }
 
 function faltaPagar(r){return Math.max(0,(Number(r.valor_total)||0)-(Number(r.valor_pago_cliente)||0))}
+
+// Clientes a contactar hoje (Momento Certo) — só faz sentido na semana atual
+function renderMomentoCerto(){
+  const sec=document.getElementById('mc-section')
+  if(!sec)return
+  // só mostrar quando estamos a ver a semana atual e há alertas
+  if(semanaOffset!==0 || !_momentoCerto.length){sec.style.display='none';sec.innerHTML='';return}
+  const cards=_momentoCerto.map(a=>{
+    const motivos=a.motivos||[]
+    const telLimpo=(a.cliente_telefone||'').replace(/\D/g,'')
+    const waMsg=encodeURIComponent('Olá '+((a.cliente_nome||'').split(' ')[0])+'! 👋 Tudo bem?')
+    const waUrl=telLimpo?`https://wa.me/${telLimpo.startsWith('351')?telLimpo:'351'+telLimpo}?text=${waMsg}`:null
+    const linhasMot=motivos.map(m=>`<div class="mc-motivo"><span>${MC_ICONS[m.tipo]||'📌'}</span><span>${esc(m.texto)}</span></div>`).join('')
+    return `<div class="mc-card">
+      <div class="mc-nome">${esc(a.cliente_nome||'Cliente')}</div>
+      <div class="mc-motivos">${linhasMot}</div>
+      <div class="mc-acoes">
+        ${waUrl?`<a href="${waUrl}" target="_blank" class="mc-wa">💬 WhatsApp</a>`:''}
+        <button class="mc-disp" onclick="dispensarMC('${a.id}')">Dispensar</button>
+      </div>
+    </div>`
+  }).join('')
+  sec.style.display='block'
+  sec.innerHTML=`<div class="mc-box">
+    <div class="mc-head"><span class="mc-h-t">🎯 Clientes a contactar hoje</span><span class="mc-h-n">${_momentoCerto.length}</span></div>
+    <div class="mc-grid">${cards}</div>
+  </div>`
+}
+
+async function dispensarMC(id){
+  try{
+    await sb.from('alertas_momento_certo').update({dispensado:true}).eq('id',id)
+    _momentoCerto=_momentoCerto.filter(a=>a.id!=id)
+    renderMomentoCerto()
+    toast('Alerta dispensado')
+  }catch(e){toast('Erro ao dispensar','err')}
+}
 
 function renderMetrics(ini,fim){
   const hoje=iso(new Date())
