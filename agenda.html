@@ -307,10 +307,10 @@ function recomendacoes(proxIni,proxFim){
   const pendentes=_props.filter(p=>!p.aceite && p.created_at && diasEntre(p.created_at,hoje)>=4)
   if(pendentes.length){
     recs.push({prio:'alta',tag:'Follow-up',
-      titulo:`${pendentes.length} proposta(s) sem resposta`,
-      desc:`Há propostas enviadas há mais de 4 dias sem aceitação. Agenda follow-ups para a próxima semana.`,
+      titulo:`${pendentes.length} orçamento(s) sem resposta`,
+      desc:`Há orçamentos gerados há mais de 4 dias sem aceitação. Agenda follow-ups para a próxima semana.`,
       accao:'Agendar follow-ups',
-      fn:()=>{pendentes.slice(0,5).forEach((p,i)=>{const d=iso(addDays(new Date(proxIni),i%5));criarTarefaAuto(`Follow-up: ${nomeProp(p)}`,d,'followup',`Proposta de ${(p.dados&&p.dados.dest)||'destino'} sem resposta`)});toast('Follow-ups agendados');carregarDados()}})
+      fn:()=>{pendentes.slice(0,5).forEach((p,i)=>{const d=iso(addDays(new Date(proxIni),i%5));criarTarefaAuto(`Follow-up: ${nomeProp(p)}`,d,'followup',`Orçamento de ${(p.dados&&p.dados.dest)||'destino'} sem resposta`)});toast('Follow-ups agendados');carregarDados()}})
   }
   // 2) Reservas a partir nas próximas 2 semanas sem complementar → preparar
   const limite=iso(addDays(new Date(),21))
@@ -355,8 +355,8 @@ function recomendacoes(proxIni,proxFim){
   const recentes=_props.filter(p=>p.created_at && diasEntre(p.created_at,hoje)<=7)
   if(recentes.length===0){
     recs.push({prio:'media',tag:'Atividade',
-      titulo:'Sem propostas esta semana',
-      desc:'Não criaste propostas nos últimos 7 dias. Define uma meta para a próxima semana.',
+      titulo:'Sem orçamentos esta semana',
+      desc:'Não geraste orçamentos nos últimos 7 dias. Define uma meta para a próxima semana.',
       accao:'Abrir motor de pesquisa',
       fn:()=>{window.open('Motor_de_pesquisa.html','_blank')}})
   }
@@ -378,7 +378,7 @@ function render(){
 
   document.getElementById('wk-label').textContent=`${fmtCurto(base)} – ${fmtCurto(addDays(base,6))}`
   document.getElementById('board-title').textContent=semanaOffset===0?'Esta semana':(semanaOffset===1?'Próxima semana':`Semana de ${fmtCurto(base)}`)
-  document.getElementById('head-sub').textContent=`${_reservas.length} reservas · ${_props.length} propostas no teu pipeline`
+  document.getElementById('head-sub').textContent=`${_reservas.length} reservas · ${_props.length} orçamentos no teu pipeline`
 
   renderMetrics(ini,fim)
   renderDias(base,ini,fim)
@@ -403,7 +403,7 @@ function renderMetrics(ini,fim){
   const m=[
     {label:'Partidas esta semana',val:partidasSem,foot:'viagens a iniciar',cls:'accent-coral'},
     {label:'Pagam. em falta <40d',val:pagFalta.length,foot:valorFalta>0?('€'+Math.round(valorFalta).toLocaleString('pt-PT')+' por receber'):'tudo pago ✓',cls:'accent-amber'},
-    {label:'Propostas abertas',val:propAbertas,foot:'à espera de resposta',cls:'accent-blue'},
+    {label:'Orçamentos por aceitar',val:propAbertas,foot:'gerados, sem aceitação',cls:'accent-blue'},
     {label:'Pipeline aberto',val:'€'+Math.round(valorPipe).toLocaleString('pt-PT'),foot:'valor por fechar',cls:'accent-green'},
   ]
   document.getElementById('metrics').innerHTML=m.map(x=>`<div class="metric ${x.cls}">
