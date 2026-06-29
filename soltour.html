@@ -1012,7 +1012,11 @@ function gerarDocumento(tipo,dataJson,destLabel,origin){
   p.set('regime',d.board||'');p.set('fornecedor',d.brand||'');p.set('drest',originLabel)
   p.set('pvp',d.totalPvp||'');if(d.totalNet!=null)p.set('net',d.totalNet);p.set('cnome',cnome)
   if(cid)p.set('cid',cid)
-  if(Array.isArray(d.cancelamento)&&d.cancelamento.length)p.set('cancel',d.cancelamento.map(f=>`${f.fim?'Até '+f.fim:(f.desc||'Cancelamento')}: ${eur2(f.valor)}`).join('\n'))
+  if(Array.isArray(d.cancelamento)&&d.cancelamento.length)p.set('cancel',d.cancelamento.map(function(f){
+    var quando=f.dateFrom?(f.dateFrom+(f.dateTo?' a '+f.dateTo:'')):(f.desc||'Cancelamento')
+    var valor=f.montante>0?eur2(f.montante):(f.penal!=null?f.penal+'%':'')
+    return quando+(valor?': '+valor:'')
+  }).join('\n'))
   const fotos=(d.images&&d.images.length)?d.images:(d.image?[d.image]:[])
   fotos.slice(0,4).forEach((f,i)=>{if(f)p.set('foto'+(i+1),f)})
 
