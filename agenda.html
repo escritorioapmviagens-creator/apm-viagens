@@ -242,33 +242,33 @@ async function doLogin(){
 }
 
 async function initApp(){
-  // identidade do consultor (para o link de voltar e saudação)
-  const {data:perfil}=await sb.from('perfis').select('nome').eq('id',currentUser.id).single()
-  perfilNome=perfil?.nome||''
-  if(perfilNome)document.getElementById('hello').textContent='Olá, '+perfilNome.split(' ')[0]
   const params=new URLSearchParams(location.search)
   const idp=new URLSearchParams()
   ;['cid','cnome','admin'].forEach(k=>{if(params.get(k))idp.set(k,params.get(k))})
   document.getElementById('back-link').href='index.html'+(idp.toString()?'?'+idp:'')
+  // carregar dados já (não esperar pelo perfil — esse vem em paralelo só para a saudação)
   await carregarDados()
+  // perfil em segundo plano: atualiza a saudação quando chegar, sem bloquear
+  sb.from('perfis').select('nome').eq('id',currentUser.id).single().then(({data:perfil})=>{
+    perfilNome=perfil?.nome||''
+    if(perfilNome)document.getElementById('hello').textContent='Olá, '+perfilNome.split(' ')[0]
+  }).catch(()=>{})
 }
 
 async function carregarDados(){
-  // propostas do consultor
-  const {data:props}=await sb.from('propostas_viagem')
+  // as 3 queries são independentes → correr em PARALELO (não em fila)
+  const qProps=sb.from('propostas_viagem')
     .select('id,dados,aceite,aceite_at,created_at').eq('consultor_id',currentUser.id)
     .order('created_at',{ascending:false}).limit(200)
-  _props=props||[]
-  // reservas do consultor
-  const {data:res}=await sb.from('reservas')
+  const qRes=sb.from('reservas')
     .select('id,rnavt,destino,hotel,data_partida,estado,complementar_preenchido,lead_nome,valor_total,valor_pago_cliente')
     .eq('consultor_id',currentUser.id).order('data_partida',{ascending:true}).limit(200)
-  _reservas=res||[]
-  // tarefas manuais (tabela agenda_tarefas)
-  try{
-    const {data:tar}=await sb.from('agenda_tarefas').select('*').eq('consultor_id',currentUser.id).order('data')
-    _tarefas=tar||[]
-  }catch(e){_tarefas=[]}
+  const qTar=sb.from('agenda_tarefas').select('*').eq('consultor_id',currentUser.id).order('data')
+
+  const [rProps,rRes,rTar]=await Promise.all([qProps,qRes,qTar.then(r=>r).catch(()=>({data:[]}))])
+  _props=rProps.data||[]
+  _reservas=rRes.data||[]
+  _tarefas=rTar.data||[]
   render()
 }
 
