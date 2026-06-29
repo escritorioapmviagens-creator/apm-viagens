@@ -246,7 +246,9 @@ async function initApp(){
   const idp=new URLSearchParams()
   ;['cid','cnome','admin'].forEach(k=>{if(params.get(k))idp.set(k,params.get(k))})
   document.getElementById('back-link').href='index.html'+(idp.toString()?'?'+idp:'')
-  // carregar dados já (não esperar pelo perfil — esse vem em paralelo só para a saudação)
+  // desenhar a semana JÁ (com dados vazios) para não ficar ecrã em branco
+  try{ render() }catch(e){ console.warn('render inicial:',e) }
+  // carregar dados e redesenhar quando chegarem
   await carregarDados()
   // perfil em segundo plano: atualiza a saudação quando chegar, sem bloquear
   sb.from('perfis').select('nome').eq('id',currentUser.id).single().then(({data:perfil})=>{
@@ -256,7 +258,8 @@ async function initApp(){
 }
 
 async function carregarDados(){
-  // as 3 queries são independentes → correr em PARALELO (não em fila)
+  // as 3 queries são independentes → correr em PARALELO.
+  // allSettled nunca rejeita: mesmo que uma query falhe, o render() corre na mesma.
   const qProps=sb.from('propostas_viagem')
     .select('id,dados,aceite,aceite_at,created_at').eq('consultor_id',currentUser.id)
     .order('created_at',{ascending:false}).limit(200)
@@ -265,10 +268,11 @@ async function carregarDados(){
     .eq('consultor_id',currentUser.id).order('data_partida',{ascending:true}).limit(200)
   const qTar=sb.from('agenda_tarefas').select('*').eq('consultor_id',currentUser.id).order('data')
 
-  const [rProps,rRes,rTar]=await Promise.all([qProps,qRes,qTar.then(r=>r).catch(()=>({data:[]}))])
-  _props=rProps.data||[]
-  _reservas=rRes.data||[]
-  _tarefas=rTar.data||[]
+  const r=await Promise.allSettled([qProps,qRes,qTar])
+  const pega=(res)=>{ if(res.status==='fulfilled'&&res.value&&!res.value.error) return res.value.data||[]; if(res.status==='fulfilled'&&res.value&&res.value.error) console.warn('query erro:',res.value.error.message); else if(res.status==='rejected') console.warn('query falhou:',res.reason); return [] }
+  _props=pega(r[0])
+  _reservas=pega(r[1])
+  _tarefas=pega(r[2])
   render()
 }
 
