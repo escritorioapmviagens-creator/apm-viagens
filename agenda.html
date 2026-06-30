@@ -96,6 +96,24 @@ button{font-family:var(--font);cursor:pointer}
 .mc-wa{flex:1;text-align:center;background:#25d366;color:#fff;border-radius:8px;padding:8px;font-size:.8rem;font-weight:600;text-decoration:none}
 .mc-disp{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:.8rem;cursor:pointer;font-family:var(--font)}
 .mc-disp:hover{background:var(--coral-light);color:var(--coral)}
+
+/* Painel de documentos (orçamentos/contratos) */
+.docs-box{margin-bottom:22px}
+.docs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.doc-col{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.doc-h{padding:11px 14px;font-weight:700;font-size:.83rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1.5px solid var(--border)}
+.doc-n{background:var(--bg);min-width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:.78rem;padding:0 6px}
+.d-blue .doc-h{color:var(--blue)} .d-blue .doc-n{background:var(--blue-light);color:var(--blue)}
+.d-green .doc-h{color:var(--green)} .d-green .doc-n{background:var(--green-light);color:var(--green)}
+.d-amber .doc-h{color:var(--amber)} .d-amber .doc-n{background:var(--amber-light);color:var(--amber)}
+.d-coral .doc-h{color:var(--coral)} .d-coral .doc-n{background:var(--coral-light);color:var(--coral)}
+.doc-items{padding:8px;display:flex;flex-direction:column;gap:6px;max-height:230px;overflow-y:auto}
+.doc-item{padding:8px 10px;border-radius:9px;background:var(--bg)}
+.doc-cli{font-weight:600;font-size:.83rem}
+.doc-meta{font-size:.74rem;color:var(--muted);margin-top:1px}
+.doc-badge{background:var(--coral);color:#fff;font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:10px;text-transform:uppercase;vertical-align:middle}
+.doc-vazio{font-size:.78rem;color:#b9bfc9;font-style:italic;padding:10px;text-align:center}
+@media(max-width:880px){.docs-grid{grid-template-columns:repeat(2,1fr)}}
 .ev .done-btn{margin-left:auto;border:none;background:none;color:var(--muted);font-size:1rem;padding:2px}
 .ev .done-btn:hover{color:var(--green)}
 .empty-day{font-size:.78rem;color:#b9bfc9;font-style:italic;padding:4px 2px}
@@ -181,6 +199,8 @@ button{font-family:var(--font);cursor:pointer}
   <div class="metrics" id="metrics"></div>
 
   <div id="mc-section" style="display:none"></div>
+
+  <div id="docs-section"></div>
 
   <div class="grid">
     <div class="board">
@@ -363,7 +383,7 @@ function recomendacoes(proxIni,proxFim){
       titulo:`${aceitesPend.length} aceite(s) por confirmar`,
       desc:`Contratos aceites pelo cliente à espera de confirmação/reserva junto do operador.`,
       accao:'Rever aceites',
-      fn:()=>{window.open('reservas.html','_blank')}})
+      fn:()=>{window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/assuntos-pendentes.html','_blank')}})
   }
   // 4) Semana seguinte com poucos eventos → sugerir prospeção
   const evsProx=eventosDaSemana(proxIni,proxFim)
@@ -381,7 +401,7 @@ function recomendacoes(proxIni,proxFim){
       titulo:'Sem orçamentos esta semana',
       desc:'Não geraste orçamentos nos últimos 7 dias. Define uma meta para a próxima semana.',
       accao:'Abrir motor de pesquisa',
-      fn:()=>{window.open('Motor_de_pesquisa.html','_blank')}})
+      fn:()=>{window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/Soltour.html','_blank')}})
   }
   return recs
 }
@@ -405,12 +425,60 @@ function render(){
 
   renderMetrics(ini,fim)
   renderMomentoCerto()
+  renderDocs()
   renderDias(base,ini,fim)
 
   // recomendações são sempre para a semana A SEGUIR à que estás a ver
   const recs=recomendacoes(proxIni,proxFim)
   document.getElementById('copilot-sub').textContent=`Para a semana de ${fmtCurto(proxBase)}`
   renderRecs(recs)
+}
+
+// Painel de documentos: orçamentos e contratos, enviados e aceites (4 estados)
+function renderDocs(){
+  const sec=document.getElementById('docs-section')
+  if(!sec)return
+  // só na semana atual (é um resumo do estado "agora")
+  if(semanaOffset!==0){sec.style.display='none';sec.innerHTML='';return}
+  const ehCst=p=>((p.dados&&p.dados.tipo)==='cst')
+  const orcEnviado=_props.filter(p=>!ehCst(p)&&!p.aceite)
+  const orcAceite=_props.filter(p=>!ehCst(p)&&p.aceite)
+  const ctrPendente=_props.filter(p=>ehCst(p)&&!p.aceite)
+  const ctrAceite=_props.filter(p=>ehCst(p)&&p.aceite)
+  // só mostrar aceites recentes (últimos 14 dias) para não encher
+  const recente=p=>p.aceite_at&&diasEntre(p.aceite_at,iso(new Date()))<=14
+  const orcAceiteR=orcAceite.filter(recente)
+  const ctrAceiteR=ctrAceite.filter(recente)
+
+  const cols=[
+    {tit:'Orçamentos enviados',ico:'📤',cls:'d-blue',lista:orcEnviado,vazio:'Nenhum por aceitar'},
+    {tit:'Orçamentos aceites',ico:'✅',cls:'d-green',lista:orcAceiteR,vazio:'Nenhum recente',badge:'novo'},
+    {tit:'Contratos pendentes',ico:'📋',cls:'d-amber',lista:ctrPendente,vazio:'Nenhum pendente'},
+    {tit:'Contratos aceites',ico:'🎉',cls:'d-coral',lista:ctrAceiteR,vazio:'Nenhum recente',badge:'novo'},
+  ]
+  sec.style.display='block'
+  sec.innerHTML=`<div class="docs-box">
+    <div class="docs-grid">
+      ${cols.map(c=>`<div class="doc-col ${c.cls}">
+        <div class="doc-h"><span>${c.ico} ${c.tit}</span><span class="doc-n">${c.lista.length}</span></div>
+        <div class="doc-items">
+          ${c.lista.length?c.lista.slice(0,6).map(p=>docItem(p,c.badge)).join(''):`<div class="doc-vazio">${c.vazio}</div>`}
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`
+}
+
+function docItem(p,badge){
+  const d=p.dados||{}
+  const nome=d.cli_nome||d.cli||'Cliente'
+  const dest=d.dest||'—'
+  const quando=p.aceite&&p.aceite_at?('aceite '+fmtCurto(new Date(p.aceite_at))):(p.created_at?fmtCurto(new Date(p.created_at)):'')
+  const isNovo=badge&&p.aceite_at&&diasEntre(p.aceite_at,iso(new Date()))<=2
+  return `<div class="doc-item">
+    <div class="doc-cli">${esc(nome)}${isNovo?' <span class="doc-badge">novo</span>':''}</div>
+    <div class="doc-meta">${esc(dest)} · ${quando}</div>
+  </div>`
 }
 
 function faltaPagar(r){return Math.max(0,(Number(r.valor_total)||0)-(Number(r.valor_pago_cliente)||0))}
