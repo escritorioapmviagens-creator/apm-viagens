@@ -419,6 +419,7 @@ textarea.finput{resize:vertical;min-height:72px}
 
       <div class="nav-section" data-s="recursos">Recursos</div>
       <div class="nav-item" onclick="abrirAgenda()"><span class="nav-icon">🗓️</span> Agenda</div>
+      <div class="nav-item" onclick="navTo('ferramentas', this)"><span class="nav-icon">🧰</span> Ferramentas</div>
       <div class="nav-item" onclick="navTo('recursos',this)"><span class="nav-icon">🧰</span> Central de Recursos</div>
       <div class="nav-item" onclick="navTo('marketing',this)"><span class="nav-icon">📣</span> Centro de Marketing</div>
       <div class="nav-item" onclick="navTo('questionario',this)"><span class="nav-icon">🎓</span> Validação de Conhecimentos <span class="nav-badge" id="quiz-consultor-badge" style="display:none">!</span></div>
@@ -1983,6 +1984,60 @@ textarea.finput{resize:vertical;min-height:72px}
       </div>
 
       <!-- AS MINHAS COMISSÕES (Consultor) -->
+      <div class="page" id="page-ferramentas">
+        <div style="max-width:1100px;margin:0 auto">
+          <p style="color:#6b7280;margin:0 0 20px;font-size:.95rem">Motores de pesquisa, geração de documentos e o assistente Crustáceo — tudo num só sítio.</p>
+
+          <h3 style="font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin:0 0 12px;font-weight:700">🔍 Motores de pesquisa</h3>
+          <div class="rec-grid" style="margin-bottom:28px">
+            <div class="rec-card" style="--rc-color:#E8395A;--rc-bg:#ffe3eb" onclick="abrirSoltour()">
+              <div class="rec-card-top"><div class="rec-card-icon">🌅</div></div>
+              <div class="rec-card-title">Soltour</div>
+              <div class="rec-card-desc">Pesquisa e reservas de hotéis Soltour (Grupo Piñero)</div>
+              <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
+            </div>
+            <div class="rec-card" style="--rc-color:#f59e0b;--rc-bg:#fef3c7" onclick="abrirSoltropico()">
+              <div class="rec-card-top"><div class="rec-card-icon">🏝️</div></div>
+              <div class="rec-card-title">Soltrópico</div>
+              <div class="rec-card-desc">Pesquisa de pacotes dinâmicos Soltrópico/Optigest</div>
+              <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
+            </div>
+          </div>
+
+          <h3 style="font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin:0 0 12px;font-weight:700">📄 Documentos</h3>
+          <div class="rec-grid" style="margin-bottom:28px">
+            <div class="rec-card" style="--rc-color:#3B5BDB;--rc-bg:#e7edff" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/orcamento.html','_blank')">
+              <div class="rec-card-top"><div class="rec-card-icon">💶</div></div>
+              <div class="rec-card-title">Gerar orçamento</div>
+              <div class="rec-card-desc">Cria um orçamento para enviar ao cliente</div>
+              <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
+            </div>
+            <div class="rec-card" style="--rc-color:#1E8E5A;--rc-bg:#e3f5ec" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/orcamento.html?modo=contrato','_blank')">
+              <div class="rec-card-top"><div class="rec-card-icon">📋</div></div>
+              <div class="rec-card-title">Gerar contrato</div>
+              <div class="rec-card-desc">Cria um contrato de serviço turístico (CST)</div>
+              <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
+            </div>
+            <div class="rec-card" style="--rc-color:#B0710A;--rc-bg:#fdf0d5" onclick="navTo('comissoes')">
+              <div class="rec-card-top"><div class="rec-card-icon">🧮</div></div>
+              <div class="rec-card-title">Calculadora de comissões</div>
+              <div class="rec-card-desc">Calcula as tuas comissões por reserva</div>
+              <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
+            </div>
+          </div>
+
+          <h3 style="font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin:0 0 12px;font-weight:700">🦀 Assistente</h3>
+          <div class="rec-grid">
+            <div class="rec-card" style="--rc-color:#0077B6;--rc-bg:#e0f3fb" onclick="window.crustaceoAPM&&window.crustaceoAPM.open()">
+              <div class="rec-card-top"><div class="rec-card-icon">🦀</div></div>
+              <div class="rec-card-title">Crustáceo APM</div>
+              <div class="rec-card-desc">Roteiros, hotéis, páginas para cliente e tutor do sistema</div>
+              <div class="rec-card-footer"><span></span><span class="rec-card-arrow">→</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="page" id="page-comissoes">
         <div style="max-width:960px;margin:0 auto">
 
@@ -4382,7 +4437,7 @@ function navTo(page, el) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
   sessionStorage.setItem('apm_page', page)
-  const titles={dashboard:'Dashboard',recursos:'Central de Recursos',marketing:'Centro de Marketing',tickets:'Suporte',questionario:'Validação de Conhecimentos',exercicio:'Exercício Prático',captar:'Captar — Captar negócio',vender:'Vender — Fechar a venda',acompanhar:'Acompanhar — Acompanhar e fidelizar',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',lembretes:'Lembretes em Destaque',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento','rec-divulgar':'Recrutamento — Divulgar','rec-converter':'Recrutamento — Converter','rec-crescer':'Recrutamento — Crescer',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
+  const titles={dashboard:'Dashboard',ferramentas:'Ferramentas',recursos:'Central de Recursos',marketing:'Centro de Marketing',tickets:'Suporte',questionario:'Validação de Conhecimentos',exercicio:'Exercício Prático',captar:'Captar — Captar negócio',vender:'Vender — Fechar a venda',acompanhar:'Acompanhar — Acompanhar e fidelizar',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',lembretes:'Lembretes em Destaque',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento','rec-divulgar':'Recrutamento — Divulgar','rec-converter':'Recrutamento — Converter','rec-crescer':'Recrutamento — Crescer',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
   document.getElementById('tb-title').textContent = titles[page]||page
   document.getElementById('tb-sub').textContent = page==='dashboard'?(currentPerfil?.role==='admin'?'Visão global da agência':'Visão geral das tuas reservas'):''
   if(page==='recursos') loadRecursos()
@@ -16742,7 +16797,7 @@ async function showOrcamentoPublico(param) {
 body{font-family:'DM Sans',sans-serif;background:transparent}
 
 /* TOGGLE */
-#crst-ct{position:fixed;bottom:24px;right:24px;width:72px;height:72px;border-radius:50%;cursor:pointer;border:3px solid rgba(0,119,182,.3);background:#fff;z-index:2147483640;padding:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 8px 20px rgba(0,119,182,.4));overflow:hidden}
+#crst-ct{display:none;position:fixed;bottom:24px;right:24px;width:72px;height:72px;border-radius:50%;cursor:pointer;border:3px solid rgba(0,119,182,.3);background:#fff;z-index:2147483640;padding:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 8px 20px rgba(0,119,182,.4));overflow:hidden}
 #crst-ct img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 #crst-ct:hover{transform:scale(1.1) rotate(-5deg)}
 #ct img{width:100%;height:100%;border-radius:50%;display:block}
@@ -17115,7 +17170,7 @@ const panel=document.getElementById('crst-cp'), tog=document.getElementById('crs
       mbody=document.getElementById('crst-cmb');
 
 function openP(){panel.classList.add('open');tog.style.display='none';notif.style.display='none';inp.focus();try{window.parent.postMessage('crust-open','*')}catch(e){}}
-function closeP(){panel.classList.remove('open');tog.style.display='block';try{window.parent.postMessage('crust-close','*')}catch(e){}}
+function closeP(){panel.classList.remove('open');try{window.parent.postMessage('crust-close','*')}catch(e){}}
 
 function startChat(){
   wel.classList.add('hidden'); started=true;
