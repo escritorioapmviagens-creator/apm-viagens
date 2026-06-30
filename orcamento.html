@@ -707,6 +707,8 @@ async function initApp() {
   // O motor envia dados ricos (hotel, datas, preço, fornecedor, fotos). Mapeamos
   // para os campos do formulário para o consultor só confirmar e gerar.
   if(_urlParams.get('motor') === '1') {
+    // se o motor pediu contrato, marcamos para gravar tipo 'cst'
+    window._modoDoc = (_urlParams.get('modo') === 'contrato') ? 'cst' : 'orcamento'
     const setIf = (id, val) => { const el = document.getElementById(id); if(el && val) { el.value = val; } }
     setIf('f-hotel', _urlParams.get('hotel'))
     setIf('f-fornecedor', _urlParams.get('fornecedor'))
@@ -1716,7 +1718,7 @@ async function gerarLink() {
     cli_nome: v('f-cli-nome'), cli_nif: v('f-cli-nif'),
     cli_tel: v('f-cli-tel'), cli_email: v('f-cli-email'),
     foto: fotoFinal,
-    tipo: 'orcamento',
+    tipo: (window._modoDoc === 'cst' ? 'cst' : 'orcamento'),
     hotel_fotos: getHotelFotos(),
     _localizador: v('f-localizador'), _fornecedor: v('f-fornecedor'), _hotel: v('f-hotel'),
     consultor_id: currentUser?.id || null
