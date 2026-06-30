@@ -419,8 +419,8 @@ textarea.finput{resize:vertical;min-height:72px}
 
       <div class="nav-section" data-s="recursos">Recursos</div>
       <div class="nav-item" onclick="abrirAgenda()"><span class="nav-icon">🗓️</span> Agenda</div>
+      <div class="nav-item" onclick="navTo('reservas', this)"><span class="nav-icon">🗂️</span> Reservas</div>
       <div class="nav-item" onclick="navTo('ferramentas', this)"><span class="nav-icon">🧰</span> Ferramentas</div>
-      <div class="nav-item" onclick="navTo('recursos',this)"><span class="nav-icon">🧰</span> Central de Recursos</div>
       <div class="nav-item" onclick="navTo('marketing',this)"><span class="nav-icon">📣</span> Centro de Marketing</div>
       <div class="nav-item" onclick="navTo('questionario',this)"><span class="nav-icon">🎓</span> Validação de Conhecimentos <span class="nav-badge" id="quiz-consultor-badge" style="display:none">!</span></div>
       <div class="nav-item" onclick="navTo('exercicio',this)"><span class="nav-icon">📝</span> Exercício Prático <span class="nav-badge" id="exerc-consultor-badge" style="display:none">!</span></div>
@@ -1996,6 +1996,11 @@ textarea.finput{resize:vertical;min-height:72px}
                 <div class="ferr-t">Motor de Pesquisa</div>
                 <div class="ferr-d">Pesquisa unificada de pacotes e hotéis de todos os operadores</div>
               </div>
+              <div class="ferr-card" style="--fc:#3B5BDB;--fc2:#7a93ff" onclick="abrirOperadores()">
+                <div class="ferr-ic">🌍</div>
+                <div class="ferr-t">Lista de Operadores</div>
+                <div class="ferr-d">Consulta os operadores e os respetivos contactos</div>
+              </div>
             </div>
           </div>
 
@@ -2012,10 +2017,15 @@ textarea.finput{resize:vertical;min-height:72px}
                 <div class="ferr-t">Gerar contrato</div>
                 <div class="ferr-d">Cria um contrato de serviço turístico (CST)</div>
               </div>
-              <div class="ferr-card" style="--fc:#0EA5A5;--fc2:#5fd6d6" onclick="abrirModalPedidoOrcamento()">
-                <div class="ferr-ic">🔗</div>
-                <div class="ferr-t">Link de pedido (cliente)</div>
-                <div class="ferr-d">Gera um link para o cliente pedir orçamento</div>
+              <div class="ferr-card" style="--fc:#0E9488;--fc2:#4fd6c8" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/reserva-complementar.html','_blank')">
+                <div class="ferr-ic">📝</div>
+                <div class="ferr-t">Formulário Complementar</div>
+                <div class="ferr-d">Recolhe os dados complementares da reserva</div>
+              </div>
+              <div class="ferr-card" style="--fc:#64748B;--fc2:#a3b1c6" onclick="abrirConsentimento()">
+                <div class="ferr-ic">🔏</div>
+                <div class="ferr-t">Consentimento RGPD</div>
+                <div class="ferr-d">Gera o consentimento de proteção de dados</div>
               </div>
             </div>
           </div>
@@ -2023,6 +2033,11 @@ textarea.finput{resize:vertical;min-height:72px}
           <div class="ferr-sec">
             <div class="ferr-sec-title">📨 Cliente</div>
             <div class="ferr-row">
+              <div class="ferr-card" style="--fc:#0EA5A5;--fc2:#5fd6d6" onclick="abrirModalPedidoOrcamento()">
+                <div class="ferr-ic">🔗</div>
+                <div class="ferr-t">Link de pedido (cliente)</div>
+                <div class="ferr-d">Gera um link para o cliente pedir orçamento</div>
+              </div>
               <div class="ferr-card" style="--fc:#D9A60A;--fc2:#f5cf57" onclick="abrirFerramentaReferencia('satisfacao')">
                 <div class="ferr-ic">⭐</div>
                 <div class="ferr-t">Questionário de Satisfação</div>
@@ -2032,6 +2047,16 @@ textarea.finput{resize:vertical;min-height:72px}
                 <div class="ferr-ic">🤝</div>
                 <div class="ferr-t">Pedido de Recomendação</div>
                 <div class="ferr-d">Pede ao cliente que te recomende a outras pessoas</div>
+              </div>
+              <div class="ferr-card" style="--fc:#3B5BDB;--fc2:#7a93ff" onclick="abrirModalPerfilPublico()">
+                <div class="ferr-ic">🗺️</div>
+                <div class="ferr-t">O Meu Perfil Público</div>
+                <div class="ferr-d">Partilha a tua página de consultor com o cliente</div>
+              </div>
+              <div class="ferr-card" style="--fc:#E8395A;--fc2:#ff7a98" onclick="navTo('atendimento',document.querySelector('.nav-item'))">
+                <div class="ferr-ic">💬</div>
+                <div class="ferr-t">Página de Atendimento</div>
+                <div class="ferr-d">A tua página de atendimento ao cliente</div>
               </div>
             </div>
           </div>
