@@ -53,6 +53,11 @@ button{font-family:var(--font);cursor:pointer}
 .metric .mfoot{font-size:.76rem;color:var(--muted);margin-top:2px}
 .metric.accent-coral .mval{color:var(--coral)} .metric.accent-blue .mval{color:var(--blue)}
 .metric.accent-green .mval{color:var(--green)} .metric.accent-amber .mval{color:var(--amber)}
+.conv-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.conv-tabs{display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:2px}
+.conv-tab{border:none;background:none;padding:3px 7px;border-radius:6px;font-family:var(--font);font-size:.68rem;font-weight:600;color:var(--muted);cursor:pointer}
+.conv-tab.on{background:var(--blue);color:#fff}
+.conv-tab:hover:not(.on){background:var(--blue-light);color:var(--blue)}
 
 /* Layout: agenda + copilot */
 .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
@@ -255,7 +260,31 @@ const sb = createClient(SUPA_URL, SUPA_KEY)
 
 let currentUser=null, perfilNome='', semanaOffset=0
 let _props=[], _reservas=[], _tarefas=[], _momentoCerto=[]
+let convPeriodo='mes' // mes | trimestre | semestre | ano
 const MC_ICONS={orcamento_parado:'⏳',pos_viagem:'⭐',aniversario:'🎉',cliente_frio:'🌙'}
+
+// início do período de conversão selecionado (data ISO)
+function inicioPeriodoConv(){
+  const now=new Date(), y=now.getFullYear(), mes=now.getMonth()
+  let d
+  if(convPeriodo==='ano') d=new Date(y,0,1)
+  else if(convPeriodo==='semestre') d=new Date(y,mes<6?0:6,1)
+  else if(convPeriodo==='trimestre') d=new Date(y,Math.floor(mes/3)*3,1)
+  else d=new Date(y,mes,1) // mês
+  return iso(d)
+}
+function rotuloPeriodoConv(){
+  return {mes:'este mês',trimestre:'este trimestre',semestre:'este semestre',ano:'este ano'}[convPeriodo]
+}
+// taxa = contratos aceites ÷ orçamentos enviados, no período
+function taxaConversao(){
+  const desde=inicioPeriodoConv()
+  const orcEnviados=_props.filter(p=>(p.dados&&p.dados.tipo)!=='cst' && p.created_at && iso(new Date(p.created_at))>=desde).length
+  const ctrAceites=_props.filter(p=>(p.dados&&p.dados.tipo)==='cst' && p.aceite && p.aceite_at && iso(new Date(p.aceite_at))>=desde).length
+  const taxa=orcEnviados>0?Math.round(ctrAceites/orcEnviados*100):null
+  return {taxa,orcEnviados,ctrAceites}
+}
+function mudarPeriodoConv(v){convPeriodo=v;renderMetrics(window._curIni,window._curFim)}
 
 // ── util de datas ──
 function startOfWeek(d){const x=new Date(d);const dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);x.setHours(0,0,0,0);return x}
@@ -521,23 +550,34 @@ async function dispensarMC(id){
 }
 
 function renderMetrics(ini,fim){
+  window._curIni=ini; window._curFim=fim
   const hoje=iso(new Date())
   const limite40=iso(addDays(new Date(),40))
   const partidasSem=_reservas.filter(r=>r.data_partida>=ini&&r.data_partida<=fim).length
-  const propAbertas=_props.filter(p=>!p.aceite).length
   // reservas a partir em <40 dias COM pagamento em falta
   const pagFalta=_reservas.filter(r=>r.data_partida&&r.data_partida>=hoje&&r.data_partida<=limite40&&faltaPagar(r)>0)
   const valorFalta=pagFalta.reduce((s,r)=>s+faltaPagar(r),0)
   // tarefas por concluir dentro da semana que estamos a ver
   const tarefasSem=_tarefas.filter(t=>!t.concluida && t.data>=ini && t.data<=fim).length
+  // taxa de conversão no período selecionado
+  const cv=taxaConversao()
+
   const m=[
     {label:'Tarefas esta semana',val:tarefasSem,foot:tarefasSem?'por concluir':'tudo feito ✓',cls:'accent-green'},
-    {label:'Orçamentos por aceitar',val:propAbertas,foot:'gerados, sem aceitação',cls:'accent-blue'},
     {label:'Pagam. em falta <40d',val:pagFalta.length,foot:valorFalta>0?('€'+Math.round(valorFalta).toLocaleString('pt-PT')+' por receber'):'tudo pago ✓',cls:'accent-amber'},
     {label:'Partidas esta semana',val:partidasSem,foot:'viagens a iniciar',cls:'accent-coral'},
   ]
-  document.getElementById('metrics').innerHTML=m.map(x=>`<div class="metric ${x.cls}">
+  const cards=m.map(x=>`<div class="metric ${x.cls}">
     <div class="mlabel">${x.label}</div><div class="mval">${x.val}</div><div class="mfoot">${x.foot}</div></div>`).join('')
+  // cartão da taxa de conversão (à direita, com seletor de período)
+  const opts=[['mes','Mês'],['trimestre','Trim.'],['semestre','Sem.'],['ano','Ano']]
+    .map(([v,l])=>`<button class="conv-tab ${convPeriodo===v?'on':''}" onclick="mudarPeriodoConv('${v}')">${l}</button>`).join('')
+  const convCard=`<div class="metric accent-blue conv-card">
+    <div class="conv-top"><span class="mlabel">Taxa de conversão</span><div class="conv-tabs">${opts}</div></div>
+    <div class="mval">${cv.taxa==null?'—':cv.taxa+'%'}</div>
+    <div class="mfoot">${cv.ctrAceites}/${cv.orcEnviados} · contratos aceites vs orçamentos ${rotuloPeriodoConv()}</div>
+  </div>`
+  document.getElementById('metrics').innerHTML=cards+convCard
 }
 
 function renderDias(base,ini,fim){
