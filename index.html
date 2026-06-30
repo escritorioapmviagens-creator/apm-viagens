@@ -16818,13 +16818,13 @@ body{font-family:'DM Sans',sans-serif;background:transparent}
 .ferr-row::-webkit-scrollbar{height:8px}
 .ferr-row::-webkit-scrollbar-thumb{background:#d4d8e3;border-radius:4px}
 .ferr-row::-webkit-scrollbar-track{background:transparent}
-.ferr-card{flex:0 0 230px;scroll-snap-align:start;height:170px;border-radius:18px;padding:20px;cursor:pointer;position:relative;overflow:hidden;color:#fff;background:linear-gradient(135deg,var(--fc),var(--fc2));box-shadow:0 6px 18px -6px var(--fc);transition:transform .25s cubic-bezier(.34,1.4,.5,1),box-shadow .25s;display:flex;flex-direction:column}
-.ferr-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 16px 32px -8px var(--fc)}
-.ferr-card::after{content:"→";position:absolute;right:16px;bottom:14px;font-size:1.2rem;opacity:.85;transition:transform .25s}
-.ferr-card:hover::after{transform:translateX(5px)}
-.ferr-ic{font-size:2rem;margin-bottom:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))}
-.ferr-t{font-size:1.05rem;font-weight:800;margin:10px 0 5px;line-height:1.15}
-.ferr-d{font-size:.78rem;line-height:1.35;opacity:.92;padding-right:18px}
+.ferr-card{flex:0 0 230px;scroll-snap-align:start;height:170px;border-radius:18px;padding:20px;cursor:pointer;position:relative;overflow:hidden;color:#1a1a2e;background:#fff;border:1px solid #eceef5;box-shadow:0 4px 14px -8px rgba(20,24,60,.25);transition:transform .25s cubic-bezier(.34,1.4,.5,1),box-shadow .25s,border-color .25s;display:flex;flex-direction:column}
+.ferr-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 16px 30px -12px var(--fc);border-color:var(--fc)}
+.ferr-card::after{content:"→";position:absolute;right:16px;bottom:14px;font-size:1.2rem;color:var(--fc);opacity:.55;transition:transform .25s,opacity .25s}
+.ferr-card:hover::after{transform:translateX(5px);opacity:1}
+.ferr-ic{font-size:1.7rem;margin-bottom:auto;width:54px;height:54px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:#f3f4fb;background:color-mix(in srgb,var(--fc) 14%,#fff);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fc) 22%,#fff)}
+.ferr-t{font-size:1.05rem;font-weight:800;margin:12px 0 5px;line-height:1.15;color:#1a1a2e}
+.ferr-d{font-size:.78rem;line-height:1.35;color:#6b7280;padding-right:18px}
 @media(max-width:768px){.ferr-card{flex-basis:200px;height:160px}}
 #crst-ct img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 #crst-ct:hover{transform:scale(1.1) rotate(-5deg)}
