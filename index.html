@@ -105,7 +105,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--
 .topbar-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:var(--text)}
 .topbar-sub{font-size:12px;color:var(--muted);margin-top:1px}
 .topbar-actions{display:flex;gap:8px;align-items:center}
-.content{padding:1.5rem 2.25rem}
+.content{padding:1.5rem 2.75rem}
 .page{display:none}
 .page.active{display:block}
 
@@ -15630,6 +15630,31 @@ async function abrirPipelineCard(id) {
     + '<label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="pc-pagar-mais-tarde" onchange="togglePagarMaisTarde()" ' + (r.pagamento_pendente?'checked':'') + ' style="accent-color:#7c3aed"><span>Pagamento a efetuar mais tarde</span></label>'
     + '</div></div>'
 
+  const cliNomeOrc = r._cliente_nome || r.lead_nome || ''
+  const cliTelOrc = r._cliente_tel || r.lead_tel || ''
+  const cliEmailOrc = r._cliente_email || r.lead_email || ''
+  const destOrc = r.destino || ''
+  const baseUrl = 'https://escritorioapmviagens-creator.github.io/apm-viagens/'
+  const orcUrl = baseUrl + 'orcamento.html?cli_nome=' + encodeURIComponent(cliNomeOrc)
+    + '&cli_tel=' + encodeURIComponent(cliTelOrc)
+    + '&cli_email=' + encodeURIComponent(cliEmailOrc)
+    + '&dest=' + encodeURIComponent(destOrc)
+  let acoesFase = ''
+  if(stage === 'Lead') {
+    acoesFase =
+      '<div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px;margin-bottom:14px">'
+      + '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:10px">💶 Criar orçamento para este cliente</div>'
+      + '<button onclick="window.open(\'' + orcUrl + '\',\'_blank\')" style="width:100%;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Gerar orçamento →</button>'
+      + '<div style="font-size:10.5px;color:var(--muted);margin-top:6px">Abre com os dados do cliente já preenchidos.</div>'
+      + '</div>'
+  } else if(stage === 'CSTEnviado' || stage === 'CSTAprovado' || stage === 'Reserva') {
+    acoesFase =
+      '<div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:14px;margin-bottom:14px">'
+      + '<div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:10px">📋 Contrato de serviço turístico</div>'
+      + '<button onclick="gerarContratoPipeline(\'' + r.id + '\')" style="width:100%;background:#1E8E5A;color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Gerar contrato →</button>'
+      + '</div>'
+  }
+
   document.getElementById('modal-generic-body').innerHTML =
     '<div style="padding:4px">'
     + '<div style="font-size:18px;font-weight:800;margin-bottom:4px">' + (r._cliente_nome || '—') + '</div>'
@@ -15644,12 +15669,28 @@ async function abrirPipelineCard(id) {
     + '<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Notas internas</div>'
     + '<textarea id="pc-notas" class="finput" rows="3" style="width:100%;resize:vertical;font-family:inherit">' + (r.notas_pipeline || '') + '</textarea></div>'
     + refSection
+    + acoesFase
     + '<div style="display:flex;gap:8px">'
     + '<button class="btn btn-coral" style="flex:1;justify-content:center" onclick="guardarPipelineCard(\'' + r.id + '\')">Guardar</button>'
     + '<button class="btn btn-outline btn-sm" onclick="navTo(\'nova\',null);closeModal();setTimeout(()=>abrirEdicaoReserva(\'' + r.id + '\'),300)">✏️ Editar</button>'
     + '<button onclick="eliminarPipelineCard(\'' + r.id + '\')" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer" title="Eliminar">🗑</button>'
     + '</div></div>'
   openModal('modal-generic')
+}
+
+async function gerarContratoPipeline(id) {
+  const cstUrl = 'https://escritorioapmviagens-creator.github.io/apm-viagens/cst.html'
+  window.open(cstUrl, '_blank')
+  // avançar o cartão para CST Enviado se ainda não estiver nessa fase ou além
+  try {
+    const { data: r } = await sb.from('orcamentos').select('pipeline_stage').eq('id', id).single()
+    if(r && r.pipeline_stage === 'Lead') {
+      await sb.from('orcamentos').update({ pipeline_stage: 'CSTEnviado', pipeline_updated: new Date().toISOString() }).eq('id', id)
+      toast('Contrato aberto · cartão movido para CST Enviado ✅', 'ok')
+      closeModal('modal-generic')
+      loadPipeline()
+    }
+  } catch(e) { /* se falhar, o contrato já abriu na mesma */ }
 }
 
 async function eliminarPipelineCard(id) {
