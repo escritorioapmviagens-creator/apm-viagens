@@ -2561,119 +2561,12 @@ textarea.finput{resize:vertical;min-height:72px}
       </div>
 
       <!-- ═══ FASE: VENDER (página de fluxo em cards) ══════════════════════════ -->
-      <div class="page" id="page-vender">
-        <div style="max-width:1100px;margin:0 auto;padding:8px 28px">
-          <div style="margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)">
-            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:6px">Fase 2 · Vender</div>
-            <div style="font-size:1.5rem;font-weight:700;color:var(--navy);line-height:1.2;font-family:'Poppins',sans-serif">Fechar a venda</div>
-            <div style="font-size:.88rem;color:var(--muted);margin-top:6px">Do registo da reserva ao contrato confirmado. Siga os passos por ordem.</div>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px" id="vender-cards">
-            <div class="rec-card" onclick="navTo('nova',null)">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">＋</span></div></div>
-              <div class="rec-card-title">Nova Reserva</div>
-              <div class="rec-card-desc">Registe uma nova reserva no sistema.</div>
-              <div class="rec-card-footer"><span class="rec-card-step">Passo 1</span><span class="rec-card-arrow">→</span></div>
-            </div>
-            <div class="rec-card" onclick="window.open('cst.html','_blank')">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">📝</span></div></div>
-              <div class="rec-card-title">CST / Contrato</div>
-              <div class="rec-card-desc">Gere e envie o Contrato de Serviço Turístico ao cliente para aceitação.</div>
-              <div class="rec-card-footer"><span class="rec-card-step">Passo 2</span><span class="rec-card-arrow">→</span></div>
-            </div>
-            <div class="rec-card" onclick="navTo('aceites',null)">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">⏳</span></div></div>
-              <div class="rec-card-title">Contratos Pendentes</div>
-              <div class="rec-card-desc">Acompanhe os contratos enviados a aguardar aceitação do cliente.</div>
-              <div class="rec-card-footer"><span class="rec-card-step">Passo 3</span><span class="rec-card-arrow">→</span></div>
-            </div>
-            <div class="rec-card" onclick="navTo('reservas',null)">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">✈️</span></div></div>
-              <div class="rec-card-title">Reservas</div>
-              <div class="rec-card-desc">Veja e gira todas as suas reservas confirmadas.</div>
-              <div class="rec-card-footer"><span class="rec-card-step">Resultado</span><span class="rec-card-arrow">→</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- ═══ FASE: VENDER (fluxo em cards) ══════════════════════════════════════ -->
-      <div class="page" id="page-vender">
-        <div style="max-width:1100px">
-          <div style="margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)">
-            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:8px">Fase 2 · Vender</div>
-            <div style="font-size:1.5rem;font-weight:700;color:var(--navy);line-height:1.2;font-family:'Poppins',sans-serif">Fechar a venda</div>
-            <div style="font-size:.88rem;color:var(--muted);margin-top:6px">Do registo da reserva à confirmação do contrato. Siga os passos por ordem.</div>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px" id="vender-cards">
-            <div class="rec-card" onclick="navTo('nova',null)">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">＋</span></div></div>
-              <div class="rec-card-title">Nova Reserva</div>
-              <div class="rec-card-desc">Registe uma nova reserva e os respetivos dados.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" style="opacity:0">—</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
-            </div>
-            <div class="rec-card" onclick="window.open('cst.html','_blank')">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">📝</span></div></div>
-              <div class="rec-card-title">CST / Contrato</div>
-              <div class="rec-card-desc">Gere e envie o Contrato de Serviço Turístico ao cliente para aceitação.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" style="opacity:0">—</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
-            </div>
-            <div class="rec-card" onclick="navTo('aceites',null)">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">⏳</span></div></div>
-              <div class="rec-card-title">Contratos Pendentes</div>
-              <div class="rec-card-desc">Acompanhe os contratos enviados a aguardar aceitação do cliente.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" id="vender-aceites-metric" style="opacity:0">—</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
-            </div>
-            <div class="rec-card" onclick="navTo('reservas',null)">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">✈</span></div></div>
-              <div class="rec-card-title">Reservas</div>
-              <div class="rec-card-desc">Veja e faça a gestão de todas as reservas.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" style="opacity:0">—</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- ═══ CENTRO DE MARKETING (iframe da página externa) ═══════════════════════ -->
       <div class="page" id="page-marketing">
         <iframe id="marketing-frame" src="" style="width:100%;height:calc(100vh - 70px);border:none;display:block" title="Centro de Marketing"></iframe>
-      </div>
-
-      <!-- ═══ FASE: ACOMPANHAR (fluxo em cards) ══════════════════════════════════════ -->
-      <div class="page" id="page-acompanhar">
-        <div style="max-width:1100px;margin:0 auto;padding:8px 28px">
-          <div style="margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)">
-            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#2E9E5B;margin-bottom:8px">Fase 3 · Acompanhar</div>
-            <div style="font-size:1.5rem;font-weight:700;color:var(--navy);line-height:1.2;font-family:'Poppins',sans-serif">Acompanhar e fidelizar</div>
-            <div style="font-size:.88rem;color:var(--muted);margin-top:6px">Complete os dados da reserva, cuide do cliente e acompanhe as suas comissões.</div>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px">
-            <div class="rec-card" onclick="window.open('reserva-complementar.html','_blank')">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">🧾</span></div></div>
-              <div class="rec-card-title">Completar Reserva</div>
-              <div class="rec-card-desc">Adicione localizador, fornecedor e valores para confirmar a reserva.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" style="background:#E8F5E9;color:#2E9E5B">Passo 1</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
-            </div>
-            <div class="rec-card" onclick="navTo('clientes',null)">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">👥</span></div></div>
-              <div class="rec-card-title">Clientes</div>
-              <div class="rec-card-desc">Histórico e dados dos clientes para um acompanhamento próximo.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" style="background:#E8F5E9;color:#2E9E5B">Passo 2</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
-            </div>
-            <div class="rec-card" onclick="navTo('lembretes',null)">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">🎂</span></div></div>
-              <div class="rec-card-title">Lembretes em Destaque</div>
-              <div class="rec-card-desc">Aniversários e datas para reforçar a relação com o cliente.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" style="background:#E8F5E9;color:#2E9E5B">Passo 3</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
-            </div>
-            <div class="rec-card" onclick="navTo('comissoes',null)">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">💶</span></div></div>
-              <div class="rec-card-title">As Minhas Comissões</div>
-              <div class="rec-card-desc">Veja o que ganhou com as reservas concretizadas.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" style="background:#E8F5E9;color:#2E9E5B">Resultado</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- ═══ RECRUTAMENTO · DIVULGAR ══════════════════════════════════════ -->
@@ -15565,10 +15458,9 @@ async function kanbanDrop(event, novoStage) {
   const currentStage = event.dataTransfer.getData('currentStage')
   if(!id || currentStage === novoStage) return
 
-  await sb.from('reservas').update({
+  await sb.from('orcamentos').update({
     pipeline_stage: novoStage,
-    pipeline_updated: new Date().toISOString(),
-    estado: novoStage === 'Reserva' || novoStage === 'Pago' || novoStage === 'CSTAprovado' ? 'Confirmada' : 'Pendente'
+    pipeline_updated: new Date().toISOString()
   }).eq('id', id)
 
   toast('Movido para ' + PIPELINE_STAGES.find(s => s.id === novoStage)?.label + '!', 'ok')
@@ -15576,10 +15468,9 @@ async function kanbanDrop(event, novoStage) {
 }
 
 async function moverPipelineStage(id, novoStage) {
-  await sb.from('reservas').update({
+  await sb.from('orcamentos').update({
     pipeline_stage: novoStage,
-    pipeline_updated: new Date().toISOString(),
-    estado: novoStage === 'Reserva' || novoStage === 'Pago' || novoStage === 'CSTAprovado' ? 'Confirmada' : 'Pendente'
+    pipeline_updated: new Date().toISOString()
   }).eq('id', id)
   loadPipeline()
 }
