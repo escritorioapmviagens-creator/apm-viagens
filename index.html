@@ -419,6 +419,7 @@ textarea.finput{resize:vertical;min-height:72px}
 
       <div class="nav-section" data-s="recursos">Recursos</div>
       <div class="nav-item" onclick="abrirAgenda()"><span class="nav-icon">🗓️</span> Agenda</div>
+      <div class="nav-item" onclick="navTo('orcamentos', this)"><span class="nav-icon">📋</span> Gestão de Orçamentos</div>
       <div class="nav-item" onclick="navTo('reservas', this)"><span class="nav-icon">🗂️</span> Reservas</div>
       <div class="nav-item" onclick="navTo('ferramentas', this)"><span class="nav-icon">🧰</span> Ferramentas</div>
       <div class="nav-item" onclick="navTo('marketing',this)"><span class="nav-icon">📣</span> Centro de Marketing</div>
@@ -427,9 +428,8 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-item" onclick="navTo('tickets',this)"><span class="nav-icon">🎫</span> Suporte / Tickets <span class="nav-badge" id="tickets-badge" style="display:none">0</span></div>
 
       <div class="nav-section grp-venda" data-s="fluxo">Jornada de venda</div>
-      <div class="nav-item grp-venda" onclick="navTo('captar',this)" data-fase="captar"><span class="nav-icon">📥</span> 1 · Captar <span class="nav-badge" id="fase-captar-badge" style="display:none">0</span></div>
-      <div class="nav-item grp-venda" onclick="navTo('vender',this)" data-fase="vender"><span class="nav-icon">🤝</span> 2 · Vender <span class="nav-badge" id="fase-vender-badge" style="display:none">0</span></div>
-      <div class="nav-item grp-venda" onclick="navTo('acompanhar',this)" data-fase="acompanhar"><span class="nav-icon">📈</span> 3 · Acompanhar <span class="nav-badge" id="fase-acompanhar-badge" style="display:none">0</span></div>
+      <div class="nav-item grp-venda" onclick="navTo('vender',this)" data-fase="vender"><span class="nav-icon">🤝</span> 1 · Vender <span class="nav-badge" id="fase-vender-badge" style="display:none">0</span></div>
+      <div class="nav-item grp-venda" onclick="navTo('acompanhar',this)" data-fase="acompanhar"><span class="nav-icon">📈</span> 2 · Acompanhar <span class="nav-badge" id="fase-acompanhar-badge" style="display:none">0</span></div>
       <!-- itens ocultos: alvos de navegação usados pelos cards das fases (mantêm os badges internos) -->
       <div style="display:none">
         <span id="nav-pedidos-orc"></span>
@@ -1984,6 +1984,57 @@ textarea.finput{resize:vertical;min-height:72px}
       </div>
 
       <!-- AS MINHAS COMISSÕES (Consultor) -->
+      <div class="page" id="page-orcamentos">
+        <div class="ferr-wrap">
+          <p class="ferr-intro">Tudo sobre orçamentos num só sítio — desde o pedido do cliente até à gestão e acompanhamento.</p>
+
+          <div class="ferr-sec">
+            <div class="ferr-sec-title">✍️ Criar</div>
+            <div style="background:linear-gradient(135deg,#fff,#fdf2f4);border:1px solid #f3d4dc;border-radius:14px;padding:20px 22px;margin-bottom:18px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                <span style="font-size:1.3rem">🔗</span>
+                <div style="font-size:1.05rem;font-weight:700;color:var(--navy);font-family:'Poppins',sans-serif">O teu link para pedidos de orçamento</div>
+              </div>
+              <div style="font-size:.85rem;color:var(--muted);margin-bottom:14px;line-height:1.6">Partilha este link com potenciais clientes (WhatsApp, redes sociais, contactos). Quando preencherem o formulário, o pedido aparece logo em <strong>Pedidos de Orçamento</strong>.</div>
+              <div id="captar-link-box" style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:11px 13px;font-size:.8rem;font-family:monospace;word-break:break-all;color:var(--blue);margin-bottom:12px">a carregar…</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button id="captar-btn-copiar" style="background:var(--blue-light);border:1px solid #c7d7fd;color:var(--blue);border-radius:8px;padding:10px 16px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font)">📋 Copiar link</button>
+                <a id="captar-btn-wa" href="#" target="_blank" style="background:#25d366;color:#fff;border-radius:8px;padding:10px 16px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px">💬 Partilhar no WhatsApp</a>
+                <a id="captar-btn-ver" href="#" target="_blank" style="background:var(--bg2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:10px 16px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px">👁 Ver página</a>
+              </div>
+            </div>
+            <div class="ferr-row">
+              <div class="ferr-card" style="--fc:#3B5BDB;--fc2:#7a93ff" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/orcamento.html','_blank')">
+                <div class="ferr-ic">💶</div>
+                <div class="ferr-t">Gerar orçamento</div>
+                <div class="ferr-d">Cria um orçamento para enviar ao cliente</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ferr-sec">
+            <div class="ferr-sec-title">📂 Gerir</div>
+            <div class="ferr-row">
+              <div class="ferr-card" style="--fc:#9333EA;--fc2:#c084fc" onclick="navTo('pedidos-orcamento',null)">
+                <div class="ferr-ic">📥</div>
+                <div class="ferr-t">Pedidos de Orçamento</div>
+                <div class="ferr-d">Pedidos recebidos dos clientes através do link</div>
+              </div>
+              <div class="ferr-card" style="--fc:#1E8E5A;--fc2:#46c98a" onclick="navTo('pipeline',null)">
+                <div class="ferr-ic">📊</div>
+                <div class="ferr-t">Gestão de Orçamentos</div>
+                <div class="ferr-d">Acompanha os orçamentos enviados e o seu estado</div>
+              </div>
+              <div class="ferr-card" style="--fc:#B0710A;--fc2:#e0a23e" onclick="navTo('followups',null)">
+                <div class="ferr-ic">⏰</div>
+                <div class="ferr-t">Follow-ups</div>
+                <div class="ferr-d">Orçamentos à espera de resposta do cliente</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="page" id="page-ferramentas">
         <div class="ferr-wrap">
           <p class="ferr-intro">Motores de pesquisa, geração de documentos, questionários de cliente e o assistente Crustáceo — tudo num só sítio.</p>
@@ -2007,11 +2058,6 @@ textarea.finput{resize:vertical;min-height:72px}
           <div class="ferr-sec">
             <div class="ferr-sec-title">📄 Documentos</div>
             <div class="ferr-row">
-              <div class="ferr-card" style="--fc:#3B5BDB;--fc2:#7a93ff" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/orcamento.html','_blank')">
-                <div class="ferr-ic">💶</div>
-                <div class="ferr-t">Gerar orçamento</div>
-                <div class="ferr-d">Cria um orçamento para enviar ao cliente</div>
-              </div>
               <div class="ferr-card" style="--fc:#1E8E5A;--fc2:#46c98a" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/cst.html','_blank')">
                 <div class="ferr-ic">📋</div>
                 <div class="ferr-t">Gerar contrato</div>
@@ -2033,11 +2079,6 @@ textarea.finput{resize:vertical;min-height:72px}
           <div class="ferr-sec">
             <div class="ferr-sec-title">📨 Cliente</div>
             <div class="ferr-row">
-              <div class="ferr-card" style="--fc:#0EA5A5;--fc2:#5fd6d6" onclick="abrirModalPedidoOrcamento()">
-                <div class="ferr-ic">🔗</div>
-                <div class="ferr-t">Link de pedido (cliente)</div>
-                <div class="ferr-d">Gera um link para o cliente pedir orçamento</div>
-              </div>
               <div class="ferr-card" style="--fc:#D9A60A;--fc2:#f5cf57" onclick="abrirFerramentaReferencia('satisfacao')">
                 <div class="ferr-ic">⭐</div>
                 <div class="ferr-t">Questionário de Satisfação</div>
@@ -2593,53 +2634,6 @@ textarea.finput{resize:vertical;min-height:72px}
       <!-- ═══ CENTRO DE MARKETING (iframe da página externa) ═══════════════════════ -->
       <div class="page" id="page-marketing">
         <iframe id="marketing-frame" src="" style="width:100%;height:calc(100vh - 70px);border:none;display:block" title="Centro de Marketing"></iframe>
-      </div>
-
-      <!-- ═══ FASE: CAPTAR (fluxo em cards) ══════════════════════════════════════ -->
-      <div class="page" id="page-captar">
-        <div style="max-width:1100px;margin:0 auto;padding:8px 28px">
-          <div style="margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)">
-            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--coral);margin-bottom:8px">Fase 1 · Captar</div>
-            <div style="font-size:1.5rem;font-weight:700;color:var(--navy);line-height:1.2;font-family:'Poppins',sans-serif">Captar negócio</div>
-            <div style="font-size:.88rem;color:var(--muted);margin-top:6px">Receba pedidos, trabalhe os orçamentos e faça o acompanhamento dos leads.</div>
-          </div>
-
-          <!-- LINK DE CAPTAÇÃO (partilhar com clientes) -->
-          <div style="background:linear-gradient(135deg,#fff,#fdf2f4);border:1px solid #f3d4dc;border-radius:14px;padding:20px 22px;margin-bottom:22px">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-              <span style="font-size:1.3rem">🔗</span>
-              <div style="font-size:1.05rem;font-weight:700;color:var(--navy);font-family:'Poppins',sans-serif">O teu link para pedidos de orçamento</div>
-            </div>
-            <div style="font-size:.85rem;color:var(--muted);margin-bottom:14px;line-height:1.6">Partilha este link com potenciais clientes (WhatsApp, redes sociais, contactos). Quando preencherem o formulário, o pedido aparece logo em <strong>Pedidos de Orçamento</strong>.</div>
-            <div id="captar-link-box" style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:11px 13px;font-size:.8rem;font-family:monospace;word-break:break-all;color:var(--blue);margin-bottom:12px">a carregar…</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button id="captar-btn-copiar" style="background:var(--blue-light);border:1px solid #c7d7fd;color:var(--blue);border-radius:8px;padding:10px 16px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font)">📋 Copiar link</button>
-              <a id="captar-btn-wa" href="#" target="_blank" style="background:#25d366;color:#fff;border-radius:8px;padding:10px 16px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px">💬 Partilhar no WhatsApp</a>
-              <a id="captar-btn-ver" href="#" target="_blank" style="background:var(--bg2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:10px 16px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px">👁 Ver página</a>
-            </div>
-          </div>
-
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px">
-            <div class="rec-card" onclick="navTo('pedidos-orcamento',null)">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">📋</span></div></div>
-              <div class="rec-card-title">Pedidos de Orçamento</div>
-              <div class="rec-card-desc">Os pedidos que entram, à espera de serem trabalhados.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" style="background:var(--coral-light);color:var(--coral)">Passo 1</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
-            </div>
-            <div class="rec-card" onclick="navTo('pipeline',null)">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">🎯</span></div></div>
-              <div class="rec-card-title">Gestão de Orçamentos</div>
-              <div class="rec-card-desc">Acompanhe os orçamentos no funil, da entrada à conversão.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" style="background:var(--coral-light);color:var(--coral)">Passo 2</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
-            </div>
-            <div class="rec-card" onclick="navTo('followups',null)">
-              <div class="rec-card-top"><div class="rec-card-icon-wrap"><span style="font-size:1.2rem">⏰</span></div></div>
-              <div class="rec-card-title">Follow-ups</div>
-              <div class="rec-card-desc">Contactos a fazer para não deixar nenhum lead esfriar.</div>
-              <div class="rec-card-footer"><span class="rec-card-metric" style="background:var(--coral-light);color:var(--coral)">Passo 3</span><span class="rec-card-arrow" style="color:#cbd0da">→</span></div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- ═══ FASE: ACOMPANHAR (fluxo em cards) ══════════════════════════════════════ -->
@@ -4473,7 +4467,7 @@ function navTo(page, el) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
   sessionStorage.setItem('apm_page', page)
-  const titles={dashboard:'Dashboard',ferramentas:'Ferramentas',recursos:'Central de Recursos',marketing:'Centro de Marketing',tickets:'Suporte',questionario:'Validação de Conhecimentos',exercicio:'Exercício Prático',captar:'Captar — Captar negócio',vender:'Vender — Fechar a venda',acompanhar:'Acompanhar — Acompanhar e fidelizar',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',lembretes:'Lembretes em Destaque',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento','rec-divulgar':'Recrutamento — Divulgar','rec-converter':'Recrutamento — Converter','rec-crescer':'Recrutamento — Crescer',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
+  const titles={dashboard:'Dashboard',orcamentos:'Gestão de Orçamentos',ferramentas:'Ferramentas',recursos:'Central de Recursos',marketing:'Centro de Marketing',tickets:'Suporte',questionario:'Validação de Conhecimentos',exercicio:'Exercício Prático',vender:'Vender — Fechar a venda',acompanhar:'Acompanhar — Acompanhar e fidelizar',reservas:'Reservas',nova:'Nova Reserva',clientes:'Clientes',equipa:'Equipa',aprovacoes:'Aprovações','propostas':'Contrato de Serviço Turístico',pipeline:'Orçamentos',followups:'Follow-ups',lembretes:'Lembretes em Destaque',avaliacoes:'Avaliações',financeiro:'Financeiro',performance:'Estatísticas',templates:'Templates',promotores:'Promotores',referencias:'Referências',recrutamento:'Recrutamento','rec-divulgar':'Recrutamento — Divulgar','rec-converter':'Recrutamento — Converter','rec-crescer':'Recrutamento — Crescer',importacao:'Importar Reservas',devolucoes:'Devoluções',atendimento:'Página de Atendimento',recibos:'Recibos Verdes',aceites:'Contratos Aceites Pendentes','minha-equipa':'A Minha Equipa',comissoes:'As Minhas Comissões','verificacao-recibos':'Verificação de Recibos'}
   document.getElementById('tb-title').textContent = titles[page]||page
   document.getElementById('tb-sub').textContent = page==='dashboard'?(currentPerfil?.role==='admin'?'Visão global da agência':'Visão geral das tuas reservas'):''
   if(page==='recursos') loadRecursos()
@@ -4524,7 +4518,7 @@ function navTo(page, el) {
   if(page==='propostas') renderPropostas()
   if(page==='aprovacoes') renderAprovacoes()
   if(page==='pedidos-orcamento') loadPedidosOrcamento()
-  if(page==='captar') preencherLinkCaptar()
+  if(page==='orcamentos') preencherLinkCaptar()
   if(page==='marketing') carregarMarketing()
   if(page==='documentos') { selectedDocType=null; document.getElementById('doc-form-area').style.display='none'; ['orc','conf','cont'].forEach(t=>{const el=document.getElementById('doc-card-'+t);if(el)el.style.borderColor='transparent'}) }
   if(page==='financeiro') {
