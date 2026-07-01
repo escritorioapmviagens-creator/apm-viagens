@@ -427,9 +427,8 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-item" onclick="navTo('exercicio',this)"><span class="nav-icon">📝</span> Exercício Prático <span class="nav-badge" id="exerc-consultor-badge" style="display:none">!</span></div>
       <div class="nav-item" onclick="navTo('tickets',this)"><span class="nav-icon">🎫</span> Suporte / Tickets <span class="nav-badge" id="tickets-badge" style="display:none">0</span></div>
 
-      <div class="nav-section grp-venda" data-s="fluxo">Jornada de venda</div>
-      <div class="nav-item grp-venda" onclick="navTo('vender',this)" data-fase="vender"><span class="nav-icon">🤝</span> 1 · Vender <span class="nav-badge" id="fase-vender-badge" style="display:none">0</span></div>
-      <div class="nav-item grp-venda" onclick="navTo('acompanhar',this)" data-fase="acompanhar"><span class="nav-icon">📈</span> 2 · Acompanhar <span class="nav-badge" id="fase-acompanhar-badge" style="display:none">0</span></div>
+      <div class="nav-item" onclick="navTo('clientes', this)"><span class="nav-icon">👥</span> Clientes</div>
+      <div class="nav-item" onclick="navTo('comissoes', this)"><span class="nav-icon">💰</span> As Minhas Comissões</div>
       <!-- itens ocultos: alvos de navegação usados pelos cards das fases (mantêm os badges internos) -->
       <div style="display:none">
         <span id="nav-pedidos-orc"></span>
@@ -495,7 +494,7 @@ textarea.finput{resize:vertical;min-height:72px}
         <button id="btn-toggle-menu" onclick="toggleMenu()" title="Mostrar/esconder menu" style="background:none;border:1px solid var(--border);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:justify-content:center;cursor:pointer;font-size:16px;color:var(--muted);flex-shrink:0">☰</button>
         <div><div class="topbar-title" id="tb-title">Dashboard</div><div class="topbar-sub" id="tb-sub"></div></div>
       </div>
-      <div><button class="btn btn-coral" onclick="navTo('nova',document.querySelectorAll('.nav-item')[2])">✈ Nova Reserva</button></div>
+      <div></div>
     </div>
     <div class="content">
 
@@ -654,6 +653,10 @@ textarea.finput{resize:vertical;min-height:72px}
 
       <!-- RESERVAS -->
       <div class="page" id="page-reservas">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+          <button class="btn btn-coral" onclick="navTo('nova',null)" style="display:inline-flex;align-items:center;gap:8px">✈ Nova Reserva</button>
+          <button class="btn" onclick="window.open('https://escritorioapmviagens-creator.github.io/apm-viagens/reserva-complementar.html','_blank')" style="display:inline-flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);color:var(--navy)">📝 Completar Reserva</button>
+        </div>
         <!-- Banner de alerta de partidas próximas -->
         <div id="banner-partidas" style="display:none;align-items:center;gap:10px;background:#fffbeb;border:1.5px solid #f59e0b;border-radius:var(--radius-sm);padding:10px 16px;margin-bottom:12px;cursor:pointer" onclick="filtrarPartidasProximas()">
           <span style="font-size:18px">⏳</span>
