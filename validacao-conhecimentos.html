@@ -95,7 +95,18 @@ async function init(){
 }
 
 function renderEmAnalise(){
-  document.getElementById('wrap').innerHTML = '<div class="card" style="border-radius:12px;border-top:1px solid var(--border)"><div class="ok-screen"><div class="ico">⏳</div><h2>Em análise</h2><p>O teu questionário foi enviado e está a ser analisado pela gestão da APM Viagens. Serás notificado quando a correção estiver disponível.</p></div></div>';
+  document.getElementById('wrap').innerHTML = '<div class="card" style="border-radius:12px;border-top:1px solid var(--border)"><div class="ok-screen"><div class="ico">✅</div><h2>Fase 1 concluída!</h2><p>Respondeste ao questionário de conhecimentos. Agora avança para a <b>Fase 2 · Exercício Prático</b> — só depois de completares as duas fases é que a gestão da APM valida a tua candidatura.</p><button onclick="irParaExercicio()" style="margin-top:18px;background:var(--coral);color:#fff;border:none;border-radius:10px;padding:13px 26px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">Continuar para a Fase 2 · Exercício Prático →</button></div></div>';
+}
+function irParaExercicio(){
+  // se estiver dentro do portal (iframe), pede à página-mãe para navegar
+  try{
+    if(window.parent && window.parent !== window){
+      window.parent.postMessage({ apm:'navegar', destino:'exercicio' }, '*');
+      return;
+    }
+  }catch(e){}
+  // fallback: abrir o exercício diretamente
+  window.location.href = 'exercicio-pratico.html';
 }
 function renderValidado(){
   document.getElementById('wrap').innerHTML = '<div class="card" style="border-radius:12px;border-top:1px solid var(--border)"><div class="ok-screen"><div class="ico">✅</div><h2>Questionário validado!</h2><p>Parabéns! As tuas respostas foram validadas. Já cumpriste este requisito da formação.</p></div></div>';
