@@ -147,6 +147,14 @@ tr:hover td{background:#fafbff}
     <div class="stat c-purple"><div class="stat-lbl">Em falta</div><div class="stat-val" id="s-falta">—</div><div class="stat-sub">não pagaram</div></div>
   </div>
 
+  <!-- MÊS DE OPERAÇÃO -->
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div style="font-family:var(--heading);font-size:.85rem;font-weight:600">📆 Mês de operação:</div>
+    <input type="month" id="mes-operacao" class="fsel" style="padding:7px 12px" onchange="mudarMesOperacao(this.value)">
+    <div style="font-size:.76rem;color:var(--muted)">O estado dos consultores é calculado em relação a este mês.</div>
+    <div id="mes-op-guardado" style="margin-left:auto;font-size:.74rem;color:var(--green);font-weight:600;display:none">✓ Guardado</div>
+  </div>
+
   <div class="tabs">
     <button class="tab on" onclick="setTab('consultores',this)">👥 Consultores</button>
     <button class="tab" onclick="setTab('importar',this)">📥 Importar CSV</button>
@@ -317,12 +325,44 @@ let estadoChanges = {}
 let payIdent = [], payNaoId = [], payNaoPag = []
 let payPeriodo = '', payTotal = 0
 let todosPagamentos = [] // Cache de todos os pagamentos
+let mesOperacao = '' // YYYY-MM — mês em relação ao qual o estado é calculado
 
 // ── INIT ──────────────────────────────────────────
 async function init() {
   const { data: { session } } = await sb.auth.getSession()
   if(!session) { window.location.href = 'index.html'; return }
+  await carregarMesOperacao()
   await loadConsultores()
+}
+
+// ── MÊS DE OPERAÇÃO ───────────────────────────────
+async function carregarMesOperacao() {
+  const { data } = await sb.from('configuracoes').select('valor').eq('chave','mes_operacao').maybeSingle()
+  let v = data ? data.valor : null
+  // o valor pode vir como texto simples ou como jsonb (string JSON)
+  if(v && typeof v === 'object') v = v.valor || v.mes || String(v)
+  if(typeof v === 'string') v = v.replace(/^"|"$/g,'') // remover aspas de JSON string
+  mesOperacao = (v && /^\d{4}-\d{2}$/.test(v)) ? v : new Date().toISOString().substring(0,7)
+  const inp = document.getElementById('mes-operacao')
+  if(inp) inp.value = mesOperacao
+}
+
+async function mudarMesOperacao(novo) {
+  if(!novo) return
+  mesOperacao = novo
+  // A coluna valor é jsonb — o cliente Supabase serializa a string para JSON automaticamente.
+  const { error } = await sb.from('configuracoes')
+    .upsert({ chave:'mes_operacao', valor: novo }, { onConflict:'chave' })
+  const badge = document.getElementById('mes-op-guardado')
+  if(error) { toast('Erro ao guardar mês: ' + error.message, 'err') }
+  else if(badge) { badge.style.display='inline'; setTimeout(()=>badge.style.display='none', 2000) }
+  await loadConsultores()
+}
+
+// Devolve o mês de referência como objeto {ano, mes} a partir de mesOperacao
+function refMes() {
+  const [a,m] = (mesOperacao || new Date().toISOString().substring(0,7)).split('-').map(Number)
+  return { ano:a, mes:m-1 } // mes 0-indexed para bater com getMonth()
 }
 
 // ── LOAD CONSULTORES ──────────────────────────────
@@ -336,7 +376,7 @@ async function loadConsultores() {
 
   // Buscar TODOS os pagamentos
   const { data: pags } = await sb.from('mensalidades')
-    .select('consultor_id,data_pagamento,valor,periodo,estado')
+    .select('consultor_id,data_pagamento,valor,periodo,estado,estado_manual')
     .order('data_pagamento', { ascending: false })
   
   todosPagamentos = pags || []
@@ -345,30 +385,38 @@ async function loadConsultores() {
   consultores = consultores.map(c => {
     const pagamentos = todosPagamentos.filter(p => p.consultor_id === c.id)
     const ultimoPag = pagamentos.length > 0 ? pagamentos[0] : null
-    
-    // Determinar se está pago
+
+    // Procurar um registo MANUAL para o mês de operação (tem prioridade)
+    const regManualMes = pagamentos.find(p => p.periodo && p.estado_manual &&
+      _periodoBateMes(p, mesOperacao))
+
+    const ref = refMes() // {ano, mes} do mês de operação
+
+    // Determinar se está pago EM RELAÇÃO AO MÊS DE OPERAÇÃO
     let isPago = false
-    if (ultimoPag) {
+    if (regManualMes) {
+      // alteração manual manda
+      isPago = regManualMes.estado === 'pago'
+    } else if (ultimoPag) {
       if (c.billing === 'anual') {
-        // Para anuais, verificar se o último pagamento foi há menos de 1 ano
+        // anual: pago se o último pagamento foi há menos de 12 meses face ao mês de operação
         const dataPag = new Date(ultimoPag.data_pagamento)
-        const hoje = new Date()
-        const diffMeses = (hoje.getFullYear() - dataPag.getFullYear()) * 12 + (hoje.getMonth() - dataPag.getMonth())
-        isPago = diffMeses < 12
+        const diffMeses = (ref.ano - dataPag.getFullYear()) * 12 + (ref.mes - dataPag.getMonth())
+        isPago = diffMeses >= 0 && diffMeses < 12
       } else {
-        // Para mensais, verificar se o último pagamento foi neste mês
+        // mensal: pago se o último pagamento é do próprio mês de operação
         const dataPag = new Date(ultimoPag.data_pagamento)
-        const hoje = new Date()
-        isPago = dataPag.getMonth() === hoje.getMonth() && dataPag.getFullYear() === hoje.getFullYear()
+        isPago = dataPag.getMonth() === ref.mes && dataPag.getFullYear() === ref.ano
       }
     }
-    
+
     return {
       ...c,
       _ultData: ultimoPag?.data_pagamento || null,
       _ultValor: ultimoPag?.valor || null,
       _ultPeriodo: ultimoPag?.periodo || null,
-      _ultEstado: isPago ? 'pago' : 'nao_pago'
+      _ultEstado: isPago ? 'pago' : 'nao_pago',
+      _manualMes: !!regManualMes
     }
   })
 
@@ -456,6 +504,27 @@ function renderConsultores() {
     + '</tbody></table>'
 }
 
+// Compara o 'periodo' textual de um registo com o mês de operação (YYYY-MM).
+// Aceita formatos como "janeiro de 2026", "2026-01", "01/2026".
+function _periodoBateMes(pagamento, mesYYYYMM) {
+  if(!pagamento || !mesYYYYMM) return false
+  // 1) via data_pagamento (mais fiável)
+  if(pagamento.data_pagamento) {
+    if(String(pagamento.data_pagamento).substring(0,7) === mesYYYYMM) return true
+  }
+  const [ano, mes] = mesYYYYMM.split('-')
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']
+  const nomeMes = meses[parseInt(mes,10)-1]
+  const p = (pagamento.periodo || '').toLowerCase()
+  if(!p) return false
+  // "janeiro de 2026"
+  if(p.includes(nomeMes) && p.includes(ano)) return true
+  // "2026-01" ou "01/2026"
+  if(p.includes(mesYYYYMM)) return true
+  if(p.includes(mes+'/'+ano) || p.includes(ano+'-'+mes)) return true
+  return false
+}
+
 async function updateStatus(id, novoStatus) {
   const c = consultores.find(c => c.id === id)
   if(!c) return
@@ -472,26 +541,41 @@ async function updateStatus(id, novoStatus) {
     valorCell.style.color = novoStatus === 'pago' ? 'var(--green)' : 'var(--muted)'
   }
 
-  // Encontrar o ÚLTIMO pagamento deste consultor e atualizar apenas esse.
-  // (Um update no Supabase não aceita .order().limit() — é preciso obter o id primeiro.)
-  const { data: ult, error: e1 } = await sb.from('mensalidades')
-    .select('id')
+  // Procurar o registo do MÊS DE OPERAÇÃO para este consultor.
+  const { data: regs, error: e1 } = await sb.from('mensalidades')
+    .select('id,periodo,data_pagamento,estado')
     .eq('consultor_id', id)
-    .order('data_pagamento', { ascending: false })
-    .limit(1)
-    .maybeSingle()
 
   if(e1) { toast('Erro ao localizar pagamento: ' + e1.message, 'err'); return }
-  if(!ult) { toast('Este consultor ainda não tem pagamentos registados', 'err'); return }
 
-  const { error: e2 } = await sb.from('mensalidades')
-    .update({ estado: novoStatus })
-    .eq('id', ult.id)
+  const doMes = (regs || []).find(r => _periodoBateMes(r, mesOperacao))
 
-  if(e2) { toast('Erro ao atualizar: ' + e2.message, 'err'); return }
-  toast('Status atualizado para ' + (novoStatus === 'pago' ? '✅ Pago' : '❌ Não Pago'), 'ok')
+  if(doMes) {
+    // já existe registo para o mês → atualizar e marcar como manual
+    const { error: e2 } = await sb.from('mensalidades')
+      .update({ estado: novoStatus, estado_manual: true })
+      .eq('id', doMes.id)
+    if(e2) { toast('Erro ao atualizar: ' + e2.message, 'err'); return }
+  } else {
+    // não existe → criar um registo manual para este mês de operação
+    const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']
+    const [ano, mes] = mesOperacao.split('-')
+    const periodoTxt = meses[parseInt(mes,10)-1] + ' de ' + ano
+    const { error: e3 } = await sb.from('mensalidades').insert({
+      consultor_id: id,
+      consultor_nome: c.nome,
+      periodo: periodoTxt,
+      data_pagamento: novoStatus === 'pago' ? (mesOperacao + '-01') : null,
+      valor: novoStatus === 'pago' ? (c._ultValor || 0) : 0,
+      billing: c.billing || 'mensal',
+      estado: novoStatus,
+      estado_manual: true
+    })
+    if(e3) { toast('Erro ao criar registo: ' + e3.message, 'err'); return }
+  }
 
-  updateStats()
+  toast('Status atualizado para ' + (novoStatus === 'pago' ? '✅ Pago' : '❌ Não Pago') + ' (' + mesOperacao + ')', 'ok')
+  await loadConsultores()
 }
 
 function updateStats() {
