@@ -316,6 +316,7 @@ let consultores = []
 let estadoChanges = {}
 let payIdent = [], payNaoId = [], payNaoPag = []
 let payPeriodo = '', payTotal = 0
+let todosPagamentos = [] // Cache de todos os pagamentos
 
 // ── INIT ──────────────────────────────────────────
 async function init() {
@@ -333,34 +334,55 @@ async function loadConsultores() {
   }
   consultores = data || []
 
-  // Fetch last payment per consultor
-  if(consultores.length) {
-    const { data: pags } = await sb.from('mensalidades')
-      .select('consultor_id,data_pagamento,valor,periodo,estado')
-      .order('data_pagamento', { ascending: false })
-    if(pags) {
-      const ultMap = {}
-      pags.forEach(p => {
-        if(!ultMap[p.consultor_id]) ultMap[p.consultor_id] = p
-      })
-      consultores = consultores.map(c => ({
-        ...c,
-        _ultData: ultMap[c.id]?.data_pagamento || null,
-        _ultValor: ultMap[c.id]?.valor || null,
-        _ultPeriodo: ultMap[c.id]?.periodo || null,
-        _ultEstado: ultMap[c.id]?.estado || null
-      }))
+  // Buscar TODOS os pagamentos
+  const { data: pags } = await sb.from('mensalidades')
+    .select('consultor_id,data_pagamento,valor,periodo,estado')
+    .order('data_pagamento', { ascending: false })
+  
+  todosPagamentos = pags || []
+
+  // Calcular status baseado no último pagamento e frequência
+  consultores = consultores.map(c => {
+    const pagamentos = todosPagamentos.filter(p => p.consultor_id === c.id)
+    const ultimoPag = pagamentos.length > 0 ? pagamentos[0] : null
+    
+    // Determinar se está pago
+    let isPago = false
+    if (ultimoPag) {
+      if (c.billing === 'anual') {
+        // Para anuais, verificar se o último pagamento foi há menos de 1 ano
+        const dataPag = new Date(ultimoPag.data_pagamento)
+        const hoje = new Date()
+        const diffMeses = (hoje.getFullYear() - dataPag.getFullYear()) * 12 + (hoje.getMonth() - dataPag.getMonth())
+        isPago = diffMeses < 12
+      } else {
+        // Para mensais, verificar se o último pagamento foi neste mês
+        const dataPag = new Date(ultimoPag.data_pagamento)
+        const hoje = new Date()
+        isPago = dataPag.getMonth() === hoje.getMonth() && dataPag.getFullYear() === hoje.getFullYear()
+      }
     }
-  }
+    
+    return {
+      ...c,
+      _ultData: ultimoPag?.data_pagamento || null,
+      _ultValor: ultimoPag?.valor || null,
+      _ultPeriodo: ultimoPag?.periodo || null,
+      _ultEstado: isPago ? 'pago' : 'nao_pago'
+    }
+  })
+
   const ativos = consultores.filter(c => c.estado === 'ativo')
   const inativos = consultores.filter(c => c.estado !== 'ativo')
   const comPagamento = consultores.filter(c => c._ultEstado === 'pago')
   const semPagamento = ativos.filter(c => c._ultEstado !== 'pago')
+  
   document.getElementById('s-total').textContent = consultores.length
   document.getElementById('s-ativos').textContent = ativos.length
   document.getElementById('s-inativos').textContent = inativos.length
   document.getElementById('s-pagaram').textContent = comPagamento.length
   document.getElementById('s-falta').textContent = semPagamento.length
+  
   renderConsultores()
 }
 
@@ -438,22 +460,19 @@ function updateStatus(id, novoStatus) {
   const c = consultores.find(c => c.id === id)
   if(!c) return
   
-  // Update in memory
   c._ultEstado = novoStatus
   
-  // Update the select styling
   const sel = document.getElementById('status-'+id)
   if(sel) {
     sel.className = 'status-select ' + (novoStatus === 'pago' ? 'pago' : 'naopago')
   }
   
-  // Update valor color
   const valorCell = document.getElementById('valor-'+id)
   if(valorCell) {
     valorCell.style.color = novoStatus === 'pago' ? 'var(--green)' : 'var(--muted)'
   }
   
-  // Save to database immediately
+  // Guardar no banco de dados
   sb.from('mensalidades').update({ estado: novoStatus })
     .eq('consultor_id', id)
     .order('data_pagamento', { ascending: false })
@@ -465,7 +484,6 @@ function updateStatus(id, novoStatus) {
       toast('Erro ao atualizar: ' + err.message, 'err')
     })
   
-  // Update stats
   updateStats()
 }
 
@@ -1002,10 +1020,6 @@ async function processRows(data, source) {
     return null
   }
 
-  const emailAsNameIds = new Set(
-    ativos.filter(c => c.nome?.includes('@')).map(c => c.id)
-  )
-
   payIdent = rows.map(r => ({ ...r, consultor: matchConsultor(r) })).filter(r => r.consultor)
   payNaoId = rows.filter(r => !matchConsultor(r))
 
@@ -1020,12 +1034,45 @@ async function processRows(data, source) {
       Object.assign(c, updates)
     }
   }
+  
   const pagaramIds = new Set(payIdent.map(r=>r.consultor.id))
   const seen = new Set()
+  
+  // Para anuais, verificar se já passou 1 ano
   payNaoPag = ativos.filter(c => {
     if(pagaramIds.has(c.id)) return false
     if(c.nome?.includes('@')) return false
     if(seen.has(c.id)) return false
+    
+    // Verificar se é anual e se já passou 1 ano
+    if(c.billing === 'anual' && c._ultData) {
+      const ultData = new Date(c._ultData)
+      const hoje = new Date()
+      const diffAnos = hoje.getFullYear() - ultData.getFullYear()
+      const diffMeses = (hoje.getFullYear() - ultData.getFullYear()) * 12 + (hoje.getMonth() - ultData.getMonth())
+      // Se já passou 1 ano, está em falta
+      if (diffMeses >= 12) {
+        seen.add(c.id)
+        return true
+      }
+      // Se ainda não passou 1 ano, está pago
+      seen.add(c.id)
+      return false
+    }
+    
+    // Para mensais, verificar se o último pagamento foi neste mês
+    if(c.billing === 'mensal' && c._ultData) {
+      const ultData = new Date(c._ultData)
+      const hoje = new Date()
+      const diffMeses = (hoje.getFullYear() - ultData.getFullYear()) * 12 + (hoje.getMonth() - ultData.getMonth())
+      if (diffMeses >= 1) {
+        seen.add(c.id)
+        return true
+      }
+      seen.add(c.id)
+      return false
+    }
+    
     seen.add(c.id)
     return true
   })
@@ -1192,6 +1239,7 @@ async function guardarPagamentos() {
     if(nc) { r.consultor = nc; payIdent.push(r) }
   }
 
+  // ATUALIZAÇÃO: Não apagar registos existentes, apenas adicionar novos
   const pagamentos = [
     ...payIdent.map(r => ({
       consultor_id: r.consultor.id,
@@ -1223,14 +1271,28 @@ async function guardarPagamentos() {
   })
   if(updates.length) await Promise.all(updates)
 
+  // Não apagar registos existentes - apenas verificar duplicados
   const consultorIds = pagamentos.map(p => p.consultor_id).filter(Boolean)
   if(consultorIds.length) {
-    await sb.from('mensalidades').delete()
+    // Verificar se já existem registos para este período
+    const { data: existentes } = await sb.from('mensalidades')
+      .select('consultor_id')
       .eq('periodo', payPeriodo)
       .in('consultor_id', consultorIds)
+    
+    const existentesIds = new Set(existentes?.map(e => e.consultor_id) || [])
+    
+    // Filtrar apenas os que não existem ainda
+    const novosPagamentos = pagamentos.filter(p => !existentesIds.has(p.consultor_id))
+    
+    if(novosPagamentos.length) {
+      const { error } = await sb.from('mensalidades').insert(novosPagamentos)
+      if(error) { toast('Erro: ' + error.message, 'err'); return }
+    }
+  } else {
+    const { error } = await sb.from('mensalidades').insert(pagamentos)
+    if(error) { toast('Erro: ' + error.message, 'err'); return }
   }
-
-  const { error } = await sb.from('mensalidades').insert(pagamentos)
 
   for(const c of consultores) {
     if(!c.primeiro_pagamento) {
@@ -1241,9 +1303,7 @@ async function guardarPagamentos() {
 
   btn.disabled = false; btn.textContent = '💾 Guardar no sistema'
 
-  if(error) { toast('Erro: ' + error.message, 'err'); return }
-
-  toast('✅ ' + payIdent.length + ' pagamentos guardados!', 'ok')
+  toast('✅ ' + payIdent.length + ' novos pagamentos guardados!', 'ok')
   await loadConsultores()
   await loadHistorico()
 }
