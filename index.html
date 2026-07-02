@@ -423,8 +423,8 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-item" onclick="navTo('reservas', this)"><span class="nav-icon">🗂️</span> Reservas</div>
       <div class="nav-item" onclick="navTo('ferramentas', this)"><span class="nav-icon">🧰</span> Ferramentas</div>
       <div class="nav-item" onclick="navTo('marketing',this)"><span class="nav-icon">📣</span> Centro de Marketing</div>
-      <div class="nav-item" onclick="navTo('questionario',this)"><span class="nav-icon">🎓</span> Fase 1 · Validação de Conhecimentos <span class="nav-badge" id="quiz-consultor-badge" style="display:none">!</span></div>
-      <div class="nav-item" onclick="navTo('exercicio',this)"><span class="nav-icon">📝</span> Fase 2 · Exercício Prático <span class="nav-badge" id="exerc-consultor-badge" style="display:none">!</span></div>
+      <div class="nav-item" onclick="navTo('questionario',this)" style="display:none"><span class="nav-icon">🎓</span> Fase 1 · Validação de Conhecimentos <span class="nav-badge" id="quiz-consultor-badge" style="display:none">!</span></div>
+      <div class="nav-item" onclick="navTo('exercicio',this)" style="display:none"><span class="nav-icon">📝</span> Fase 2 · Exercício Prático <span class="nav-badge" id="exerc-consultor-badge" style="display:none">!</span></div>
       <div class="nav-item" onclick="navTo('tickets',this)"><span class="nav-icon">🎫</span> Suporte / Tickets <span class="nav-badge" id="tickets-badge" style="display:none">0</span></div>
 
       <div class="nav-item" onclick="navTo('clientes', this)"><span class="nav-icon">👥</span> Clientes</div>
@@ -15802,7 +15802,8 @@ function carregarExercicioFrame(){
 window.addEventListener('message', function(ev){
   const d = ev.data
   if(d && d.apm === 'navegar' && d.destino === 'exercicio'){
-    navTo('exercicio', document.querySelector("[onclick*=\"navTo('exercicio'\"]"))
+    const alvo = document.querySelector('.nav-item[onclick*="exercicio"]')
+    navTo('exercicio', alvo || null)
   }
 })
 
