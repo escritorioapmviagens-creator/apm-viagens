@@ -423,8 +423,8 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="nav-item" onclick="navTo('reservas', this)"><span class="nav-icon">🗂️</span> Reservas</div>
       <div class="nav-item" onclick="navTo('ferramentas', this)"><span class="nav-icon">🧰</span> Ferramentas</div>
       <div class="nav-item" onclick="navTo('marketing',this)"><span class="nav-icon">📣</span> Centro de Marketing</div>
-      <div class="nav-item" onclick="navTo('questionario',this)"><span class="nav-icon">🎓</span> Validação de Conhecimentos <span class="nav-badge" id="quiz-consultor-badge" style="display:none">!</span></div>
-      <div class="nav-item" onclick="navTo('exercicio',this)"><span class="nav-icon">📝</span> Exercício Prático <span class="nav-badge" id="exerc-consultor-badge" style="display:none">!</span></div>
+      <div class="nav-item" onclick="navTo('questionario',this)"><span class="nav-icon">🎓</span> Fase 1 · Validação de Conhecimentos <span class="nav-badge" id="quiz-consultor-badge" style="display:none">!</span></div>
+      <div class="nav-item" onclick="navTo('exercicio',this)"><span class="nav-icon">📝</span> Fase 2 · Exercício Prático <span class="nav-badge" id="exerc-consultor-badge" style="display:none">!</span></div>
       <div class="nav-item" onclick="navTo('tickets',this)"><span class="nav-icon">🎫</span> Suporte / Tickets <span class="nav-badge" id="tickets-badge" style="display:none">0</span></div>
 
       <div class="nav-item" onclick="navTo('clientes', this)"><span class="nav-icon">👥</span> Clientes</div>
@@ -4017,8 +4017,8 @@ function enterApp() {
   // Soltrópico: aparece a partir da etapa 2 (modo treino na 2, real na 3)
   if(etapa >= 2) _show('nav-soltropico', 'flex')
 
-  // Exercício Prático: só a partir da etapa 2 (questionário validado)
-  if(etapa < 2){ const ne=document.querySelector("[onclick*=\"navTo('exercicio'\"]"); if(ne) ne.style.display='none' }
+  // Exercício Prático: disponível logo a seguir ao questionário (Fase 2)
+  // (bloqueio por etapa removido — candidato faz as duas fases seguidas)
 
   // Card Soltrópico na Central de Recursos: a partir da etapa 2
   { const rcs=document.getElementById('rec-card-soltropico'); if(rcs && etapa>=2) rcs.style.display='flex'
@@ -4182,10 +4182,6 @@ function navTo(page, el) {
     if(typeof toast === 'function') toast('Conclui a formação para desbloquear esta área.', '')
   }
   // Exercício prático só a partir da etapa 2 (questionário validado)
-  if(currentPerfil && etapaAtual < 2 && page === 'exercicio'){
-    page = 'questionario'; el = null
-    if(typeof toast === 'function') toast('Valida primeiro o questionário de conhecimentos.', '')
-  }
   if(window.matchMedia('(max-width:768px)').matches) fecharMenuMobile()
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'))
   if(el) el.classList.add('active')
@@ -15801,6 +15797,14 @@ function carregarExercicioFrame(){
   const cemail = encodeURIComponent(currentPerfil.email || '')
   f.src = `exercicio-pratico.html?cid=${cid}&cnome=${cnome}&cemail=${cemail}`
 }
+
+// Encaminhamento Fase 1 → Fase 2: o questionário (num iframe) pede para navegar ao exercício
+window.addEventListener('message', function(ev){
+  const d = ev.data
+  if(d && d.apm === 'navegar' && d.destino === 'exercicio'){
+    navTo('exercicio', document.querySelector("[onclick*=\"navTo('exercicio'\"]"))
+  }
+})
 
 async function atualizarExercAdminBadge(){
   try{
