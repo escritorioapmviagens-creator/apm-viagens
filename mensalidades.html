@@ -456,34 +456,41 @@ function renderConsultores() {
     + '</tbody></table>'
 }
 
-function updateStatus(id, novoStatus) {
+async function updateStatus(id, novoStatus) {
   const c = consultores.find(c => c.id === id)
   if(!c) return
-  
+
   c._ultEstado = novoStatus
-  
+
   const sel = document.getElementById('status-'+id)
   if(sel) {
     sel.className = 'status-select ' + (novoStatus === 'pago' ? 'pago' : 'naopago')
   }
-  
+
   const valorCell = document.getElementById('valor-'+id)
   if(valorCell) {
     valorCell.style.color = novoStatus === 'pago' ? 'var(--green)' : 'var(--muted)'
   }
-  
-  // Guardar no banco de dados
-  sb.from('mensalidades').update({ estado: novoStatus })
+
+  // Encontrar o ÚLTIMO pagamento deste consultor e atualizar apenas esse.
+  // (Um update no Supabase não aceita .order().limit() — é preciso obter o id primeiro.)
+  const { data: ult, error: e1 } = await sb.from('mensalidades')
+    .select('id')
     .eq('consultor_id', id)
     .order('data_pagamento', { ascending: false })
     .limit(1)
-    .then(() => {
-      toast('Status atualizado para ' + (novoStatus === 'pago' ? '✅ Pago' : '❌ Não Pago'), 'ok')
-    })
-    .catch(err => {
-      toast('Erro ao atualizar: ' + err.message, 'err')
-    })
-  
+    .maybeSingle()
+
+  if(e1) { toast('Erro ao localizar pagamento: ' + e1.message, 'err'); return }
+  if(!ult) { toast('Este consultor ainda não tem pagamentos registados', 'err'); return }
+
+  const { error: e2 } = await sb.from('mensalidades')
+    .update({ estado: novoStatus })
+    .eq('id', ult.id)
+
+  if(e2) { toast('Erro ao atualizar: ' + e2.message, 'err'); return }
+  toast('Status atualizado para ' + (novoStatus === 'pago' ? '✅ Pago' : '❌ Não Pago'), 'ok')
+
   updateStats()
 }
 
@@ -1037,45 +1044,50 @@ async function processRows(data, source) {
   
   const pagaramIds = new Set(payIdent.map(r=>r.consultor.id))
   const seen = new Set()
-  
-  // Para anuais, verificar se já passou 1 ano
+
+  // Conjunto de anuais que estão DENTRO do prazo (ainda não fez 1 ano) —
+  // estes devem ser IGNORADOS: nem pago nem não-pago, e não são gravados.
+  const anuaisIgnorar = new Set()
+
   payNaoPag = ativos.filter(c => {
     if(pagaramIds.has(c.id)) return false
     if(c.nome?.includes('@')) return false
     if(seen.has(c.id)) return false
-    
-    // Verificar se é anual e se já passou 1 ano
-    if(c.billing === 'anual' && c._ultData) {
-      const ultData = new Date(c._ultData)
-      const hoje = new Date()
-      const diffAnos = hoje.getFullYear() - ultData.getFullYear()
-      const diffMeses = (hoje.getFullYear() - ultData.getFullYear()) * 12 + (hoje.getMonth() - ultData.getMonth())
-      // Se já passou 1 ano, está em falta
-      if (diffMeses >= 12) {
-        seen.add(c.id)
-        return true
-      }
-      // Se ainda não passou 1 ano, está pago
-      seen.add(c.id)
-      return false
-    }
-    
-    // Para mensais, verificar se o último pagamento foi neste mês
-    if(c.billing === 'mensal' && c._ultData) {
-      const ultData = new Date(c._ultData)
-      const hoje = new Date()
-      const diffMeses = (hoje.getFullYear() - ultData.getFullYear()) * 12 + (hoje.getMonth() - ultData.getMonth())
-      if (diffMeses >= 1) {
-        seen.add(c.id)
-        return true
-      }
-      seen.add(c.id)
-      return false
-    }
-    
     seen.add(c.id)
+
+    // ANUAIS: só entram em falta se já passaram 12+ meses desde o último pagamento.
+    if(c.billing === 'anual') {
+      if(!c._ultData) {
+        // Sem data de pagamento conhecida: não temos como saber → ignorar (não inventar).
+        anuaisIgnorar.add(c.id)
+        return false
+      }
+      const ultData = new Date(c._ultData)
+      const hoje = new Date()
+      const diffMeses = (hoje.getFullYear() - ultData.getFullYear()) * 12 + (hoje.getMonth() - ultData.getMonth())
+      if(diffMeses >= 12) {
+        return true   // passou 1 ano → em falta
+      }
+      // dentro do prazo do ano → IGNORAR (não é pago neste extrato nem está em falta)
+      anuaisIgnorar.add(c.id)
+      return false
+    }
+
+    // MENSAIS: em falta se o último pagamento não é deste mês (ou nunca pagou).
+    if(c.billing === 'mensal') {
+      if(!c._ultData) return true
+      const ultData = new Date(c._ultData)
+      const hoje = new Date()
+      const diffMeses = (hoje.getFullYear() - ultData.getFullYear()) * 12 + (hoje.getMonth() - ultData.getMonth())
+      return diffMeses >= 1
+    }
+
+    // Sem billing definido: tratar como mensal em falta (comportamento anterior)
     return true
   })
+
+  // guardar para a gravação saber quais anuais ignorar
+  window._anuaisIgnorar = anuaisIgnorar
 
   document.getElementById('pay-period').textContent = payPeriodo || '—'
   document.getElementById('pay-total').innerHTML = 'c/ IVA <strong>€' + payTotal.toLocaleString('pt-PT',{minimumFractionDigits:2}) + '</strong> &nbsp; s/ IVA <strong>€' + totalSemIva.toLocaleString('pt-PT',{minimumFractionDigits:2}) + '</strong>'
@@ -1253,7 +1265,9 @@ async function guardarPagamentos() {
       email_ficheiro: r.email||null,
       estado: 'pago'
     })),
-    ...payNaoPag.map(c => ({
+    ...payNaoPag
+      .filter(c => !(window._anuaisIgnorar && window._anuaisIgnorar.has(c.id)))
+      .map(c => ({
       consultor_id: c.id,
       consultor_nome: c.nome,
       periodo: payPeriodo,
